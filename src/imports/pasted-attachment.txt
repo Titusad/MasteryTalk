@@ -1,0 +1,162 @@
+Entonces definimos pricing como una estrategia deliberada de validación + posicionamiento profesional, no como algo improvisado.
+
+Voy a redactarlo como si fuera parte del documento estratégico del producto.
+
+💼 Estrategia de Pricing — inFluentia PRO (MVP)
+🎯 Objetivo del modelo
+
+El pricing está diseñado para:
+
+Validar disposición real de pago en LATAM profesional.
+
+Minimizar costo de adquisición inicial.
+
+Mantener márgenes altos desde el día 1.
+
+Permitir transición futura a modelo híbrido o suscripción.
+
+Posicionar el producto como herramienta profesional, no app casual.
+
+🟢 1. Sesión Gratuita (Controlada)
+
+Precio: $0 (una sola vez por usuario)
+Modelo IA: GPT-4o-mini
+Duración: Limitada (máx. turnos / tiempo)
+Incluye:
+
+Simulación conversacional
+
+Feedback básico estructurado
+
+No incluye:
+
+Guión optimizado completo
+
+Shadowing con scoring
+
+Spaced Repetition
+
+Dashboard profesional
+
+Objetivo estratégico
+
+Permitir experimentar el “wow moment”.
+
+Reducir fricción inicial.
+
+Validar engagement real.
+
+Mantener costo IA bajo (~$0.10–$0.15 por usuario).
+
+💳 2. Modelo Pay-Per-Session (MVP Core)
+
+El usuario compra créditos.
+
+Precios globales (USD)
+Pack	Precio	Precio por sesión
+1 sesión	$4.99	$4.99
+3 sesiones	$12.99	$4.33
+5 sesiones	$19.99	$4.00
+10 sesiones	$34.99	$3.50
+Incluye en sesiones pagadas:
+
+GPT-4o completo
+
+Feedback profundo
+
+Guión optimizado editable
+
+Shadowing con scoring Azure
+
+Generación de SR cards
+
+📊 Racional Financiero
+
+Costo promedio por sesión:
+≈ $0.23–$0.30
+
+Margen bruto promedio:
+
+90%
+
+Breakeven infraestructura fija:
+~11 sesiones pagadas / mes
+
+Modelo financieramente sostenible desde escala mínima.
+
+🌎 Ajuste LATAM (Moneda local)
+
+Se adapta vía Mercado Pago en:
+
+🇲🇽 México
+
+🇨🇴 Colombia
+
+🇦🇷 Argentina
+
+🇧🇷 Brasil
+
+Manteniendo paridad psicológica con USD.
+
+Posicionamiento:
+
+10x más barato que una sesión de coaching presencial.
+
+🧠 Posicionamiento Estratégico
+
+Este modelo comunica:
+
+No somos curso.
+
+No somos entretenimiento.
+
+Somos práctica profesional bajo demanda.
+
+Pagas solo cuando lo necesitas.
+
+Elimina compromiso mensual en fase temprana.
+Reduce fricción.
+Acelera validación.
+
+🔮 Evolución Futura (No MVP)
+
+Cuando se valide:
+
+Recompra promedio ≥ 3 sesiones
+
+Uso recurrente
+
+Retención real
+
+Se podrá introducir:
+
+Suscripción mensual Pro
+
+Plan trimestral
+
+Plan corporate
+
+El modelo actual es base sólida para transición híbrida.
+
+🎯 Mensaje central en la landing
+
+En lugar de hablar de precios primero, comunicar:
+
+Practica entrevistas y ventas en inglés con IA avanzada.
+1ª sesión gratis. Luego paga solo cuando lo necesites.
+
+🧠 Decisión estratégica final
+
+El MVP prioriza:
+
+✔ Velocidad de lanzamiento
+✔ Margen alto
+✔ Riesgo financiero bajo
+✔ Aprendizaje real del mercado
+
+No prioriza:
+✖ MRR
+✖ Valoración startup
+✖ Escalamiento agresivo con ads
+
+Eso vendrá después.
