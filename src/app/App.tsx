@@ -34,6 +34,7 @@ interface FlowState {
 }
 
 export default function App() {
+  const [isInitializing, setIsInitializing] = useState(true);
   const [page, setPage] = useState<Page>(() => {
     const hash = window.location.hash;
     if (hash === "#design-system") return "design-system";
@@ -102,9 +103,28 @@ export default function App() {
       setAuthUser(user);
 
       if (user && !hadUser) {
+        let pendingAct: any = null;
+        try {
+          const saved = localStorage.getItem("pendingAuthAction");
+          if (saved) {
+            pendingAct = JSON.parse(saved);
+            localStorage.removeItem("pendingAuthAction");
+          }
+        } catch { }
+
         setPage((currentPage) => {
           if (currentPage === "landing") {
-            const pending = pendingSetupRef.current;
+            const pending = pendingSetupRef.current || (pendingAct?.mode === "registro" ? pendingAct.data : null);
+
+            // Read latest language from storage to avoid stale closure
+            let currentLang = "es";
+            try {
+              const savedLang = localStorage.getItem("influentia_lang");
+              if (savedLang === "es" || savedLang === "pt" || savedLang === "en") {
+                currentLang = savedLang;
+              }
+            } catch { }
+
             if (pending) {
               setFlowState({
                 scenario: pending.scenario,
@@ -113,19 +133,41 @@ export default function App() {
                 guidedFields: pending.guidedFields,
               });
               pendingSetupRef.current = null;
-              window.location.hash = "#practice-session";
-              return "practice-session";
+
+              if (currentLang === "en") {
+                window.location.hash = "#practice-session";
+                return "practice-session";
+              } else {
+                pendingNavigationRef.current = () => {
+                  setPage("practice-session");
+                  window.location.hash = "#practice-session";
+                };
+                setShowLangModal(true);
+                return "landing";
+              }
             }
+
+            // If no pending setup, route to dashboard
             setFlowState((prev) =>
               prev.scenario
                 ? prev
                 : {
-                    scenario: "Sales pitch: Producto B2B SaaS para LATAM",
-                    interlocutor: "VP of Sales",
-                  }
+                  scenario: "Sales pitch: Producto B2B SaaS para LATAM",
+                  interlocutor: "VP of Sales",
+                }
             );
-            window.location.hash = "#dashboard";
-            return "dashboard";
+
+            if (currentLang === "en") {
+              window.location.hash = "#dashboard";
+              return "dashboard";
+            } else {
+              pendingNavigationRef.current = () => {
+                setPage("dashboard");
+                window.location.hash = "#dashboard";
+              };
+              setShowLangModal(true);
+              return "landing";
+            }
           }
           return currentPage;
         });
@@ -136,9 +178,29 @@ export default function App() {
         setPage("landing");
         window.location.hash = "";
       }
+
+      // If user comes back non-null, we are definitely initialized.
+      // If user is null, it could be the immediate synchronous fire from the service
+      // before Supabase has actually checked local storage. We don't want to flash the landing page.
+      if (user) {
+        setIsInitializing(false);
+      }
     });
 
-    return unsubscribe;
+    const isOauthRedirect = window.location.hash.includes("access_token=") || window.location.hash.includes("error_description=");
+
+    // Fallback timer: 
+    // If it's a normal load, 600ms is enough to know if there's no session in local storage.
+    // If it's an OAuth redirect, Supabase needs time to exchange tokens and fetch the profile
+    // over the network, which can take 1-2 seconds.
+    const fallbackTimer = setTimeout(() => {
+      setIsInitializing(false);
+    }, isOauthRedirect ? 3000 : 700);
+
+    return () => {
+      unsubscribe();
+      clearTimeout(fallbackTimer);
+    };
   }, []);
 
   /* ─── Hash-based routing ─── */
@@ -151,9 +213,9 @@ export default function App() {
           prev.scenario
             ? prev
             : {
-                scenario: "Sales pitch: Producto B2B SaaS para LATAM",
-                interlocutor: "VP of Sales",
-              }
+              scenario: "Sales pitch: Producto B2B SaaS para LATAM",
+              interlocutor: "VP of Sales",
+            }
         );
         setPage("dashboard");
       } else if (hash === "#practice-session") setPage("practice-session");
@@ -172,10 +234,14 @@ export default function App() {
         prev.scenario
           ? prev
           : {
-              scenario: "Sales pitch: Producto B2B SaaS para LATAM",
-              interlocutor: "VP of Sales",
-            }
+            scenario: "Sales pitch: Producto B2B SaaS para LATAM",
+            interlocutor: "VP of Sales",
+          }
       );
+      try {
+        localStorage.setItem("pendingAuthAction", JSON.stringify({ mode: "login" }));
+      } catch { }
+
       pendingNavigationRef.current = () => {
         setPage("dashboard");
         window.location.hash = "#dashboard";
@@ -198,6 +264,9 @@ export default function App() {
     });
 
     pendingSetupRef.current = data;
+    try {
+      localStorage.setItem("pendingAuthAction", JSON.stringify({ mode: "registro", data }));
+    } catch { }
 
     pendingNavigationRef.current = () => {
       setPage("practice-session");
@@ -272,79 +341,87 @@ export default function App() {
     window.location.hash = "#dashboard";
   };
 
+  if (isInitializing) {
+    return (
+      <div className="w-full h-screen bg-white flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-2 border-gray-200 border-t-[#0f172b] animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <ErrorBoundary>
-    <div className="size-full">
-      {page === "design-system" && <DesignSystemPage />}
-      {page === "landing" && (
-        <LandingPage onAuthComplete={handleAuthComplete} landingLang={landingLang} onLangChange={handleLangChange} />
-      )}
-      {page === "loading" && <LoadingScreen scenario={flowState.scenario} />}
-      {page === "practice-session" && (
-        <PracticeSessionPage
-          scenario={flowState.scenario}
-          interlocutor={flowState.interlocutor || "Client"}
-          scenarioType={flowState.scenarioType}
-          guidedFields={flowState.guidedFields}
-          onFinish={handlePracticeFinish}
-          onNewPractice={handleNewPractice}
-          userPlan={authUser?.plan}
-        />
-      )}
-      {page === "dashboard" && (
-        <DashboardPage
-          userName={authUser?.displayName}
-          firstPracticeScenario={flowState.scenario}
-          firstPracticeInterlocutor={flowState.interlocutor}
-          onLogout={handleBackToLanding}
-          onNavigateToHistory={handleNavigateToHistory}
-          onStartNewPractice={handleStartNewPractice}
-          userProfile={userProfile}
-          onProfileUpdate={handleProfileUpdate}
-          lang={landingLang}
-        />
-      )}
-      {page === "practice-history" && (
-        <PracticeHistoryPage
-          userName={authUser?.displayName}
-          firstPracticeScenario={flowState.scenario}
-          firstPracticeInterlocutor={flowState.interlocutor}
-          onBack={handleBackToDashboard}
-          onLogout={handleBackToLanding}
-        />
-      )}
-      <AnimatePresence>
-        {showLangModal && (
-          <LanguageTransitionModal
-            fromLang={landingLang}
-            onContinue={() => {
-              setShowLangModal(false);
-              pendingNavigationRef.current?.();
-              pendingNavigationRef.current = null;
-            }}
+      <div className="size-full">
+        {page === "design-system" && <DesignSystemPage />}
+        {page === "landing" && (
+          <LandingPage onAuthComplete={handleAuthComplete} landingLang={landingLang} onLangChange={handleLangChange} />
+        )}
+        {page === "loading" && <LoadingScreen scenario={flowState.scenario} />}
+        {page === "practice-session" && (
+          <PracticeSessionPage
+            scenario={flowState.scenario}
+            interlocutor={flowState.interlocutor || "Client"}
+            scenarioType={flowState.scenarioType}
+            guidedFields={flowState.guidedFields}
+            onFinish={handlePracticeFinish}
+            onNewPractice={handleNewPractice}
+            userPlan={authUser?.plan}
           />
         )}
-      </AnimatePresence>
+        {page === "dashboard" && (
+          <DashboardPage
+            userName={authUser?.displayName}
+            firstPracticeScenario={flowState.scenario}
+            firstPracticeInterlocutor={flowState.interlocutor}
+            onLogout={handleBackToLanding}
+            onNavigateToHistory={handleNavigateToHistory}
+            onStartNewPractice={handleStartNewPractice}
+            userProfile={userProfile}
+            onProfileUpdate={handleProfileUpdate}
+            lang={landingLang}
+          />
+        )}
+        {page === "practice-history" && (
+          <PracticeHistoryPage
+            userName={authUser?.displayName}
+            firstPracticeScenario={flowState.scenario}
+            firstPracticeInterlocutor={flowState.interlocutor}
+            onBack={handleBackToDashboard}
+            onLogout={handleBackToLanding}
+          />
+        )}
+        <AnimatePresence>
+          {showLangModal && (
+            <LanguageTransitionModal
+              fromLang={landingLang}
+              onContinue={() => {
+                setShowLangModal(false);
+                pendingNavigationRef.current?.();
+                pendingNavigationRef.current = null;
+              }}
+            />
+          )}
+        </AnimatePresence>
 
-      {/* New-session paywall modal */}
-      <CreditUpsellModal
-        open={showNewSessionPaywall}
-        onClose={() => {
-          setShowNewSessionPaywall(false);
-          pendingNewSessionRef.current = null;
-        }}
-        onPurchaseComplete={(_pack: CreditPack, creditsAdded: number) => {
-          usageGating.addCredits(creditsAdded);
-          setShowNewSessionPaywall(false);
-          // After purchase, proceed to new session
-          pendingNewSessionRef.current?.();
-          pendingNewSessionRef.current = null;
-        }}
-        paywallReason="new-session"
-        creditsRemaining={usageGating.credits}
-        lang={landingLang}
-      />
-    </div>
+        {/* New-session paywall modal */}
+        <CreditUpsellModal
+          open={showNewSessionPaywall}
+          onClose={() => {
+            setShowNewSessionPaywall(false);
+            pendingNewSessionRef.current = null;
+          }}
+          onPurchaseComplete={(_pack: CreditPack, creditsAdded: number) => {
+            usageGating.addCredits(creditsAdded);
+            setShowNewSessionPaywall(false);
+            // After purchase, proceed to new session
+            pendingNewSessionRef.current?.();
+            pendingNewSessionRef.current = null;
+          }}
+          paywallReason="new-session"
+          creditsRemaining={usageGating.credits}
+          lang={landingLang}
+        />
+      </div>
     </ErrorBoundary>
   );
 }

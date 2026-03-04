@@ -148,19 +148,19 @@ function PracticeSetupModal({
     setLoadingProvider(provider);
     setInlineError(null);
 
+    const practiceData = {
+      scenario,
+      scenarioType: selectedScenario,
+      interlocutor: selectedInterlocutor,
+      guidedFields: { ...guidedValues },
+    };
+
     try {
+      localStorage.setItem("pendingAuthAction", JSON.stringify({ mode: "registro", data: practiceData }));
       await authService.signIn(provider);
       setLoadingProvider(null);
       onClose();
-      onAuthComplete?.(
-        {
-          scenario,
-          scenarioType: selectedScenario,
-          interlocutor: selectedInterlocutor,
-          guidedFields: { ...guidedValues },
-        },
-        "registro"
-      );
+      onAuthComplete?.(practiceData, "registro");
     } catch (err) {
       setLoadingProvider(null);
       if (isAuthError(err)) {
@@ -212,13 +212,12 @@ function PracticeSetupModal({
                 <div key={step.label} className="flex items-center gap-1.5 flex-1">
                   <div className="flex items-center gap-1.5 flex-1">
                     <motion.div
-                      className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${
-                        step.done
+                      className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${step.done
                           ? "bg-[#0f172b]"
                           : isActive
-                          ? "bg-[#0f172b]/10 ring-2 ring-[#0f172b]/30"
-                          : "bg-[#e2e8f0]"
-                      }`}
+                            ? "bg-[#0f172b]/10 ring-2 ring-[#0f172b]/30"
+                            : "bg-[#e2e8f0]"
+                        }`}
                       layout
                       transition={{ duration: 0.35, ease: [0.25, 1, 0.5, 1] }}
                     >
@@ -246,9 +245,8 @@ function PracticeSetupModal({
                       </AnimatePresence>
                     </motion.div>
                     <span
-                      className={`text-[13px] hidden sm:block transition-colors duration-300 ${
-                        step.done ? "text-[#0f172b]" : isActive ? "text-[#0f172b]" : "text-[#4b5563]"
-                      }`}
+                      className={`text-[13px] hidden sm:block transition-colors duration-300 ${step.done ? "text-[#0f172b]" : isActive ? "text-[#0f172b]" : "text-[#4b5563]"
+                        }`}
                       style={{ fontWeight: step.done || isActive ? 600 : 400 }}
                     >
                       {step.label}
@@ -285,15 +283,15 @@ function PracticeSetupModal({
                 {modalStep === "ready"
                   ? sm.titles.ready
                   : modalStep === "context"
-                  ? sm.titles.context
-                  : sm.titles.interlocutor}
+                    ? sm.titles.context
+                    : sm.titles.interlocutor}
               </h3>
               <p className="text-[#45556c] text-sm text-center mb-6">
                 {modalStep === "ready"
                   ? sm.subtitles.ready
                   : modalStep === "context"
-                  ? sm.subtitles.context
-                  : sm.subtitles.interlocutor}
+                    ? sm.subtitles.context
+                    : sm.subtitles.interlocutor}
               </p>
             </motion.div>
           </AnimatePresence>
@@ -324,11 +322,10 @@ function PracticeSetupModal({
                               setSelectedInterlocutor(item.id);
                               setInterlocutorOverridden(true);
                             }}
-                            className={`inline-flex items-center gap-2.5 rounded-full px-5 py-3 text-sm border-2 transition-all duration-200 ${
-                              isSelected
+                            className={`inline-flex items-center gap-2.5 rounded-full px-5 py-3 text-sm border-2 transition-all duration-200 ${isSelected
                                 ? "border-[#0f172b] bg-[#0f172b] text-white"
                                 : "border-[#e2e8f0] bg-white text-[#314158] hover:border-[#cad5e2]"
-                            }`}
+                              }`}
                             style={{ fontWeight: 500 }}
                             whileTap={{ scale: 0.97 }}
                           >
@@ -351,11 +348,10 @@ function PracticeSetupModal({
                               setSelectedInterlocutor(item.id);
                               setInterlocutorOverridden(true);
                             }}
-                            className={`inline-flex items-center gap-2.5 rounded-full px-5 py-3 text-sm border-2 transition-all duration-200 ${
-                              isSelected
+                            className={`inline-flex items-center gap-2.5 rounded-full px-5 py-3 text-sm border-2 transition-all duration-200 ${isSelected
                                 ? "border-[#0f172b] bg-[#0f172b] text-white"
                                 : "border-[#e2e8f0] bg-white text-[#314158] hover:border-[#cad5e2]"
-                            }`}
+                              }`}
                             style={{ fontWeight: 500 }}
                             whileTap={{ scale: 0.97 }}
                           >
@@ -453,11 +449,10 @@ function PracticeSetupModal({
                       : sm.contextNeeded}
                   </p>
                   <button
-                    className={`w-full py-3.5 rounded-full flex items-center justify-center gap-2.5 transition-all shadow-lg ${
-                      hasAnyGuidedInput
+                    className={`w-full py-3.5 rounded-full flex items-center justify-center gap-2.5 transition-all shadow-lg ${hasAnyGuidedInput
                         ? "bg-[#2d2d2d] text-white hover:bg-[#1a1a1a]"
                         : "bg-[#cad5e2] text-white cursor-not-allowed"
-                    }`}
+                      }`}
                     style={{ fontWeight: 500 }}
                     onClick={() => setModalStep("ready")}
                     disabled={!hasAnyGuidedInput}

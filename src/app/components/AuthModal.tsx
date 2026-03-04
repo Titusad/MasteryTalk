@@ -47,7 +47,7 @@ export interface AuthModalProps {
    * Called AFTER successful authentication through authService.
    * The service layer handles both mock and real auth transparently.
    */
-  onAuthComplete?: () => void;
+  onAuthComplete?: (mode: AuthMode) => void;
   /**
    * Called when authService.signIn() throws an error.
    * Parent can display ServiceErrorBanner or handle recovery.
@@ -73,13 +73,13 @@ export function AuthModal({
   const title = isLogin
     ? authCopy.login.title
     : variant === "cta"
-    ? authCopy.ctaRegister.title
-    : authCopy.register.title;
+      ? authCopy.ctaRegister.title
+      : authCopy.register.title;
   const subtitle = isLogin
     ? authCopy.login.subtitle
     : variant === "cta"
-    ? authCopy.ctaRegister.subtitle
-    : authCopy.register.subtitle;
+      ? authCopy.ctaRegister.subtitle
+      : authCopy.register.subtitle;
   const googleLabel = isLogin ? authCopy.login.google : authCopy.register.google;
 
   /* ── Loading & error state for auth buttons ── */
@@ -101,10 +101,11 @@ export function AuthModal({
     setInlineError(null);
 
     try {
+      localStorage.setItem("pendingAuthAction", JSON.stringify({ mode }));
       await authService.signIn(provider);
       // If we reach here (mock mode or popup-based flow), auth succeeded
       setLoadingProvider(null);
-      onAuthComplete?.();
+      onAuthComplete?.(mode);
     } catch (err) {
       setLoadingProvider(null);
 

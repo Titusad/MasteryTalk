@@ -28,20 +28,20 @@ import { MockSpacedRepetitionService } from "./adapters/mock/spaced-repetition.m
 /* ── Import Supabase adapters + detector ── */
 import { isSupabaseConfigured } from "./supabase";
 import { SupabaseAuthService } from "./adapters/supabase/auth.supabase";
+import { SupabaseConversationService } from "./adapters/supabase/conversation.supabase";
 
 /* ── Import interfaces for typed exports ── */
 import type { IAuthService } from "./interfaces/auth";
+import type { IConversationService } from "./interfaces/conversation";
 
 /* ══════════════════════════════════════════════════════════════
-   Auto-detect: Supabase auth if configured, mock otherwise.
-   All other services remain mock for now.
+   Auto-detect: Supabase auth and conversation if configured, mock for rest.
    ══════════════════════════════════════════════════════════════ */
 
 const useSupabase = isSupabaseConfigured();
 
 console.log(
-  `[inFluentia] Service Layer initialized — ${
-    useSupabase ? "PRODUCTION MODE (Supabase auth)" : "PROTOTYPE MODE (all mocks)"
+  `[inFluentia] Service Layer initialized — ${useSupabase ? "PRODUCTION MODE (Supabase auth & conversation)" : "PROTOTYPE MODE (all mocks)"
   }`
 );
 
@@ -49,7 +49,10 @@ export const authService: IAuthService = useSupabase
   ? new SupabaseAuthService()
   : new MockAuthService();
 
-export const conversationService = new MockConversationService();
+export const conversationService: IConversationService = useSupabase
+  ? new SupabaseConversationService()
+  : new MockConversationService();
+
 export const feedbackService = new MockFeedbackService();
 export const speechService = new MockSpeechService();
 export const userService = new MockUserService();

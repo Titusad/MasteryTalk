@@ -629,8 +629,18 @@ export function LandingPage({ onAuthComplete, landingLang, onLangChange }: { onA
           variant={authVariant}
           onClose={() => setAuthOpen(false)}
           onToggleMode={toggleAuthMode}
-          onAuthComplete={() => {
+          onAuthComplete={(completedMode) => {
             setAuthOpen(false);
+            // Pass the mode up to App.tsx so it routes correctly
+            onAuthComplete?.(
+              {
+                scenario: "Sales pitch: Producto B2B SaaS para LATAM",
+                interlocutor: "client",
+                scenarioType: "sales",
+                guidedFields: {},
+              },
+              completedMode
+            );
           }}
         />
       </div >

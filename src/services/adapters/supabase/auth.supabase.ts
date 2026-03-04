@@ -266,23 +266,15 @@ export class SupabaseAuthService implements IAuthService {
     /**
      * IMPORTANT: signInWithOAuth initiates a full-page redirect to the OAuth
      * provider. The promise resolves immediately (before the browser navigates),
-     * so this return IS reached briefly. However, the browser navigates away
-     * milliseconds later, so any code the caller runs after `await signIn()`
-     * is effectively a no-op in redirect flow.
-     *
-     * After the OAuth redirect completes, the page reloads from scratch.
-     * The `onAuthStateChange` listener in the constructor detects the new
-     * session and sets `currentUser`. App.tsx subscribes via
-     * `authService.onAuthStateChanged()` to react to this (F1-07).
-     *
-     * In mock mode, signIn() resolves with the user directly, so callers
-     * can safely chain `onAuthComplete?.()` — it works for mocks but is
-     * harmlessly ignored in redirect flow.
-     *
-     * For popup-based flow (alternative), use:
-     *   supabase.auth.signInWithOAuth({ options: { skipBrowserRedirect: true } })
-     * and handle the popup manually.
+     * so this return IS reached briefly. 
+     * 
+     * We purposefully hang the promise here. If we return immediately, the UI
+     * will think auth is "done" and transition to the next screen (flashing it)
+     * right before the browser finally navigates away to Google.
+     * The hanging promise prevents `AuthModal` from firing `onAuthComplete`.
      */
+    await new Promise((resolve) => setTimeout(resolve, 10000));
+
     return (
       this.currentUser ?? {
         uid: "",
