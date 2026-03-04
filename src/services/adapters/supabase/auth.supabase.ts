@@ -2,7 +2,7 @@
  * ══════════════════════════════════════════════════════════════
  *  SupabaseAuthService — Real Supabase Auth Implementation
  *
- *  Implements IAuthService using Supabase Auth (Google + LinkedIn).
+ *  Implements IAuthService using Supabase Auth (Google).
  *  Composes the User type from auth.users + profiles table.
  *
  *  User field mapping (no schema changes needed):
@@ -53,13 +53,10 @@ function mapToUser(authUser: AuthUser, profile: ProfileRow): User {
 
 function toSupabaseProvider(
   provider: AuthProvider
-): "google" | "linkedin_oidc" {
+): "google" {
   switch (provider) {
     case "google":
       return "google";
-    case "linkedin":
-      // Supabase uses "linkedin_oidc" for LinkedIn OAuth
-      return "linkedin_oidc";
     default:
       return "google";
   }
@@ -227,7 +224,6 @@ export class SupabaseAuthService implements IAuthService {
         redirectTo: window.location.origin,
         /**
          * queryParams for Google: request profile info.
-         * LinkedIn scopes are configured in Supabase Dashboard.
          */
         ...(provider === "google" && {
           queryParams: {

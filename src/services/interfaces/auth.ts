@@ -1,13 +1,13 @@
 /**
  * IAuthService — Authentication operations
  *
- * Production: Supabase Auth (Google + LinkedIn providers)
+ * Production: Supabase Auth (Google provider)
  * Mock: Returns fake user after simulated delay
  */
 import type { User, AuthProvider } from "../types";
 
 export interface IAuthService {
-  /** Sign in with a social provider (Google or LinkedIn) */
+  /** Sign in with a social provider (Google) */
   signIn(provider: AuthProvider): Promise<User>;
 
   /** Sign out the current user */

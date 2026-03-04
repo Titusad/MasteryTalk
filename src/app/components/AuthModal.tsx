@@ -32,17 +32,6 @@ function GoogleIcon() {
   );
 }
 
-function LinkedInIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"
-        fill="#0A66C2"
-      />
-    </svg>
-  );
-}
-
 /* ──────────────────────── Types ──────────────────────── */
 
 export type AuthMode = "login" | "registro";
@@ -92,7 +81,6 @@ export function AuthModal({
     ? authCopy.ctaRegister.subtitle
     : authCopy.register.subtitle;
   const googleLabel = isLogin ? authCopy.login.google : authCopy.register.google;
-  const linkedinLabel = isLogin ? authCopy.login.linkedin : authCopy.register.linkedin;
 
   /* ── Loading & error state for auth buttons ── */
   const [loadingProvider, setLoadingProvider] = useState<AuthProvider | null>(null);
@@ -210,22 +198,6 @@ export function AuthModal({
                   )}
                   <span className="text-gray-900" style={{ fontWeight: 500 }}>
                     {googleLabel}
-                  </span>
-                </button>
-
-                {/* LinkedIn */}
-                <button
-                  className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-200 rounded-full py-3.5 hover:bg-gray-50 hover:border-gray-300 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-                  onClick={() => handleSocialLogin("linkedin")}
-                  disabled={loadingProvider !== null}
-                >
-                  {loadingProvider === "linkedin" ? (
-                    <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
-                  ) : (
-                    <LinkedInIcon />
-                  )}
-                  <span className="text-gray-900" style={{ fontWeight: 500 }}>
-                    {linkedinLabel}
                   </span>
                 </button>
               </div>

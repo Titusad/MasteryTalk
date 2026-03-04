@@ -17,8 +17,6 @@
  *
  *    3. In Supabase Dashboard > Authentication > Providers:
  *       - Enable Google (add Client ID + Secret from Google Cloud Console)
- *       - Enable LinkedIn (add Client ID + Secret from LinkedIn Developer Portal)
- *         LinkedIn OIDC scopes (configured automatically by Supabase): openid, profile, email
  *
  *  Reference: MASTER_BLUEPRINT.md §2
  * ══════════════════════════════════════════════════════════════
@@ -60,9 +58,9 @@ let _client: SupabaseClient | null = null;
 
 /**
  * Eagerly create the Supabase client at module load if credentials exist.
- * This is CRITICAL: the client must be created before React's useEffect
- * runs cleanOAuthParams, otherwise `detectSessionInUrl` never sees the
- * #access_token in the URL and the user gets a blank screen after OAuth.
+ * This is CRITICAL: the client must be created before React mounts,
+ * otherwise `detectSessionInUrl` never sees the #access_token in the
+ * URL fragment and the user gets a blank screen after OAuth redirect.
  */
 if (SUPABASE_URL && SUPABASE_ANON_KEY) {
   try {

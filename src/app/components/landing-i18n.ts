@@ -154,7 +154,6 @@ export interface LandingCopy {
       title: string;
       subtitle: string;
       google: string;
-      linkedin: string;
       divider: string;
       toggle: string;
       toggleAction: string;
@@ -163,7 +162,6 @@ export interface LandingCopy {
       title: string;
       subtitle: string;
       google: string;
-      linkedin: string;
       divider: string;
       toggle: string;
       toggleAction: string;
@@ -190,7 +188,6 @@ export interface LandingCopy {
     previewBody: string;
     previewBlurred: string;
     continueGoogle: string;
-    continueLinkedin: string;
     trustLine: string;
     scenarioLabels: { sales: string; interview: string };
     guidedFields: {
@@ -378,7 +375,6 @@ export const ES: LandingCopy = {
       title: "Bienvenido de vuelta",
       subtitle: "Inicia sesión para continuar tu entrenamiento",
       google: "Continuar con Google",
-      linkedin: "Continuar con LinkedIn",
       divider: "Usa la misma cuenta con la que te registraste",
       toggle: "¿No tienes cuenta?",
       toggleAction: "Regístrate",
@@ -387,7 +383,6 @@ export const ES: LandingCopy = {
       title: "Crea tu cuenta",
       subtitle: "Comienza tu entrenamiento profesional en inglés",
       google: "Registrarse con Google",
-      linkedin: "Registrarse con LinkedIn",
       divider: "Registro seguro en un clic",
       toggle: "¿Ya tienes cuenta?",
       toggleAction: "Inicia sesión",
@@ -418,7 +413,6 @@ export const ES: LandingCopy = {
     previewBody: "Basándome en tu contexto, prepararé una estrategia con 3 pilares de valor personalizados, un guión de conversación, y una simulación con IA adaptada a tu",
     previewBlurred: "Incluyendo power phrases para nearshoring, manejo de objeciones culturales...",
     continueGoogle: "Continuar con Google",
-    continueLinkedin: "Continuar con LinkedIn",
     trustLine: "1ª sesión gratis · Sin tarjeta · Sin suscripción",
     scenarioLabels: { sales: "ventas", interview: "entrevista" },
     guidedFields: {
@@ -606,7 +600,6 @@ export const PT: LandingCopy = {
       title: "Bem-vindo de volta",
       subtitle: "Entre para continuar seu treinamento",
       google: "Continuar com Google",
-      linkedin: "Continuar com LinkedIn",
       divider: "Use a mesma conta com a qual se registrou",
       toggle: "Não tem conta?",
       toggleAction: "Registre-se",
@@ -615,7 +608,6 @@ export const PT: LandingCopy = {
       title: "Crie sua conta",
       subtitle: "Comece seu treinamento profissional em inglês",
       google: "Registrar com Google",
-      linkedin: "Registrar com LinkedIn",
       divider: "Registro seguro em um clique",
       toggle: "Já tem conta?",
       toggleAction: "Entrar",
@@ -646,7 +638,6 @@ export const PT: LandingCopy = {
     previewBody: "Com base no seu contexto, prepararei uma estratégia com 3 pilares de valor personalizados, um roteiro de conversa e uma simulação com IA adaptada ao seu",
     previewBlurred: "Incluindo power phrases para nearshoring, manejo de objeções culturais...",
     continueGoogle: "Continuar com Google",
-    continueLinkedin: "Continuar com LinkedIn",
     trustLine: "1ª sessão grátis · Sem cartão · Sem assinatura",
     scenarioLabels: { sales: "vendas", interview: "entrevista" },
     guidedFields: {
@@ -834,7 +825,6 @@ export const EN: LandingCopy = {
       title: "Welcome back",
       subtitle: "Sign in to continue your training",
       google: "Continue with Google",
-      linkedin: "Continue with LinkedIn",
       divider: "Use the same account you registered with",
       toggle: "Don't have an account?",
       toggleAction: "Sign up",
@@ -843,7 +833,6 @@ export const EN: LandingCopy = {
       title: "Create your account",
       subtitle: "Start your professional communication training",
       google: "Sign up with Google",
-      linkedin: "Sign up with LinkedIn",
       divider: "Secure one-click registration",
       toggle: "Already have an account?",
       toggleAction: "Sign in",
@@ -874,7 +863,6 @@ export const EN: LandingCopy = {
     previewBody: "Based on your context, I'll prepare a strategy with 3 personalized value pillars, a conversation script, and an AI simulation tailored to your",
     previewBlurred: "Including nearshoring power phrases, cultural objection handling...",
     continueGoogle: "Continue with Google",
-    continueLinkedin: "Continue with LinkedIn",
     trustLine: "1st session free · No credit card · No subscription",
     scenarioLabels: { sales: "sales", interview: "interview" },
     guidedFields: {

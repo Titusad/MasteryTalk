@@ -1,10 +1,13 @@
 /**
  * ══════════════════════════════════════════════════════════════
- *  inFluentia PRO — Service Registry (PROTOTYPE MODE)
+ *  inFluentia PRO — Service Registry (Auto-Detect Mode)
  *
- *  All services use MOCK adapters. No Supabase calls.
- *  When ready to connect Supabase, flip USE_MOCK to false
- *  and uncomment the Supabase adapter imports.
+ *  Auth: Uses SupabaseAuthService when Supabase is configured,
+ *        falls back to MockAuthService otherwise.
+ *  All other services: Mock adapters (conversation, feedback,
+ *        speech, user, payment, spaced-repetition).
+ *
+ *  Next phases will swap mock → real adapters one by one.
  * ══════════════════════════════════════════════════════════════
  */
 
@@ -22,13 +25,30 @@ import { MockUserService } from "./adapters/mock/user.mock";
 import { MockPaymentService } from "./adapters/mock/payment.mock";
 import { MockSpacedRepetitionService } from "./adapters/mock/spaced-repetition.mock";
 
+/* ── Import Supabase adapters + detector ── */
+import { isSupabaseConfigured } from "./supabase";
+import { SupabaseAuthService } from "./adapters/supabase/auth.supabase";
+
+/* ── Import interfaces for typed exports ── */
+import type { IAuthService } from "./interfaces/auth";
+
 /* ══════════════════════════════════════════════════════════════
-   ALL MOCK — no Supabase imports, no race conditions, no blank screen
+   Auto-detect: Supabase auth if configured, mock otherwise.
+   All other services remain mock for now.
    ══════════════════════════════════════════════════════════════ */
 
-console.log("[inFluentia] Service Layer initialized — PROTOTYPE MODE (all mocks)");
+const useSupabase = isSupabaseConfigured();
 
-export const authService = new MockAuthService();
+console.log(
+  `[inFluentia] Service Layer initialized — ${
+    useSupabase ? "PRODUCTION MODE (Supabase auth)" : "PROTOTYPE MODE (all mocks)"
+  }`
+);
+
+export const authService: IAuthService = useSupabase
+  ? new SupabaseAuthService()
+  : new MockAuthService();
+
 export const conversationService = new MockConversationService();
 export const feedbackService = new MockFeedbackService();
 export const speechService = new MockSpeechService();

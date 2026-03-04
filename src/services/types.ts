@@ -21,7 +21,7 @@ export interface User {
   createdAt: string;
 }
 
-export type AuthProvider = "google" | "linkedin";
+export type AuthProvider = "google";
 
 /* ── Scenario Types (Master Prompt Adaptation) ── */
 
