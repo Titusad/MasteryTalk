@@ -43,14 +43,7 @@ import type {
   UserPlan,
 } from "../../services/types";
 import type { ValuePillar } from "./StrategyBuilder";
-/* ─── Scenario labels ─── */
-const SCENARIO_LABELS_MAP: Record<string, string> = {
-  sales: "Sales Pitch",
-  interview: "Job Interview",
-  csuite: "Executive Presentation",
-  negotiation: "Negotiation",
-  networking: "Networking",
-};
+import { SCENARIO_LABELS_MAP } from "./session/constants";
 
 /* ─── Guided field labels (matching PracticeWidget) ─── */
 const GUIDED_FIELD_LABELS: Record<string, { key: string; label: string }[]> = {
@@ -88,11 +81,10 @@ function ReportSection({
 }) {
   return (
     <motion.div
-      className={`rounded-3xl p-6 md:p-8 mb-6 ${
-        dark
+      className={`rounded-3xl p-6 md:p-8 mb-6 ${dark
           ? "bg-gradient-to-br from-[#0f172b] to-[#1e293b]"
           : "bg-white border border-[#e2e8f0]"
-      }`}
+        }`}
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay }}
@@ -106,11 +98,10 @@ function ReportSection({
         </div>
         <div className="flex items-center gap-2.5">
           <span
-            className={`text-[10px] px-2 py-0.5 rounded-full ${
-              dark
+            className={`text-[10px] px-2 py-0.5 rounded-full ${dark
                 ? "bg-white/10 text-white/50"
                 : "bg-[#f1f5f9] text-[#62748e]"
-            }`}
+              }`}
             style={{ fontWeight: 600 }}
           >
             {number}
@@ -620,11 +611,10 @@ export function SessionReport({
           {onDownloadReport && (
             <button
               onClick={onDownloadReport}
-              className={`px-8 py-3.5 rounded-full flex items-center gap-2.5 shadow-md transition-all text-lg ${
-                userPlan === "free"
+              className={`px-8 py-3.5 rounded-full flex items-center gap-2.5 shadow-md transition-all text-lg ${userPlan === "free"
                   ? "bg-gradient-to-r from-[#f59e0b] to-[#f97316] text-white hover:from-[#d97706] hover:to-[#ea580c]"
                   : "bg-white border border-[#e2e8f0] text-[#0f172b] hover:bg-[#f8fafc]"
-              }`}
+                }`}
               style={{ fontWeight: 500 }}
             >
               {userPlan === "free" ? (

@@ -3,19 +3,8 @@ import {
   Mic,
   ArrowRight,
   CheckCircle2,
-  TrendingUp,
-  Lightbulb,
-  FileText,
-  Play,
   Volume2,
   AudioLines,
-  Check,
-  PenLine,
-  Info,
-  ArrowLeft,
-  ClipboardPaste,
-  Sparkles,
-  ChevronDown,
   RotateCcw,
   Trophy,
   Target,
@@ -24,16 +13,17 @@ import {
   MessageSquare,
   Handshake,
   Users,
+  Sparkles,
+  TrendingUp,
+  FileText,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   BrandLogo,
-  COLORS,
   PastelBlobs,
   MiniFooter,
   RecordButton,
   RecordingTimer,
-  HighlightWithTooltip,
   AnalyzingScreen,
   PageTitleBlock,
   highlightEnglish,
@@ -42,7 +32,7 @@ import { conversationService, speechService } from "../../services";
 import { toServiceError } from "../../services/errors";
 import type { ServiceError } from "../../services/errors";
 import { ServiceErrorBanner } from "./shared/ServiceErrorBanner";
-import { getTrySaying, getBeforeAfterForScenario, getStrengthsForScenario, getOpportunitiesForScenario, getScriptSectionsForScenario, setMockSpeechScenario, getPowerPhrasesForScenario, getPowerQuestions } from "../../services/scenario-data";
+import { getTrySaying, getBeforeAfterForScenario, getStrengthsForScenario, setMockSpeechScenario, getPowerPhrasesForScenario, getPowerQuestions } from "../../services/scenario-data";
 import { BeforeAfterSection } from "./arena/BriefingRoom";
 import type {
   ChatMessage,
@@ -58,6 +48,9 @@ import type { Step } from "./shared/session-types";
 import { CreditUpsellModal } from "./CreditUpsellModal";
 import { useUsageGating } from "../hooks/useUsageGating";
 import type { PaywallReason } from "../hooks/useUsageGating";
+import { PreBriefingScreen } from "./session/PreBriefingScreen";
+import { ExtraContextScreen } from "./session/ExtraContextScreen";
+import { SCENARIO_LABELS_MAP } from "./session/constants";
 
 /* ═══════════════════════════════════════════════════════════
    TYPES & DATA (MVP-simplified)
@@ -89,259 +82,9 @@ export interface RepeatInfo {
   canRepeat: boolean;
 }
 
-const SCENARIO_LABELS_MAP: Record<string, string> = {
-  sales: "Sales Pitch",
-  interview: "Job Interview",
-  csuite: "Executive Presentation",
-  negotiation: "Negotiation",
-  networking: "Networking",
-};
+/* SCENARIO_LABELS_MAP is now imported from ./session/constants */
 
-/* ═══════════════════════════════════════════════════════════
-   PRE-BRIEFING: Narrative script / conversation strategy
-   ═══════════════════════════════════════════════════════════ */
-
-function PreBriefingScreen({
-  scenarioType,
-  interlocutor,
-  strategyPillars,
-  onStartSimulation,
-  onBack,
-}: {
-  scenarioType?: ScenarioType;
-  interlocutor: string;
-  strategyPillars?: ValuePillar[];
-  onStartSimulation: () => void;
-  onBack: () => void;
-}) {
-  const scriptSections = getScriptSectionsForScenario(scenarioType);
-  const [isEditing, setIsEditing] = useState(false);
-
-  /* Narrative structure label per scenario */
-  const narrativeLabels: Record<string, string> = {
-    sales: "Opening → Objection handling → Close with value",
-    interview: "Personal pitch → STAR Story → Strategic close",
-    csuite: "Executive summary → Data-backed support → Call to decision",
-    negotiation: "Position → Counter-offer → Conditional close",
-    networking: "Elevator pitch → Value exchange → Follow-up hook",
-  };
-  const narrativeStructure = scenarioType
-    ? narrativeLabels[scenarioType] ?? "Apertura → Desarrollo → Cierre"
-    : "Apertura → Desarrollo → Cierre";
-
-  return (
-    <div
-      className="w-full min-h-full flex flex-col bg-[#f0f4f8] relative overflow-hidden"
-      style={{ fontFamily: "'Inter', sans-serif" }}
-    >
-      <PastelBlobs />
-
-      <main className="relative w-full max-w-[800px] mx-auto px-6 pt-12 pb-20">
-        {/* Title */}
-        <PageTitleBlock
-          icon={<FileText className="w-8 h-8 text-white" />}
-          title="Your Conversation Script"
-          subtitle="A structured script gives you clarity and confidence — turn your ideas into a persuasive and natural message."
-        />
-
-        {/* 1. Narrative Structure Badge */}
-        <motion.div
-          className="flex items-center gap-3 mb-8"
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.03 }}
-        >
-          <div className="w-8 h-8 rounded-xl bg-[#0f172b] flex items-center justify-center">
-            <TrendingUp className="w-4 h-4 text-white" />
-          </div>
-          <div>
-            <p className="text-sm text-[#45556c]" style={{ fontWeight: 500 }}>Narrative structure</p>
-            <p className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
-              {narrativeStructure}
-            </p>
-          </div>
-        </motion.div>
-
-        {/* Strategy Pillars Summary — right after narrative structure */}
-        {strategyPillars && strategyPillars.length > 0 && (
-          <motion.div
-            className="bg-gradient-to-r from-[#f0f9ff] to-[#eef2ff] rounded-2xl border border-[#bfdbfe]/40 p-6 mb-8"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.04 }}
-          >
-            <div className="flex items-center gap-2 mb-4">
-              <Lightbulb className="w-5 h-5 text-[#6366f1]" />
-              <h3 className="text-[#0f172b]" style={{ fontWeight: 600 }}>
-                Your value strategy
-              </h3>
-            </div>
-            <div className="space-y-2">
-              {strategyPillars.map((p, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-start gap-3 text-sm text-[#314158]"
-                >
-                  <span className="w-5 h-5 rounded-full bg-[#6366f1] text-white flex items-center justify-center shrink-0 text-[10px]" style={{ fontWeight: 700 }}>
-                    {idx + 1}
-                  </span>
-                  <p className="leading-relaxed">{p.summary}</p>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        )}
-
-        {/* 2. Highlight Legend */}
-        <motion.div
-          className="flex items-center gap-4 mb-8 flex-wrap"
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.05 }}
-        >
-          {[
-            { color: COLORS.softPurple, label: "Structure" },
-            { color: COLORS.peach, label: "Impact" },
-            { color: COLORS.blue, label: "Engagement" },
-          ].map((item, i) => (
-            <div key={i} className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded-sm shrink-0" style={{ backgroundColor: item.color }} />
-              <span className="text-sm text-[#45556c]" style={{ fontWeight: 500 }}>{item.label}</span>
-            </div>
-          ))}
-          <span className="text-sm text-[#62748e] italic">— Hover over text for tips</span>
-        </motion.div>
-
-        {/* 3. Script Sections */}
-        <motion.div
-          className="bg-white rounded-3xl border border-[#e2e8f0] p-8 mb-8 space-y-10 relative"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.08 }}
-        >
-          {/* Edit toggle */}
-          <button
-            onClick={() => setIsEditing(!isEditing)}
-            className={`absolute -top-4 right-6 z-10 flex items-center gap-2 px-4 py-1.5 rounded-full text-sm shadow-sm transition-all ${
-              isEditing
-                ? "bg-[#dcfce7] text-[#15803d] border border-[#bbf7d0]"
-                : "bg-white border border-[#e2e8f0] text-[#45556c] hover:bg-[#f8fafc]"
-            }`}
-            style={{ fontWeight: 500 }}
-          >
-            {isEditing ? (
-              <>
-                <Check className="w-3.5 h-3.5" />
-                Save changes
-              </>
-            ) : (
-              <>
-                <PenLine className="w-3.5 h-3.5" />
-                Edit script
-              </>
-            )}
-          </button>
-
-          {scriptSections.map((section, si) => (
-            <motion.div
-              key={section.num}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.15 + si * 0.1, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <div className="flex items-center gap-3 mb-5">
-                <span
-                  className="w-8 h-8 rounded-xl bg-[#6366f1]/10 flex items-center justify-center text-sm text-[#6366f1]"
-                  style={{ fontWeight: 700 }}
-                >
-                  {section.num}
-                </span>
-                <h3
-                  className="text-xl text-[#0f172b]"
-                  style={{ fontWeight: 600 }}
-                >
-                  {section.title}
-                </h3>
-              </div>
-              <div className="space-y-4">
-                {section.paragraphs.map((p, pi) => (
-                  <p
-                    key={pi}
-                    className={`text-[#314158] leading-relaxed ${
-                      isEditing
-                        ? "bg-[#f8fafc] rounded-xl px-4 py-3 border border-[#e2e8f0] focus:outline-none focus:border-[#6366f1] transition-colors"
-                        : ""
-                    }`}
-                    contentEditable={isEditing}
-                    suppressContentEditableWarning
-                  >
-                    {p.text}
-                    {p.highlights?.map((h, hi) => (
-                      <HighlightWithTooltip
-                        key={hi}
-                        phrase={h.phrase}
-                        color={h.color}
-                        tooltip={h.tooltip}
-                      />
-                    ))}
-                    {p.suffix}
-                  </p>
-                ))}
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
-
-
-
-        {/* CTA: Start Simulation */}
-        <motion.div
-          className="text-center"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-        >
-          <div className="bg-gradient-to-br from-[#f0f9ff] to-[#eef2ff] rounded-3xl border border-[#bfdbfe]/50 p-10 mb-6">
-            <div className="w-16 h-16 rounded-2xl bg-[#0f172b] flex items-center justify-center mx-auto mb-6">
-              <Mic className="w-8 h-8 text-white" />
-            </div>
-            <h3
-              className="text-2xl md:text-[28px] text-[#0f172b] mb-3"
-              style={{ fontWeight: 300, lineHeight: 1.3 }}
-            >
-              Want to practice your conversation?
-            </h3>
-            <p className="text-[#45556c] text-lg max-w-md mx-auto mb-8">
-              Put this script into practice in a realistic AI conversation to get feedback.
-            </p>
-            <button
-              onClick={onStartSimulation}
-              className="bg-[#0f172b] text-white px-10 py-5 rounded-full flex items-center gap-3 shadow-lg hover:bg-[#1d293d] transition-colors text-xl mx-auto"
-              style={{ fontWeight: 500 }}
-            >
-              <Play className="w-5 h-5" />
-              Start Practice
-              <ArrowRight className="w-5 h-5" />
-            </button>
-            <button
-              onClick={onBack}
-              className="mt-4 text-sm text-[#45556c] hover:text-[#0f172b] transition-colors mx-auto block"
-            >
-              ← Back to strategy
-            </button>
-          </div>
-          <p className="text-sm text-[#45556c]/70">
-            Estimated reading time:{" "}
-            <span style={{ fontWeight: 500 }}>
-              {Math.max(2, Math.ceil(scriptSections.reduce((acc, s) => acc + s.paragraphs.length, 0) * 0.8))} min
-            </span>
-          </p>
-        </motion.div>
-      </main>
-      <MiniFooter />
-    </div>
-  );
-}
+/* PreBriefingScreen is now imported from ./session/PreBriefingScreen */
 
 /* ═══════════════════════════════════════════════════════════
    VOICE PRACTICE (MVP: single-phase conversation)
@@ -660,11 +403,10 @@ function VoicePractice({
                   {msg.label} · {msg.time}
                 </span>
                 <div
-                  className={`rounded-2xl px-6 py-4 max-w-[600px] transition-all duration-300 ${
-                    msg.role === "user"
+                  className={`rounded-2xl px-6 py-4 max-w-[600px] transition-all duration-300 ${msg.role === "user"
                       ? "bg-[#0f172b] text-white"
                       : "bg-white border border-[#e2e8f0] text-[#0f172b]"
-                  }`}
+                    }`}
                 >
                   <p className="leading-relaxed">
                     {displayText}
@@ -679,51 +421,51 @@ function VoicePractice({
 
                 {/* Replay button for AI messages */}
                 <AnimatePresence>
-                {msg.role === "ai" && aiFullyRevealed && (
-                  <motion.button
-                    key="replay"
-                    className="mt-1.5 flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] transition-colors"
-                    style={{
-                      fontWeight: 500,
-                      color: isPlaying ? "#50C878" : "#94a3b8",
-                      background: isPlaying
-                        ? "rgba(80,200,120,0.08)"
-                        : "rgba(80,200,120,0)",
-                      border: isPlaying ? "1px solid rgba(80,200,120,0.2)" : "1px solid rgba(80,200,120,0)",
-                    }}
-                    initial={{ opacity: 0, y: 4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: 0.2 }}
-                    whileHover={{ color: "#50C878", background: "rgba(80,200,120,0.06)" }}
-                    onClick={() => {
-                      setPlayingMsgIndex(i);
-                      setTimeout(() => setPlayingMsgIndex(null), 3500);
-                    }}
-                  >
-                    {isPlaying ? (
-                      <>
-                        <span className="flex items-center gap-[2px]">
-                          {[0, 1, 2, 3].map((bar) => (
-                            <span
-                              key={bar}
-                              className="inline-block w-[2px] rounded-full animate-eq-bar"
-                              style={{
-                                background: "#50C878",
-                                animationDelay: `${bar * 0.1}s`,
-                              }}
-                            />
-                          ))}
-                        </span>
-                        Playing...
-                      </>
-                    ) : (
-                      <>
-                        <Volume2 className="w-3 h-3" />
-                        Listen again
-                      </>
-                    )}
-                  </motion.button>
-                )}
+                  {msg.role === "ai" && aiFullyRevealed && (
+                    <motion.button
+                      key="replay"
+                      className="mt-1.5 flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] transition-colors"
+                      style={{
+                        fontWeight: 500,
+                        color: isPlaying ? "#50C878" : "#94a3b8",
+                        background: isPlaying
+                          ? "rgba(80,200,120,0.08)"
+                          : "rgba(80,200,120,0)",
+                        border: isPlaying ? "1px solid rgba(80,200,120,0.2)" : "1px solid rgba(80,200,120,0)",
+                      }}
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: 0.2 }}
+                      whileHover={{ color: "#50C878", background: "rgba(80,200,120,0.06)" }}
+                      onClick={() => {
+                        setPlayingMsgIndex(i);
+                        setTimeout(() => setPlayingMsgIndex(null), 3500);
+                      }}
+                    >
+                      {isPlaying ? (
+                        <>
+                          <span className="flex items-center gap-[2px]">
+                            {[0, 1, 2, 3].map((bar) => (
+                              <span
+                                key={bar}
+                                className="inline-block w-[2px] rounded-full animate-eq-bar"
+                                style={{
+                                  background: "#50C878",
+                                  animationDelay: `${bar * 0.1}s`,
+                                }}
+                              />
+                            ))}
+                          </span>
+                          Playing...
+                        </>
+                      ) : (
+                        <>
+                          <Volume2 className="w-3 h-3" />
+                          Listen again
+                        </>
+                      )}
+                    </motion.button>
+                  )}
                 </AnimatePresence>
 
                 {msg.role === "user" && (
@@ -735,21 +477,21 @@ function VoicePractice({
 
                 {/* "Try saying..." hint after the latest AI message */}
                 <AnimatePresence>
-                {isLatestAiMsg && trySaying && aiFullyRevealed && (
-                  <motion.div
-                    key="try-saying"
-                    className="mt-3 w-full bg-[#f0fdf4] border border-[#b9f8cf] rounded-xl px-4 py-3 overflow-hidden"
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -4 }}
-                    transition={{ duration: 0.35, delay: 0.2, ease: [0.25, 1, 0.5, 1] }}
-                  >
-                    <p className="text-xs text-[#15803d]" style={{ fontWeight: 500 }}>
-                      🧠 Try saying: <span className="text-[#0f172b]" style={{ fontWeight: 600 }}>{trySaying.starter}</span>
-                    </p>
-                    <p className="text-[10px] text-[#45556c] mt-0.5">{trySaying.why}</p>
-                  </motion.div>
-                )}
+                  {isLatestAiMsg && trySaying && aiFullyRevealed && (
+                    <motion.div
+                      key="try-saying"
+                      className="mt-3 w-full bg-[#f0fdf4] border border-[#b9f8cf] rounded-xl px-4 py-3 overflow-hidden"
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -4 }}
+                      transition={{ duration: 0.35, delay: 0.2, ease: [0.25, 1, 0.5, 1] }}
+                    >
+                      <p className="text-xs text-[#15803d]" style={{ fontWeight: 500 }}>
+                        🧠 Try saying: <span className="text-[#0f172b]" style={{ fontWeight: 600 }}>{trySaying.starter}</span>
+                      </p>
+                      <p className="text-[10px] text-[#45556c] mt-0.5">{trySaying.why}</p>
+                    </motion.div>
+                  )}
                 </AnimatePresence>
               </motion.div>
             );
@@ -790,32 +532,32 @@ function VoicePractice({
 
           {/* Processing indicator */}
           <AnimatePresence>
-          {isProcessing && (
-            <motion.div
-              key="processing"
-              className="flex flex-col items-end"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3, ease: [0.25, 1, 0.5, 1] }}
-            >
-              <span className="text-xs text-[#62748e] mb-2 flex items-center gap-1.5">
-                <Mic className="w-3 h-3" />
-                Transcribing...
-              </span>
-              <div className="bg-[#0f172b]/80 rounded-2xl px-6 py-4">
-                <div className="flex gap-1 items-center">
-                  {[0, 1, 2, 3, 4].map((bar) => (
-                    <div
-                      key={bar}
-                      className="w-[3px] rounded-full bg-white/70 animate-processing-bar"
-                      style={{ animationDelay: `${bar * 0.1}s` }}
-                    />
-                  ))}
+            {isProcessing && (
+              <motion.div
+                key="processing"
+                className="flex flex-col items-end"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3, ease: [0.25, 1, 0.5, 1] }}
+              >
+                <span className="text-xs text-[#62748e] mb-2 flex items-center gap-1.5">
+                  <Mic className="w-3 h-3" />
+                  Transcribing...
+                </span>
+                <div className="bg-[#0f172b]/80 rounded-2xl px-6 py-4">
+                  <div className="flex gap-1 items-center">
+                    {[0, 1, 2, 3, 4].map((bar) => (
+                      <div
+                        key={bar}
+                        className="w-[3px] rounded-full bg-white/70 animate-processing-bar"
+                        style={{ animationDelay: `${bar * 0.1}s` }}
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          )}
+              </motion.div>
+            )}
           </AnimatePresence>
 
           <div ref={chatEndRef} style={{ overflowAnchor: "auto" }} />
@@ -1195,290 +937,7 @@ function ConversationFeedback({
   );
 }
 
-/* ═══════════════════════════════════════════════════════════
-   EXTRA CONTEXT SCREEN (skippable, between Strategy and Generating)
-   ═══════════════════════════════════════════════════════════ */
-
-interface ExtraContextField {
-  label: string;
-  placeholder: string;
-  hint: string;
-  pasteHint: string;
-  suggestions: string[];
-}
-
-const EXTRA_CONTEXT_FIELDS: Record<string, ExtraContextField[]> = {
-  interview: [
-    {
-      label: "Job Description",
-      placeholder: "Paste the job description here — or just the key requirements and responsibilities...",
-      hint: "The AI will tailor interview questions to the specific role, seniority level, and required skills",
-      pasteHint: "Tip: Copy-paste directly from LinkedIn or the company careers page",
-      suggestions: [
-        "Senior PM role, B2B SaaS, 5+ years experience required",
-        "Must lead cross-functional teams of 8-12 people",
-        "Key KPIs: retention, NPS, quarterly revenue targets",
-        "Reports to VP of Product, US-based company",
-      ],
-    },
-    {
-      label: "Your key experience",
-      placeholder: "Your 3 most relevant roles, key achievements, and skills that match this position...",
-      hint: "The AI will help you build STAR-method answers using your real career history",
-      pasteHint: "No need to paste your full CV — just the highlights relevant to this role",
-      suggestions: [
-        "5 years as PM at a SaaS startup, grew ARR 3x",
-        "Led a team of 6 engineers shipping to US clients",
-        "Fluent in Spanish, professional English (B2+)",
-        "MBA from [university], certified Scrum Master",
-      ],
-    },
-  ],
-  sales: [
-    {
-      label: "Prospect / company information",
-      placeholder: "Company name, industry, size, decision-makers, known pain points or priorities...",
-      hint: "The more specific you are, the more realistic the objections and pushback will be",
-      pasteHint: "Check their LinkedIn, Crunchbase, or recent press releases for context",
-      suggestions: [
-        "Mid-market fintech, 200 employees, Series B",
-        "Currently using a competitor (Salesforce/HubSpot)",
-        "Pain point: manual reporting taking 10+ hours/week",
-        "Decision-maker is the CFO, budget cycle ends Q4",
-      ],
-    },
-    {
-      label: "Your deck or talking points",
-      placeholder: "The main value propositions, pricing structure, case studies, or differentiators from your pitch...",
-      hint: "The AI will align the conversation with your actual material so you practice what you'll really say",
-      pasteHint: "Paste your slide titles and key bullet points — no need for the full deck",
-      suggestions: [
-        "3 main slides: Problem → Solution → ROI",
-        "Key differentiator: 40% faster implementation",
-        "Case study: similar client saved $200K/year",
-        "Pricing: $15K/year, includes onboarding",
-      ],
-    },
-  ],
-  csuite: [],
-  negotiation: [],
-  networking: [],
-};
-
-function ExtraContextScreen({
-  scenarioType,
-  onContinue,
-  onSkip,
-  onBack,
-}: {
-  scenarioType?: ScenarioType;
-  onContinue: (extraData: Record<string, string>) => void;
-  onSkip: () => void;
-  onBack?: () => void;
-}) {
-  const fields = scenarioType ? EXTRA_CONTEXT_FIELDS[scenarioType] ?? [] : [];
-  const [values, setValues] = useState<Record<string, string>>({});
-  const [expandedHints, setExpandedHints] = useState<Record<number, boolean>>({});
-
-  const scenarioLabels: Record<string, string> = {
-    sales: "sales pitch",
-    interview: "interview",
-    csuite: "executive presentation",
-    negotiation: "negotiation",
-    networking: "networking",
-  };
-  const label = scenarioType ? scenarioLabels[scenarioType] ?? "practice" : "practice";
-
-  /** Insert a suggestion chip into the textarea */
-  const handleSuggestionClick = (fieldLabel: string, suggestion: string) => {
-    setValues((prev) => {
-      const current = prev[fieldLabel] ?? "";
-      const separator = current.trim() ? "\n" : "";
-      return { ...prev, [fieldLabel]: current + separator + suggestion };
-    });
-  };
-
-  return (
-    <div
-      className="w-full min-h-full flex flex-col bg-[#f0f4f8] relative overflow-hidden"
-      style={{ fontFamily: "'Inter', sans-serif" }}
-    >
-      <PastelBlobs />
-
-      <main className="relative w-full max-w-[768px] mx-auto px-6 pt-12 pb-20">
-        <motion.div
-          className="text-center mb-10"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <div className="inline-flex items-center gap-2 bg-[#f0fdf4] border border-[#b9f8cf] rounded-full px-4 py-2 mb-6">
-            <Check className="w-4 h-4 text-[#00c950]" />
-            <span className="text-sm text-[#15803d]" style={{ fontWeight: 500 }}>
-              Your 2 value pillars are ready
-            </span>
-          </div>
-          <h1
-            className="text-3xl md:text-[40px] text-[#0f172b] mb-3"
-            style={{ fontWeight: 300, lineHeight: 1.2 }}
-          >
-            Want to add more context?
-          </h1>
-          <p className="text-[#45556c] text-base md:text-lg max-w-lg mx-auto">
-            This is optional — but the more detail you share, the more realistic your {label} will be.
-            {" "}<span className="text-[#94a3b8]">Just paste or type — no file uploads needed.</span>
-          </p>
-        </motion.div>
-
-        {fields.length > 0 && (
-          <motion.div
-            className="space-y-8 mb-10"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.1 }}
-          >
-            {fields.map((field, i) => {
-              const isExpanded = expandedHints[i] ?? false;
-              const currentValue = values[field.label] ?? "";
-
-              return (
-                <motion.div
-                  key={i}
-                  className="bg-white rounded-2xl border border-[#e2e8f0] p-5 shadow-sm"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.1 + i * 0.08 }}
-                >
-                  {/* Field header */}
-                  <div className="flex items-start justify-between mb-3">
-                    <label className="flex items-center gap-1.5">
-                      <span className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
-                        {field.label}
-                      </span>
-                      <span className="relative group cursor-help">
-                        <Info className="w-3.5 h-3.5 text-[#94a3b8] group-hover:text-[#0f172b] transition-colors" />
-                        <span className="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-56 rounded-xl bg-[#0f172b] text-white text-xs px-3 py-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-lg z-50" style={{ lineHeight: "1.45" }}>
-                          {field.hint}
-                          <span className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-[5px] border-x-transparent border-t-[5px] border-t-[#0f172b]" />
-                        </span>
-                      </span>
-                    </label>
-                    <span className="text-[10px] text-[#94a3b8] bg-[#f8fafc] rounded-full px-2.5 py-0.5" style={{ fontWeight: 500 }}>
-                      Optional
-                    </span>
-                  </div>
-
-                  {/* Paste hint */}
-                  <div className="flex items-center gap-1.5 mb-3 text-xs text-[#62748e]">
-                    <ClipboardPaste className="w-3 h-3 shrink-0" />
-                    <span>{field.pasteHint}</span>
-                  </div>
-
-                  {/* Textarea */}
-                  <textarea
-                    value={currentValue}
-                    onChange={(e) =>
-                      setValues((prev) => ({ ...prev, [field.label]: e.target.value }))
-                    }
-                    placeholder={field.placeholder}
-                    className="w-full h-[110px] bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-4 text-[#0f172b] placeholder:text-[#94a3b8] focus:outline-none focus:border-[#0f172b] focus:bg-white transition-all resize-none"
-                    style={{ fontSize: "14px", lineHeight: "22px" }}
-                  />
-
-                  {/* Character count */}
-                  {currentValue.length > 0 && (
-                    <div className="flex justify-end mt-1">
-                      <span className={`text-[10px] ${currentValue.length > 1500 ? "text-amber-500" : "text-[#c4cdd5]"}`}>
-                        {currentValue.length} / 2,000 chars
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Expandable suggestions */}
-                  <div className="mt-3">
-                    <button
-                      onClick={() => setExpandedHints((prev) => ({ ...prev, [i]: !isExpanded }))}
-                      className="flex items-center gap-1.5 text-xs text-[#6366f1] hover:text-[#4f46e5] transition-colors group"
-                      style={{ fontWeight: 500 }}
-                    >
-                      <Sparkles className="w-3 h-3" />
-                      Not sure what to write? Try these examples
-                      <motion.span
-                        animate={{ rotate: isExpanded ? 180 : 0 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <ChevronDown className="w-3 h-3" />
-                      </motion.span>
-                    </button>
-
-                    <AnimatePresence>
-                      {isExpanded && (
-                        <motion.div
-                          className="mt-2.5 flex flex-wrap gap-2"
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: "auto" }}
-                          exit={{ opacity: 0, height: 0 }}
-                          transition={{ duration: 0.25 }}
-                        >
-                          {field.suggestions.map((suggestion, si) => (
-                            <motion.button
-                              key={si}
-                              onClick={() => handleSuggestionClick(field.label, suggestion)}
-                              className="text-xs bg-[#f0f4ff] hover:bg-[#e0e7ff] border border-[#c7d2fe]/50 text-[#3730a3] rounded-lg px-3 py-1.5 transition-all hover:shadow-sm text-left"
-                              style={{ fontWeight: 450 }}
-                              initial={{ opacity: 0, scale: 0.95 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              transition={{ duration: 0.2, delay: si * 0.05 }}
-                              whileTap={{ scale: 0.97 }}
-                            >
-                              + {suggestion}
-                            </motion.button>
-                          ))}
-                          <p className="w-full text-[10px] text-[#94a3b8] mt-1 italic">
-                            Click to add — then edit to match your real situation
-                          </p>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </motion.div>
-        )}
-
-        <motion.div
-          className="flex flex-col items-center justify-center"
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
-        >
-          <button
-            onClick={() => onContinue(values)}
-            className="flex items-center gap-3 px-10 py-5 rounded-full text-xl bg-[#0f172b] text-white shadow-[0px_10px_15px_rgba(0,0,0,0.1)] hover:bg-[#1d293d] transition-all"
-            style={{ fontWeight: 500 }}
-          >
-            {Object.values(values).some((v) => v.trim()) ? "Continue with context" : "Continue without context"}
-            <ArrowRight className="w-6 h-6" />
-          </button>
-
-          {onBack && (
-            <button
-              onClick={onBack}
-              className="mt-4 flex items-center justify-center gap-1.5 py-2.5 text-sm text-[#62748e] hover:text-[#0f172b] transition-colors"
-              style={{ fontWeight: 500 }}
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              Back
-            </button>
-          )}
-
-        </motion.div>
-      </main>
-      <MiniFooter />
-    </div>
-  );
-}
+/* ExtraContextScreen is now imported from ./session/ExtraContextScreen */
 
 /* ═══════════════════════════════════════════════════════════
    MAIN ORCHESTRATOR (MVP-simplified flow)

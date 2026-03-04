@@ -17,7 +17,7 @@ export interface User {
   plan: UserPlan;
   freeSessionUsed: boolean;
   sessionsCompleted: number;
-  marketFocus?: "mexico" | "colombia";
+  marketFocus?: "mexico" | "colombia" | "brazil";
   createdAt: string;
 }
 
@@ -28,6 +28,12 @@ export type AuthProvider = "google";
 export type ScenarioType =
   | "interview"
   | "sales";
+
+/**
+ * Future scenario types (adaptations exist in assembler.ts but UI doesn't expose them yet):
+ * | "csuite" | "negotiation" | "networking"
+ * When ready, expand ScenarioType and add cards to PracticeWidget's SCENARIO_TYPES array.
+ */
 
 /* ── Session & Conversation ── */
 
@@ -206,9 +212,9 @@ export interface SRSessionResult {
 export type CreditPack = "session_1" | "session_3" | "session_5";
 
 export const CREDIT_PACK_DETAILS: Record<CreditPack, { sessions: number; price: number; perSession: number; discount: number }> = {
-  session_1:  { sessions: 1,  price: 4.99,  perSession: 4.99, discount: 0   },
-  session_3:  { sessions: 3,  price: 12.99, perSession: 4.33, discount: 13  },
-  session_5:  { sessions: 5,  price: 19.99, perSession: 4.00, discount: 20  },
+  session_1: { sessions: 1, price: 4.99, perSession: 4.99, discount: 0 },
+  session_3: { sessions: 3, price: 12.99, perSession: 4.33, discount: 13 },
+  session_5: { sessions: 5, price: 19.99, perSession: 4.00, discount: 20 },
 };
 
 export interface CheckoutResult {

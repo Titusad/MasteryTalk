@@ -56,6 +56,7 @@ export {
   OUTPUT_FORMAT_BLOCK,
   FIRST_MESSAGE_BLOCK,
   MINI_TEMPLATE,
+  ARENA_PHASE_DIRECTIVES,
 } from "./templates";
 
 /* ── Analyst Prompts (Gemini 1.5 Flash — Screens 6 & 7) ── */
