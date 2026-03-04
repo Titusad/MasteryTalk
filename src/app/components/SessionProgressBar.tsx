@@ -2,7 +2,7 @@
  * ══════════════════════════════════════════════════════════════
  *  SessionProgressBar — Inline horizontal phase stepper
  *  Sits inside the shared header next to BrandLogo.
- *  Maps 8 internal steps → 4 user-facing phases (MVP).
+ *  Maps 8 internal steps → 3 user-facing phases (MVP).
  * ══════════════════════════════════════════════════════════════
  */
 
@@ -32,12 +32,7 @@ const PHASES: Phase[] = [
   {
     id: "feedback",
     label: "Feedback",
-    steps: ["analyzing", "conversation-feedback"],
-  },
-  {
-    id: "wrapup",
-    label: "Report",
-    steps: ["session-recap"],
+    steps: ["analyzing", "conversation-feedback", "session-recap"],
   },
 ];
 

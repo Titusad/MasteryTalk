@@ -2,7 +2,7 @@
 
 > **Proposito:** Todo lo que el product owner debe entregar al backend developer
 > MAS ALLA del codigo y la documentacion tecnica.
-> **Fecha:** 3 marzo 2026 (actualizado v5.0)
+> **Fecha:** 4 marzo 2026 (actualizado v6.0)
 
 ---
 
@@ -78,18 +78,19 @@ Opciones recomendadas:
 
 | Aspecto | Estado | Nota |
 |---------|--------|------|
-| Codigo fuente | Escrito (~45 archivos) | Auditoria de imports/exports + production readiness: 0 errores estaticos |
+| Codigo fuente | Escrito (~45 archivos) | Prototipo funcional como MVP con mock data |
 | Production readiness audit | **Completada** | 14+ archivos limpiados: credit packs, i18n, tipos, services |
-| ErrorBoundary | **Agregado** | Atrapa errores de render, muestra fallback en vez de blank screen |
-| Defensive service init | **Agregado** | try-catch en createAuthService + global fallback a mocks |
-| Compilacion | **Blank screen en debug** | ErrorBoundary + defensive init como fix, investigacion en progreso |
-| i18n | **Completo** | ES/PT con LandingLangContext, landing-i18n.ts, LanguageTransitionModal |
+| ErrorBoundary | **Funcional** | Atrapa errores de render, muestra fallback en vez de blank screen |
+| Compilacion | **Funcional** | App renderiza correctamente, flujo E2E funciona |
+| i18n | **Completo (ES/PT/EN)** | landing-i18n.ts con 3 idiomas, language switcher con flag emojis |
+| Paywall system | **Completo** | useUsageGating hook, CreditUpsellModal, 3 triggers conectados |
 | Mock adapters | 7 implementados | Referencia de comportamiento para adapters reales |
 | Service interfaces | 7 definidas | Contratos que el backend debe implementar |
 | Error handling | Completo | 5 dominios, ~31 error codes (incl CREDITS_EXHAUSTED), UI ya los maneja |
 | Prompt engineering | Completo | 7-block assembler reutilizable en Edge Functions |
 | Design System | Completo | Pagina de referencia en `#design-system` |
-| Credit system | **Implementado** | CreditUpsellModal, DashboardPage validates credits, types + mocks updated |
+| Credit system | **Implementado** | CreditUpsellModal, useUsageGating validates credits, 3 paywall triggers |
+| `services/index.ts` | **100% mock** | ~38 lineas, sin imports de supabase — listo para restaurar auto-detect |
 
 ### Importante: antes de que el backend developer empiece
 
@@ -109,7 +110,8 @@ El frontend debe estar **compilando y corriendo** para que el backend developer 
 | **Target market** | Nearshoring: Mexico y Colombia |
 | **Modelo de negocio** | Pay-per-session: 1 sesion gratis, luego credit packs (1/$4.99, 3/$12.99, 5/$19.99) |
 | **Pagos LATAM** | Mercado Pago incluye OXXO (Mexico) y Efecty (Colombia) — pagos en efectivo con confirmacion 24-72h |
-| **Flujo de usuario** | Landing (i18n ES/PT) → Auth → Language Modal → Strategy → Practice (Arena 3 fases) → Feedback → Session Report → Dashboard |
+| **Flujo de usuario** | Landing (i18n ES/PT/EN) → Auth → Language Modal (skip para EN) → Strategy → Practice (Arena 3 fases) → Feedback → Session Report → Dashboard |
 | **IA conversacional** | GPT-4o para conversacion (GPT-4o-mini para free session), Gemini Flash para analisis, Azure Speech para pronunciacion |
 | **Retencion** | Spaced Repetition automatizado + Power Phrases coleccionables + Dashboard |
-| **Idiomas** | Landing: ES/PT. Practica y feedback: EN (inmersion) |
+| **Idiomas** | Landing: ES/PT/EN. Practica y feedback: EN (inmersion). EN positioning: communication training, not language learning |
+| **Paywall triggers** | (1) 3er intento de practica, (2) descarga de PDF, (3) nueva sesion sin creditos |

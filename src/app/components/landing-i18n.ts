@@ -5,7 +5,7 @@
  * ══════════════════════════════════════════════════════════════
  */
 
-export type LandingLang = "es" | "pt";
+export type LandingLang = "es" | "pt" | "en";
 
 export interface LandingCopy {
   /* ── Header Nav ── */
@@ -42,27 +42,19 @@ export interface LandingCopy {
   /* ── How It Works Screens (mockup UI text) ── */
   screens: {
     setup: {
-      whoLabel: string;
-      pills: string[];
-      objectiveLabel: string;
-      objectives: string[];
-      contextLabel: string;
-      contextBody: string;
-      contextHint: string;
-      aiHint: string;
-      cta: string;
-      tabWrite: string;
-      tabUrl: string;
-    };
-    script: {
       title: string;
       subtitle: string;
-      pillar1: string;
-      pillar1Body: string;
-      pillar2: string;
-      pillar2Body: string;
-      tipsTitle: string;
-      tips: string[];
+      narrativeLabel: string;
+      narrativeStructure: string;
+      strategyTitle: string;
+      pillars: string[];
+      scriptSectionTitle: string;
+      scriptExcerpt: string;
+      highlightPhrase: string;
+      highlightTooltip: string;
+      legendStructure: string;
+      legendImpact: string;
+      legendEngagement: string;
       cta: string;
     };
     chat: {
@@ -71,9 +63,17 @@ export interface LandingCopy {
     };
     feedback: {
       subline: string;
-      keyCorrection: string;
-      reportAvailable: string;
-      viewReport: string;
+      workedWell: string;
+      strength1: string;
+      strength2: string;
+      keyImprovements: string;
+      powerPhrases: string;
+      phrase1: string;
+      phrase1ctx: string;
+      powerQuestions: string;
+      question1: string;
+      questionTiming: string;
+      cta: string;
     };
   };
   /* ── For You / Benefits ── */
@@ -228,39 +228,26 @@ export const ES: LandingCopy = {
   howItWorks: {
     sectionTitle: "Cómo funciona",
     steps: [
-      { title: "Arma tu estrategia", desc: "Elige escenario, define contexto, construye tus pilares de valor profesional." },
-      { title: "Recibe tu guión", desc: "La IA genera tu guión personalizado + tips clave antes de la práctica." },
-      { title: "Practica la conversación", desc: "Simula tu conversación con IA que asume un rol realista." },
-      { title: "Recibe feedback accionable", desc: "Análisis en 3 dimensiones + informe de sesión completo y puntos de mejora." },
+      { title: "Preparación", desc: "Elige escenario, define contexto y recibe tu guión personalizado con pilares de valor y tips clave." },
+      { title: "Práctica", desc: "Simula tu conversación con IA que asume un rol realista mientras hablas por voz." },
+      { title: "Feedback", desc: "Análisis en 3 dimensiones, correcciones clave, power phrases e informe de sesión completo." },
     ],
   },
   screens: {
     setup: {
-      whoLabel: "¿Con quién vas a hablar?",
-      pills: ["👤 Cliente potencial", "🎯 Reclutador", "📊 Tu jefe", "💼 Inversionista", "🤝 Partner"],
-      objectiveLabel: "Objetivo de la conversación",
-      objectives: ["Vender un servicio", "Negociar términos", "Presentar resultados"],
-      contextLabel: "Contexto de la conversación",
-      contextBody: "Tengo una llamada con un cliente de EE.UU. para presentar nuestra propuesta de servicios de desarrollo. Es el CTO de una startup Series A. Necesito explicar nuestro approach técnico, timelines y pricing model. El cliente ya evaluó otras agencias, así que debo diferenciarnos.",
-      contextHint: "238 caracteres · Se recomienda mínimo 100",
-      aiHint: "La IA usará este contexto para simular un interlocutor realista",
-      cta: "Comenzar práctica",
-      tabWrite: "Escribir",
-      tabUrl: "Pegar URL",
-    },
-    script: {
-      title: "Tu guión personalizado",
-      subtitle: "Generado por IA con base en tu contexto",
-      pillar1: "Pilar 1: Diferenciación técnica",
-      pillar1Body: "Enfatiza tu experiencia en plataformas SaaS escalables y tu stack tecnológico moderno — esto te diferencia de agencias genéricas.",
-      pillar2: "Pilar 2: Proof points",
-      pillar2Body: "Usa datos concretos: 50+ proyectos enterprise, 98% de retención de clientes, y casos de éxito con startups Series A similares.",
-      tipsTitle: "Tips clave",
-      tips: [
-        "Abre con una pregunta sobre sus pain points antes de presentar.",
-        "Usa 'we delivered' en vez de 'we can do' — habla en pasado.",
-        "Prepara una respuesta para la objeción de zona horaria.",
-      ],
+      title: "Configura tu práctica",
+      subtitle: "Define el contexto y recibe un guión personalizado",
+      narrativeLabel: "Narrativa",
+      narrativeStructure: "Estructura de la narrativa",
+      strategyTitle: "Estrategia",
+      pillars: ["Pilar 1: Diferenciación técnica", "Pilar 2: Proof points"],
+      scriptSectionTitle: "Ejemplo de guión",
+      scriptExcerpt: "Enfatiza tu experiencia en plataformas SaaS escalables y tu stack tecnológico moderno — esto te diferencia de agencias genéricas.\nUsa datos concretos: 50+ proyectos enterprise, 98% de retención de clientes, y casos de éxito con startups Series A similares.",
+      highlightPhrase: "We've delivered 50+ enterprise platforms",
+      highlightTooltip: "Mejor que 'We have a lot of experience'",
+      legendStructure: "Estructura",
+      legendImpact: "Impacto",
+      legendEngagement: "Engagement",
       cta: "Comenzar práctica",
     },
     chat: {
@@ -268,10 +255,18 @@ export const ES: LandingCopy = {
       live: "En vivo",
     },
     feedback: {
-      subline: "3 dimensiones analizadas",
-      keyCorrection: "Corrección clave",
-      reportAvailable: "Informe completo disponible",
-      viewReport: "Ver informe",
+      subline: "Sales Pitch · Sesión completada",
+      workedWell: "Lo que funcionó bien",
+      strength1: "Apertura con pregunta de dolor",
+      strength2: "Datos concretos como respaldo",
+      keyImprovements: "Mejoras clave",
+      powerPhrases: "Power Phrases",
+      phrase1: "We've delivered 50+ enterprise platforms",
+      phrase1ctx: "Mejor que 'We have a lot of experience'",
+      powerQuestions: "Power Questions",
+      question1: "What does success look like for your team in Q3?",
+      questionTiming: "Al inicio",
+      cta: "Finalizar y generar informe",
     },
   },
   benefits: {
@@ -287,7 +282,7 @@ export const ES: LandingCopy = {
     ],
     noTitle: "No es para ti si...",
     noList: [
-      "Estás aprendiendo inglés desde cero",
+      "Eres un hablante no nativo y estás aprendiendo inglés desde cero",
       "Buscas clases de gramática básica",
       "Prefieres solo leer o escribir en inglés",
       "No tienes escenarios profesionales",
@@ -461,39 +456,26 @@ export const PT: LandingCopy = {
   howItWorks: {
     sectionTitle: "Como funciona",
     steps: [
-      { title: "Monte sua estratégia", desc: "Escolha cenário, defina contexto, construa seus pilares de valor profissional." },
-      { title: "Receba seu roteiro", desc: "A IA gera seu roteiro personalizado + dicas-chave antes da prática." },
-      { title: "Pratique a conversa", desc: "Simule sua conversa com IA que assume um papel realista." },
-      { title: "Receba feedback acionável", desc: "Análise em 3 dimensões + relatório de sessão completo e pontos de melhoria." },
+      { title: "Preparação", desc: "Escolha cenário, defina contexto e receba seu roteiro personalizado com pilares de valor e dicas-chave." },
+      { title: "Prática", desc: "Simule sua conversa com IA que assume um papel realista enquanto você fala por voz." },
+      { title: "Feedback", desc: "Análise em 3 dimensões, correções-chave, power phrases e relatório de sessão completo." },
     ],
   },
   screens: {
     setup: {
-      whoLabel: "Com quem você vai falar?",
-      pills: ["👤 Cliente potencial", "🎯 Recrutador", "📊 Seu chefe", "💼 Investidor", "🤝 Parceiro"],
-      objectiveLabel: "Objetivo da conversa",
-      objectives: ["Vender um serviço", "Negociar termos", "Apresentar resultados"],
-      contextLabel: "Contexto da conversa",
-      contextBody: "Tenho uma call com um cliente dos EUA para apresentar nossa proposta de serviços de desenvolvimento. É o CTO de uma startup Series A. Preciso explicar nossa abordagem técnica, timelines e pricing model. O cliente já avaliou outras agências, então preciso nos diferenciar.",
-      contextHint: "238 caracteres · Recomendado mínimo 100",
-      aiHint: "A IA usará este contexto para simular um interlocutor realista",
-      cta: "Começar prática",
-      tabWrite: "Escrever",
-      tabUrl: "Colar URL",
-    },
-    script: {
-      title: "Seu roteiro personalizado",
-      subtitle: "Gerado por IA com base no seu contexto",
-      pillar1: "Pilar 1: Diferenciação técnica",
-      pillar1Body: "Enfatize sua experiência em plataformas SaaS escaláveis e seu stack tecnológico moderno — isso te diferencia de agências genéricas.",
-      pillar2: "Pilar 2: Proof points",
-      pillar2Body: "Use dados concretos: 50+ projetos enterprise, 98% de retenção de clientes, e cases de sucesso com startups Series A similares.",
-      tipsTitle: "Dicas-chave",
-      tips: [
-        "Abra com uma pergunta sobre os pain points antes de apresentar.",
-        "Use 'we delivered' em vez de 'we can do' — fale no passado.",
-        "Prepare uma resposta para a objeção de fuso horário.",
-      ],
+      title: "Configure sua prática",
+      subtitle: "Defina o contexto e receba um roteiro personalizado",
+      narrativeLabel: "Narrativa",
+      narrativeStructure: "Estrutura da narrativa",
+      strategyTitle: "Estratégia",
+      pillars: ["Pilar 1: Diferenciação técnica", "Pilar 2: Proof points"],
+      scriptSectionTitle: "Exemplo de roteiro",
+      scriptExcerpt: "Enfatize sua experiência em plataformas SaaS escaláveis e seu stack tecnológico moderno — isso te diferencia de agências genéricas.\nUse dados concretos: 50+ projetos enterprise, 98% de retenção de clientes, e cases de sucesso com startups Series A similares.",
+      highlightPhrase: "We've delivered 50+ enterprise platforms",
+      highlightTooltip: "Melhor que 'We have a lot of experience'",
+      legendStructure: "Estrutura",
+      legendImpact: "Impacto",
+      legendEngagement: "Engagement",
       cta: "Começar prática",
     },
     chat: {
@@ -501,10 +483,18 @@ export const PT: LandingCopy = {
       live: "Ao vivo",
     },
     feedback: {
-      subline: "3 dimensões analisadas",
-      keyCorrection: "Correção-chave",
-      reportAvailable: "Relatório completo disponível",
-      viewReport: "Ver relatório",
+      subline: "Sales Pitch · Sessão completada",
+      workedWell: "O que funcionou bem",
+      strength1: "Abertura com pergunta de dor",
+      strength2: "Dados concretos como respaldo",
+      keyImprovements: "Melhorias-chave",
+      powerPhrases: "Power Phrases",
+      phrase1: "We've delivered 50+ enterprise platforms",
+      phrase1ctx: "Melhor que 'We have a lot of experience'",
+      powerQuestions: "Perguntas poderosas",
+      question1: "What does success look like for your team in Q3?",
+      questionTiming: "No início",
+      cta: "Finalizar e gerar relatório",
     },
   },
   benefits: {
@@ -520,7 +510,7 @@ export const PT: LandingCopy = {
     ],
     noTitle: "Não é para você se...",
     noList: [
-      "Está aprendendo inglês do zero",
+      "Você é um falante não nativo e está aprendendo inglês do zero",
       "Busca aulas de gramática básica",
       "Prefere apenas ler ou escrever em inglês",
       "Não tem cenários profissionais",
@@ -666,4 +656,232 @@ export const PT: LandingCopy = {
   },
 };
 
-export const LANDING_COPIES: Record<LandingLang, LandingCopy> = { es: ES, pt: PT };
+/* ═══════════════════════ ENGLISH ═══════════════════════ */
+export const EN: LandingCopy = {
+  nav: {
+    howItWorks: "How It Works",
+    benefits: "Benefits",
+    pricing: "Pricing",
+    login: "Sign In",
+    register: "Get Started",
+  },
+  hero: {
+    badge: "AI-powered professional communication training.",
+    headline: "Rehearse your high-stakes conversations before they happen.",
+    subheadline: "Win Contracts. Work Remotely. Expand Your Reach.",
+    trustBadges: ["1st session free", "No credit card", "No subscription"],
+    socialProof: "already train with inFluentia PRO",
+    socialProofHighlight: "500+ professionals",
+  },
+  widget: {
+    heading: "Start now:",
+    subheading: "Choose the scenario you want to practice",
+    salesLabel: "Sales Pitch",
+    salesDesc: "Practice presenting your product or service to a potential client",
+    interviewLabel: "Job Interview",
+    interviewDesc: "Prepare to answer key questions in your next interview",
+  },
+  howItWorks: {
+    sectionTitle: "How It Works",
+    steps: [
+      { title: "Preparation", desc: "Choose a scenario, define context, and receive a personalized script with value pillars and key tips." },
+      { title: "Practice", desc: "Simulate your conversation with AI that takes on a realistic role while you speak by voice." },
+      { title: "Feedback", desc: "3-dimension analysis, key corrections, power phrases, and a complete session report." },
+    ],
+  },
+  screens: {
+    setup: {
+      title: "Set up your practice",
+      subtitle: "Define the context and receive a personalized script",
+      narrativeLabel: "Narrative",
+      narrativeStructure: "Narrative Structure",
+      strategyTitle: "Strategy",
+      pillars: ["Pillar 1: Technical Differentiation", "Pillar 2: Proof Points"],
+      scriptSectionTitle: "Script Example",
+      scriptExcerpt: "Emphasize your experience with scalable SaaS platforms and your modern tech stack — this sets you apart from generic agencies.\nUse concrete data: 50+ enterprise projects, 98% client retention, and success stories with similar Series A startups.",
+      highlightPhrase: "We've delivered 50+ enterprise platforms",
+      highlightTooltip: "Better than 'We have a lot of experience'",
+      legendStructure: "Structure",
+      legendImpact: "Impact",
+      legendEngagement: "Engagement",
+      cta: "Start Practice",
+    },
+    chat: {
+      role: "Potential Client · Series A Startup",
+      live: "Live",
+    },
+    feedback: {
+      subline: "Sales Pitch · Session Completed",
+      workedWell: "What Worked Well",
+      strength1: "Opening with a pain-point question",
+      strength2: "Concrete data as backup",
+      keyImprovements: "Key Improvements",
+      powerPhrases: "Power Phrases",
+      phrase1: "We've delivered 50+ enterprise platforms",
+      phrase1ctx: "Better than 'We have a lot of experience'",
+      powerQuestions: "Power Questions",
+      question1: "What does success look like for your team in Q3?",
+      questionTiming: "At the start",
+      cta: "Finish & Generate Report",
+    },
+  },
+  benefits: {
+    sectionTitle: "Is inFluentia PRO for you?",
+    sectionSubtitle: "inFluentia PRO isn't for everyone. It's for ambitious professionals.",
+    yesTitle: "It's for you if...",
+    yesList: [
+      "You need to make an impact in professional presentations",
+      "You negotiate salaries or contracts",
+      "You lead meetings with international teams",
+      "You close complex deals in English",
+      "You're preparing for interviews at global companies",
+    ],
+    noTitle: "It's not for you if...",
+    noList: [
+      "You are a non native speaker and you are learning english from scratch",
+      "You're looking for basic grammar lessons",
+      "You only read or write in English",
+      "You don't have professional scenarios to practice",
+      "You don't use English at work",
+    ],
+    levelLabel: "Recommended level:",
+    levelDesc: "B1+ (Intermediate). You can hold basic conversations — now you need to command them.",
+  },
+  beforeAfter: {
+    sectionTitle: "Before & After",
+    sectionSubtitle: "How inFluentia PRO transforms your professional conversations",
+    withTitle: "With inFluentia PRO",
+    withList: [
+      "You've rehearsed it 10 times",
+      "You know every possible question and objection",
+      "You speak with confidence",
+      "You negotiate and demonstrate your value",
+      "You project executive presence",
+    ],
+    withoutTitle: "Without preparation",
+    withoutList: [
+      "You improvise your pitch",
+      "You hope they won't ask tough questions",
+      "You speak with uncertainty",
+      "You miss the chance to make an impact",
+      "You lose presence",
+    ],
+  },
+  impact: {
+    sectionTitle: "Real Career Impact",
+    sectionSubtitle: "Measurable results that transform professional trajectories",
+    cards: [
+      { stat: "3x", label: "more opportunities", desc: "for international leadership roles" },
+      { stat: "89%", label: "of users feel more confident", desc: "speaking in high-stakes situations" },
+      { stat: "$15K+", label: "average salary increase", desc: "estimated (Nearshoring 2026)" },
+    ],
+  },
+  pricing: {
+    sectionTitle: "Invest in your competitive edge",
+    sectionSubtitle: "Practice interviews and sales conversations with advanced AI.\n1st session free. Then pay only when you need it.",
+    freeSession: {
+      title: "1st Session Free",
+      desc: "Experience the full session with no commitment",
+      features: ["Full AI simulation", "Feedback + Personalized script", "Detailed session report", "No credit card required"],
+      button: "Start free",
+    },
+    packs: [
+      { name: "1 Session", sessions: 1, price: "$4.99", perSession: "$4.99", button: "Buy", features: ["Full session with GPT-4o", "Deep feedback", "Editable optimized script", "Shadowing with scoring"] },
+      { name: "3 Sessions", sessions: 3, price: "$12.99", perSession: "$4.33", discount: "13%", button: "Buy pack", features: ["Everything in 1 session", "Save $2.00", "Ideal for thorough prep", "SR cards generated"] },
+      { name: "5 Sessions", sessions: 5, price: "$19.99", perSession: "$4.00", discount: "20%", featured: true, button: "Buy pack", features: ["Everything in 1 session", "Save $5.00", "Best value", "SR cards generated"] },
+    ],
+    freeTrialNote: "Try your first session completely free — no credit card, no commitment",
+    perSessionLabel: "per session",
+    savingsLabel: "savings",
+    statsBar: [
+      { value: "10x", desc: "cheaper than in-person coaching" },
+      { value: "90%", desc: "margin to reinvest in your career" },
+      { value: "24/7", desc: "train whenever you need" },
+    ],
+  },
+  faq: {
+    sectionTitle: "Frequently Asked Questions",
+    sectionSubtitle: "Everything you need to know before getting started",
+    items: [
+      { q: "Is inFluentia PRO an English course?", a: "No. There are plenty of English courses and apps out there; if you need to learn the basics, we recommend using one of those. inFluentia PRO is a communication training tool that helps you rehearse your delivery, pronunciation, and professional discourse before an important meeting." },
+      { q: "Do I need a minimum English level?", a: "Yes. inFluentia PRO is built for professionals who already have a solid foundation (B1+) and need English as a work tool. We don't teach verb conjugation — we teach you how to close deals." },
+      { q: "What about the privacy of my documents?", a: "Your notes and presentations are processed securely and privately. They are only used to configure your practice session and improve your script." },
+      { q: "How is it different from a private tutor?", a: "A tutor corrects your grammar at ~$25/session. inFluentia PRO trains how you communicate professionally — your presence, structure, and persuasion. Plus, we're available 24/7 for that last-minute meeting that just popped up." },
+      { q: "Can I use it for specific job interviews?", a: "Absolutely. You can provide the job description and the AI will act as that company's specific recruiter." },
+      { q: "How long do I need to practice to see results?", a: "Most users report increased confidence after 3–5 sessions. For lasting change in professional communication, we recommend 90 days of regular practice — even 15 minutes a day makes a difference." },
+      { q: "Can I cancel anytime?", a: "There's no subscription to cancel. You buy session credits and use them whenever you want — no monthly commitments, no recurring charges, no hassle. Your credits never expire." },
+    ],
+  },
+  finalCta: {
+    headline1: "Your next important conversation",
+    headline2: "could change everything.",
+    subline: "Train. Command. Win",
+    button: "Try free",
+    badges: ["No credit card", "1st session free", "No subscription"],
+  },
+  footer: {
+    tagline: "The AI-powered professional communication coach for ambitious leaders.",
+    columns: [
+      { title: "Product", items: ["How It Works", "Features", "Pricing"] },
+      { title: "Company", items: ["About Us", "Blog", "Contact"] },
+      { title: "Legal", items: ["Privacy", "Terms", "Cookies"] },
+    ],
+    copyright: "© 2026 inFluentia PRO. All rights reserved.",
+    dashboardLink: "Go to dashboard",
+  },
+  auth: {
+    login: {
+      title: "Welcome back",
+      subtitle: "Sign in to continue your training",
+      google: "Continue with Google",
+      linkedin: "Continue with LinkedIn",
+      divider: "Use the same account you registered with",
+      toggle: "Don't have an account?",
+      toggleAction: "Sign up",
+    },
+    register: {
+      title: "Create your account",
+      subtitle: "Start your professional communication training",
+      google: "Sign up with Google",
+      linkedin: "Sign up with LinkedIn",
+      divider: "Secure one-click registration",
+      toggle: "Already have an account?",
+      toggleAction: "Sign in",
+      trust: "1st session free · No credit card · No subscription",
+    },
+    ctaRegister: {
+      title: "You're one step away from your first practice",
+      subtitle: "Create your account and start training today",
+    },
+    errorFallback: "An unexpected error occurred. Please try again.",
+  },
+  setupModal: {
+    stepLabels: ["Interlocutor", "Context", "Ready"],
+    titles: { interlocutor: "Set up your practice", context: "Add context", ready: "All Set!" },
+    subtitles: { interlocutor: "Choose who you'll be practicing with", context: "Describe the situation for a more realistic simulation", ready: "Sign in to finalize your practice" },
+    interlocutors: {
+      client: "Client", clientSub: "VP / Decision Maker",
+      manager: "Manager", managerSub: "Director / VP",
+      recruiter: "Recruiter", recruiterSub: "Hiring Manager",
+      peer: "Peer", peerSub: "Industry Contact",
+    },
+    autoSelected: "Auto-selected based on your scenario — you can change it",
+    next: "Next",
+    back: "Back",
+    contextReady: "Your context is ready — proceed to the last step",
+    contextNeeded: "Complete at least one context field to continue",
+    previewTitle: "STRATEGY PREVIEW",
+    previewBody: "Based on your context, I'll prepare a strategy with 3 personalized value pillars, a conversation script, and an AI simulation tailored to your",
+    previewBlurred: "Including nearshoring power phrases, cultural objection handling...",
+    continueGoogle: "Continue with Google",
+    continueLinkedin: "Continue with LinkedIn",
+    trustLine: "1st session free · No credit card · No subscription",
+    scenarioLabels: { sales: "sales", interview: "interview" },
+    guidedFields: {
+      interview: { role: "Role you're applying for", rolePlaceholder: "e.g. Senior Product Manager at a fintech", strength: "Your most relevant strength", strengthPlaceholder: "e.g. 5 years leading product teams across LATAM" },
+      sales: { product: "What product or service are you presenting?", productPlaceholder: "e.g. B2B marketing automation platform", problem: "What problem does it solve for your client?", problemPlaceholder: "e.g. Reduces lead onboarding time by 40%" },
+    },
+  },
+};
+
+export const LANDING_COPIES: Record<LandingLang, LandingCopy> = { es: ES, pt: PT, en: EN };

@@ -21,6 +21,8 @@ import {
   Check,
   Trophy,
   ClipboardList,
+  Download,
+  Lock,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -38,9 +40,9 @@ import {
 import type {
   ScenarioType,
   ResultsSummary,
+  UserPlan,
 } from "../../services/types";
 import type { ValuePillar } from "./StrategyBuilder";
-
 /* ─── Scenario labels ─── */
 const SCENARIO_LABELS_MAP: Record<string, string> = {
   sales: "Sales Pitch",
@@ -192,6 +194,10 @@ export interface SessionReportProps {
   finishLabel?: string;
   /** If true, hides the hero & background (for embedding inside another page) */
   embedded?: boolean;
+  /** Download report handler — triggers paywall for free users */
+  onDownloadReport?: () => void;
+  /** Current user plan — controls download button appearance */
+  userPlan?: UserPlan;
 }
 
 export function SessionReport({
@@ -200,8 +206,10 @@ export function SessionReport({
   strategyPillars = [],
   resultsSummary,
   onFinish,
-  finishLabel = "Finish session",
+  finishLabel = "Go To Dashboard",
   embedded = false,
+  onDownloadReport,
+  userPlan = "free",
 }: SessionReportProps) {
   const scenarioLabel = scenarioType
     ? SCENARIO_LABELS_MAP[scenarioType] ?? "your conversation"
@@ -257,7 +265,7 @@ export function SessionReport({
           {[
             { label: "Total Duration", value: totalTime, icon: <TrendingUp className="w-4 h-4" /> },
             { label: "Value Pillars", value: String(strategyPillars.length), icon: <Target className="w-4 h-4" /> },
-            { label: "Corrections", value: String(beforeAfter.length), icon: <Zap className="w-4 h-4" /> },
+            { label: "Improvements", value: String(beforeAfter.length), icon: <Zap className="w-4 h-4" /> },
           ].map((stat, i) => (
             <div key={i} className="bg-white border border-[#e2e8f0] rounded-2xl p-5 text-center flex-1 max-w-[200px]">
               <div className="w-8 h-8 rounded-lg bg-[#f0f4f8] flex items-center justify-center mx-auto mb-2 text-[#45556c]">
@@ -473,7 +481,7 @@ export function SessionReport({
             <div className="mb-6">
               <div className="flex items-center gap-2 mb-3">
                 <Zap className="w-4 h-4 text-[#fbbf24]" />
-                <p className="text-sm text-white/70" style={{ fontWeight: 500 }}>Key corrections</p>
+                <p className="text-sm text-white/70" style={{ fontWeight: 500 }}>Key improvements</p>
               </div>
               <div className="space-y-2">
                 {beforeAfter.slice(0, 3).map((ba, i) => (
@@ -585,44 +593,6 @@ export function SessionReport({
           </CollapsibleDarkSection>
         </ReportSection>
 
-        {/* ═══════════════════════════════════════════════
-           SECCIÓN 5: Próximos Pasos
-           ═══════════════════════════════════════════════ */}
-        <ReportSection
-          number={5}
-          icon={<Lightbulb className="w-5 h-5 text-white" />}
-          title="Next Steps"
-          delay={0.3}
-        >
-          <div className="space-y-4">
-            {[
-              {
-                emoji: "🎯",
-                title: "Practice the corrections",
-                desc: "Read the corrected phrases out loud until they flow naturally.",
-              },
-              {
-                emoji: "📖",
-                title: "Review your script before the meeting",
-                desc: "Read your script 15 minutes before the real conversation to activate your memory.",
-              },
-              {
-                emoji: "🔄",
-                title: "Schedule a new practice",
-                desc: "Practice the same scenario in 2-3 days to consolidate your progress.",
-              },
-            ].map((step, i) => (
-              <div key={i} className="flex items-start gap-3 bg-[#f8fafc] rounded-xl border border-[#e2e8f0] p-4">
-                <span className="text-xl">{step.emoji}</span>
-                <div>
-                  <p className="text-sm text-[#0f172b]" style={{ fontWeight: 500 }}>{step.title}</p>
-                  <p className="text-xs text-[#45556c] mt-0.5">{step.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </ReportSection>
-
         {/* ── Motivational banner ── */}
         <motion.div
           className="rounded-3xl bg-gradient-to-br from-[#0f172b] to-[#1e293b] p-8 text-center mb-10"
@@ -639,14 +609,46 @@ export function SessionReport({
           </p>
         </motion.div>
 
-        {/* ── Finish CTA ── */}
-        {onFinish && (
-          <motion.div
-            className="flex flex-col items-center gap-3"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-          >
+        {/* ── Download & Finish CTAs ── */}
+        <motion.div
+          className="flex flex-col items-center gap-4"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
+          {/* Download Report button */}
+          {onDownloadReport && (
+            <button
+              onClick={onDownloadReport}
+              className={`px-8 py-3.5 rounded-full flex items-center gap-2.5 shadow-md transition-all text-lg ${
+                userPlan === "free"
+                  ? "bg-gradient-to-r from-[#f59e0b] to-[#f97316] text-white hover:from-[#d97706] hover:to-[#ea580c]"
+                  : "bg-white border border-[#e2e8f0] text-[#0f172b] hover:bg-[#f8fafc]"
+              }`}
+              style={{ fontWeight: 500 }}
+            >
+              {userPlan === "free" ? (
+                <>
+                  <Lock className="w-4 h-4" />
+                  Download Full Report (PDF)
+                  <Sparkles className="w-4 h-4" />
+                </>
+              ) : (
+                <>
+                  <Download className="w-5 h-5" />
+                  Download Report (PDF)
+                </>
+              )}
+            </button>
+          )}
+          {userPlan === "free" && onDownloadReport && (
+            <p className="text-[10px] text-[#92400e]/60">
+              Free users can view the report on screen · Download requires a session credit
+            </p>
+          )}
+
+          {/* Finish button */}
+          {onFinish && (
             <button
               onClick={onFinish}
               className="bg-[#0f172b] text-white px-10 py-4 rounded-full flex items-center gap-3 shadow-lg hover:bg-[#1d293d] transition-colors text-lg"
@@ -655,8 +657,8 @@ export function SessionReport({
               <Check className="w-5 h-5" />
               {finishLabel}
             </button>
-          </motion.div>
-        )}
+          )}
+        </motion.div>
       </main>
 
       {!embedded && <MiniFooter />}

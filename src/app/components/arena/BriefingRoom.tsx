@@ -36,23 +36,6 @@ export function BeforeAfterSection({ comparisons }: BeforeAfterSectionProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.1 }}
     >
-      <div className="flex items-center gap-3 mb-5">
-        <div className="w-10 h-10 rounded-full bg-[#0f172b] flex items-center justify-center">
-          <MessageSquare className="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <h3
-            className="text-lg text-[#0f172b]"
-            style={{ fontWeight: 500 }}
-          >
-            Your progression this session
-          </h3>
-          <p className="text-sm text-[#45556c]">
-            Compare your original responses with the professional versions
-          </p>
-        </div>
-      </div>
-
       <div className="space-y-3">
         {comparisons.map((comp, i) => {
           const isExpanded = expandedIdx === i;

@@ -59,6 +59,28 @@ export function isSupabaseConfigured(): boolean {
 let _client: SupabaseClient | null = null;
 
 /**
+ * Eagerly create the Supabase client at module load if credentials exist.
+ * This is CRITICAL: the client must be created before React's useEffect
+ * runs cleanOAuthParams, otherwise `detectSessionInUrl` never sees the
+ * #access_token in the URL and the user gets a blank screen after OAuth.
+ */
+if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+  try {
+    _client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+      },
+    });
+    console.log("[inFluentia] Supabase client created eagerly at module load");
+  } catch (err) {
+    console.error("[inFluentia] Supabase client creation failed:", err);
+    _client = null;
+  }
+}
+
+/**
  * Get the Supabase client singleton.
  * Throws if env vars are not configured (call isSupabaseConfigured() first).
  */
@@ -75,11 +97,8 @@ export function getSupabaseClient(): SupabaseClient {
 
   _client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: {
-      /* Persist session in localStorage for tab persistence (F1-07) */
       persistSession: true,
-      /* Auto-refresh JWT before expiry */
       autoRefreshToken: true,
-      /* Detect auth changes in other tabs (F1-07: multi-tab logout) */
       detectSessionInUrl: true,
     },
   });

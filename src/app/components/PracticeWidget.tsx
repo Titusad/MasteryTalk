@@ -7,34 +7,7 @@ import { isAuthError } from "../../services/errors";
 import { useLandingCopy } from "./LandingLangContext";
 import { ArrowRight, Sparkles, X, Loader2, Check, ArrowLeft } from "lucide-react";
 import { Mic, Target, UserRound, Users, Briefcase, UserCheck } from "lucide-react";
-
-/* ─── Smooth height transition wrapper ─── */
-function SmoothHeight({ children, className }: { children: React.ReactNode; className?: string }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [height, setHeight] = useState<number | undefined>(undefined);
-
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const observer = new ResizeObserver(() => {
-      const h = el.scrollHeight;
-      if (h > 0) setHeight(h);
-    });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <motion.div
-      animate={{ height: height ?? "auto" }}
-      transition={{ duration: 0.35, ease: [0.25, 1, 0.5, 1] }}
-      style={{ overflow: "hidden" }}
-      className={className}
-    >
-      <div ref={containerRef}>{children}</div>
-    </motion.div>
-  );
-}
+import { SmoothHeight } from "./shared";
 
 /* ─── Scenario Type Data (used by PracticeSetupModal) ─── */
 interface ScenarioOption {

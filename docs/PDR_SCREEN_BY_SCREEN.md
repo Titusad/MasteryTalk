@@ -1,8 +1,8 @@
-# inFluentia PRO - PDR Pantalla por Pantalla (v5.0)
+# inFluentia PRO - PDR Pantalla por Pantalla (v6.0)
 
 > Especificacion de cada pantalla: UI, servicios, navegacion y logica.
-> Referencia cruzada con MASTER_BLUEPRINT.md v5.0.
-> Actualizado: 3 marzo 2026 — Refleja flujo simplificado a 8 steps, credit packs, i18n ES/PT, ErrorBoundary.
+> Referencia cruzada con MASTER_BLUEPRINT.md v6.0.
+> Actualizado: 4 marzo 2026 — Prototipo funcional con mock data, i18n ES/PT/EN, paywall system (3 triggers), CreditUpsellModal restaurado.
 
 ---
 
@@ -40,14 +40,14 @@
 `LandingPage.tsx` — importa `PracticeWidget`, `AuthModal`, `HowItWorksTabs`, `LandingLangProvider`
 
 ### i18n
-Soporta ES y PT via `landing-i18n.ts`. Language picker en header. Todas las secciones son traducidas dinamicamente via `useLandingCopy()` hook.
+Soporta ES, PT y EN via `landing-i18n.ts`. Language picker en header (flag emojis: 🇲🇽 ES / 🇧🇷 PT / 🇺🇸 EN). Todas las secciones son traducidas dinamicamente via `useLandingCopy()` hook. El copy EN enfatiza *communication training*, no language learning.
 
 ### Objetivo
 Capturar el escenario del usuario ANTES del registro (Input-First pattern) para
 generar compromiso via sunk cost psicologico.
 
 ### Secciones
-1. **Header** — BrandLogo, nav links (scroll), language picker (ES/PT), CTAs "Iniciar sesion" / "Registrarme"
+1. **Header** — BrandLogo, nav links (scroll), language picker (ES/PT/EN), CTAs "Iniciar sesion" / "Registrarme"
 2. **Hero** — Badge + titulo + subtitulo + PracticeWidget embebido
 3. **PracticeWidget** — textarea con placeholder rotativo (typewriter), scenario pills, preview de IA contextual
 4. **How It Works** — Tabs interactivas (HowItWorksTabs component)
@@ -335,7 +335,7 @@ Modal in-app para compra de credit packs cuando el usuario no tiene creditos.
 - Pack featured (3 sesiones)
 - Checkout via `paymentService.createCheckout(uid, pack)`
 - Post-compra: celebracion de confetti (`canvas-confetti`)
-- i18n completo ES/PT (copias internas)
+- i18n completo ES/PT/EN (copias internas)
 - Estados: browsing → processing → success → error
 
 ### Service Calls

@@ -1,9 +1,9 @@
-# inFluentia PRO - Criterios de Aceptacion (QA Guide v4.0)
+# inFluentia PRO - Criterios de Aceptacion (QA Guide v5.0)
 
 > Guia de validacion por fases de implementacion.
 > Cada fase es auto-contenida y testeable de forma independiente.
-> Referencia cruzada: `MASTER_BLUEPRINT.md` v5.0, `PDR_SCREEN_BY_SCREEN.md` v5.0
-> Actualizado: 3 marzo 2026 — Refleja flujo de 8 steps, credit packs, i18n, ErrorBoundary.
+> Referencia cruzada: `MASTER_BLUEPRINT.md` v6.0, `PDR_SCREEN_BY_SCREEN.md` v6.0
+> Actualizado: 4 marzo 2026 — Prototipo funcional con mock data, i18n ES/PT/EN, paywall system (3 triggers).
 
 ---
 
@@ -14,20 +14,20 @@
 | **P0** | Bloqueante. Si falla, la fase no puede considerarse completada. |
 | **P1** | Critico. Afecta la experiencia core pero tiene workaround temporal. |
 | **P2** | Importante. Afecta UX o edge cases pero no bloquea el flujo principal. |
-| `[MOCK]` | Test ejecutable con `USE_MOCK = true` (datos hardcodeados). |
+| `[MOCK]` | Test ejecutable con mock adapters (datos hardcodeados). |
 | `[REAL]` | Test que requiere servicios de produccion conectados. |
 | `[SIM]` | Test ejecutable con `?simulate_errors=true` en la URL. |
 
 ---
 
-## Fase 0: Prototipo Mock (`USE_MOCK = true`)
+## Fase 0: Prototipo Mock — COMPLETADA
 
 ### Objetivo
 Validar que el frontend completo funciona correctamente con los 7 mock adapters.
-Estado actual: **codigo escrito, auditado, ErrorBoundary agregado, debugging de blank screen en progreso.**
+Estado actual: **prototipo funcional, flujo E2E verificado.**
 
 ### Precondiciones
-- `USE_MOCK` auto-detects (mock si Supabase no configurado)
+- `services/index.ts` en modo 100% mock (~38 lineas)
 - App corriendo en Figma Make preview o `localhost`
 
 ---

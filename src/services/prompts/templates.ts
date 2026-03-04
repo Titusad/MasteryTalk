@@ -55,10 +55,17 @@ You MUST respond with a JSON object. No markdown, no code blocks, no extra text.
 === CLOSURE RULES ===
 - NEVER set isComplete = true before the conversation has had at least 4 user turns.
 - After 4 user turns, you MAY set isComplete = true if the scenario reaches a logical end point.
-- If the conversation reaches 8 user turns, you MUST wrap up naturally on your next response and set isComplete = true.
-- When closing, your final aiMessage should feel like a natural goodbye or conclusion -- not an abrupt cut.
-  Good: "I think we've covered what we need. I'll review this with my team and circle back Friday."
-  Bad: "This conversation is now over."`;
+- If the conversation reaches 8 user turns, you MUST wrap up on your next response.
+- ON YOUR 8TH RESPONSE (after the user's 7th turn), you MUST end your message with a CLOSING QUESTION directed at the user. This gives them one final opportunity to practice a substantive answer. Examples:
+  Good (interview): "Before we wrap up — is there anything you'd like to ask me about the role or the team?"
+  Good (sales): "Before I go, what's the single biggest concern I'd need to address for your team to move forward?"
+  Good (negotiation): "One last thing — if we agree on these terms, what does your internal approval timeline look like?"
+  Good (csuite): "Before I review this with the board — is there anything else you want me to consider?"
+  Good (networking): "This has been great — what's the best way to follow up with you next week?"
+- After the user answers the closing question (their 8th turn), you MUST set isComplete = true and provide a brief, natural farewell.
+  Good: "Great insights. I'll review this with my team and circle back Friday. Thanks for your time."
+  Bad: "This conversation is now over."
+- Do NOT set isComplete = true on the same turn as the closing question — the user must have a chance to answer it first.`;
 
 /* ── Block 7: First Message Instruction ── */
 

@@ -12,6 +12,9 @@ import type { User, OnboardingProfile, ScenarioType } from "../services/types";
 import type { SetupModalResult } from "./components/PracticeWidget";
 import { AnimatePresence } from "motion/react";
 import type { LandingLang } from "./components/landing-i18n";
+import { CreditUpsellModal } from "./components/CreditUpsellModal";
+import { useUsageGating } from "./hooks/useUsageGating";
+import type { CreditPack } from "../services/types";
 
 /* ─── App-level page types ─── */
 type Page =
@@ -41,7 +44,6 @@ export default function App() {
   });
 
   const [flowState, setFlowState] = useState<FlowState>(() => {
-    // Pre-populate mock data when navigating directly to dashboard or history
     if (window.location.hash === "#dashboard" || window.location.hash === "#practice-history") {
       return {
         scenario: "Sales pitch: Producto B2B SaaS para LATAM",
@@ -51,10 +53,10 @@ export default function App() {
     return { scenario: "", interlocutor: "" };
   });
 
-  /* ─── Auth state (F1-07) ─── */
+  /* ─── Auth state ─── */
   const [authUser, setAuthUser] = useState<User | null>(null);
 
-  /* ─── Onboarding profile (now collected post-session via dashboard banner) ─── */
+  /* ─── Onboarding profile ─── */
   const [userProfile, setUserProfile] = useState<OnboardingProfile | null>(
     () => {
       try {
@@ -66,29 +68,25 @@ export default function App() {
     }
   );
 
-  /**
-   * Track the previous auth user to detect null→user transitions.
-   * This replaces the old authInitialized ref which broke on async
-   * OAuth redirect flows (Supabase fires callback(null) first, then
-   * callback(user) later — the old ref blocked the second call).
-   */
   const prevAuthUserRef = useRef<User | null>(null);
-
-  /** Track if we're in the middle of the setup→auth→practice flow */
   const pendingSetupRef = useRef<SetupModalResult | null>(null);
 
-  /** Language transition modal — shown once after first auth */
+  /* ─── Usage gating & new-session paywall ─── */
+  const usageGating = useUsageGating(authUser?.plan ?? "free");
+  const [showNewSessionPaywall, setShowNewSessionPaywall] = useState(false);
+  const pendingNewSessionRef = useRef<(() => void) | null>(null);
+
+  /* ─── Language transition modal ─── */
   const [showLangModal, setShowLangModal] = useState(false);
   const pendingNavigationRef = useRef<(() => void) | null>(null);
   const [landingLang, setLandingLang] = useState<LandingLang>(() => {
     try {
       const saved = localStorage.getItem("influentia_lang");
-      if (saved === "es" || saved === "pt") return saved;
+      if (saved === "es" || saved === "pt" || saved === "en") return saved;
     } catch { /* ignore */ }
     return "es";
   });
 
-  /** Persist language selection to localStorage */
   const handleLangChange = (lang: LandingLang) => {
     setLandingLang(lang);
     try {
@@ -96,38 +94,18 @@ export default function App() {
     } catch { /* ignore */ }
   };
 
-  useEffect(() => {
-    const cleanOAuthParams = () => {
-      const hash = window.location.hash;
-      const search = window.location.search;
-      if (hash.includes("access_token") || hash.includes("error_description")) {
-        setTimeout(() => {
-          window.history.replaceState(null, "", window.location.pathname);
-        }, 100);
-      }
-      if (search.includes("code=") || search.includes("error=")) {
-        setTimeout(() => {
-          window.history.replaceState(null, "", window.location.pathname);
-        }, 100);
-      }
-    };
-    cleanOAuthParams();
-  }, []);
-
+  /* ─── Auth state listener (mock in prototype mode) ─── */
   useEffect(() => {
     const unsubscribe = authService.onAuthStateChanged((user) => {
       const hadUser = prevAuthUserRef.current !== null;
       prevAuthUserRef.current = user;
       setAuthUser(user);
 
-      // User just appeared (null → user transition: OAuth redirect, page reload with session, or mock login)
       if (user && !hadUser) {
         setPage((currentPage) => {
           if (currentPage === "landing") {
-            // Check if we have pending setup data from the PracticeSetupModal
             const pending = pendingSetupRef.current;
             if (pending) {
-              // User just completed auth from the setup modal → go straight to practice
               setFlowState({
                 scenario: pending.scenario,
                 interlocutor: pending.interlocutor,
@@ -138,7 +116,6 @@ export default function App() {
               window.location.hash = "#practice-session";
               return "practice-session";
             }
-            // Returning user with persisted session → dashboard
             setFlowState((prev) =>
               prev.scenario
                 ? prev
@@ -154,7 +131,6 @@ export default function App() {
         });
       }
 
-      // User just disappeared (user → null transition: logout or session expiry)
       if (!user && hadUser) {
         setFlowState({ scenario: "", interlocutor: "" });
         setPage("landing");
@@ -163,7 +139,7 @@ export default function App() {
     });
 
     return unsubscribe;
-  }, []); // No deps — refs handle all state tracking, re-subscribing would reset prevAuthUserRef
+  }, []);
 
   /* ─── Hash-based routing ─── */
   useEffect(() => {
@@ -190,12 +166,7 @@ export default function App() {
 
   /* ─── Navigation handlers ─── */
 
-  /**
-   * Called from PracticeWidget after successful auth in PracticeSetupModal.
-   * Now receives full setup data (scenarioType, interlocutor, guidedFields).
-   */
   const handleAuthComplete = (data: SetupModalResult, authMode?: "login" | "registro") => {
-    // Returning user (login) → show language modal, then go to dashboard
     if (authMode === "login") {
       setFlowState((prev) =>
         prev.scenario
@@ -209,11 +180,16 @@ export default function App() {
         setPage("dashboard");
         window.location.hash = "#dashboard";
       };
-      setShowLangModal(true);
+      // Skip language transition modal for EN users (already in English)
+      if (landingLang === "en") {
+        pendingNavigationRef.current();
+        pendingNavigationRef.current = null;
+      } else {
+        setShowLangModal(true);
+      }
       return;
     }
 
-    // New user (registro) from PracticeSetupModal → show language modal, then go to practice
     setFlowState({
       scenario: data.scenario,
       interlocutor: data.interlocutor,
@@ -221,24 +197,31 @@ export default function App() {
       guidedFields: data.guidedFields,
     });
 
-    // Store pending setup in case auth is async (OAuth redirect)
     pendingSetupRef.current = data;
 
     pendingNavigationRef.current = () => {
       setPage("practice-session");
       window.location.hash = "#practice-session";
     };
-    setShowLangModal(true);
+    // Skip language transition modal for EN users (already in English)
+    if (landingLang === "en") {
+      pendingNavigationRef.current();
+      pendingNavigationRef.current = null;
+    } else {
+      setShowLangModal(true);
+    }
   };
 
   const handleProfileUpdate = (profile: OnboardingProfile) => {
     setUserProfile(profile);
     try {
       localStorage.setItem("influentia_profile", JSON.stringify(profile));
-    } catch { /* ignore storage errors */ }
+    } catch { /* ignore */ }
   };
 
   const handlePracticeFinish = () => {
+    // Mark free session as used when finishing a practice
+    usageGating.markFreeSessionUsed();
     setPage("dashboard");
     window.location.hash = "#dashboard";
   };
@@ -250,14 +233,31 @@ export default function App() {
   };
 
   const handleNewPractice = () => {
-    // Go back to landing so user uses the widget again
+    const gate = usageGating.canStartSession();
+    if (!gate.allowed) {
+      pendingNewSessionRef.current = () => {
+        setFlowState({ scenario: "", interlocutor: "" });
+        setPage("landing");
+        window.location.hash = "";
+      };
+      setShowNewSessionPaywall(true);
+      return;
+    }
     setFlowState({ scenario: "", interlocutor: "" });
     setPage("landing");
     window.location.hash = "";
   };
 
-  /** Start a new practice from Dashboard — sets scenario and navigates to landing widget */
   const handleStartNewPractice = (_scenario: string) => {
+    const gate = usageGating.canStartSession();
+    if (!gate.allowed) {
+      pendingNewSessionRef.current = () => {
+        setPage("landing");
+        window.location.hash = "";
+      };
+      setShowNewSessionPaywall(true);
+      return;
+    }
     setPage("landing");
     window.location.hash = "";
   };
@@ -288,6 +288,7 @@ export default function App() {
           guidedFields={flowState.guidedFields}
           onFinish={handlePracticeFinish}
           onNewPractice={handleNewPractice}
+          userPlan={authUser?.plan}
         />
       )}
       {page === "dashboard" && (
@@ -324,6 +325,25 @@ export default function App() {
           />
         )}
       </AnimatePresence>
+
+      {/* New-session paywall modal */}
+      <CreditUpsellModal
+        open={showNewSessionPaywall}
+        onClose={() => {
+          setShowNewSessionPaywall(false);
+          pendingNewSessionRef.current = null;
+        }}
+        onPurchaseComplete={(_pack: CreditPack, creditsAdded: number) => {
+          usageGating.addCredits(creditsAdded);
+          setShowNewSessionPaywall(false);
+          // After purchase, proceed to new session
+          pendingNewSessionRef.current?.();
+          pendingNewSessionRef.current = null;
+        }}
+        paywallReason="new-session"
+        creditsRemaining={usageGating.credits}
+        lang={landingLang}
+      />
     </div>
     </ErrorBoundary>
   );

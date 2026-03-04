@@ -8,14 +8,17 @@
  *
  *  Architecture:
  *  ┌───────────────────────────────────────┐
- *  │  BLOCK 1: MASTER SYSTEM PROMPT        │ ← Immutable rules
- *  │  BLOCK 2: INTERLOCUTOR PERSONA        │ ← Profile + sub-profile
- *  │  BLOCK 3: REGIONAL CONTEXT            │ ← Mexico / Colombia / Global
- *  │  BLOCK 4: USER SCENARIO               │ ← From PracticeWidget input
- *  │  BLOCK 5: EXTRACTED CONTEXT           │ ← From PDF/URL (optional)
- *  │  BLOCK 6: OUTPUT FORMAT + RULES       │ ← JSON + isComplete 4-8
- *  │  BLOCK 7: FIRST MESSAGE INSTRUCTION   │ ← Only for prepare-session
- *  └───────────────────────────────────────┘
+ *  │  BLOCK 1:   MASTER SYSTEM PROMPT      │ ← Immutable rules
+ *  │  BLOCK 2:   INTERLOCUTOR PERSONA      │ ← Profile + sub-profile
+ *  │  BLOCK 3:   REGIONAL CONTEXT          │ ← Mexico / Colombia / Global
+ *  │  BLOCK 4:   USER SCENARIO             │ ← From PracticeWidget input
+ *  │  BLOCK 4.5: SCENARIO ADAPTATION       │ ← Sales / Interview / etc.
+ *  │  BLOCK 4.7: STRATEGY PILLARS          │ ← From StrategyBuilder
+ *  │  BLOCK 5:   EXTRACTED CONTEXT         │ ← From PDF/URL (optional)
+ *  │  BLOCK 5.5: TTS TEXT OPTIMIZATION     │ ← Speech-friendly writing
+ *  │  BLOCK 6:   OUTPUT FORMAT + RULES     │ ← JSON + isComplete 4-8
+ *  │  BLOCK 7:   FIRST MESSAGE INSTRUCTION │ ← Only for prepare-session
+ *  └─────────────��─────────────────────────┘
  * ══════════════════════════════════════════════════════════════
  */
 
@@ -33,6 +36,7 @@ import {
 import { getRegionalBlock, type MarketFocus } from "./regions";
 import { getVoiceId } from "./voice-map";
 import type { ScenarioType } from "../types";
+import { TTS_TEXT_OPTIMIZATION_BLOCK } from "./tts-sync";
 
 /* ── Block 4: Scenario Template ── */
 
@@ -220,6 +224,9 @@ export function assembleSystemPrompt(config: AssemblyConfig): AssemblyResult {
   if (extractedContext && extractedContext.trim().length > 0) {
     blocks.push(buildExtractedContextBlock(extractedContext));
   }
+
+  // Block 5.5: TTS Text Optimization (ensures aiMessage is speech-friendly)
+  blocks.push(TTS_TEXT_OPTIMIZATION_BLOCK);
 
   // Block 6: Output Format + isComplete Rules
   blocks.push(OUTPUT_FORMAT_BLOCK);

@@ -22,7 +22,7 @@ import { LandingLangProvider } from "./LandingLangContext";
 function LanguageSwitcher({ lang, onChange }: { lang: LandingLang; onChange: (l: LandingLang) => void }) {
   return (
     <div className="flex items-center bg-[#f1f5f9] rounded-full p-0.5 gap-0.5">
-      {(["es", "pt"] as const).map((l) => (
+      {(["es", "pt", "en"] as const).map((l) => (
         <button
           key={l}
           onClick={() => onChange(l)}
@@ -33,8 +33,8 @@ function LanguageSwitcher({ lang, onChange }: { lang: LandingLang; onChange: (l:
           }`}
           style={{ fontWeight: lang === l ? 600 : 400 }}
         >
-          <span>{l === "es" ? "🇪🇸" : "🇧🇷"}</span>
-          {l === "es" ? "ES" : "PT"}
+          <span>{l === "es" ? "🇪🇸" : l === "pt" ? "🇧🇷" : "🇺🇸"}</span>
+          {l.toUpperCase()}
         </button>
       ))}
     </div>

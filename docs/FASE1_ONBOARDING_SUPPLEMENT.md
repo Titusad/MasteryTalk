@@ -3,8 +3,8 @@
 > Este documento complementa BACKEND_HANDOFF.md y WORKPLAN_v3.md.
 > Contiene los artefactos ejecutables y las instrucciones de wiring
 > que el desarrollador necesita para completar Fase 1 en 5 dias.
-> **Prerequisito:** El prototipo (Fase 0) debe estar compilando y corriendo con mocks.
-> Actualizado: 3 marzo 2026 (v5.0 — refleja USE_MOCK auto-detect, defensive init, credit packs)
+> **Prerequisito:** El prototipo (Fase 0) esta completado y funcional con mocks.
+> Actualizado: 4 marzo 2026 (v6.0 — prototipo funcional, services/index.ts actualmente 100% mock, necesita restaurar auto-detect para Fase 1)
 
 ---
 
@@ -15,7 +15,7 @@
 | `/docs/FASE1_MIGRATION.sql` | SQL completo: 5 tablas + trigger + RLS + indexes | Dia 2: ejecutar en Supabase SQL Editor |
 | `/src/services/supabase.ts` | Supabase client singleton + tipos de filas DB (incl CreditPurchaseRow, CreditBalanceRow) | Dia 1: configurar env vars |
 | `/src/services/adapters/supabase/auth.supabase.ts` | SupabaseAuthService implementado (con fetchOrCreateProfile 4-level fallback) | Dia 1: ya funcional |
-| `/src/services/index.ts` | Per-service toggle (auto-detect + defensive try-catch) | Dia 1: solo configurar env vars |
+| `/src/services/index.ts` | Actualmente 100% mock (~38 lineas). Restaurar auto-detect + ADAPTER_MODE para conectar Supabase | Dia 1: restaurar y configurar env vars |
 | `/src/app/components/AuthModal.tsx` | Wired a `authService.signIn()` con error handling + i18n | Ya wired |
 | `/src/app/components/PracticeWidget.tsx` | SignupModal wired a authService | Ya wired |
 | `/src/app/components/ErrorBoundary.tsx` | Atrapa errores de render, muestra diagnostico | Ya wired en App.tsx |

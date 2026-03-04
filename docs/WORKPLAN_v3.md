@@ -1,35 +1,39 @@
-# inFluentia PRO — Plan de Trabajo v3.1
+# inFluentia PRO — Plan de Trabajo v3.2
 
-> **Fecha:** 3 marzo 2026
-> **Reemplaza:** WORKPLAN_v3.0
-> **Contexto:** El prototipo React esta escrito con auditoria de production readiness completada (14+ archivos limpiados: credit packs, i18n, tipos, mocks, services). Hubo un bug persistente de "blank screen" (pantalla en blanco) que se esta depurando con ErrorBoundary + defensive service initialization. El siguiente paso es resolver el blank screen y lograr la primera ejecucion exitosa del prototipo mock.
+> **Fecha:** 4 marzo 2026
+> **Reemplaza:** WORKPLAN_v3.1
+> **Contexto:** El prototipo React funciona correctamente como MVP con mock data — listo para demos y validacion con usuarios. El blank screen fue resuelto. El sistema de paywall (3 triggers) esta implementado. i18n soporta ES/PT/EN. El siguiente paso natural es conectar Supabase para auth y persistencia.
 
 ---
 
 ## Estado actual — Que ya esta hecho
 
-### Fase 0: Prototipo Mock — ESCRITO + AUDITADO (blank screen en debug)
+### Fase 0: Prototipo Mock — COMPLETADA
 
 | Entregable | Estado | Notas |
 |------------|--------|-------|
-| ~45 archivos fuente (React + Tailwind v4) | ESCRITO | Landing (i18n ES/PT), Auth, Strategy Builder, Extra Context, Generating Script (loader), Pre-Briefing, Voice Practice (Arena 3 fases), Analyzing (loader), Conversation Feedback, SessionReport, Dashboard, Practice History, Design System |
-| Arena System (3 fases) | ESCRITO | `arena/ArenaSystem.tsx` (Support/Guidance/Challenge), `arena/BriefingRoom.tsx` (BeforeAfterSection + MindsetPulse) |
-| Flujo simplificado (8 steps internos) | ESCRITO | Strategy > Extra Context > Generating Script > Pre-Briefing > Practice (Arena) > Analyzing > Conversation Feedback > Session Report > Dashboard |
-| Design System v3.0 | ESCRITO | `DesignSystemPage.tsx` (1680 lineas) — Colors, Typography, Components, Session, Arena, Patterns, Layouts |
-| 7 service interfaces | ESCRITO | `/src/services/interfaces/*.ts` — Auth, Conversation, Feedback, Speech, User, Payment, SpacedRepetition |
-| 7 mock adapters + 11 data files | ESCRITO | `/src/services/adapters/mock/*.ts` + `/data/*.ts` — scenario-specific para 5 tipos |
-| Service Registry con env-based switching | ESCRITO | `USE_MOCK` auto-detect via `isSupabaseConfigured()` + `ADAPTER_MODE` per-service |
-| Error protocol (5 dominios, ~31 codes) | ESCRITO | `/src/services/errors.ts` — Auth, Conversation, Feedback, Speech, Payment (incluye CREDITS_EXHAUSTED) |
-| useServiceCall hook | ESCRITO | `/src/app/hooks/useServiceCall.ts` — retry + backoff + recovery |
-| ServiceErrorBanner | ESCRITO | `/src/app/components/shared/ServiceErrorBanner.tsx` |
-| ProfileCompletionBanner | ESCRITO | `/src/app/components/shared/ProfileCompletionBanner.tsx` |
-| Prompt engineering module (7-block) | ESCRITO | `/src/services/prompts/` — templates, personas, regions, voice-map, analyst, assembler |
-| Error simulation (`?simulate_errors=true`) | ESCRITO | `/src/services/adapters/mock/utils.ts` |
-| Supabase client singleton + Row types | ESCRITO | `/src/services/supabase.ts` |
-| SupabaseAuthService adapter | ESCRITO | `/src/services/adapters/supabase/auth.supabase.ts` |
-| SQL migration script | ESCRITO | `/docs/FASE1_MIGRATION.sql` — 5 tablas, 1 trigger, 5 RLS sets, 3 indexes |
-| Shared design system | ESCRITO | `/src/app/components/shared/index.tsx` (1254 lineas) — COLORS, BrandLogo, AnalyzingScreen, RecordButton, etc. |
-| StrategyBuilder con framework tooltips | ESCRITO | STAR, BATNA, SPIN, MEDDIC por scenario type |
+| ~45 archivos fuente (React + Tailwind v4) | COMPLETADO | Landing (i18n ES/PT/EN), Auth, Strategy Builder, Extra Context, Generating Script (loader), Pre-Briefing, Voice Practice (Arena 3 fases), Analyzing (loader), Conversation Feedback, SessionReport, Dashboard, Practice History, Design System |
+| Arena System (3 fases) | COMPLETADO | `arena/ArenaSystem.tsx` (Support/Guidance/Challenge), `arena/BriefingRoom.tsx` (BeforeAfterSection + MindsetPulse) |
+| Flujo simplificado (8 steps internos) | COMPLETADO | Strategy > Extra Context > Generating Script > Pre-Briefing > Practice (Arena) > Analyzing > Conversation Feedback > Session Report > Dashboard |
+| Design System v3.0 | COMPLETADO | `DesignSystemPage.tsx` (1680 lineas) — Colors, Typography, Components, Session, Arena, Patterns, Layouts |
+| 7 service interfaces | COMPLETADO | `/src/services/interfaces/*.ts` — Auth, Conversation, Feedback, Speech, User, Payment, SpacedRepetition |
+| 7 mock adapters + 11 data files | COMPLETADO | `/src/services/adapters/mock/*.ts` + `/data/*.ts` — scenario-specific para 5 tipos |
+| Service Registry (100% mock) | COMPLETADO | `services/index.ts` (~38 lineas) — solo mock adapters, sin imports de Supabase |
+| Error protocol (5 dominios, ~31 codes) | COMPLETADO | `/src/services/errors.ts` — Auth, Conversation, Feedback, Speech, Payment (incluye CREDITS_EXHAUSTED) |
+| useServiceCall hook | COMPLETADO | `/src/app/hooks/useServiceCall.ts` — retry + backoff + recovery |
+| useUsageGating hook | COMPLETADO | `/src/app/hooks/useUsageGating.ts` — freemium gating, 3 paywall triggers |
+| ServiceErrorBanner | COMPLETADO | `/src/app/components/shared/ServiceErrorBanner.tsx` |
+| ProfileCompletionBanner | COMPLETADO | `/src/app/components/shared/ProfileCompletionBanner.tsx` |
+| Prompt engineering module (7-block) | COMPLETADO | `/src/services/prompts/` — templates, personas, regions, voice-map, analyst, assembler |
+| Error simulation (`?simulate_errors=true`) | COMPLETADO | `/src/services/adapters/mock/utils.ts` |
+| Supabase client singleton + Row types | COMPLETADO | `/src/services/supabase.ts` (preparado para Fase 1) |
+| SupabaseAuthService adapter | COMPLETADO | `/src/services/adapters/supabase/auth.supabase.ts` (preparado para Fase 1) |
+| SQL migration script | COMPLETADO | `/docs/FASE1_MIGRATION.sql` — 5 tablas, 1 trigger, 5 RLS sets, 3 indexes |
+| Shared design system | COMPLETADO | `/src/app/components/shared/index.tsx` (1254 lineas) — COLORS, BrandLogo, AnalyzingScreen, RecordButton, SmoothHeight, etc. |
+| StrategyBuilder con framework tooltips | COMPLETADO | STAR, BATNA, SPIN, MEDDIC por scenario type |
+| Paywall system (3 triggers) | COMPLETADO | `useUsageGating` hook + `CreditUpsellModal` con headers contextuales |
+| i18n ES/PT/EN | COMPLETADO | `landing-i18n.ts`, `CreditUpsellModal.tsx`, language switcher con flag emojis |
+| ErrorBoundary | COMPLETADO | `ErrorBoundary.tsx` wrapping todo `App.tsx` |
 
 ### Production Readiness Audit — COMPLETADA (26 feb - 3 mar 2026)
 
@@ -39,66 +43,57 @@
 | Payment interface reescrita | HECHO | `createCheckout(uid, CreditPack)`, `getCreditsBalance()` |
 | User mock reescrito para creditos | HECHO | `canStartSession()` con validacion de creditos |
 | Payment mock reescrito para creditos | HECHO | `getCreditsBalance()`, checkout simulation |
-| `services/index.ts` con auto-detect | HECHO | `USE_MOCK` env-based, no hardcodeado |
+| `services/index.ts` simplificado a 100% mock | HECHO | ~38 lineas, solo mock adapters, sin imports de supabase |
 | Components limpiados de imports directos a mock | HECHO | Solo importan de `../../services` |
 | `CREDITS_EXHAUSTED` error code | HECHO | En `errors.ts` |
 | `session_10` eliminado del stack | HECHO | Plan simplificado |
 | Copy de suscripcion reemplazado por creditos | HECHO | `landing-i18n.ts`, `DashboardPage`, `CreditUpsellModal` |
-| `CreditUpsellModal` creado | HECHO | Grid de 3 packs, badges, confetti, i18n ES/PT |
-| i18n ES/PT completo | HECHO | `landing-i18n.ts` (668 lineas), `LandingLangContext.tsx`, `LanguageTransitionModal.tsx` |
+| `CreditUpsellModal` creado y restaurado | HECHO | Grid de 3 packs, radio buttons, confetti, i18n ES/PT/EN, trust line |
+| i18n ES/PT/EN completo | HECHO | `landing-i18n.ts`, `CreditUpsellModal.tsx`, `LandingPage.tsx` language switcher |
 | Race condition fix post-login | HECHO | `prevAuthUserRef` reemplaza `authInitialized` en `App.tsx` |
 | ErrorBoundary agregado | HECHO | `ErrorBoundary.tsx` wrapping todo `App.tsx` |
-| Defensive service initialization | HECHO | try-catch en `createAuthService()` y global en singleton creation |
 | `RESET_PROTOTYPE` eliminado | HECHO | Ya no existe en `App.tsx` |
+| Paywall system | HECHO | `useUsageGating` hook, 3 triggers: extra-practice, download-report, new-session |
+| Flujo post-compra contextual | HECHO | extra-practice → reset intentos; download-report → auto-descarga PDF |
+| `triggerMockDownload()` extraido | HECHO | Funcion reutilizable en `PracticeSessionPage.tsx` |
+| EN como 3er idioma | HECHO | Copy completo, skip LanguageTransitionModal para EN, posicionamiento como communication training |
+| `CreditUpsellModal` restaurado | HECHO | Reconstruido tras truncacion accidental durante i18n EN |
 
-### Auditoria estatica — COMPLETADA (26 feb - 3 mar 2026)
-
-| Verificacion | Resultado |
-|---|---|
-| Imports/exports en ~45 archivos | 0 imports rotos, 0 exports faltantes |
-| Service Layer (7 interfaces, 7 mock adapters, 11 data files) | Consistente |
-| Component props y data flow | Consistente |
-| Supabase adapter + client singleton | Resuelve correctamente |
-| `@supabase/supabase-js` v2.98.0 | `AuthUser` confirmado como export valido |
-| `@supabase/auth-js` transitive dep | Instalado en `.pnpm` |
-| `canvas-confetti` module export | `export default module.exports` — correcto |
-| Deuda tecnica: `ui/` directory (~48 archivos shadcn/ui) | 0 imports — inerte (tree-shaking los elimina) |
-
-### Compilacion y runtime — EN PROGRESO
+### Compilacion y runtime — COMPLETADA
 
 | Tarea | Estado |
 |---|---|
-| Primera compilacion (preview de Figma Make) | **BLANK SCREEN — en debug** |
-| ErrorBoundary para capturar error real | **AGREGADO** |
-| Defensive service init (try-catch) | **AGREGADO** |
-| Debug iterativo de errores | **EN PROGRESO** |
-| Navegacion E2E manual (happy path) | **PENDIENTE** (requiere blank screen resuelto) |
-| Validacion visual de cada pantalla | **PENDIENTE** |
-| Error simulation testing | **PENDIENTE** |
+| Primera compilacion exitosa | **COMPLETADA** |
+| ErrorBoundary funcional | **COMPLETADA** |
+| Navegacion E2E manual (happy path) | **COMPLETADA** |
+| Validacion visual de cada pantalla | **COMPLETADA** |
+| Paywall triggers funcionales | **COMPLETADA** |
+| i18n ES/PT/EN funcional | **COMPLETADA** |
 
 ---
 
-## Siguiente paso inmediato: Resolver Blank Screen
+## Siguiente paso inmediato: Conectar Supabase para Auth y Persistencia
 
-### Paso 0: Debug y primera ejecucion exitosa
+> **Estado:** El prototipo funciona correctamente con mock data. La arquitectura de adapters permite hacer el swap de mock a real de forma limpia, servicio por servicio.
 
-> **Responsable:** Frontend developer (o IA en Figma Make)
-> **Estimado:** 1-2 sesiones de trabajo adicionales
-> **Objetivo:** La app renderiza sin pantalla blanca y el flujo mock funciona end-to-end.
+### Prerequisitos para Fase 1
 
 | Tarea | Detalle | Estado |
 |-------|---------|--------|
-| **ErrorBoundary wrapper** | Envuelve todo App.tsx, atrapa errores de render | HECHO |
-| **Defensive service init** | try-catch en createAuthService + global | HECHO |
-| **Verificar si ErrorBoundary muestra error** | Si se ve el fallback, el error esta en render | PENDIENTE |
-| **Si blank persiste sin ErrorBoundary** | Error es pre-React (module-level crash) | PENDIENTE |
-| **Forzar USE_MOCK=true como test** | Si funciona con mock puro → issue es Supabase adapter | PENDIENTE |
-| **Dynamic import de SupabaseAuthService** | Si static import crashea, convertir a `import()` | PLAN B |
-| **Smoke test: Landing** | La pagina renderiza con PracticeWidget funcional | PENDIENTE |
-| **Smoke test: 8 steps** | Navegar Strategy → ... → Session Report → Dashboard sin crashes | PENDIENTE |
-| **Smoke test: Dashboard** | Dashboard renderiza con credit balance y datos mock | PENDIENTE |
+| Prototipo mock funcional | App renderiza, flujo E2E funciona | **COMPLETADO** |
+| Paywall system validado | 3 triggers conectados y funcionales | **COMPLETADO** |
+| i18n ES/PT/EN funcional | Landing page trilingual | **COMPLETADO** |
+| `services/index.ts` limpio | 100% mock, ~38 lineas, sin imports de supabase | **COMPLETADO** |
+| Documentacion actualizada | Docs reflejan estado actual del prototipo | **COMPLETADO** |
 
-**Hito:** Un usuario puede recorrer TODO el flujo del prototipo sin errores, desde Landing hasta Dashboard.
+### Para activar Supabase
+
+1. Restaurar `services/index.ts` al patron de auto-detect (referencia: `BACKEND_HANDOFF.md`)
+2. Configurar env vars (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`)
+3. `ADAPTER_MODE.auth` = `"supabase"` (el adapter `auth.supabase.ts` ya existe)
+4. Los demas servicios permanecen en mock hasta que se implementen
+
+**Hito:** Un usuario puede registrarse con Google real, y el resto del flujo sigue funcionando con mocks.
 
 ---
 
@@ -277,13 +272,13 @@ El frontend React ya esta escrito con mock adapters. El backend developer implem
 ```
            0    1    2    3    4    5    6    7    8    9    10
            +----+----+----+----+----+----+----+----+----+----+
-Debug:     ####
+Fase 0:    #### (COMPLETADA — prototipo funcional con mock data)
  Fase 1         ####
  Fase 2              ############
  Fase 3                             ############
  Fase 4                                            ############
 
-Semana 0 = Debug/first-run del prototipo mock (EN PROGRESO)
+Fase 0 = Prototipo mock COMPLETADA (4 mar 2026)
 Semanas 1-10 = Backend Supabase (progresivo)
 ```
 
@@ -292,10 +287,9 @@ Semanas 1-10 = Backend Supabase (progresivo)
 ## Deuda tecnica conocida
 
 | Item | Impacto | Cuando resolver |
-|------|---------|-----------------|
-| `ui/` directory (~48 archivos shadcn/ui) | 0 — archivos protegidos del sistema, no se pueden eliminar pero no se importan en ningun lado. Dependencias removidas del package.json (26 feb 2026) | No action needed — Vite los ignora |
-| `PracticeSessionPage.tsx` (1339 lineas) | Legibilidad. Reducido de 2891 con extraccion de SessionReport | Refactor opcional: extraer mas sub-componentes |
-| `shared/index.tsx` (1254 lineas) | Legibilidad. Muchos componentes en un solo archivo | Refactor opcional: split por dominio |
-| `DesignSystemPage.tsx` (1680 lineas) | Solo afecta la pagina de design system (debug tool) | Baja prioridad |
-| Blank screen issue | Bloquea toda prueba E2E | **PRIORIDAD MAXIMA** — ErrorBoundary + defensive init agregados |
-| Hash-based routing (no react-router) | Funcional pero basico. No soporta deep linking complejo | Evaluar migracion a react-router si se necesita |
+|------|---------|-----------------| 
+| `ui/` directory (~48 archivos shadcn/ui) | 0 — archivos protegidos del sistema, Vite los ignora | No action needed |
+| `PracticeSessionPage.tsx` (1339 lineas) | Legibilidad | Refactor opcional: extraer sub-componentes |
+| `shared/index.tsx` (1254 lineas) | Legibilidad | Refactor opcional: split por dominio |
+| `DesignSystemPage.tsx` (1680 lineas) | Solo debug tool | Baja prioridad |
+| Hash-based routing (no react-router) | Funcional pero basico | Evaluar si se necesita deep linking |

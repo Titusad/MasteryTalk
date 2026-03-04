@@ -1,8 +1,8 @@
-# inFluentia PRO - Master Blueprint v5.0
+# inFluentia PRO - Master Blueprint v6.0
 
 > **The Scalable Blueprint** - De concepto educativo a herramienta de rendimiento ejecutivo.
 > Documento maestro que consolida arquitectura, decisiones, y hoja de ruta.
-> Ultima actualizacion: 3 marzo 2026 (v5.0 — refleja auditoria de production readiness, cambio a credit packs, i18n ES/PT, ErrorBoundary, flujo simplificado a 8 pasos, debugging de blank screen en progreso)
+> Ultima actualizacion: 4 marzo 2026 (v6.0 — prototipo funcional con mock data, paywall system implementado, i18n ES/PT/EN, 3 paywall triggers conectados, CreditUpsellModal restaurado post-truncacion)
 
 ---
 

@@ -1,12 +1,14 @@
 /**
- * Mock chat messages — Scenario-specific AI conversations (4 turns each)
+ * Mock chat messages — Scenario-specific AI conversations (9 messages each: opening + 8 responses)
  *
  * The array contains ONLY AI messages. User messages are generated
  * in real-time by VoicePractice via speechService.transcribe().
  *
  * Message 0: Delivered by prepareSession (Support phase opener)
- * Messages 1-2: Returned by processTurn (Support → Guidance transition)
- * Message 3: Final AI response (isComplete=true)
+ * Messages 1-5: Mid-conversation (Support → Guidance → Challenge transitions)
+ * Message 6: Deeper challenge / advanced topic
+ * Message 7: CLOSING QUESTION — AI must end with a question for the user
+ * Message 8: Final farewell after user answers the closing question (isComplete=true)
  */
 import type { ChatMessage, ArenaPowerPhrase, BeforeAfterComparison, ScenarioType } from "../../../types";
 
@@ -39,7 +41,37 @@ const CHAT_MESSAGES_BY_SCENARIO: Record<string, ChatMessage[]> = {
       role: "ai",
       label: "Client",
       time: "10:31",
-      text: "That's a strong approach — the champion program shows you understand organizational change management. You've given me a lot to consider. Let me bring this to our leadership meeting on Thursday. Can you send me a one-pager with those ROI numbers and the champion program details?",
+      text: "The champion program is a smart approach. But let me push on something — your pricing is 30% higher than what we paid for the last tool. How do you justify that premium?",
+    },
+    {
+      role: "ai",
+      label: "Client",
+      time: "10:34",
+      text: "Fair enough on the ROI argument. Let me ask you something more strategic — we're expanding into Brazil next quarter. Can your platform handle Portuguese-language campaigns and local payment methods there?",
+    },
+    {
+      role: "ai",
+      label: "Client",
+      time: "10:37",
+      text: "That's good to know about the Brazil capability. One more thing that's been on my mind — data security. We've had issues with vendors storing client data outside the region. Where do you host your LATAM data?",
+    },
+    {
+      role: "ai",
+      label: "Client",
+      time: "10:40",
+      text: "Regional hosting is a must-have for us, so that checks the box. You know what, I'm going to be presenting vendor options to our leadership team on Thursday. What makes you confident we should choose you over the two other platforms we're evaluating?",
+    },
+    {
+      role: "ai",
+      label: "Client",
+      time: "10:43",
+      text: "You've given me a lot to think about. Before I go — what's the single biggest concern you think I should raise with my leadership team to make sure we're making the right decision?",
+    },
+    {
+      role: "ai",
+      label: "Client",
+      time: "10:46",
+      text: "That's a strong point. I'll bring that up Thursday. Let me take all of this back to the team — can you send me a one-pager with those ROI numbers and the champion program details? I'll be in touch by end of week.",
     },
   ],
 
@@ -67,7 +99,37 @@ const CHAT_MESSAGES_BY_SCENARIO: Record<string, ChatMessage[]> = {
       role: "ai",
       label: "Recruiter",
       time: "09:12",
-      text: "I appreciate that answer — it shows real emotional intelligence. We're wrapping up, but before we finish, do you have any questions for me about the role or the team?",
+      text: "Good approach. Now let me shift gears — we're a fast-growing company and things change quickly. Tell me about a time you had to make a major product decision with incomplete data. What was your framework?",
+    },
+    {
+      role: "ai",
+      label: "Recruiter",
+      time: "09:16",
+      text: "I appreciate the structured thinking. Here's a harder one — imagine you join us and after 90 days, you realize the product strategy inherited from your predecessor isn't working. What do you do?",
+    },
+    {
+      role: "ai",
+      label: "Recruiter",
+      time: "09:20",
+      text: "That's a mature answer. Let me ask about team dynamics — you'd be managing a team of 8 across three countries. How do you build trust and maintain alignment with a distributed team you've never met in person?",
+    },
+    {
+      role: "ai",
+      label: "Recruiter",
+      time: "09:24",
+      text: "Strong answer. I can tell you've managed remote teams before. One thing I want to understand better — what's your biggest professional weakness, and what are you actively doing about it?",
+    },
+    {
+      role: "ai",
+      label: "Recruiter",
+      time: "09:28",
+      text: "I appreciate the honesty. We're coming up on time, and I've really enjoyed this conversation. Before we wrap up — do you have any questions for me about the role, the team, or the company?",
+    },
+    {
+      role: "ai",
+      label: "Recruiter",
+      time: "09:32",
+      text: "Those are excellent questions — they tell me you're thinking strategically about this role. We'll be in touch within the next week. Thanks so much for your time today — it's been a great conversation.",
     },
   ],
 
@@ -94,8 +156,38 @@ const CHAT_MESSAGES_BY_SCENARIO: Record<string, ChatMessage[]> = {
     {
       role: "ai",
       label: "CEO",
-      time: "14:14",
-      text: "That's a thorough risk analysis. I like the phased approach with the Brazil pilot. Send me the full model by end of day — I want to review the numbers before presenting to the board next Tuesday. If the data holds, you'll have your green light.",
+      time: "14:13",
+      text: "The phased approach with Brazil is smart risk management. But let me challenge you on the timeline — you're saying we'll see results in 90 days. In my experience, behavior change in customer success takes longer. What evidence supports that timeline?",
+    },
+    {
+      role: "ai",
+      label: "CEO",
+      time: "14:17",
+      text: "Fair point about the onboarding automation. Now, I need to think about this from the board's perspective. They approved a growth-first strategy last quarter. How do I sell them on shifting to retention without looking like we're pivoting?",
+    },
+    {
+      role: "ai",
+      label: "CEO",
+      time: "14:21",
+      text: "\"Growth through retention\" — I like that framing. The CAC payback improvement is the kind of number that resonates with our investors. What about headcount? Does this reallocation affect any current team positions?",
+    },
+    {
+      role: "ai",
+      label: "CEO",
+      time: "14:25",
+      text: "Good — no layoffs, just redeployment. That makes the board conversation much easier. Let me ask you about competitive risk — are any of our competitors already making this shift to retention-first?",
+    },
+    {
+      role: "ai",
+      label: "CEO",
+      time: "14:29",
+      text: "That's valuable competitive intelligence. You've built a strong case here. Before I take this to the board — is there anything else you think I should know, or any risk I haven't asked about?",
+    },
+    {
+      role: "ai",
+      label: "CEO",
+      time: "14:33",
+      text: "Thorough as always. Send me the full model by end of day — I want to review the numbers before presenting to the board next Tuesday. If the data holds up, you'll have your green light.",
     },
   ],
 
@@ -123,7 +215,37 @@ const CHAT_MESSAGES_BY_SCENARIO: Record<string, ChatMessage[]> = {
       role: "ai",
       label: "Client",
       time: "11:14",
-      text: "That's a creative structure — the premium tier at current pricing with a two-year commitment works for me. Let me run the numbers by my CFO today. If she approves, we can have the paperwork ready by Friday. Can you send me the updated proposal?",
+      text: "The premium tier at current pricing is interesting. But I need to understand what 'premium' actually gets us that we don't have today. Can you be specific about the added value?",
+    },
+    {
+      role: "ai",
+      label: "Client",
+      time: "11:18",
+      text: "Okay, the dedicated account manager and priority support are appealing. But here's my real concern — we've grown 40% this year. If we lock in a two-year deal, I need assurance that the platform can scale with us without surprise costs. How do you handle volume growth?",
+    },
+    {
+      role: "ai",
+      label: "Client",
+      time: "11:22",
+      text: "Volume-based pricing that decreases per unit — that's the kind of structure I can sell internally. Let me push on one more thing — what happens if we need to downscale? Life's unpredictable. Is there an exit clause?",
+    },
+    {
+      role: "ai",
+      label: "Client",
+      time: "11:26",
+      text: "A 90-day notice with proportional adjustment is reasonable. I'm feeling good about where this is heading. My CFO meets with vendors on Fridays — can you have a formal proposal ready by Thursday?",
+    },
+    {
+      role: "ai",
+      label: "Client",
+      time: "11:30",
+      text: "Good. One last question before we close — if my CFO pushes back on the two-year commitment and wants to stay annual, what's the best you can offer us in that scenario?",
+    },
+    {
+      role: "ai",
+      label: "Client",
+      time: "11:34",
+      text: "That's a fair position — I understand the two-year gives you more flexibility on pricing. Let me run both scenarios by the CFO today. If she approves, we'll have the paperwork ready by Friday. Thanks for being straightforward — I appreciate it.",
     },
   ],
 
@@ -151,7 +273,37 @@ const CHAT_MESSAGES_BY_SCENARIO: Record<string, ChatMessage[]> = {
       role: "ai",
       label: "VP of Partnerships",
       time: "17:39",
-      text: "A 35% improvement in deal close rates? That's impressive if it holds. I'd love to see the case study you mentioned. Let me give you my card — can you send that over and maybe we set up a proper call next week?",
+      text: "A 35% improvement in deal close rates? That's impressive if it holds. I'm curious — how does the AI simulate real business scenarios? Is it like role-playing with a chatbot, or something more sophisticated?",
+    },
+    {
+      role: "ai",
+      label: "VP of Partnerships",
+      time: "17:42",
+      text: "Scenario-specific personas with real-time pronunciation scoring — that's much more than I expected. How many companies are using this right now? Are there any names I'd recognize?",
+    },
+    {
+      role: "ai",
+      label: "VP of Partnerships",
+      time: "17:45",
+      text: "Still early stage but with strong traction — I respect that honesty. You know, we have about 200 LATAM-based team leads who struggle with executive communication in English. Have you ever considered a B2B enterprise licensing model?",
+    },
+    {
+      role: "ai",
+      label: "VP of Partnerships",
+      time: "17:48",
+      text: "Enterprise pilots — smart way to prove value before scaling. Our L&D team is always looking for innovative solutions. I think there could be a real fit here, especially with our Mexico and Colombia offices.",
+    },
+    {
+      role: "ai",
+      label: "VP of Partnerships",
+      time: "17:51",
+      text: "This has been a really interesting conversation. Before we part ways — what would be the ideal next step from your side? A demo, a pilot proposal, or just a follow-up call?",
+    },
+    {
+      role: "ai",
+      label: "VP of Partnerships",
+      time: "17:54",
+      text: "Perfect — let me give you my card. Send me the case study and a pilot proposal by Tuesday, and I'll loop in our Head of L&D for a call next week. Great meeting you!",
     },
   ],
 };

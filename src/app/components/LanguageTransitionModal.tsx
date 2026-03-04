@@ -16,7 +16,7 @@ const MODAL_COPY = {
   },
   pt: {
     title: "Tudo pronto!",
-    body: "A partir de agora, a interface estará em",
+    body: "A partir de ahora, a interface estará em",
     bodyHighlight: "inglês",
     bodySuffix: "para oferecer uma experiência mais imersiva.",
     subtitle: "Sua prática, coaching e feedback — tudo no idioma que você precisa dominar.",

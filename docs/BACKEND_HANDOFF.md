@@ -1,7 +1,7 @@
 # inFluentia PRO — Backend Developer Handoff
 
-> **Fecha:** 3 marzo 2026
-> **Estado del frontend:** Prototipo escrito con mock adapters, auditoria de production readiness completada, debugging de blank screen en progreso (ErrorBoundary + defensive service init agregados).
+> **Fecha:** 4 marzo 2026
+> **Estado del frontend:** Prototipo funcional como MVP con mock data — listo para demos y validacion con usuarios. Paywall system (3 triggers) implementado. i18n ES/PT/EN completo.
 > **Tu mision:** Configurar Supabase, ejecutar la migracion, y progresivamente reemplazar mock adapters con adapters reales.
 
 ---
@@ -75,7 +75,7 @@
 
 ### Los 5 archivos que debes leer antes de escribir codigo
 
-1. **`/src/services/index.ts`** — Entiende el sistema de switching mock/supabase (ahora con auto-detect + try-catch)
+1. **`/src/services/index.ts`** — Actualmente 100% mock (~38 lineas). Necesitaras restaurar el patron de auto-detect/ADAPTER_MODE para conectar Supabase
 2. **`/src/services/interfaces/*.ts`** — Los 7 contratos que debes implementar
 3. **`/src/services/types.ts`** — Todos los tipos de datos compartidos (incl `CreditPack`, `CREDIT_PACK_DETAILS`)
 4. **`/src/services/errors.ts`** — El protocolo de errores (el frontend ya lo maneja, incl `CREDITS_EXHAUSTED`)

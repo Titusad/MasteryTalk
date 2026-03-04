@@ -13,6 +13,17 @@ import {
   PenLine,
   Info,
   ArrowLeft,
+  ClipboardPaste,
+  Sparkles,
+  ChevronDown,
+  RotateCcw,
+  Trophy,
+  Target,
+  Zap,
+  Briefcase,
+  MessageSquare,
+  Handshake,
+  Users,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -31,17 +42,22 @@ import { conversationService, speechService } from "../../services";
 import { toServiceError } from "../../services/errors";
 import type { ServiceError } from "../../services/errors";
 import { ServiceErrorBanner } from "./shared/ServiceErrorBanner";
-import { getTrySaying, getBeforeAfterForScenario, getStrengthsForScenario, getOpportunitiesForScenario, getScriptSectionsForScenario, setMockSpeechScenario } from "../../services/scenario-data";
+import { getTrySaying, getBeforeAfterForScenario, getStrengthsForScenario, getOpportunitiesForScenario, getScriptSectionsForScenario, setMockSpeechScenario, getPowerPhrasesForScenario, getPowerQuestions } from "../../services/scenario-data";
 import { BeforeAfterSection } from "./arena/BriefingRoom";
 import type {
   ChatMessage,
   ScenarioType,
+  UserPlan,
+  CreditPack,
 } from "../../services/types";
 import { StrategyBuilder } from "./StrategyBuilder";
 import type { ValuePillar } from "./StrategyBuilder";
 import { SessionProgressBar } from "./SessionProgressBar";
 import { SessionReport } from "./SessionReport";
 import type { Step } from "./shared/session-types";
+import { CreditUpsellModal } from "./CreditUpsellModal";
+import { useUsageGating } from "../hooks/useUsageGating";
+import type { PaywallReason } from "../hooks/useUsageGating";
 
 /* ═══════════════════════════════════════════════════════════
    TYPES & DATA (MVP-simplified)
@@ -54,6 +70,23 @@ interface PracticeSessionPageProps {
   guidedFields?: Record<string, string>;
   onFinish: () => void;
   onNewPractice?: () => void;
+  userPlan?: UserPlan;
+}
+
+/** Repeat limits: free tier gets 1 repeat (2 total), paid gets 2 repeats (3 total) */
+const MAX_REPEATS: Record<UserPlan, number> = {
+  free: 1,
+  "per-session": 2,
+};
+
+/** Info passed to ConversationFeedback for repeat UI */
+export interface RepeatInfo {
+  /** Current attempt number (1-based) */
+  attempt: number;
+  /** Maximum attempts allowed for this scenario */
+  maxAttempts: number;
+  /** Whether the user can practice again */
+  canRepeat: boolean;
 }
 
 const SCENARIO_LABELS_MAP: Record<string, string> = {
@@ -128,6 +161,36 @@ function PreBriefingScreen({
             </p>
           </div>
         </motion.div>
+
+        {/* Strategy Pillars Summary — right after narrative structure */}
+        {strategyPillars && strategyPillars.length > 0 && (
+          <motion.div
+            className="bg-gradient-to-r from-[#f0f9ff] to-[#eef2ff] rounded-2xl border border-[#bfdbfe]/40 p-6 mb-8"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.04 }}
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <Lightbulb className="w-5 h-5 text-[#6366f1]" />
+              <h3 className="text-[#0f172b]" style={{ fontWeight: 600 }}>
+                Your value strategy
+              </h3>
+            </div>
+            <div className="space-y-2">
+              {strategyPillars.map((p, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-start gap-3 text-sm text-[#314158]"
+                >
+                  <span className="w-5 h-5 rounded-full bg-[#6366f1] text-white flex items-center justify-center shrink-0 text-[10px]" style={{ fontWeight: 700 }}>
+                    {idx + 1}
+                  </span>
+                  <p className="leading-relaxed">{p.summary}</p>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
 
         {/* 2. Highlight Legend */}
         <motion.div
@@ -229,35 +292,7 @@ function PreBriefingScreen({
           ))}
         </motion.div>
 
-        {/* 4. Strategy Pillars Summary (if available) */}
-        {strategyPillars && strategyPillars.length > 0 && (
-          <motion.div
-            className="bg-gradient-to-r from-[#f0f9ff] to-[#eef2ff] rounded-2xl border border-[#bfdbfe]/40 p-6 mb-8"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.12 }}
-          >
-            <div className="flex items-center gap-2 mb-4">
-              <Lightbulb className="w-5 h-5 text-[#6366f1]" />
-              <h3 className="text-[#0f172b]" style={{ fontWeight: 600 }}>
-                Your value strategy
-              </h3>
-            </div>
-            <div className="space-y-2">
-              {strategyPillars.map((p, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-start gap-3 text-sm text-[#314158]"
-                >
-                  <span className="w-5 h-5 rounded-full bg-[#6366f1] text-white flex items-center justify-center shrink-0 text-[10px]" style={{ fontWeight: 700 }}>
-                    {idx + 1}
-                  </span>
-                  <p className="leading-relaxed">{p.summary}</p>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        )}
+
 
         {/* CTA: Start Simulation */}
         <motion.div
@@ -274,10 +309,10 @@ function PreBriefingScreen({
               className="text-2xl md:text-[28px] text-[#0f172b] mb-3"
               style={{ fontWeight: 300, lineHeight: 1.3 }}
             >
-              Want to simulate your conversation?
+              Want to practice your conversation?
             </h3>
             <p className="text-[#45556c] text-lg max-w-md mx-auto mb-8">
-              Put this script into practice in a realistic AI conversation. Your coach will give you real-time feedback.
+              Put this script into practice in a realistic AI conversation to get feedback.
             </p>
             <button
               onClick={onStartSimulation}
@@ -285,7 +320,7 @@ function PreBriefingScreen({
               style={{ fontWeight: 500 }}
             >
               <Play className="w-5 h-5" />
-              Start simulation
+              Start Practice
               <ArrowRight className="w-5 h-5" />
             </button>
             <button
@@ -345,10 +380,12 @@ function VoicePractice({
   const [playingMsgIndex, setPlayingMsgIndex] = useState<number | null>(null);
   const [voiceError, setVoiceError] = useState<ServiceError | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const chatScrollAreaRef = useRef<HTMLDivElement>(null);
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const waveformRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const revealIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const recordingStartRef = useRef(0);
+  const lastScrolledMsgCount = useRef(0);
 
   /* Load first message via conversationService on mount */
   useEffect(() => {
@@ -390,20 +427,26 @@ function VoicePractice({
       revealIntervalRef.current = null;
     }
 
-    const words = lastMsg.text.split(/\s+/);
+    const totalChars = lastMsg.text.length;
     setRevealingMsgIndex(lastIdx);
-    setRevealedWords(0);
+    setRevealedWords(0); // reused as revealedChars
     let count = 0;
 
+    /* ── Character-by-character typewriter ──
+       ~25ms per char ≈ 40 chars/s ≈ 8 words/s (≈480 WPM visual).
+       Feels like fast real-time transcription.
+       In production this is replaced by ElevenLabs word-level timestamps
+       (see /src/services/prompts/tts-sync.ts). */
+    const msPerChar = 35;
     revealIntervalRef.current = setInterval(() => {
-      count++;
-      setRevealedWords(count);
-      if (count >= words.length) {
+      count += 1;
+      setRevealedWords(count); // reused as revealedChars
+      if (count >= totalChars) {
         if (revealIntervalRef.current) clearInterval(revealIntervalRef.current);
         revealIntervalRef.current = null;
         setRevealingMsgIndex(null);
       }
-    }, 55);
+    }, msPerChar);
 
     return () => {
       if (revealIntervalRef.current) {
@@ -415,9 +458,41 @@ function VoicePractice({
     };
   }, [messages.length]);
 
+  /* Smart scroll: only auto-scroll on new messages or state changes, NOT every word.
+     For word reveals, only nudge scroll if user is already near the bottom. */
+  const smoothScrollToBottom = useCallback(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, []);
+
+  // Scroll on new messages or major state changes
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.length, isRecording, isProcessing, isAiTyping, revealedWords]);
+    if (messages.length !== lastScrolledMsgCount.current) {
+      lastScrolledMsgCount.current = messages.length;
+      // Small delay so the DOM has painted the new bubble
+      requestAnimationFrame(() => {
+        smoothScrollToBottom();
+      });
+    }
+  }, [messages.length, smoothScrollToBottom]);
+
+  useEffect(() => {
+    smoothScrollToBottom();
+  }, [isProcessing, isAiTyping, smoothScrollToBottom]);
+
+  // During typewriter reveal, throttled scroll — only every ~350ms and only if near bottom
+  const lastTypewriterScrollRef = useRef(0);
+  useEffect(() => {
+    if (revealingMsgIndex === null) return;
+    const now = Date.now();
+    if (now - lastTypewriterScrollRef.current < 350) return;
+    lastTypewriterScrollRef.current = now;
+    const area = chatScrollAreaRef.current;
+    if (!area) return;
+    const distFromBottom = area.scrollHeight - area.scrollTop - area.clientHeight;
+    if (distFromBottom < 150) {
+      chatEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    }
+  }, [revealedWords, revealingMsgIndex]);
 
   /* Recording timer */
   useEffect(() => {
@@ -534,9 +609,9 @@ function VoicePractice({
       />
 
       {/* Chat area */}
-      <div className="flex-1 bg-[#f8fafc] overflow-y-auto relative">
+      <div ref={chatScrollAreaRef} className="flex-1 bg-[#f8fafc] overflow-y-auto relative scroll-smooth">
         <PastelBlobs />
-        <div className="relative max-w-[700px] mx-auto px-6 py-8 space-y-6">
+        <div className="relative max-w-[700px] mx-auto px-6 py-8 space-y-6" style={{ overflowAnchor: "none" }}>
           {/* Voice conversation banner */}
           <motion.div
             className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-full mx-auto w-fit"
@@ -556,7 +631,7 @@ function VoicePractice({
             const isPlaying = playingMsgIndex === i;
             const aiFullyRevealed = msg.role === "ai" && !isRevealing;
             const displayText = isRevealing
-              ? msg.text.split(/\s+/).slice(0, revealedWords).join(" ")
+              ? msg.text.slice(0, revealedWords)
               : msg.text;
 
             // "Try saying..." hint on latest AI message only
@@ -571,9 +646,9 @@ function VoicePractice({
             return (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: 12 }}
+                initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
+                transition={{ duration: 0.4, ease: [0.25, 1, 0.5, 1] }}
                 className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}
               >
                 <span className="text-xs text-[#62748e] mb-2 flex items-center gap-1.5">
@@ -585,7 +660,7 @@ function VoicePractice({
                   {msg.label} · {msg.time}
                 </span>
                 <div
-                  className={`rounded-2xl px-6 py-4 max-w-[600px] ${
+                  className={`rounded-2xl px-6 py-4 max-w-[600px] transition-all duration-300 ${
                     msg.role === "user"
                       ? "bg-[#0f172b] text-white"
                       : "bg-white border border-[#e2e8f0] text-[#0f172b]"
@@ -594,19 +669,19 @@ function VoicePractice({
                   <p className="leading-relaxed">
                     {displayText}
                     {isRevealing && (
-                      <motion.span
-                        className="inline-block w-[2px] h-[1em] ml-0.5 align-text-bottom rounded-full"
+                      <span
+                        className="inline-block w-[2px] h-[1em] ml-0.5 align-text-bottom rounded-full animate-cursor-blink"
                         style={{ background: "linear-gradient(to bottom, #00D3F3, #50C878)" }}
-                        animate={{ opacity: [1, 0.2, 1] }}
-                        transition={{ duration: 0.6, repeat: Infinity, ease: "easeInOut" }}
                       />
                     )}
                   </p>
                 </div>
 
                 {/* Replay button for AI messages */}
+                <AnimatePresence>
                 {msg.role === "ai" && aiFullyRevealed && (
                   <motion.button
+                    key="replay"
                     className="mt-1.5 flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] transition-colors"
                     style={{
                       fontWeight: 500,
@@ -629,16 +704,12 @@ function VoicePractice({
                       <>
                         <span className="flex items-center gap-[2px]">
                           {[0, 1, 2, 3].map((bar) => (
-                            <motion.span
+                            <span
                               key={bar}
-                              className="inline-block w-[2px] rounded-full"
-                              style={{ background: "#50C878" }}
-                              animate={{ height: [3, 10, 5, 8, 3] }}
-                              transition={{
-                                duration: 0.8,
-                                repeat: Infinity,
-                                delay: bar * 0.1,
-                                ease: "easeInOut",
+                              className="inline-block w-[2px] rounded-full animate-eq-bar"
+                              style={{
+                                background: "#50C878",
+                                animationDelay: `${bar * 0.1}s`,
                               }}
                             />
                           ))}
@@ -653,6 +724,7 @@ function VoicePractice({
                     )}
                   </motion.button>
                 )}
+                </AnimatePresence>
 
                 {msg.role === "user" && (
                   <span className="text-[10px] text-[#94a3b8] mt-1 flex items-center gap-1">
@@ -662,12 +734,15 @@ function VoicePractice({
                 )}
 
                 {/* "Try saying..." hint after the latest AI message */}
+                <AnimatePresence>
                 {isLatestAiMsg && trySaying && aiFullyRevealed && (
                   <motion.div
-                    className="mt-3 w-full bg-[#f0fdf4] border border-[#b9f8cf] rounded-xl px-4 py-3"
+                    key="try-saying"
+                    className="mt-3 w-full bg-[#f0fdf4] border border-[#b9f8cf] rounded-xl px-4 py-3 overflow-hidden"
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: 0.3 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.35, delay: 0.2, ease: [0.25, 1, 0.5, 1] }}
                   >
                     <p className="text-xs text-[#15803d]" style={{ fontWeight: 500 }}>
                       🧠 Try saying: <span className="text-[#0f172b]" style={{ fontWeight: 600 }}>{trySaying.starter}</span>
@@ -675,6 +750,7 @@ function VoicePractice({
                     <p className="text-[10px] text-[#45556c] mt-0.5">{trySaying.why}</p>
                   </motion.div>
                 )}
+                </AnimatePresence>
               </motion.div>
             );
           })}
@@ -683,11 +759,12 @@ function VoicePractice({
           <AnimatePresence>
             {isAiTyping && (
               <motion.div
+                key="ai-typing"
                 className="flex flex-col items-start"
-                initial={{ opacity: 0, y: 8 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.3 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3, ease: [0.25, 1, 0.5, 1] }}
               >
                 <span className="text-xs text-[#62748e] mb-2 flex items-center gap-1.5">
                   <Volume2 className="w-3 h-3" />
@@ -696,18 +773,12 @@ function VoicePractice({
                 <div className="bg-white border border-[#e2e8f0] rounded-2xl px-6 py-4">
                   <div className="flex gap-1 items-center h-5">
                     {[0, 1, 2, 3, 4].map((bar) => (
-                      <motion.div
+                      <div
                         key={bar}
-                        className="w-[3px] rounded-full"
-                        style={{ background: "linear-gradient(to top, #00D3F3, #50C878)" }}
-                        animate={{
-                          height: [6, 18, 8, 16, 6],
-                        }}
-                        transition={{
-                          duration: 1,
-                          repeat: Infinity,
-                          delay: bar * 0.12,
-                          ease: "easeInOut",
+                        className="w-[3px] rounded-full animate-speaking-bar"
+                        style={{
+                          background: "linear-gradient(to top, #00D3F3, #50C878)",
+                          animationDelay: `${bar * 0.12}s`,
                         }}
                       />
                     ))}
@@ -718,11 +789,15 @@ function VoicePractice({
           </AnimatePresence>
 
           {/* Processing indicator */}
+          <AnimatePresence>
           {isProcessing && (
             <motion.div
+              key="processing"
               className="flex flex-col items-end"
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3, ease: [0.25, 1, 0.5, 1] }}
             >
               <span className="text-xs text-[#62748e] mb-2 flex items-center gap-1.5">
                 <Mic className="w-3 h-3" />
@@ -731,56 +806,47 @@ function VoicePractice({
               <div className="bg-[#0f172b]/80 rounded-2xl px-6 py-4">
                 <div className="flex gap-1 items-center">
                   {[0, 1, 2, 3, 4].map((bar) => (
-                    <motion.div
+                    <div
                       key={bar}
-                      className="w-[3px] rounded-full bg-white/70"
-                      animate={{
-                        height: [4, 14, 6, 12, 4],
-                      }}
-                      transition={{
-                        duration: 0.8,
-                        repeat: Infinity,
-                        delay: bar * 0.1,
-                        ease: "easeInOut",
-                      }}
+                      className="w-[3px] rounded-full bg-white/70 animate-processing-bar"
+                      style={{ animationDelay: `${bar * 0.1}s` }}
                     />
                   ))}
                 </div>
               </div>
             </motion.div>
           )}
+          </AnimatePresence>
 
-          <div ref={chatEndRef} />
+          <div ref={chatEndRef} style={{ overflowAnchor: "auto" }} />
         </div>
       </div>
 
-      {/* Bottom controls */}
-      <div className="bg-white border-t border-[#e2e8f0] relative">
+      {/* Bottom controls — fixed-height panel, no SmoothHeight, no layout shift */}
+      <div className="bg-white border-t border-[#e2e8f0] relative flex-shrink-0">
         <div className="max-w-[700px] mx-auto px-6 py-2 flex flex-col items-center gap-1">
-          {/* Recording waveform visualizer */}
-          <AnimatePresence>
-            {isRecording && (
-              <motion.div
-                className="w-full flex flex-col items-center gap-2"
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <RecordingTimer timeMs={recordingTime} />
-                <div className="flex items-center justify-center gap-[3px] h-6 w-full max-w-[400px]">
-                  {waveformBars.map((height, i) => (
-                    <motion.div
-                      key={i}
-                      className="w-[5px] rounded-full bg-gradient-to-t from-red-400 to-red-500"
-                      animate={{ height: `${height * 24}px` }}
-                      transition={{ duration: 0.08, ease: "easeOut" }}
-                    />
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* Recording waveform — CSS transition height so chat area doesn't resize abruptly */}
+          <div
+            className="w-full flex flex-col items-center gap-2 overflow-hidden transition-all duration-200"
+            style={{
+              height: isRecording ? 56 : 0,
+              opacity: isRecording ? 1 : 0,
+            }}
+          >
+            <RecordingTimer timeMs={recordingTime} />
+            <div className="flex items-center justify-center gap-[3px] h-6 w-full max-w-[400px] overflow-hidden">
+              {waveformBars.map((h, i) => (
+                <div
+                  key={i}
+                  className="w-[5px] rounded-full bg-gradient-to-t from-red-400 to-red-500"
+                  style={{
+                    height: `${h * 24}px`,
+                    transition: "height 0.12s ease-out",
+                  }}
+                />
+              ))}
+            </div>
+          </div>
 
           {/* Mic button */}
           <RecordButton
@@ -802,57 +868,35 @@ function VoicePractice({
             }
             disabled={micDisabled}
           />
-          <AnimatePresence mode="wait">
+          {/* Status hint — fixed height slot to prevent layout shift */}
+          <div className="h-5 flex items-center justify-center">
             {isProcessing && !isRecording && (
-              <motion.p
-                key="processing"
-                className="text-sm text-[#45556c]"
-                style={{ fontWeight: 500 }}
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.25 }}
-              >
+              <p className="text-sm text-[#45556c] animate-fade-in" style={{ fontWeight: 500 }}>
                 Transcribing your response...
-              </motion.p>
+              </p>
             )}
             {!isRecording && !isProcessing && (
-              <motion.p
-                key="hint"
-                className="text-xs text-[#62748e] text-center"
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.25 }}
-              >
+              <p className="text-xs text-[#62748e] text-center">
                 {isConversationComplete
                   ? "Conversation complete — view your feedback below"
                   : "Respond naturally. There are no wrong answers."}
-              </motion.p>
+              </p>
             )}
-          </AnimatePresence>
+          </div>
 
           {/* View feedback button */}
-          <AnimatePresence>
-            {canViewFeedback && (
-              <motion.div
-                className="w-full pt-4 mt-2 border-t border-[#e2e8f0]/70"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 8 }}
-                transition={{ duration: 0.3, ease: [0.25, 1, 0.5, 1] }}
+          {canViewFeedback && (
+            <div className="w-full pt-4 mt-2 border-t border-[#e2e8f0]/70">
+              <button
+                onClick={onViewFeedback}
+                className="w-full py-3.5 rounded-full flex items-center justify-center gap-2.5 transition-all shadow-lg bg-[#2d2d2d] text-white hover:bg-[#1a1a1a]"
+                style={{ fontWeight: 500 }}
               >
-                <button
-                  onClick={onViewFeedback}
-                  className="w-full py-3.5 rounded-full flex items-center justify-center gap-2.5 transition-all shadow-lg bg-[#2d2d2d] text-white hover:bg-[#1a1a1a]"
-                  style={{ fontWeight: 500 }}
-                >
-                  Analyze my presentation
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                Analyze my presentation
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
 
         </div>
       </div>
@@ -861,24 +905,34 @@ function VoicePractice({
 }
 
 /* ═══════════════════════════════════════════════════════════
-   CONVERSATION FEEDBACK (MVP: 3 dimensions — Clarity, Persuasion, Executive Presence)
+   CONVERSATION FEEDBACK — What worked, Key improvements,
+   Power Phrases, Power Questions, Practice Again, Generate Report
    ═══════════════════════════════════════════════════════════ */
 
 function ConversationFeedback({
   scenarioType,
-  onViewReport,
-  onDashboard,
+  onGenerateReport,
+  onPracticeAgain,
+  repeatInfo,
+  onPaywallTriggered,
+  showPaywallOnRepeat,
 }: {
   scenarioType?: ScenarioType;
-  onViewReport: () => void;
-  onDashboard: () => void;
+  onGenerateReport: () => void;
+  onPracticeAgain?: () => void;
+  repeatInfo?: RepeatInfo;
+  /** Called when practice-again hits the free tier limit */
+  onPaywallTriggered?: (reason: PaywallReason) => void;
+  /** If true, the "Practice Again" button opens paywall instead */
+  showPaywallOnRepeat?: boolean;
 }) {
   const scenarioLabel = scenarioType
     ? SCENARIO_LABELS_MAP[scenarioType] ?? "Practice"
     : "Sales Pitch";
   const beforeAfter = getBeforeAfterForScenario(scenarioType);
   const strengths = getStrengthsForScenario(scenarioType);
-  const opportunities = getOpportunitiesForScenario(scenarioType);
+  const scenarioPhrases = Object.values(getPowerPhrasesForScenario(scenarioType)).flat();
+  const powerQuestions = getPowerQuestions(scenarioType);
 
   return (
     <div
@@ -894,7 +948,7 @@ function ConversationFeedback({
           subtitle={scenarioLabel}
         />
 
-        {/* What worked well */}
+        {/* ── 1. What worked well ── */}
         <motion.div
           className="mb-12"
           initial={{ opacity: 0, y: 16 }}
@@ -927,98 +981,213 @@ function ConversationFeedback({
           </div>
         </motion.div>
 
-        {/* Phrases to correct */}
-        <motion.div
-          className="mb-12"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-full bg-[#0f172b] flex items-center justify-center">
-              <PenLine className="w-6 h-6 text-white" />
+        {/* ── 2. Key improvements (before/after) ── */}
+        {beforeAfter.length > 0 && (
+          <motion.div
+            className="mb-12"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-10 h-10 rounded-full bg-[#0f172b] flex items-center justify-center">
+                <Zap className="w-6 h-6 text-white" />
+              </div>
+              <h2 className="text-[30px] text-[#0f172b]" style={{ fontWeight: 300 }}>
+                Key improvements
+              </h2>
             </div>
-            <h2 className="text-[30px] text-[#0f172b]" style={{ fontWeight: 300 }}>
-              Phrases to correct
-            </h2>
-          </div>
-          <p className="text-[#45556c] mb-6">
-            These are more executive versions of what you said. Each correction includes the technique that makes it more effective.
-          </p>
-          <BeforeAfterSection comparisons={beforeAfter} />
-        </motion.div>
+            <p className="text-[#45556c] mb-6">
+              These are more executive versions of what you said. Each correction includes the technique that makes it more effective.
+            </p>
+            <BeforeAfterSection comparisons={beforeAfter} />
+          </motion.div>
+        )}
 
-        {/* Improvement Opportunities */}
-        <motion.div
-          className="mb-12"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.25 }}
-        >
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-full bg-[#0f172b] flex items-center justify-center">
-              <Lightbulb className="w-6 h-6 text-white" />
+        {/* ── 3. Power Phrases ── */}
+        {scenarioPhrases.length > 0 && (
+          <motion.div
+            className="mb-12"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.25 }}
+          >
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-10 h-10 rounded-full bg-[#0f172b] flex items-center justify-center">
+                <Sparkles className="w-6 h-6 text-white" />
+              </div>
+              <h2 className="text-[30px] text-[#0f172b]" style={{ fontWeight: 300 }}>
+                Power Phrases
+              </h2>
             </div>
-            <h2 className="text-[30px] text-[#0f172b]" style={{ fontWeight: 300 }}>
-              Improvement Opportunities
-            </h2>
-          </div>
-          <div className="space-y-5">
-            {opportunities.map((o, i) => (
-              <motion.div
-                key={i}
-                className="bg-[#f8fafc] border border-[#e2e8f0] rounded-2xl p-6"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.45, delay: 0.1 + i * 0.1 }}
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <h3 className="text-lg text-[#0f172b]" style={{ fontWeight: 500 }}>{o.title}</h3>
-                  {o.tag && (
-                    <span className="bg-[#0f172b] text-white text-xs px-3 py-1 rounded-full" style={{ fontWeight: 500 }}>
-                      {o.tag}
-                    </span>
-                  )}
+            <div className="grid md:grid-cols-2 gap-4">
+              {scenarioPhrases.slice(0, 6).map((p, i) => (
+                <motion.div
+                  key={p.id}
+                  className="bg-white border border-[#e2e8f0] rounded-2xl p-5"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.28 + i * 0.05 }}
+                >
+                  <p className="text-[#0f172b] mb-2" style={{ fontWeight: 500 }}>
+                    "{p.phrase}"
+                  </p>
+                  <p className="text-sm text-[#45556c]">{p.context}</p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── 4. Power Questions ── */}
+        {powerQuestions.length > 0 && (
+          <motion.div
+            className="mb-12"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-10 h-10 rounded-full bg-[#0f172b] flex items-center justify-center">
+                <Target className="w-6 h-6 text-white" />
+              </div>
+              <h2 className="text-[30px] text-[#0f172b]" style={{ fontWeight: 300 }}>
+                Power Questions
+              </h2>
+            </div>
+            <div className="space-y-4">
+              {powerQuestions.slice(0, 5).map((q, i) => (
+                <motion.div
+                  key={i}
+                  className="bg-white border border-[#e2e8f0] rounded-2xl p-5"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.33 + i * 0.05 }}
+                >
+                  <p className="text-[#0f172b] mb-2" style={{ fontWeight: 500 }}>
+                    "{q.question}"
+                  </p>
+                  <span className="text-[10px] bg-[#6366f1]/10 text-[#6366f1] px-2.5 py-0.5 rounded-full" style={{ fontWeight: 600 }}>
+                    {q.timing}
+                  </span>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── 5. Practice Again / Mastery Nudge / Paywall ── */}
+        {onPracticeAgain && repeatInfo && (
+          <motion.div
+            className="mb-12"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.35 }}
+          >
+            {repeatInfo.canRepeat ? (
+              <div className="rounded-3xl bg-gradient-to-br from-[#eef2ff] to-[#f0f9ff] border border-[#bfdbfe]/50 p-8 text-center">
+                <div className="w-14 h-14 rounded-full bg-[#6366f1]/10 flex items-center justify-center mx-auto mb-4">
+                  <RotateCcw className="w-7 h-7 text-[#6366f1]" />
                 </div>
-                <p className="text-[#314158] leading-relaxed">{highlightEnglish(o.desc)}</p>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+                <h3 className="text-xl text-[#0f172b] mb-2" style={{ fontWeight: 500 }}>
+                  Ready to try again?
+                </h3>
+                <p className="text-[#45556c] mb-1 max-w-md mx-auto">
+                  Apply your feedback in a new conversation. The AI will respond differently each time.
+                </p>
+                <p className="text-xs text-[#6366f1] mb-6" style={{ fontWeight: 600 }}>
+                  Attempt {repeatInfo.attempt} of {repeatInfo.maxAttempts} — {repeatInfo.maxAttempts - repeatInfo.attempt} {repeatInfo.maxAttempts - repeatInfo.attempt === 1 ? "retry" : "retries"} remaining
+                </p>
+                <button
+                  onClick={onPracticeAgain}
+                  className="bg-[#6366f1] text-white px-8 py-4 rounded-full flex items-center gap-3 shadow-lg hover:bg-[#4f46e5] transition-colors mx-auto text-lg"
+                  style={{ fontWeight: 500 }}
+                >
+                  <RotateCcw className="w-5 h-5" />
+                  Practice Again
+                </button>
+              </div>
+            ) : showPaywallOnRepeat ? (
+              /* ── Paywall nudge: free user at attempt limit ── */
+              <div className="rounded-3xl bg-gradient-to-br from-[#fef3c7] to-[#fff7ed] border border-[#fde68a]/60 p-8 text-center">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#f59e0b]/10 to-[#f97316]/10 flex items-center justify-center mx-auto mb-4">
+                  <Zap className="w-7 h-7 text-[#f59e0b]" />
+                </div>
+                <h3 className="text-xl text-[#0f172b] mb-2" style={{ fontWeight: 500 }}>
+                  Want more practice?
+                </h3>
+                <p className="text-[#45556c] mb-2 max-w-md mx-auto">
+                  You've completed your {repeatInfo.maxAttempts} free {repeatInfo.maxAttempts === 1 ? "attempt" : "attempts"}. Unlock unlimited practice to perfect your delivery.
+                </p>
+                <p className="text-xs text-[#92400e]/70 mb-6">
+                  Each attempt generates a different conversation — the more you practice, the more confident you become.
+                </p>
+                <button
+                  onClick={() => onPaywallTriggered?.("extra-practice")}
+                  className="bg-[#0f172b] text-white px-8 py-4 rounded-full flex items-center gap-3 shadow-lg hover:bg-[#1d293d] transition-colors mx-auto text-lg"
+                  style={{ fontWeight: 500 }}
+                >
+                  <Sparkles className="w-5 h-5" />
+                  Unlock More Practice
+                  <ArrowRight className="w-5 h-5" />
+                </button>
+                <p className="text-[10px] text-[#92400e]/50 mt-3">
+                  Starting at $4.99 per session · No subscription required
+                </p>
+              </div>
+            ) : (
+              <div className="rounded-3xl bg-gradient-to-br from-[#f0fdf4] to-[#dcfce7] border border-[#bbf7d0] p-8 text-center">
+                <div className="w-14 h-14 rounded-full bg-[#16a34a]/10 flex items-center justify-center mx-auto mb-4">
+                  <Trophy className="w-7 h-7 text-[#16a34a]" />
+                </div>
+                <h3 className="text-xl text-[#0f172b] mb-2" style={{ fontWeight: 500 }}>
+                  You've mastered this scenario!
+                </h3>
+                <p className="text-[#45556c] mb-6 max-w-md mx-auto">
+                  You've completed {repeatInfo.maxAttempts} {repeatInfo.maxAttempts === 1 ? "attempt" : "attempts"} of this scenario. Try a different one to build versatility.
+                </p>
+                <div className="flex flex-wrap justify-center gap-3">
+                  {[
+                    { key: "interview", label: "Interview", icon: <Briefcase className="w-4 h-4" /> },
+                    { key: "sales", label: "Sales Pitch", icon: <MessageSquare className="w-4 h-4" /> },
+                    { key: "negotiation", label: "Negotiation", icon: <Handshake className="w-4 h-4" /> },
+                    { key: "networking", label: "Networking", icon: <Users className="w-4 h-4" /> },
+                  ]
+                    .filter((s) => s.key !== scenarioType)
+                    .slice(0, 3)
+                    .map((s) => (
+                      <button
+                        key={s.key}
+                        onClick={onGenerateReport}
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-[#e2e8f0] text-sm text-[#0f172b] hover:bg-[#f8fafc] transition-colors shadow-sm"
+                        style={{ fontWeight: 500 }}
+                      >
+                        {s.icon}
+                        {s.label}
+                      </button>
+                    ))}
+                </div>
+              </div>
+            )}
+          </motion.div>
+        )}
 
-        {/* CTA: View Full Report */}
+        {/* ── 6. Finish & Generate Report CTA ── */}
         <motion.div
-          className="rounded-3xl bg-gradient-to-br from-[#0f172b] to-[#1e293b] p-8 text-center"
+          className="flex flex-col items-center gap-3"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.35 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
         >
-          <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center mx-auto mb-5">
-            <FileText className="w-7 h-7 text-white" />
-          </div>
-          <h3 className="text-white text-2xl mb-3" style={{ fontWeight: 500 }}>
-            Your Session Report is ready
-          </h3>
-          <p className="text-white/70 mb-6 max-w-md mx-auto">
-            Review your complete report with strategy, script, cultural tips and personalized next steps.
-          </p>
           <button
-            onClick={onViewReport}
-            className="bg-white text-[#0f172b] px-8 py-4 rounded-full flex items-center gap-3 shadow-lg hover:bg-gray-100 transition-colors mx-auto text-lg"
+            onClick={onGenerateReport}
+            className="bg-[#0f172b] text-white px-10 py-4 rounded-full flex items-center gap-3 shadow-lg hover:bg-[#1d293d] transition-colors text-lg"
             style={{ fontWeight: 500 }}
           >
             <FileText className="w-5 h-5" />
-            View Session Report
+            Finish practice and generate report
             <ArrowRight className="w-5 h-5" />
           </button>
-          <div className="mt-4">
-            <button
-              onClick={onDashboard}
-              className="text-white/50 hover:text-white/80 transition-colors text-sm"
-            >
-              No thanks. Go to Dashboard
-            </button>
-          </div>
         </motion.div>
       </main>
       <MiniFooter />
@@ -1030,16 +1199,67 @@ function ConversationFeedback({
    EXTRA CONTEXT SCREEN (skippable, between Strategy and Generating)
    ═══════════════════════════════════════════════════════════ */
 
-const EXTRA_CONTEXT_FIELDS: Record<string, { label: string; placeholder: string; hint: string }[]> = {
+interface ExtraContextField {
+  label: string;
+  placeholder: string;
+  hint: string;
+  pasteHint: string;
+  suggestions: string[];
+}
+
+const EXTRA_CONTEXT_FIELDS: Record<string, ExtraContextField[]> = {
   interview: [
-    { label: "Job Description", placeholder: "Paste the job description or a summary...", hint: "The AI will adapt the questions to the specific profile" },
-    { label: "Your CV / key experience", placeholder: "Summarize your most relevant experience for this job...", hint: "To practice answers based on your real history" },
+    {
+      label: "Job Description",
+      placeholder: "Paste the job description here — or just the key requirements and responsibilities...",
+      hint: "The AI will tailor interview questions to the specific role, seniority level, and required skills",
+      pasteHint: "Tip: Copy-paste directly from LinkedIn or the company careers page",
+      suggestions: [
+        "Senior PM role, B2B SaaS, 5+ years experience required",
+        "Must lead cross-functional teams of 8-12 people",
+        "Key KPIs: retention, NPS, quarterly revenue targets",
+        "Reports to VP of Product, US-based company",
+      ],
+    },
+    {
+      label: "Your key experience",
+      placeholder: "Your 3 most relevant roles, key achievements, and skills that match this position...",
+      hint: "The AI will help you build STAR-method answers using your real career history",
+      pasteHint: "No need to paste your full CV — just the highlights relevant to this role",
+      suggestions: [
+        "5 years as PM at a SaaS startup, grew ARR 3x",
+        "Led a team of 6 engineers shipping to US clients",
+        "Fluent in Spanish, professional English (B2+)",
+        "MBA from [university], certified Scrum Master",
+      ],
+    },
   ],
   sales: [
-    { label: "Prospect / company information", placeholder: "Company name, industry, size, known pain points...", hint: "For the AI to simulate realistic objections" },
-    { label: "Your deck or presentation", placeholder: "Describe the key points of your presentation or paste a summary...", hint: "The script will align with your material" },
+    {
+      label: "Prospect / company information",
+      placeholder: "Company name, industry, size, decision-makers, known pain points or priorities...",
+      hint: "The more specific you are, the more realistic the objections and pushback will be",
+      pasteHint: "Check their LinkedIn, Crunchbase, or recent press releases for context",
+      suggestions: [
+        "Mid-market fintech, 200 employees, Series B",
+        "Currently using a competitor (Salesforce/HubSpot)",
+        "Pain point: manual reporting taking 10+ hours/week",
+        "Decision-maker is the CFO, budget cycle ends Q4",
+      ],
+    },
+    {
+      label: "Your deck or talking points",
+      placeholder: "The main value propositions, pricing structure, case studies, or differentiators from your pitch...",
+      hint: "The AI will align the conversation with your actual material so you practice what you'll really say",
+      pasteHint: "Paste your slide titles and key bullet points — no need for the full deck",
+      suggestions: [
+        "3 main slides: Problem → Solution → ROI",
+        "Key differentiator: 40% faster implementation",
+        "Case study: similar client saved $200K/year",
+        "Pricing: $15K/year, includes onboarding",
+      ],
+    },
   ],
-  /* Non-MVP scenarios — kept as stubs for type safety */
   csuite: [],
   negotiation: [],
   networking: [],
@@ -1058,6 +1278,7 @@ function ExtraContextScreen({
 }) {
   const fields = scenarioType ? EXTRA_CONTEXT_FIELDS[scenarioType] ?? [] : [];
   const [values, setValues] = useState<Record<string, string>>({});
+  const [expandedHints, setExpandedHints] = useState<Record<number, boolean>>({});
 
   const scenarioLabels: Record<string, string> = {
     sales: "sales pitch",
@@ -1067,6 +1288,15 @@ function ExtraContextScreen({
     networking: "networking",
   };
   const label = scenarioType ? scenarioLabels[scenarioType] ?? "practice" : "practice";
+
+  /** Insert a suggestion chip into the textarea */
+  const handleSuggestionClick = (fieldLabel: string, suggestion: string) => {
+    setValues((prev) => {
+      const current = prev[fieldLabel] ?? "";
+      const separator = current.trim() ? "\n" : "";
+      return { ...prev, [fieldLabel]: current + separator + suggestion };
+    });
+  };
 
   return (
     <div
@@ -1094,45 +1324,126 @@ function ExtraContextScreen({
           >
             Want to add more context?
           </h1>
-          <p className="text-[#45556c] text-base md:text-lg max-w-md mx-auto">
-            This is optional — but the more detail you share, the more realistic your {label} will be
+          <p className="text-[#45556c] text-base md:text-lg max-w-lg mx-auto">
+            This is optional — but the more detail you share, the more realistic your {label} will be.
+            {" "}<span className="text-[#94a3b8]">Just paste or type — no file uploads needed.</span>
           </p>
         </motion.div>
 
         {fields.length > 0 && (
           <motion.div
-            className="space-y-5 mb-10"
+            className="space-y-8 mb-10"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.1 }}
           >
-            {fields.map((field, i) => (
-              <div key={i}>
-                <label className="flex items-center gap-1.5 mb-1.5">
-                  <span className="text-sm text-[#0f172b]" style={{ fontWeight: 500 }}>
-                    {field.label}
-                  </span>
-                  {field.hint && (
-                    <span className="relative group cursor-help">
-                      <Info className="w-3.5 h-3.5 text-[#94a3b8] group-hover:text-[#0f172b] transition-colors" />
-                      <span className="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-56 rounded-xl bg-[#0f172b] text-white text-xs px-3 py-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-lg z-50" style={{ lineHeight: "1.45" }}>
-                        {field.hint}
-                        <span className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-[5px] border-x-transparent border-t-[5px] border-t-[#0f172b]" />
+            {fields.map((field, i) => {
+              const isExpanded = expandedHints[i] ?? false;
+              const currentValue = values[field.label] ?? "";
+
+              return (
+                <motion.div
+                  key={i}
+                  className="bg-white rounded-2xl border border-[#e2e8f0] p-5 shadow-sm"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.1 + i * 0.08 }}
+                >
+                  {/* Field header */}
+                  <div className="flex items-start justify-between mb-3">
+                    <label className="flex items-center gap-1.5">
+                      <span className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
+                        {field.label}
                       </span>
+                      <span className="relative group cursor-help">
+                        <Info className="w-3.5 h-3.5 text-[#94a3b8] group-hover:text-[#0f172b] transition-colors" />
+                        <span className="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-56 rounded-xl bg-[#0f172b] text-white text-xs px-3 py-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-lg z-50" style={{ lineHeight: "1.45" }}>
+                          {field.hint}
+                          <span className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-[5px] border-x-transparent border-t-[5px] border-t-[#0f172b]" />
+                        </span>
+                      </span>
+                    </label>
+                    <span className="text-[10px] text-[#94a3b8] bg-[#f8fafc] rounded-full px-2.5 py-0.5" style={{ fontWeight: 500 }}>
+                      Optional
                     </span>
+                  </div>
+
+                  {/* Paste hint */}
+                  <div className="flex items-center gap-1.5 mb-3 text-xs text-[#62748e]">
+                    <ClipboardPaste className="w-3 h-3 shrink-0" />
+                    <span>{field.pasteHint}</span>
+                  </div>
+
+                  {/* Textarea */}
+                  <textarea
+                    value={currentValue}
+                    onChange={(e) =>
+                      setValues((prev) => ({ ...prev, [field.label]: e.target.value }))
+                    }
+                    placeholder={field.placeholder}
+                    className="w-full h-[110px] bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-4 text-[#0f172b] placeholder:text-[#94a3b8] focus:outline-none focus:border-[#0f172b] focus:bg-white transition-all resize-none"
+                    style={{ fontSize: "14px", lineHeight: "22px" }}
+                  />
+
+                  {/* Character count */}
+                  {currentValue.length > 0 && (
+                    <div className="flex justify-end mt-1">
+                      <span className={`text-[10px] ${currentValue.length > 1500 ? "text-amber-500" : "text-[#c4cdd5]"}`}>
+                        {currentValue.length} / 2,000 chars
+                      </span>
+                    </div>
                   )}
-                </label>
-                <textarea
-                  value={values[field.label] ?? ""}
-                  onChange={(e) =>
-                    setValues((prev) => ({ ...prev, [field.label]: e.target.value }))
-                  }
-                  placeholder={field.placeholder}
-                  className="w-full h-[100px] bg-white border-2 border-[#e2e8f0] rounded-xl p-4 text-[#0f172b] placeholder:text-[#94a3b8] focus:outline-none focus:border-[#0f172b] transition-colors resize-none"
-                  style={{ fontSize: "15px", lineHeight: "22px" }}
-                />
-              </div>
-            ))}
+
+                  {/* Expandable suggestions */}
+                  <div className="mt-3">
+                    <button
+                      onClick={() => setExpandedHints((prev) => ({ ...prev, [i]: !isExpanded }))}
+                      className="flex items-center gap-1.5 text-xs text-[#6366f1] hover:text-[#4f46e5] transition-colors group"
+                      style={{ fontWeight: 500 }}
+                    >
+                      <Sparkles className="w-3 h-3" />
+                      Not sure what to write? Try these examples
+                      <motion.span
+                        animate={{ rotate: isExpanded ? 180 : 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <ChevronDown className="w-3 h-3" />
+                      </motion.span>
+                    </button>
+
+                    <AnimatePresence>
+                      {isExpanded && (
+                        <motion.div
+                          className="mt-2.5 flex flex-wrap gap-2"
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.25 }}
+                        >
+                          {field.suggestions.map((suggestion, si) => (
+                            <motion.button
+                              key={si}
+                              onClick={() => handleSuggestionClick(field.label, suggestion)}
+                              className="text-xs bg-[#f0f4ff] hover:bg-[#e0e7ff] border border-[#c7d2fe]/50 text-[#3730a3] rounded-lg px-3 py-1.5 transition-all hover:shadow-sm text-left"
+                              style={{ fontWeight: 450 }}
+                              initial={{ opacity: 0, scale: 0.95 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ duration: 0.2, delay: si * 0.05 }}
+                              whileTap={{ scale: 0.97 }}
+                            >
+                              + {suggestion}
+                            </motion.button>
+                          ))}
+                          <p className="w-full text-[10px] text-[#94a3b8] mt-1 italic">
+                            Click to add — then edit to match your real situation
+                          </p>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </motion.div>
+              );
+            })}
           </motion.div>
         )}
 
@@ -1181,6 +1492,7 @@ export function PracticeSessionPage({
   guidedFields,
   onFinish,
   onNewPractice,
+  userPlan,
 }: PracticeSessionPageProps) {
   /* Start with strategy step if scenarioType is provided, otherwise go to generating-script */
   const [step, setStep] = useState<Step>(scenarioType ? "strategy" : "generating-script");
@@ -1191,6 +1503,59 @@ export function PracticeSessionPage({
 
   /* Session initialization via conversationService */
   const [sessionId, setSessionId] = useState<string | null>(null);
+
+  /* ── Practice Again: repeat tracking ── */
+  const [repeatCount, setRepeatCount] = useState(0);
+  const [sessionVersion, setSessionVersion] = useState(0);
+  const plan: UserPlan = userPlan ?? "free";
+  const maxRepeats = MAX_REPEATS[plan];
+  const canRepeat = repeatCount < maxRepeats;
+  const repeatInfo: RepeatInfo = {
+    attempt: repeatCount + 1,
+    maxAttempts: maxRepeats + 1,
+    canRepeat,
+  };
+
+  /* ── Usage gating & paywall ── */
+  const usageGating = useUsageGating(plan);
+  const [paywallOpen, setPaywallOpen] = useState(false);
+  const [paywallReason, setPaywallReason] = useState<PaywallReason | null>(null);
+
+  /** Determine if free user should see paywall on repeat limit */
+  const gateResult = usageGating.canPracticeAgain(repeatInfo.attempt, repeatInfo.maxAttempts);
+  const showPaywallOnRepeat = !repeatInfo.canRepeat && gateResult.reason === "extra-practice";
+
+  const handlePaywallTriggered = useCallback((reason: PaywallReason) => {
+    setPaywallReason(reason);
+    setPaywallOpen(true);
+  }, []);
+
+  const handlePurchaseComplete = useCallback((_pack: CreditPack, creditsAdded: number) => {
+    usageGating.addCredits(creditsAdded);
+    setPaywallOpen(false);
+    setPaywallReason(null);
+
+    // After purchase, grant extra repeats based on what was bought
+    if (paywallReason === "extra-practice") {
+      // Immediately allow practice again
+      setRepeatCount(0); // Reset attempts
+      setSessionId(null);
+      setServiceError(null);
+      setSessionVersion((v) => v + 1);
+      setStep("practice");
+    }
+  }, [paywallReason, usageGating]);
+
+  /** Handle "Practice Again" from Conversation Feedback */
+  const handlePracticeAgain = useCallback(() => {
+    if (!canRepeat) return;
+    setRepeatCount((c) => c + 1);
+    setSessionId(null);
+    setServiceError(null);
+    setSessionVersion((v) => v + 1);
+    // Go directly to practice — skip pre-briefing on repeat
+    setStep("practice");
+  }, [canRepeat]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1215,7 +1580,7 @@ export function PracticeSessionPage({
         }
       });
     return () => { cancelled = true; };
-  }, [scenario, interlocutor, scenarioType, guidedFields, strategyPillars]);
+  }, [scenario, interlocutor, scenarioType, guidedFields, strategyPillars, sessionVersion]);
 
   /* Retry handler */
   const handleRetry = useCallback(() => {
@@ -1225,6 +1590,12 @@ export function PracticeSessionPage({
   const handleDismissError = useCallback(() => {
     setServiceError(null);
   }, []);
+
+  /* ── Scroll to top on step change ── */
+  const stepContainerRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    stepContainerRef.current?.scrollTo(0, 0);
+  }, [step]);
 
   return (
     <div className="size-full flex flex-col" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -1239,10 +1610,10 @@ export function PracticeSessionPage({
       </header>
 
       {/* Step content (animated transitions) */}
-      <div className="flex-1 relative min-h-0 overflow-y-auto">
+      <div ref={stepContainerRef} className="flex-1 relative min-h-0 overflow-y-auto">
         <AnimatePresence mode="wait">
           <motion.div
-            key={step}
+            key={`${step}-${sessionVersion}`}
             className="w-full min-h-full"
             initial={{ opacity: 0, filter: "blur(4px)" }}
             animate={{ opacity: 1, filter: "blur(0px)" }}
@@ -1319,8 +1690,11 @@ export function PracticeSessionPage({
             {step === "conversation-feedback" && (
               <ConversationFeedback
                 scenarioType={scenarioType}
-                onViewReport={() => setStep("session-recap")}
-                onDashboard={onFinish}
+                onGenerateReport={() => setStep("session-recap")}
+                onPracticeAgain={handlePracticeAgain}
+                repeatInfo={repeatInfo}
+                onPaywallTriggered={handlePaywallTriggered}
+                showPaywallOnRepeat={showPaywallOnRepeat}
               />
             )}
             {step === "session-recap" && (
@@ -1330,11 +1704,34 @@ export function PracticeSessionPage({
                 strategyPillars={strategyPillars.length > 0 ? strategyPillars : undefined}
                 resultsSummary={null}
                 onFinish={onFinish}
+                finishLabel="Go To Dashboard"
+                onDownloadReport={() => {
+                  const gate = usageGating.canDownloadReport();
+                  if (gate.allowed) {
+                    // Mock download — in production this generates a real PDF
+                    const el = document.createElement("a");
+                    el.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent("inFluentia PRO — Session Report\n\nThis is a mock PDF download. In production, a full PDF report is generated."));
+                    el.setAttribute("download", "influentia-report.txt");
+                    el.click();
+                  } else {
+                    handlePaywallTriggered("download-report");
+                  }
+                }}
+                userPlan={plan}
               />
             )}
           </motion.div>
         </AnimatePresence>
       </div>
+
+      {/* ── Paywall Modal (shared across all triggers) ── */}
+      <CreditUpsellModal
+        open={paywallOpen}
+        onClose={() => { setPaywallOpen(false); setPaywallReason(null); }}
+        onPurchaseComplete={handlePurchaseComplete}
+        paywallReason={paywallReason ?? undefined}
+        creditsRemaining={usageGating.credits}
+      />
     </div>
   );
 }

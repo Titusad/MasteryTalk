@@ -72,3 +72,12 @@ export {
   PRONUNCIATION_CATEGORIES,
   type PronunciationCategoryTag,
 } from "./analyst";
+
+/* ── TTS Synchronization (ElevenLabs — Production) ── */
+export {
+  TTS_TEXT_OPTIMIZATION_BLOCK,
+  TTS_SYNC_ARCHITECTURE,
+  charAlignmentToWordTimestamps,
+  estimateWordTimestamps,
+  type WordTimestamp,
+} from "./tts-sync";
