@@ -50,8 +50,9 @@ serve(async (req) => {
         if (!authHeader) throw new Error("Missing Authorization header");
 
         const supabase = createUserClient(authHeader);
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-        if (authError || !user) throw new Error("Unauthorized");
+        const jwt = authHeader.replace("Bearer ", "");
+        const { data: { user }, error: authError } = await supabase.auth.getUser(jwt);
+        if (authError || !user) throw new Error(`Unauthorized: ${authError?.message || "User is null"}`);
 
         // Extract payload
         const { sessionId, userMessage } = await req.json();
@@ -149,9 +150,9 @@ serve(async (req) => {
         });
     } catch (error: any) {
         console.error("process-turn error:", error);
-        return new Response(JSON.stringify({ error: error.message }), {
+        return new Response(JSON.stringify({ error: error.message || JSON.stringify(error) || "Unknown error inside process-turn" }), {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 400,
+            status: 200, // Temporarily 200 to not swallow error messages
         });
     }
 });

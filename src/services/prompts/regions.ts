@@ -51,13 +51,10 @@ const REGION_MAP: Record<string, string> = {
 /**
  * Get the regional context block.
  * Returns the GLOBAL fallback if market_focus is null/undefined.
- * For GPT-4o-mini (mini=true), always returns GLOBAL to save tokens.
  */
 export function getRegionalBlock(
   marketFocus?: MarketFocus | null,
-  mini = false
 ): string {
-  if (mini) return REGION_GLOBAL;
   if (marketFocus && REGION_MAP[marketFocus]) {
     return REGION_MAP[marketFocus];
   }

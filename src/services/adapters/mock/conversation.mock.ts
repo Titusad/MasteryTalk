@@ -19,10 +19,12 @@ import type {
 } from "../../types";
 import { ConversationError } from "../../errors";
 import { getChatMessagesForScenario } from "./data/chat-messages";
+import { getScriptSectionsForScenario } from "./data/script-sections-by-scenario";
 import { delay, mockId, shouldSimulateError } from "./utils";
 import {
   assembleSystemPrompt,
   getVoiceId,
+  DEFAULT_INTERLOCUTOR,
   type InterlocutorType,
 } from "../../prompts";
 
@@ -32,6 +34,40 @@ export class MockConversationService implements IConversationService {
     string,
     { config: SessionConfig; turnIndex: number; messages: ChatMessage[]; chatMessages: ChatMessage[] }
   > = new Map();
+
+  async generateContextSuggestions(
+    scenarioType: string,
+    _scenario: string,
+    _interlocutor: string
+  ): Promise<{ fields: Array<{ label: string; placeholder: string; hint: string; pasteHint: string; suggestions: string[] }> }> {
+    await delay(800);
+    const isInterview = scenarioType === "interview";
+    return {
+      fields: isInterview
+        ? [
+          { label: "Job Description", placeholder: "Paste the job description here...", hint: "Helps tailor your practice", pasteHint: "Paste from LinkedIn", suggestions: ["Senior Product Manager at Google", "VP Engineering at a Series B startup"] },
+          { label: "Relevant Experience", placeholder: "Key achievements and experience...", hint: "What makes you qualified", pasteHint: "Paste from resume", suggestions: ["Led a team of 12 engineers", "Grew revenue 3x in 18 months"] },
+        ]
+        : [
+          { label: "Product/Service", placeholder: "Describe what you're selling...", hint: "Be specific about your value prop", pasteHint: "Paste from deck", suggestions: ["B2B SaaS platform for supply chain", "AI-powered analytics dashboard"] },
+          { label: "Talking Points", placeholder: "Key points you want to cover...", hint: "Your main arguments", pasteHint: "Paste from notes", suggestions: ["30% cost reduction", "ROI within 3 months"] },
+        ],
+    };
+  }
+
+  async generatePreBriefing(params: {
+    scenarioType: string;
+    scenario: string;
+    interlocutor: string;
+    guidedFields?: Record<string, string>;
+    marketFocus?: string | null;
+    extraContext?: string;
+  }): Promise<{ sections: import("../../types").ScriptSection[] }> {
+    // Simulate AI generation time
+    await delay(2500);
+    const sections = getScriptSectionsForScenario(params.scenarioType as any);
+    return { sections };
+  }
 
   async prepareSession(config: SessionConfig): Promise<PreparedSession> {
     // Simulate the session preparation (~500ms for a quick setup)
@@ -47,16 +83,15 @@ export class MockConversationService implements IConversationService {
     const firstMessage = { ...scenarioChatMessages[0] };
 
     // Use real prompt assembler (same logic as production Edge Function)
-    const interlocutor = (config.interlocutor || "client") as InterlocutorType;
+    const interlocutor = (config.interlocutor || DEFAULT_INTERLOCUTOR[config.scenarioType ?? "interview"]) as InterlocutorType;
     const { systemPrompt, voiceId, subProfile, estimatedTokens } =
       assembleSystemPrompt({
         interlocutor,
         scenario: config.scenario,
-        marketFocus: undefined, // Mock doesn't have user profile yet
+        marketFocus: config.marketFocus ?? undefined,
         extractedContext: config.context,
         includeFirstMessage: true,
         scenarioType: config.scenarioType,
-        strategyPillars: config.strategyPillars,
       });
 
     // Update first message label to match interlocutor

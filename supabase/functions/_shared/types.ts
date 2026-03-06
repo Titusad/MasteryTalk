@@ -19,6 +19,15 @@ export interface ChatMessage {
     text: string;
 }
 
+export interface SessionConfig {
+    scenario: string;
+    interlocutor: string;
+    scenarioType?: ScenarioType;
+    guidedFields?: Record<string, string>;
+    context?: string;
+    strategyPillars?: Array<{ summary: string; why: string; how: string; result: string }>;
+}
+
 export interface PreparedSession {
     sessionId: string;
     systemPrompt: string;

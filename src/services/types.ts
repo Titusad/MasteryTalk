@@ -29,11 +29,7 @@ export type ScenarioType =
   | "interview"
   | "sales";
 
-/**
- * Future scenario types (adaptations exist in assembler.ts but UI doesn't expose them yet):
- * | "csuite" | "negotiation" | "networking"
- * When ready, expand ScenarioType and add cards to PracticeWidget's SCENARIO_TYPES array.
- */
+/* MVP ships with interview + sales only. Future expansions (csuite, negotiation, networking) were removed from assembler.ts during v2.1 cleanup. */
 
 /* ── Session & Conversation ── */
 
@@ -51,8 +47,8 @@ export interface SessionConfig {
   context?: string;
   /** Guided fields captured in PracticeSetup (varies per scenarioType) */
   guidedFields?: Record<string, string>;
-  /** Strategy pillars from StrategyBuilder (Phase 2) */
-  strategyPillars?: Array<{ summary: string; why: string; how: string; result: string }>;
+  /** User's market focus (region) for regional prompt adaptation */
+  marketFocus?: "mexico" | "colombia" | "brazil" | null;
 }
 
 export interface PreparedSession {
@@ -293,15 +289,6 @@ export interface OnboardingProfile {
   industry: string;
   position: string;
   seniority: string;
-}
-
-/* ── Mindset Pulse (post-session) ── */
-
-export interface MindsetPulseResult {
-  confidenceLevel: number;       // 1-5
-  biggestFear: string;
-  selfAssessment: number;        // 1-5 — "How well did you do?"
-  completedAt: string;
 }
 
 /* ── Before/After Comparison (Briefing Room) ── */

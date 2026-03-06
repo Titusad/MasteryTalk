@@ -42,8 +42,14 @@ import type {
   ResultsSummary,
   UserPlan,
 } from "../../services/types";
-import type { ValuePillar } from "./StrategyBuilder";
-import { SCENARIO_LABELS_MAP } from "./session/constants";
+/* ─── Scenario labels ─── */
+const SCENARIO_LABELS_MAP: Record<string, string> = {
+  sales: "Sales Pitch",
+  interview: "Job Interview",
+  csuite: "Executive Presentation",
+  negotiation: "Negotiation",
+  networking: "Networking",
+};
 
 /* ─── Guided field labels (matching PracticeWidget) ─── */
 const GUIDED_FIELD_LABELS: Record<string, { key: string; label: string }[]> = {
@@ -82,8 +88,8 @@ function ReportSection({
   return (
     <motion.div
       className={`rounded-3xl p-6 md:p-8 mb-6 ${dark
-          ? "bg-gradient-to-br from-[#0f172b] to-[#1e293b]"
-          : "bg-white border border-[#e2e8f0]"
+        ? "bg-gradient-to-br from-[#0f172b] to-[#1e293b]"
+        : "bg-white border border-[#e2e8f0]"
         }`}
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
@@ -99,8 +105,8 @@ function ReportSection({
         <div className="flex items-center gap-2.5">
           <span
             className={`text-[10px] px-2 py-0.5 rounded-full ${dark
-                ? "bg-white/10 text-white/50"
-                : "bg-[#f1f5f9] text-[#62748e]"
+              ? "bg-white/10 text-white/50"
+              : "bg-[#f1f5f9] text-[#62748e]"
               }`}
             style={{ fontWeight: 600 }}
           >
@@ -178,7 +184,6 @@ function CollapsibleDarkSection({
 export interface SessionReportProps {
   scenarioType?: ScenarioType;
   guidedFields?: Record<string, string>;
-  strategyPillars?: ValuePillar[];
   resultsSummary?: ResultsSummary | null;
   /** Finish button label and handler */
   onFinish?: () => void;
@@ -194,7 +199,6 @@ export interface SessionReportProps {
 export function SessionReport({
   scenarioType,
   guidedFields = {},
-  strategyPillars = [],
   resultsSummary,
   onFinish,
   finishLabel = "Go To Dashboard",
@@ -255,7 +259,6 @@ export function SessionReport({
         >
           {[
             { label: "Total Duration", value: totalTime, icon: <TrendingUp className="w-4 h-4" /> },
-            { label: "Value Pillars", value: String(strategyPillars.length), icon: <Target className="w-4 h-4" /> },
             { label: "Improvements", value: String(beforeAfter.length), icon: <Zap className="w-4 h-4" /> },
           ].map((stat, i) => (
             <div key={i} className="bg-white border border-[#e2e8f0] rounded-2xl p-5 text-center flex-1 max-w-[200px]">
@@ -271,7 +274,7 @@ export function SessionReport({
         {/* ═══════════════════════════════════════════════
            SECCIÓN 1: Tu Estrategia
            ═══════════════════════════════════════════════ */}
-        {(strategyPillars.length > 0 || Object.values(guidedFields).some(v => v?.trim())) && (
+        {(Object.values(guidedFields).some(v => v?.trim())) && (
           <ReportSection
             number={1}
             icon={<ClipboardList className="w-5 h-5 text-white" />}
@@ -298,50 +301,6 @@ export function SessionReport({
                     );
                   })}
                 </div>
-              </div>
-            )}
-
-            {/* Strategy pillars */}
-            {strategyPillars.length > 0 && (
-              <div className="space-y-4">
-                {strategyPillars.map((pillar, idx) => (
-                  <div
-                    key={idx}
-                    className="bg-gradient-to-r from-[#f0f9ff] to-[#eef2ff] rounded-xl border border-[#bfdbfe]/40 p-5"
-                  >
-                    <div className="flex items-start gap-3 mb-3">
-                      <span
-                        className="w-6 h-6 rounded-lg bg-[#6366f1]/10 flex items-center justify-center shrink-0 text-[10px] text-[#6366f1]"
-                        style={{ fontWeight: 700 }}
-                      >
-                        {idx + 1}
-                      </span>
-                      <p className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
-                        {pillar.summary}
-                      </p>
-                    </div>
-                    <div className="ml-9 space-y-2">
-                      <div className="flex items-start gap-2">
-                        <span className="text-[10px] bg-[#dbeafe] text-[#1e40af] px-2 py-0.5 rounded-md shrink-0" style={{ fontWeight: 600 }}>
-                          Why
-                        </span>
-                        <p className="text-sm text-[#45556c]">{pillar.why}</p>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <span className="text-[10px] bg-[#dcfce7] text-[#16a34a] px-2 py-0.5 rounded-md shrink-0" style={{ fontWeight: 600 }}>
-                          How
-                        </span>
-                        <p className="text-sm text-[#45556c]">{pillar.how}</p>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <span className="text-[10px] bg-[#fef3c7] text-[#92400e] px-2 py-0.5 rounded-md shrink-0" style={{ fontWeight: 600 }}>
-                          Result
-                        </span>
-                        <p className="text-sm text-[#45556c]">{pillar.result}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
               </div>
             )}
           </ReportSection>
@@ -612,8 +571,8 @@ export function SessionReport({
             <button
               onClick={onDownloadReport}
               className={`px-8 py-3.5 rounded-full flex items-center gap-2.5 shadow-md transition-all text-lg ${userPlan === "free"
-                  ? "bg-gradient-to-r from-[#f59e0b] to-[#f97316] text-white hover:from-[#d97706] hover:to-[#ea580c]"
-                  : "bg-white border border-[#e2e8f0] text-[#0f172b] hover:bg-[#f8fafc]"
+                ? "bg-gradient-to-r from-[#f59e0b] to-[#f97316] text-white hover:from-[#d97706] hover:to-[#ea580c]"
+                : "bg-white border border-[#e2e8f0] text-[#0f172b] hover:bg-[#f8fafc]"
                 }`}
               style={{ fontWeight: 500 }}
             >

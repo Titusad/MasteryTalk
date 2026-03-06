@@ -2,23 +2,30 @@
  * ══════════════════════════════════════════════════════════════
  *  inFluentia PRO — Prompt Assembler
  *
- *  Stitches the 7 blocks into a single system prompt.
+ *  Stitches the 7+ blocks into a single system prompt.
  *  This is the core logic that prepare-session uses.
  *  Reference: /docs/SYSTEM_PROMPTS.md §1, §12
  *
  *  Architecture:
  *  ┌───────────────────────────────────────┐
- *  │  BLOCK 1:   MASTER SYSTEM PROMPT      │ ← Immutable rules
+ *  │  BLOCK 1:   MASTER SYSTEM PROMPT      │ ← Immutable rules + edge cases
  *  │  BLOCK 2:   INTERLOCUTOR PERSONA      │ ← Profile + sub-profile
- *  │  BLOCK 3:   REGIONAL CONTEXT          │ ← Mexico / Colombia / Global
+ *  │  BLOCK 3:   REGIONAL CONTEXT          │ ← Mexico / Colombia / Brazil / Global
  *  │  BLOCK 4:   USER SCENARIO             │ ← From PracticeWidget input
  *  │  BLOCK 4.5: SCENARIO ADAPTATION       │ ← Sales / Interview / etc.
- *  │  BLOCK 4.7: STRATEGY PILLARS          │ ← From StrategyBuilder
  *  │  BLOCK 5:   EXTRACTED CONTEXT         │ ← From PDF/URL (optional)
  *  │  BLOCK 5.5: TTS TEXT OPTIMIZATION     │ ← Speech-friendly writing
- *  │  BLOCK 6:   OUTPUT FORMAT + RULES     │ ← JSON + isComplete 4-8
+ *  │  BLOCK 6:   OUTPUT FORMAT + RULES     │ ← JSON + isComplete + pattern tracking
+ *  │  BLOCK 6.5: ARENA PHASE DIRECTIVE     │ ← Dynamic difficulty (support/guidance/challenge)
  *  │  BLOCK 7:   FIRST MESSAGE INSTRUCTION │ ← Only for prepare-session
- *  └─────────────��─────────────────────────┘
+ *  └───────────────────────────────────────┘
+ *
+ *  v2.0 Changes:
+ *  - Added arenaPhase to AssemblyConfig for progressive scaffolding
+ *  - Added turnNumber to config for mid-session prompt updates
+ *  v2.1 MVP Cleanup:
+ *  - Removed csuite, negotiation, networking from SCENARIO_ADAPTATION (MVP only uses interview + sales)
+ *  - Removed GPT-4o-mini path (mini template + assembleMiniPrompt) — all users get GPT-4o full quality
  * ══════════════════════════════════════════════════════════════
  */
 
@@ -26,7 +33,7 @@ import {
   MASTER_SYSTEM_PROMPT,
   OUTPUT_FORMAT_BLOCK,
   FIRST_MESSAGE_BLOCK,
-  MINI_TEMPLATE,
+  ARENA_PHASE_DIRECTIVES,
 } from "./templates";
 import {
   getPersonaBlock,
@@ -35,7 +42,7 @@ import {
 } from "./personas";
 import { getRegionalBlock, type MarketFocus } from "./regions";
 import { getVoiceId } from "./voice-map";
-import type { ScenarioType } from "../types";
+import type { ScenarioType, ArenaPhase } from "../types";
 import { TTS_TEXT_OPTIMIZATION_BLOCK } from "./tts-sync";
 
 /* ── Block 4: Scenario Template ── */
@@ -60,78 +67,35 @@ The user provided a document. Key points extracted:
 Incorporate these details naturally into your responses. Reference specific data points, figures, or claims from this context to make the conversation feel grounded in real material. Challenge the user on any weak points you identify.`;
 }
 
-/* ── Block 4.5: Scenario Adaptation (NEW — Master Prompt Phase 1) ── */
+/* ── Block 4.5: Scenario Adaptation ── */
 
 const SCENARIO_ADAPTATION: Record<string, string> = {
   sales: `=== SCENARIO ADAPTATION: SALES ===
-This is a SALES scenario. Adapt your behavior accordingly:
-- VOCABULARY FOCUS: ROI, pipeline, close rate, competitive differentiation, implementation timeline, total cost of ownership
-- SIMULATION STYLE: Be a skeptical buyer. You've been burned by vendors before. Push for hard numbers.
-- QUESTIONS TO ASK: "What's the ROI timeline?", "How does this compare to [competitor]?", "What happens if adoption fails?"
-- CLOSURE STYLE: End with a concrete next step (send one-pager, schedule demo, loop in stakeholder)
-- DO NOT use interview language ("Tell me about yourself", "Why this role")
-- DO NOT use negotiation anchoring tactics — you are evaluating a purchase, not bargaining`,
+This is a SALES / BUSINESS DEVELOPMENT scenario. Global rules that complement your persona:
+- VOCABULARY REFERENCE: ROI, pipeline, close rate, competitive differentiation, implementation timeline, total cost of ownership, TCO, ARR, MRR, churn, NPS
+- CONVERSATION ARC: Discovery → Value demonstration → Objection handling → Next steps. Your persona defines HOW you navigate this arc.
+- CLOSURE PROTOCOL: End with a concrete next step (send one-pager, schedule demo, loop in stakeholder, sign LOI). Never end ambiguously.
+- BOUNDARY GUARDRAILS:
+  - DO NOT use interview language ("Tell me about yourself", "Why this role")
+  - DO NOT discuss candidate qualifications — you are evaluating a purchase, not a person
+  - DO NOT use negotiation anchoring unless your persona explicitly includes it (e.g., Decision Maker + NEGOTIATOR sub-profile)
+- NEARSHORING CONTEXT: The seller is likely a LATAM professional pitching to a U.S. buyer. Cultural dynamics matter: the buyer expects directness, quantified claims, and professional confidence. Vague or overly deferential pitches lose credibility fast.`,
 
   interview: `=== SCENARIO ADAPTATION: INTERVIEW ===
-This is a JOB INTERVIEW scenario. Adapt your behavior accordingly:
-- VOCABULARY FOCUS: leadership, cross-functional collaboration, growth trajectory, culture fit, technical depth
-- SIMULATION STYLE: Be evaluative but not hostile. Probe for authenticity over rehearsed answers.
-- QUESTIONS TO ASK: STAR-format behavioral questions, "Tell me about a time when...", dig into gaps or transitions
-- CLOSURE STYLE: End with "Do you have any questions for us?" — evaluate the quality of THEIR questions
-- DO NOT discuss pricing or ROI — this is about the candidate's fit and capability
-- DO NOT use sales objection-handling language`,
-
-  csuite: `=== SCENARIO ADAPTATION: C-SUITE REPORT ===
-This is an EXECUTIVE BRIEFING scenario. Adapt your behavior accordingly:
-- VOCABULARY FOCUS: strategic impact, market position, board-level metrics, risk mitigation, resource allocation
-- SIMULATION STYLE: You are time-constrained and impatient. You want the bottom line first, details second.
-- QUESTIONS TO ASK: "What's your recommendation?", "What's the risk if we don't act?", "Give me the number."
-- CLOSURE STYLE: End with a decision or directive: "I'll take this to the board" or "Rethink this and come back Friday"
-- DO NOT ask basic discovery questions — you already know the context
-- DO NOT be encouraging — be demanding and strategic`,
-
-  negotiation: `=== SCENARIO ADAPTATION: NEGOTIATION ===
-This is a CONTRACT NEGOTIATION scenario. Adapt your behavior accordingly:
-- VOCABULARY FOCUS: terms, concessions, BATNA, walk-away point, value exchange, mutual benefit
-- SIMULATION STYLE: Be firm but professional. Use strategic silence. Counter-offer everything.
-- QUESTIONS TO ASK: "What flexibility do you have on [term]?", "What if we restructure the deal as...?"
-- CLOSURE STYLE: End with a conditional agreement or request for revised proposal
-- DO NOT accept first offers — always counter or ask for justification
-- USE tactical pauses after price statements`,
-
-  networking: `=== SCENARIO ADAPTATION: NETWORKING ===
-This is a NETWORKING / ELEVATOR PITCH scenario. Adapt your behavior accordingly:
-- VOCABULARY FOCUS: value proposition, collaboration, mutual interest, follow-up, introduction
-- SIMULATION STYLE: You're friendly but time-constrained. You meet 20 people at every event. Be curious but move on if the pitch isn't clear.
-- QUESTIONS TO ASK: "What specifically are you working on?", "How is that different from [alternative]?", "Who should I connect you with?"
-- CLOSURE STYLE: Exchange contacts or suggest a concrete follow-up ("Send me an email Tuesday with...")
-- DO NOT get into deep technical discussions — keep it high-level and memorable
-- DO NOT spend more than 3-4 turns — networking conversations are brief`,
+This is a JOB INTERVIEW scenario. Global rules that complement your persona:
+- VOCABULARY REFERENCE: leadership, cross-functional collaboration, growth trajectory, culture fit, technical depth, STAR method, behavioral questions, situational judgment
+- CONVERSATION ARC: Rapport → Probing → Deep-dive → Candidate questions. Your persona defines WHICH dimension you probe (technical, strategic, cultural, screening).
+- CLOSURE PROTOCOL: End with "Do you have any questions for us?" — evaluate the quality of THEIR questions as a signal of preparation and genuine interest.
+- BOUNDARY GUARDRAILS:
+  - DO NOT discuss pricing, ROI, or vendor evaluation — this is about the candidate
+  - DO NOT use sales objection-handling language
+  - DO NOT break character as an interviewer — you work at the company, not as an external evaluator
+- NEARSHORING CONTEXT: The candidate is likely a LATAM professional interviewing for a U.S.-based or U.S.-client-facing role. Evaluate English fluency as a proxy for daily communication readiness. Cultural nuances: U.S. interviewers expect concise answers, quantified achievements, and comfort with direct feedback.`,
 };
 
 function buildScenarioAdaptationBlock(scenarioType?: ScenarioType | null): string | null {
   if (!scenarioType) return null;
   return SCENARIO_ADAPTATION[scenarioType] ?? null;
-}
-
-/* ── Block 4.7: Strategy Pillars (injected from StrategyBuilder) ── */
-
-function buildStrategyPillarsBlock(pillars?: Array<{ summary: string; why: string; how: string; result: string }> | null): string | null {
-  if (!pillars || pillars.length === 0) return null;
-
-  const pillarText = pillars
-    .map((p, i) => `  Pillar ${i + 1}: ${p.summary}\n    Why: ${p.why}\n    How: ${p.how}\n    Result: ${p.result}`)
-    .join("\n\n");
-
-  return `=== USER'S STRATEGY PILLARS (from pre-session coaching) ===
-The user prepared these value pillars before the simulation. Reference them naturally during the conversation — challenge them, ask for proof, or build on them:
-
-${pillarText}
-
-Use these pillars to:
-- Ask targeted follow-up questions based on their claims
-- Challenge weak assertions ("You said [pillar claim] — walk me through those numbers")
-- Create realistic pressure that tests their preparation`;
 }
 
 /* ── Assembly Configuration ── */
@@ -147,12 +111,23 @@ export interface AssemblyConfig {
   extractedContext?: string | null;
   /** Whether this is the initial prepare-session call (includes Block 7) */
   includeFirstMessage?: boolean;
-  /** Whether to use the simplified GPT-4o-mini template */
-  mini?: boolean;
-  /** Scenario type for adaptation block (Phase 1 of Master Prompt) */
+  /** Scenario type for adaptation block */
   scenarioType?: ScenarioType | null;
-  /** Strategy pillars from StrategyBuilder (Phase 2 of Master Prompt) */
-  strategyPillars?: Array<{ summary: string; why: string; how: string; result: string }> | null;
+  /**
+   * Current Arena phase for progressive scaffolding.
+   * Injected as Block 6.5 to modulate AI difficulty level.
+   * - "support":   Warm-up, straightforward questions
+   * - "guidance":  Mid-pressure, follow-ups, mild curveballs
+   * - "challenge": High-pressure, skepticism, time constraints
+   * If undefined, no phase directive is injected (backward compatible).
+   */
+  arenaPhase?: ArenaPhase | null;
+  /**
+   * Current user turn number (0-based).
+   * Used for mid-session prompt updates where the Edge Function
+   * re-assembles with updated arenaPhase.
+   */
+  turnNumber?: number;
 }
 
 export interface AssemblyResult {
@@ -167,7 +142,7 @@ export interface AssemblyResult {
 }
 
 /**
- * Assemble the complete system prompt from the 7 blocks.
+ * Assemble the complete system prompt from the 7+ blocks.
  *
  * This function is the heart of prepare-session.
  * It produces a deterministic prompt for the same inputs.
@@ -179,24 +154,19 @@ export function assembleSystemPrompt(config: AssemblyConfig): AssemblyResult {
     marketFocus,
     extractedContext,
     includeFirstMessage = false,
-    mini = false,
     scenarioType,
-    strategyPillars,
+    arenaPhase,
   } = config;
 
   // Detect sub-profile from scenario keywords
   const subProfile = detectSubProfile(scenario, interlocutor);
   const voiceId = getVoiceId(interlocutor);
 
-  if (mini) {
-    return assembleMiniPrompt(config, subProfile, voiceId);
-  }
-
   // ── Assemble full prompt (7+ blocks) ──
 
   const blocks: string[] = [];
 
-  // Block 1: Master System Prompt
+  // Block 1: Master System Prompt (includes edge case handling)
   blocks.push(MASTER_SYSTEM_PROMPT);
 
   // Block 2: Interlocutor Persona (+ sub-profile if detected)
@@ -214,12 +184,6 @@ export function assembleSystemPrompt(config: AssemblyConfig): AssemblyResult {
     blocks.push(adaptationBlock);
   }
 
-  // Block 4.7: Strategy Pillars (from StrategyBuilder pre-coaching)
-  const pillarsBlock = buildStrategyPillarsBlock(strategyPillars);
-  if (pillarsBlock) {
-    blocks.push(pillarsBlock);
-  }
-
   // Block 5: Extracted Context (only if present)
   if (extractedContext && extractedContext.trim().length > 0) {
     blocks.push(buildExtractedContextBlock(extractedContext));
@@ -228,8 +192,13 @@ export function assembleSystemPrompt(config: AssemblyConfig): AssemblyResult {
   // Block 5.5: TTS Text Optimization (ensures aiMessage is speech-friendly)
   blocks.push(TTS_TEXT_OPTIMIZATION_BLOCK);
 
-  // Block 6: Output Format + isComplete Rules
+  // Block 6: Output Format + isComplete Rules (includes pattern tracking)
   blocks.push(OUTPUT_FORMAT_BLOCK);
+
+  // Block 6.5: Arena Phase Directive (progressive scaffolding)
+  if (arenaPhase && ARENA_PHASE_DIRECTIVES[arenaPhase]) {
+    blocks.push(ARENA_PHASE_DIRECTIVES[arenaPhase]);
+  }
 
   // Block 7: First Message Instruction (only for prepare-session)
   if (includeFirstMessage) {
@@ -243,40 +212,6 @@ export function assembleSystemPrompt(config: AssemblyConfig): AssemblyResult {
     voiceId,
     subProfile,
     estimatedTokens: estimateTokens(systemPrompt),
-  };
-}
-
-/* ── Mini Assembly (GPT-4o-mini) ── */
-
-function assembleMiniPrompt(
-  config: AssemblyConfig,
-  subProfile: string | null,
-  voiceId: string
-): AssemblyResult {
-  const { interlocutor, scenario, includeFirstMessage } = config;
-
-  const personaMini = getPersonaBlock(interlocutor, null, true);
-
-  let prompt = `${MINI_TEMPLATE}
-
-${personaMini}
-
-Scenario: "${scenario}"
-
-Respond ONLY with JSON:
-{"aiMessage": "your response", "isComplete": false, "internalAnalysis": "brief performance note"}
-
-isComplete: true only after 4+ user turns when scenario concludes naturally. Must close by turn 8.`;
-
-  if (includeFirstMessage) {
-    prompt += `\n\n${FIRST_MESSAGE_BLOCK}`;
-  }
-
-  return {
-    systemPrompt: prompt,
-    voiceId,
-    subProfile,
-    estimatedTokens: estimateTokens(prompt),
   };
 }
 

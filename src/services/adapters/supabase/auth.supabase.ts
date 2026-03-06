@@ -331,7 +331,7 @@ export class SupabaseAuthService implements IAuthService {
    * triggers or other mechanisms.
    */
   private async ensureServerProfile(accessToken: string): Promise<void> {
-    const serverUrl = `https://${projectId}.supabase.co/functions/v1/make-server-4e8a5b39/auth/ensure-profile`;
+    const serverUrl = `https://${projectId}.supabase.co/functions/v1/server/make-server-4e8a5b39/auth/ensure-profile`;
     const response = await fetch(serverUrl, {
       method: "POST",
       headers: {

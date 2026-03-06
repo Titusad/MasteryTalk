@@ -178,7 +178,18 @@ export interface LandingCopy {
     stepLabels: [string, string, string];
     titles: { interlocutor: string; context: string; ready: string };
     subtitles: { interlocutor: string; context: string; ready: string };
-    interlocutors: { client: string; clientSub: string; manager: string; managerSub: string; recruiter: string; recruiterSub: string; peer: string; peerSub: string };
+    interlocutors: {
+      // Interview
+      recruiter: string; recruiterSub: string;
+      sme: string; smeSub: string;
+      hiring_manager: string; hiring_managerSub: string;
+      hr: string; hrSub: string;
+      // Sales
+      gatekeeper: string; gatekeeperSub: string;
+      technical_buyer: string; technical_buyerSub: string;
+      champion: string; championSub: string;
+      decision_maker: string; decision_makerSub: string;
+    };
     autoSelected: string;
     next: string;
     back: string;
@@ -293,7 +304,7 @@ export const ES: LandingCopy = {
     sectionSubtitle: "Así transforma inFluentia PRO tus conversaciones profesionales",
     withTitle: "Con inFluentia PRO",
     withList: [
-      "Ya lo practicaste 10 veces",
+      "Ya lo practicaste 5 veces",
       "Conoces cada pregunta y objeción posible",
       "Hablas con seguridad",
       "Negocias y demuestras lo que vales",
@@ -399,10 +410,16 @@ export const ES: LandingCopy = {
     titles: { interlocutor: "Configura tu práctica", context: "Agrega contexto", ready: "¡Todo Listo!" },
     subtitles: { interlocutor: "Elige con quién vas a practicar", context: "Describe la situación para una simulación más realista", ready: "Inicia sesión para finalizar tu práctica" },
     interlocutors: {
-      client: "Cliente", clientSub: "VP / Tomador de decisiones",
-      manager: "Manager", managerSub: "Director / VP",
-      recruiter: "Reclutador", recruiterSub: "Gerente de contratación",
-      peer: "Colega", peerSub: "Contacto de industria",
+      // Interview
+      recruiter: "The Recruiter", recruiterSub: "El conector eficiente",
+      sme: "The SME", smeSub: "Evaluador técnico / funcional",
+      hiring_manager: "The Hiring Manager", hiring_managerSub: "El socio estratégico",
+      hr: "HR / People & Culture", hrSub: "El guardián de la marca",
+      // Sales
+      gatekeeper: "The Gatekeeper", gatekeeperSub: "El filtro inicial (SDR)",
+      technical_buyer: "The Technical Buyer", technical_buyerSub: "El especialista evaluador",
+      champion: "The Champion", championSub: "Tu aliado interno",
+      decision_maker: "The Decision Maker", decision_makerSub: "C-Level / El que firma",
     },
     autoSelected: "Auto-seleccionado por tu escenario — puedes cambiarlo",
     next: "Siguiente",
@@ -624,10 +641,16 @@ export const PT: LandingCopy = {
     titles: { interlocutor: "Configure sua prática", context: "Adicione contexto", ready: "Tudo Pronto!" },
     subtitles: { interlocutor: "Escolha com quem você vai praticar", context: "Descreva a situação para uma simulação mais realista", ready: "Entre para finalizar sua prática" },
     interlocutors: {
-      client: "Cliente", clientSub: "VP / Tomador de decisão",
-      manager: "Gerente", managerSub: "Diretor / VP",
-      recruiter: "Recrutador", recruiterSub: "Gerente de contratação",
-      peer: "Colega", peerSub: "Contato da indústria",
+      // Interview
+      recruiter: "The Recruiter", recruiterSub: "O conector eficiente",
+      sme: "The SME", smeSub: "Avaliador técnico / funcional",
+      hiring_manager: "The Hiring Manager", hiring_managerSub: "O parceiro estratégico",
+      hr: "HR / People & Culture", hrSub: "O guardião da marca",
+      // Sales
+      gatekeeper: "The Gatekeeper", gatekeeperSub: "O filtro inicial (SDR)",
+      technical_buyer: "The Technical Buyer", technical_buyerSub: "O especialista avaliador",
+      champion: "The Champion", championSub: "Seu aliado interno",
+      decision_maker: "The Decision Maker", decision_makerSub: "C-Level / Quem assina",
     },
     autoSelected: "Auto-selecionado pelo seu cenário — pode alterar",
     next: "Próximo",
@@ -641,7 +664,7 @@ export const PT: LandingCopy = {
     trustLine: "1ª sessão grátis · Sem cartão · Sem assinatura",
     scenarioLabels: { sales: "vendas", interview: "entrevista" },
     guidedFields: {
-      interview: { role: "Cargo para o qual se candidata", rolePlaceholder: "Ex: Senior Product Manager em fintech", strength: "Sua principal fortaleza", strengthPlaceholder: "Ex: 5 anos liderando equipes de produto na América Latina" },
+      interview: { role: "Papel que você está se candidatando", rolePlaceholder: "Ex: Senior Product Manager em fintech", strength: "Sua principal fortaleza", strengthPlaceholder: "Ex: 5 anos liderando equipes de produto na América Latina" },
       sales: { product: "Qual produto ou serviço você apresenta?", productPlaceholder: "Ex: Plataforma de marketing automation B2B", problem: "Que problema resolve para seu cliente?", problemPlaceholder: "Ex: Reduz o tempo de onboarding de leads em 40%" },
     },
   },
@@ -849,10 +872,16 @@ export const EN: LandingCopy = {
     titles: { interlocutor: "Set up your practice", context: "Add context", ready: "All Set!" },
     subtitles: { interlocutor: "Choose who you'll be practicing with", context: "Describe the situation for a more realistic simulation", ready: "Sign in to finalize your practice" },
     interlocutors: {
-      client: "Client", clientSub: "VP / Decision Maker",
-      manager: "Manager", managerSub: "Director / VP",
-      recruiter: "Recruiter", recruiterSub: "Hiring Manager",
-      peer: "Peer", peerSub: "Industry Contact",
+      // Interview
+      recruiter: "The Recruiter", recruiterSub: "The efficient connector",
+      sme: "The SME", smeSub: "Technical / functional evaluator",
+      hiring_manager: "The Hiring Manager", hiring_managerSub: "The strategic partner",
+      hr: "HR / People & Culture", hrSub: "The brand guardian",
+      // Sales
+      gatekeeper: "The Gatekeeper", gatekeeperSub: "The initial filter (SDR)",
+      technical_buyer: "The Technical Buyer", technical_buyerSub: "The proof-seeking specialist",
+      champion: "The Champion", championSub: "Your internal ally",
+      decision_maker: "The Decision Maker", decision_makerSub: "C-Level / Signs the check",
     },
     autoSelected: "Auto-selected based on your scenario — you can change it",
     next: "Next",

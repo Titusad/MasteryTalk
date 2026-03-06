@@ -49,27 +49,27 @@ export function PracticeHistoryPage({
     userService
       .getPracticeHistory("mock-uid")
       .then(setPracticeHistory)
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   /* ─── Computed practices list (inject the latest session if available) ─── */
   const practices: PracticeHistoryItem[] = firstPracticeScenario
     ? [
-        {
-          title: firstPracticeScenario,
-          date: "Today",
-          duration: "8 min",
-          tag: firstPracticeInterlocutor || "Client",
-          beforeAfterHighlight: {
-            userOriginal:
-              "The main differentiator is that we offer bilingual support and integrations with local payment processors.",
-            professionalVersion:
-              "We\u2019ve built a purpose-designed solution for the LATAM mid-market, with native bilingual capabilities and seamless integration into the local payment ecosystem.",
-            technique: "Value elevation",
-          },
+      {
+        title: firstPracticeScenario,
+        date: "Today",
+        duration: "8 min",
+        tag: firstPracticeInterlocutor || "Client",
+        beforeAfterHighlight: {
+          userOriginal:
+            "The main differentiator is that we offer bilingual support and integrations with local payment processors.",
+          professionalVersion:
+            "We\u2019ve built a purpose-designed solution for the LATAM mid-market, with native bilingual capabilities and seamless integration into the local payment ecosystem.",
+          technique: "Value elevation",
         },
-        ...practiceHistory,
-      ]
+      },
+      ...practiceHistory,
+    ]
     : practiceHistory;
 
   /* ─── Stats summary ─── */
@@ -99,7 +99,7 @@ export function PracticeHistoryPage({
             <div
               className="w-10 h-10 rounded-full bg-[#0f172b] flex items-center justify-center cursor-pointer"
               onClick={() => {
-                authService.signOut().catch(() => {});
+                authService.signOut().catch(() => { });
                 onLogout?.();
               }}
               title="Sign out"
@@ -189,11 +189,10 @@ export function PracticeHistoryPage({
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: i * 0.05 }}
-                    className={`w-full bg-white rounded-2xl border text-left transition-all ${
-                      isExpanded
+                    className={`w-full bg-white rounded-2xl border text-left transition-all ${isExpanded
                         ? "border-[#c4b5fd] shadow-sm"
                         : "border-[#e2e8f0] hover:border-[#cad5e2]"
-                    }`}
+                      }`}
                   >
                     {/* Clickable header */}
                     <button
@@ -242,9 +241,8 @@ export function PracticeHistoryPage({
                           </div>
                         </div>
                         <ChevronDown
-                          className={`w-5 h-5 text-[#62748e] mt-0.5 shrink-0 transition-transform duration-200 ${
-                            isExpanded ? "rotate-180" : ""
-                          }`}
+                          className={`w-5 h-5 text-[#62748e] mt-0.5 shrink-0 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""
+                            }`}
                         />
                       </div>
                     </button>
@@ -345,20 +343,6 @@ export function PracticeHistoryPage({
               {/* Report content */}
               <SessionReport
                 scenarioType={detectedType}
-                strategyPillars={[
-                  {
-                    summary: "Lead with quantified impact from past achievements",
-                    why: "Concrete numbers build instant credibility",
-                    how: "Use the STAR framework with specific metrics",
-                    result: "Interviewer sees you as a proven performer",
-                  },
-                  {
-                    summary: "Differentiate through unique cross-functional expertise",
-                    why: "Uniqueness creates a memorable positioning",
-                    how: "Connect your unique background to their pain points",
-                    result: "You stand out from equally qualified candidates",
-                  },
-                ]}
                 guidedFields={{}}
                 onFinish={() => setViewingReport(null)}
                 finishLabel="Back to history"

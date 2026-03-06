@@ -1,44 +1,74 @@
-import { motion } from "motion/react";
-import { Globe, ArrowRight } from "lucide-react";
+import { useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { Globe, ArrowRight, Check, MapPin } from "lucide-react";
 import type { LandingLang } from "./landing-i18n";
+import type { MarketFocus } from "../../services/prompts";
 
+/* ─── Country options ─── */
+interface CountryOption {
+  id: MarketFocus | "other";
+  flag: string;
+  label: Record<"es" | "pt", string>;
+}
+
+const COUNTRY_OPTIONS: CountryOption[] = [
+  { id: "mexico", flag: "🇲🇽", label: { es: "México", pt: "México" } },
+  { id: "colombia", flag: "🇨🇴", label: { es: "Colombia", pt: "Colômbia" } },
+  { id: "brazil", flag: "🇧🇷", label: { es: "Brasil", pt: "Brasil" } },
+  { id: "other", flag: "🌎", label: { es: "Otro país", pt: "Outro país" } },
+];
+
+/* ─── Copy per language ─── */
 const MODAL_COPY = {
   es: {
     title: "¡Todo listo!",
     body: "A partir de ahora, la interfaz estará en",
     bodyHighlight: "inglés",
     bodySuffix: "para ofrecerte una experiencia más inmersiva.",
-    subtitle: "Tu práctica, coaching y feedback — todo en el idioma que necesitas dominar.",
+
     flag: "🇪🇸",
     langLabel: "Español",
+    countryQuestion: "¿Desde dónde trabajas?",
+    countryHint: "Esto nos ayuda a personalizar tu práctica.",
     cta: "Let's go",
-    footnote: "Puedes cambiar el idioma en cualquier momento desde tu perfil.",
+    footnote: "Puedes cambiar esto en cualquier momento desde tu perfil.",
   },
   pt: {
     title: "Tudo pronto!",
-    body: "A partir de ahora, a interface estará em",
+    body: "A partir de agora, a interface estará em",
     bodyHighlight: "inglês",
     bodySuffix: "para oferecer uma experiência mais imersiva.",
     subtitle: "Sua prática, coaching e feedback — tudo no idioma que você precisa dominar.",
     flag: "🇧🇷",
     langLabel: "Português",
+    countryQuestion: "De onde você trabalha?",
+    countryHint: "Isso nos ajuda a personalizar seu coaching ao contexto de nearshoring da sua região.",
     cta: "Let's go",
-    footnote: "Você pode mudar o idioma a qualquer momento no seu perfil.",
+    footnote: "Você pode mudar isso a qualquer momento no seu perfil.",
   },
 } as const;
 
 /**
- * Post-login modal explaining the language switch to English UI.
- * Shown once after authentication, in the user's landing language.
+ * Post-login modal: language switch notice + country selector.
+ * Pre-selects country based on landing language (pt → brazil).
  */
 export function LanguageTransitionModal({
   onContinue,
   fromLang = "es",
 }: {
-  onContinue: () => void;
+  onContinue: (marketFocus: MarketFocus | null) => void;
   fromLang?: LandingLang;
 }) {
-  const c = MODAL_COPY[fromLang];
+  const langKey = fromLang === "en" ? "es" : fromLang;
+  const c = MODAL_COPY[langKey];
+
+  // Auto-infer: PT users are almost certainly from Brazil
+  const [selectedCountry, setSelectedCountry] = useState<MarketFocus | "other" | null>(
+    fromLang === "pt" ? "brazil" : null
+  );
+
+  const resolvedMarketFocus: MarketFocus | null =
+    selectedCountry === "other" ? null : selectedCountry;
 
   return (
     <motion.div
@@ -86,7 +116,7 @@ export function LanguageTransitionModal({
             <span style={{ fontWeight: 600 }} className="text-[#0f172b]">{c.bodyHighlight}</span>{" "}
             {c.bodySuffix}
           </p>
-          <p className="text-[#62748e] text-sm leading-relaxed mb-8">
+          <p className="text-[#62748e] text-sm leading-relaxed mb-6">
             {c.subtitle}
           </p>
 
@@ -101,13 +131,78 @@ export function LanguageTransitionModal({
             </span>
           </div>
 
+          {/* ── Country Selector ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.45 }}
+          >
+            {/* Divider */}
+            <div className="border-t border-[#e2e8f0] mb-6" />
+
+            <div className="flex items-center justify-center gap-1.5 mb-2">
+              <MapPin className="w-3.5 h-3.5 text-[#62748e]" />
+              <p
+                className="text-sm text-[#0f172b]"
+                style={{ fontWeight: 600 }}
+              >
+                {c.countryQuestion}
+              </p>
+            </div>
+            <p className="text-xs text-[#94a3b8] mb-4 leading-relaxed">
+              {c.countryHint}
+            </p>
+
+            {/* Country pills */}
+            <div className="flex flex-wrap justify-center gap-2 mb-8">
+              {COUNTRY_OPTIONS.map((country, i) => {
+                const isSelected = selectedCountry === country.id;
+                return (
+                  <motion.button
+                    key={country.id}
+                    onClick={() => setSelectedCountry(country.id)}
+                    className={`relative inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full text-sm border-2 transition-all duration-200 ${isSelected
+                      ? "border-[#0f172b] bg-[#0f172b] text-white"
+                      : "border-[#e2e8f0] bg-[#f8fafc] text-[#314158] hover:border-[#cad5e2] hover:bg-white"
+                      }`}
+                    style={{ fontWeight: isSelected ? 600 : 400 }}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.25, delay: 0.5 + i * 0.05 }}
+                    whileTap={{ scale: 0.96 }}
+                  >
+                    <span className="text-base leading-none">{country.flag}</span>
+                    {country.label[langKey]}
+                    <AnimatePresence>
+                      {isSelected && (
+                        <motion.span
+                          initial={{ scale: 0, width: 0 }}
+                          animate={{ scale: 1, width: "auto" }}
+                          exit={{ scale: 0, width: 0 }}
+                          transition={{ duration: 0.15 }}
+                          className="inline-flex"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </motion.div>
+
           {/* CTA */}
           <motion.button
-            onClick={onContinue}
-            className="w-full bg-[#0f172b] text-white py-4 rounded-full flex items-center justify-center gap-2.5 shadow-lg hover:bg-[#1d293d] transition-colors text-[15px]"
+            onClick={() => onContinue(resolvedMarketFocus)}
+            className={`w-full py-4 rounded-full flex items-center justify-center gap-2.5 shadow-lg transition-all text-[15px] ${selectedCountry
+              ? "bg-[#0f172b] text-white hover:bg-[#1d293d]"
+              : "bg-[#cad5e2] text-white cursor-not-allowed"
+              }`}
             style={{ fontWeight: 500 }}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={selectedCountry ? { scale: 1.02 } : {}}
+            whileTap={selectedCountry ? { scale: 0.98 } : {}}
+            disabled={!selectedCountry}
           >
             {c.cta}
             <ArrowRight className="w-4 h-4" />

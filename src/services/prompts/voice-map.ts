@@ -3,7 +3,16 @@
  *  inFluentia PRO — Voice Mapping (ElevenLabs)
  *
  *  Maps interlocutor → ElevenLabs voice ID for TTS consistency.
+ *  8 interlocutors: 4 interview + 4 sales.
+ *
+ *  Voice design principle: Each persona gets a voice that
+ *  reinforces their psychological profile. Interview personas
+ *  share some voice archetypes with sales personas where the
+ *  personality overlaps (e.g., analytical evaluators).
+ *
  *  Reference: /docs/SYSTEM_PROMPTS.md §10
+ *
+ *  v3.0: Expanded from 4 to 8 interlocutor voice profiles
  * ══════════════════════════════════════════════════════════════
  */
 
@@ -22,16 +31,18 @@ export interface VoiceProfile {
  * Default voice IDs — resolved from environment variables in production.
  *
  * In production (Supabase Edge Functions), these are read from Deno.env:
- *   - ELEVENLABS_VOICE_CLIENT
- *   - ELEVENLABS_VOICE_MANAGER
+ *   Interview:
  *   - ELEVENLABS_VOICE_RECRUITER
- *   - ELEVENLABS_VOICE_PEER
+ *   - ELEVENLABS_VOICE_SME
+ *   - ELEVENLABS_VOICE_HIRING_MANAGER
+ *   - ELEVENLABS_VOICE_HR
+ *   Sales:
+ *   - ELEVENLABS_VOICE_GATEKEEPER
+ *   - ELEVENLABS_VOICE_TECHNICAL_BUYER
+ *   - ELEVENLABS_VOICE_CHAMPION
+ *   - ELEVENLABS_VOICE_DECISION_MAKER
  *
- * In Vite dev/build, they can be set via:
- *   - VITE_ELEVENLABS_VOICE_CLIENT
- *   - VITE_ELEVENLABS_VOICE_MANAGER
- *   - VITE_ELEVENLABS_VOICE_RECRUITER
- *   - VITE_ELEVENLABS_VOICE_PEER
+ * In Vite dev/build, prefix with VITE_ (e.g., VITE_ELEVENLABS_VOICE_RECRUITER).
  *
  * Replace the fallback IDs with real ElevenLabs voice IDs from your account.
  */
@@ -47,25 +58,48 @@ function resolveVoiceId(envKey: string): string {
 }
 
 const VOICE_PROFILES: Record<InterlocutorType, VoiceProfile> = {
-  client: {
-    voiceId: resolveVoiceId("VITE_ELEVENLABS_VOICE_CLIENT"),
-    label: "Masculine, authoritative",
-    description: "CEO/VP buying: confidence, gravitas",
-  },
-  manager: {
-    voiceId: resolveVoiceId("VITE_ELEVENLABS_VOICE_MANAGER"),
-    label: "Feminine, direct",
-    description: "Your boss: direct, executive, no-nonsense",
-  },
+  /* ── Interview Voices ── */
   recruiter: {
     voiceId: resolveVoiceId("VITE_ELEVENLABS_VOICE_RECRUITER"),
-    label: "Analytical, probing (gender-flexible)",
-    description: "Evaluative but approachable: analytical precision",
+    label: "Cordial, rhythmic (gender-flexible)",
+    description: "Corporate recruiter: efficient, warm but structured pace",
   },
-  peer: {
-    voiceId: resolveVoiceId("VITE_ELEVENLABS_VOICE_PEER"),
-    label: "Casual, confident",
-    description: "Networking peer: relaxed but sharp, evaluating your pitch",
+  sme: {
+    voiceId: resolveVoiceId("VITE_ELEVENLABS_VOICE_SME"),
+    label: "Analytical, measured",
+    description: "Technical evaluator: precise, inquisitive, peer-level",
+  },
+  hiring_manager: {
+    voiceId: resolveVoiceId("VITE_ELEVENLABS_VOICE_HIRING_MANAGER"),
+    label: "Direct, pragmatic",
+    description: "Hiring manager: authoritative, outcome-oriented, American directness",
+  },
+  hr: {
+    voiceId: resolveVoiceId("VITE_ELEVENLABS_VOICE_HR"),
+    label: "Warm, empathetic",
+    description: "People & Culture: reflective, open, emotionally intelligent",
+  },
+
+  /* ── Sales Voices ── */
+  gatekeeper: {
+    voiceId: resolveVoiceId("VITE_ELEVENLABS_VOICE_GATEKEEPER"),
+    label: "Curt, professional",
+    description: "SDR/Gatekeeper: skeptical, busy, time-constrained filter",
+  },
+  technical_buyer: {
+    voiceId: resolveVoiceId("VITE_ELEVENLABS_VOICE_TECHNICAL_BUYER"),
+    label: "Analytical, probing",
+    description: "Technical buyer: detail-oriented, proof-seeking, no marketing tolerance",
+  },
+  champion: {
+    voiceId: resolveVoiceId("VITE_ELEVENLABS_VOICE_CHAMPION"),
+    label: "Collaborative, energetic",
+    description: "Internal champion: ally-minded, results-driven, needs ammunition",
+  },
+  decision_maker: {
+    voiceId: resolveVoiceId("VITE_ELEVENLABS_VOICE_DECISION_MAKER"),
+    label: "Authoritative, strategic",
+    description: "C-Level: ROI-obsessed, time-scarce, executive gravitas",
   },
 };
 
@@ -82,7 +116,7 @@ export function getVoiceId(interlocutor: InterlocutorType): string {
  * Get the full voice profile (for UI display or debugging).
  */
 export function getVoiceProfile(interlocutor: InterlocutorType): VoiceProfile {
-  return VOICE_PROFILES[interlocutor] ?? VOICE_PROFILES.client;
+  return VOICE_PROFILES[interlocutor] ?? VOICE_PROFILES.recruiter;
 }
 
 /**

@@ -1,13 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     FileText,
     TrendingUp,
-    Lightbulb,
     Check,
     PenLine,
     Mic,
     Play,
     ArrowRight,
+    Loader2
 } from "lucide-react";
 import { motion } from "motion/react";
 import {
@@ -17,25 +17,65 @@ import {
     PageTitleBlock,
     HighlightWithTooltip,
 } from "../shared";
-import { getScriptSectionsForScenario } from "../../../services/scenario-data";
-import type { ScenarioType } from "../../../services/types";
-import type { ValuePillar } from "../StrategyBuilder";
+import type { ScenarioType, ScriptSection } from "../../../services/types";
+
+import { conversationService } from "../../../services";
 
 export function PreBriefingScreen({
     scenarioType,
+    scenario,
     interlocutor,
-    strategyPillars,
+
+    extraContext,
     onStartSimulation,
     onBack,
 }: {
     scenarioType?: ScenarioType;
+    scenario: string;
     interlocutor: string;
-    strategyPillars?: ValuePillar[];
+
+    extraContext?: string;
     onStartSimulation: () => void;
     onBack: () => void;
 }) {
-    const scriptSections = getScriptSectionsForScenario(scenarioType);
+    const [scriptSections, setScriptSections] = useState<ScriptSection[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [isEditing, setIsEditing] = useState(false);
+
+    useEffect(() => {
+        let cancelled = false;
+        setIsLoading(true);
+
+        if (!scenarioType || !scenario || !interlocutor) {
+            setError("Missing required scenario information to generate script.");
+            setIsLoading(false);
+            return;
+        }
+
+        conversationService.generatePreBriefing({
+            scenarioType,
+            scenario,
+            interlocutor,
+            extraContext
+        })
+            .then(data => {
+                if (!cancelled) {
+                    setScriptSections(data.sections);
+                    setIsLoading(false);
+                }
+            })
+            .catch(err => {
+                if (!cancelled) {
+                    console.error("Failed to generate pre-briefing script:", err);
+                    setError(`Error: ${err.message || 'Unknown error'}. You can still practice using your strategy pillars.`);
+                    setIsLoading(false);
+                }
+            });
+
+        return () => { cancelled = true; };
+    }, [scenarioType, scenario, interlocutor, extraContext]);
+
 
     const narrativeLabels: Record<string, string> = {
         sales: "Opening → Objection handling → Close with value",
@@ -80,35 +120,7 @@ export function PreBriefingScreen({
                     </div>
                 </motion.div>
 
-                {/* Strategy Pillars Summary */}
-                {strategyPillars && strategyPillars.length > 0 && (
-                    <motion.div
-                        className="bg-gradient-to-r from-[#f0f9ff] to-[#eef2ff] rounded-2xl border border-[#bfdbfe]/40 p-6 mb-8"
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4, delay: 0.04 }}
-                    >
-                        <div className="flex items-center gap-2 mb-4">
-                            <Lightbulb className="w-5 h-5 text-[#6366f1]" />
-                            <h3 className="text-[#0f172b]" style={{ fontWeight: 600 }}>
-                                Your value strategy
-                            </h3>
-                        </div>
-                        <div className="space-y-2">
-                            {strategyPillars.map((p, idx) => (
-                                <div
-                                    key={idx}
-                                    className="flex items-start gap-3 text-sm text-[#314158]"
-                                >
-                                    <span className="w-5 h-5 rounded-full bg-[#6366f1] text-white flex items-center justify-center shrink-0 text-[10px]" style={{ fontWeight: 700 }}>
-                                        {idx + 1}
-                                    </span>
-                                    <p className="leading-relaxed">{p.summary}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </motion.div>
-                )}
+
 
                 {/* 2. Highlight Legend */}
                 <motion.div
@@ -130,82 +142,103 @@ export function PreBriefingScreen({
                     <span className="text-sm text-[#62748e] italic">— Hover over text for tips</span>
                 </motion.div>
 
-                {/* 3. Script Sections */}
-                <motion.div
-                    className="bg-white rounded-3xl border border-[#e2e8f0] p-8 mb-8 space-y-10 relative"
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.08 }}
-                >
-                    <button
-                        onClick={() => setIsEditing(!isEditing)}
-                        className={`absolute -top-4 right-6 z-10 flex items-center gap-2 px-4 py-1.5 rounded-full text-sm shadow-sm transition-all ${isEditing
+                {/* 3. Script Loading & Content */}
+                {isLoading ? (
+                    <motion.div
+                        className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl shadow-sm border border-[#e2e8f0] mb-8"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                    >
+                        <Loader2 className="w-8 h-8 mb-4 animate-spin text-[#0f172b]" />
+                        <p className="text-[#62748e]" style={{ fontWeight: 500 }}>
+                            Crafting your personalized conversation script...
+                        </p>
+                    </motion.div>
+                ) : error ? (
+                    <motion.div
+                        className="p-6 bg-red-50 text-red-600 rounded-3xl text-center mb-8"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                    >
+                        <p>{error}</p>
+                    </motion.div>
+                ) : scriptSections.length > 0 ? (
+                    <motion.div
+                        className="bg-white rounded-3xl border border-[#e2e8f0] p-8 mb-8 space-y-10 relative"
+                        initial={{ opacity: 0, y: 16 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.08 }}
+                    >
+                        <button
+                            onClick={() => setIsEditing(!isEditing)}
+                            className={`absolute -top-4 right-6 z-10 flex items-center gap-2 px-4 py-1.5 rounded-full text-sm shadow-sm transition-all ${isEditing
                                 ? "bg-[#dcfce7] text-[#15803d] border border-[#bbf7d0]"
                                 : "bg-white border border-[#e2e8f0] text-[#45556c] hover:bg-[#f8fafc]"
-                            }`}
-                        style={{ fontWeight: 500 }}
-                    >
-                        {isEditing ? (
-                            <>
-                                <Check className="w-3.5 h-3.5" />
-                                Save changes
-                            </>
-                        ) : (
-                            <>
-                                <PenLine className="w-3.5 h-3.5" />
-                                Edit script
-                            </>
-                        )}
-                    </button>
-
-                    {scriptSections.map((section, si) => (
-                        <motion.div
-                            key={section.num}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.4, delay: 0.15 + si * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                                }`}
+                            style={{ fontWeight: 500 }}
                         >
-                            <div className="flex items-center gap-3 mb-5">
-                                <span
-                                    className="w-8 h-8 rounded-xl bg-[#6366f1]/10 flex items-center justify-center text-sm text-[#6366f1]"
-                                    style={{ fontWeight: 700 }}
-                                >
-                                    {section.num}
-                                </span>
-                                <h3
-                                    className="text-xl text-[#0f172b]"
-                                    style={{ fontWeight: 600 }}
-                                >
-                                    {section.title}
-                                </h3>
-                            </div>
-                            <div className="space-y-4">
-                                {section.paragraphs.map((p, pi) => (
-                                    <p
-                                        key={pi}
-                                        className={`text-[#314158] leading-relaxed ${isEditing
+                            {isEditing ? (
+                                <>
+                                    <Check className="w-3.5 h-3.5" />
+                                    Save changes
+                                </>
+                            ) : (
+                                <>
+                                    <PenLine className="w-3.5 h-3.5" />
+                                    Edit script
+                                </>
+                            )}
+                        </button>
+
+                        {scriptSections.map((section, si) => (
+                            <motion.div
+                                key={section.num}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.4, delay: 0.15 + si * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                            >
+                                <div className="flex items-center gap-3 mb-5">
+                                    <span
+                                        className="w-8 h-8 rounded-xl bg-[#6366f1]/10 flex items-center justify-center text-sm text-[#6366f1]"
+                                        style={{ fontWeight: 700 }}
+                                    >
+                                        {section.num}
+                                    </span>
+                                    <h3
+                                        className="text-xl text-[#0f172b]"
+                                        style={{ fontWeight: 600 }}
+                                    >
+                                        {section.title}
+                                    </h3>
+                                </div>
+                                <div className="space-y-4">
+                                    {section.paragraphs.map((p, pi) => (
+                                        <p
+                                            key={pi}
+                                            className={`text-[#314158] leading-relaxed ${isEditing
                                                 ? "bg-[#f8fafc] rounded-xl px-4 py-3 border border-[#e2e8f0] focus:outline-none focus:border-[#6366f1] transition-colors"
                                                 : ""
-                                            }`}
-                                        contentEditable={isEditing}
-                                        suppressContentEditableWarning
-                                    >
-                                        {p.text}
-                                        {p.highlights?.map((h, hi) => (
-                                            <HighlightWithTooltip
-                                                key={hi}
-                                                phrase={h.phrase}
-                                                color={h.color}
-                                                tooltip={h.tooltip}
-                                            />
-                                        ))}
-                                        {p.suffix}
-                                    </p>
-                                ))}
-                            </div>
-                        </motion.div>
-                    ))}
-                </motion.div>
+                                                }`}
+                                            contentEditable={isEditing}
+                                            suppressContentEditableWarning
+                                        >
+                                            {p.text}
+                                            {p.highlights?.map((h, hi) => (
+                                                <HighlightWithTooltip
+                                                    key={hi}
+                                                    phrase={h.phrase}
+                                                    color={h.color || COLORS.blue}
+                                                    tooltip={h.tooltip}
+                                                />
+                                            ))}
+                                            {p.suffix}
+                                        </p>
+                                    ))}
+                                </div>
+                            </motion.div>
+                        ))}
+                    </motion.div>
+                ) : null}
 
                 {/* CTA: Start Simulation */}
                 <motion.div
@@ -229,7 +262,8 @@ export function PreBriefingScreen({
                         </p>
                         <button
                             onClick={onStartSimulation}
-                            className="bg-[#0f172b] text-white px-10 py-5 rounded-full flex items-center gap-3 shadow-lg hover:bg-[#1d293d] transition-colors text-xl mx-auto"
+                            disabled={isLoading}
+                            className="bg-[#0f172b] text-white px-10 py-5 rounded-full flex items-center gap-3 shadow-lg hover:bg-[#1d293d] transition-colors text-xl mx-auto disabled:opacity-50 disabled:cursor-not-allowed"
                             style={{ fontWeight: 500 }}
                         >
                             <Play className="w-5 h-5" />
@@ -240,15 +274,17 @@ export function PreBriefingScreen({
                             onClick={onBack}
                             className="mt-4 text-sm text-[#45556c] hover:text-[#0f172b] transition-colors mx-auto block"
                         >
-                            ← Back to strategy
+                            ← Back to context
                         </button>
                     </div>
-                    <p className="text-sm text-[#45556c]/70">
-                        Estimated reading time:{" "}
-                        <span style={{ fontWeight: 500 }}>
-                            {Math.max(2, Math.ceil(scriptSections.reduce((acc, s) => acc + s.paragraphs.length, 0) * 0.8))} min
-                        </span>
-                    </p>
+                    {!isLoading && scriptSections.length > 0 && (
+                        <p className="text-sm text-[#45556c]/70">
+                            Estimated reading time:{" "}
+                            <span style={{ fontWeight: 500 }}>
+                                {Math.max(2, Math.ceil(scriptSections.reduce((acc, s) => acc + s.paragraphs.length, 0) * 0.8))} min
+                            </span>
+                        </p>
+                    )}
                 </motion.div>
             </main>
             <MiniFooter />

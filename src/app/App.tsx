@@ -9,6 +9,7 @@ import { LoadingScreen } from "./components/LoadingScreen";
 import { LanguageTransitionModal } from "./components/LanguageTransitionModal";
 import { authService } from "../services";
 import type { User, OnboardingProfile, ScenarioType } from "../services/types";
+import type { MarketFocus } from "../services/prompts";
 import type { SetupModalResult } from "./components/PracticeWidget";
 import { AnimatePresence } from "motion/react";
 import type { LandingLang } from "./components/landing-i18n";
@@ -77,6 +78,9 @@ export default function App() {
   const [showNewSessionPaywall, setShowNewSessionPaywall] = useState(false);
   const pendingNewSessionRef = useRef<(() => void) | null>(null);
 
+  /* ─── MarketFocus from LanguageTransitionModal ─── */
+  const [selectedMarketFocus, setSelectedMarketFocus] = useState<MarketFocus | null>(null);
+
   /* ─── Language transition modal ─── */
   const [showLangModal, setShowLangModal] = useState(false);
   const pendingNavigationRef = useRef<(() => void) | null>(null);
@@ -125,6 +129,9 @@ export default function App() {
               }
             } catch { }
 
+            // Check if user already completed language transition
+            const langDone = (() => { try { return localStorage.getItem("langTransitionDone") === "1"; } catch { return false; } })();
+
             if (pending) {
               setFlowState({
                 scenario: pending.scenario,
@@ -147,23 +154,32 @@ export default function App() {
               }
             }
 
-            // If no pending setup, route to dashboard
+            // No pending setup from PracticeWidget.
+            // First-time user (registro) → practice-session with defaults.
+            // Returning user (login) → dashboard.
+            const authAction = pendingAct?.mode;
+            const isFirstTimeUser = authAction === "registro" || !user.freeSessionUsed;
+
             setFlowState((prev) =>
               prev.scenario
                 ? prev
                 : {
                   scenario: "Sales pitch: Producto B2B SaaS para LATAM",
                   interlocutor: "VP of Sales",
+                  scenarioType: "sales" as ScenarioType,
                 }
             );
 
-            if (currentLang === "en") {
-              window.location.hash = "#dashboard";
-              return "dashboard";
+            const targetPage = isFirstTimeUser ? "practice-session" : "dashboard";
+
+
+            if (currentLang === "en" || langDone) {
+              window.location.hash = `#${targetPage}`;
+              return targetPage as Page;
             } else {
               pendingNavigationRef.current = () => {
-                setPage("dashboard");
-                window.location.hash = "#dashboard";
+                setPage(targetPage);
+                window.location.hash = `#${targetPage}`;
               };
               setShowLangModal(true);
               return "landing";
@@ -363,6 +379,7 @@ export default function App() {
             interlocutor={flowState.interlocutor || "Client"}
             scenarioType={flowState.scenarioType}
             guidedFields={flowState.guidedFields}
+            marketFocus={selectedMarketFocus ?? authUser?.marketFocus}
             onFinish={handlePracticeFinish}
             onNewPractice={handleNewPractice}
             userPlan={authUser?.plan}
@@ -394,8 +411,10 @@ export default function App() {
           {showLangModal && (
             <LanguageTransitionModal
               fromLang={landingLang}
-              onContinue={() => {
+              onContinue={(marketFocus) => {
+                setSelectedMarketFocus(marketFocus);
                 setShowLangModal(false);
+                try { localStorage.setItem("langTransitionDone", "1"); } catch { /* ignore */ }
                 pendingNavigationRef.current?.();
                 pendingNavigationRef.current = null;
               }}
