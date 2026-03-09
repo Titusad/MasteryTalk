@@ -190,7 +190,7 @@ DYNAMIC BEHAVIOR:
 
 /* ═══════════════════════════════════════════════════════════════
    SUB-PROFILES (appended to base persona when activated)
-   ═══════════════════════════════════════════════════════════════ */
+   ═══════════════════════════��═══════════════════════════════════ */
 
 export const SUB_PROFILE_NEGOTIATOR = `
 === SUB-PROFILE: HARD NEGOTIATOR ===
@@ -277,7 +277,12 @@ export function getPersonaBlock(
   const base = PERSONA_MAP[interlocutor];
 
   if (!base) {
-    throw new Error(`Unknown interlocutor: ${interlocutor}`);
+    console.warn(`[Personas] Unknown interlocutor "${interlocutor}", falling back to "recruiter"`);
+    const fallback = PERSONA_MAP["recruiter"];
+    if (subProfile && SUB_PROFILE_MAP[subProfile]) {
+      return fallback + "\n" + SUB_PROFILE_MAP[subProfile];
+    }
+    return fallback;
   }
 
   if (subProfile && SUB_PROFILE_MAP[subProfile]) {

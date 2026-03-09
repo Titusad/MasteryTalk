@@ -9,13 +9,13 @@ import { LoadingScreen } from "./components/LoadingScreen";
 import { LanguageTransitionModal } from "./components/LanguageTransitionModal";
 import { authService } from "../services";
 import type { User, OnboardingProfile, ScenarioType } from "../services/types";
-import type { MarketFocus } from "../services/prompts";
 import type { SetupModalResult } from "./components/PracticeWidget";
 import { AnimatePresence } from "motion/react";
 import type { LandingLang } from "./components/landing-i18n";
 import { CreditUpsellModal } from "./components/CreditUpsellModal";
 import { useUsageGating } from "./hooks/useUsageGating";
 import type { CreditPack } from "../services/types";
+import type { MarketFocus } from "../services/prompts";
 
 /* ─── App-level page types ─── */
 type Page =
@@ -35,7 +35,6 @@ interface FlowState {
 }
 
 export default function App() {
-  const [isInitializing, setIsInitializing] = useState(true);
   const [page, setPage] = useState<Page>(() => {
     const hash = window.location.hash;
     if (hash === "#design-system") return "design-system";
@@ -49,7 +48,8 @@ export default function App() {
     if (window.location.hash === "#dashboard" || window.location.hash === "#practice-history") {
       return {
         scenario: "Sales pitch: Producto B2B SaaS para LATAM",
-        interlocutor: "VP of Sales",
+        interlocutor: "decision_maker",
+        scenarioType: "sales" as ScenarioType,
       };
     }
     return { scenario: "", interlocutor: "" };
@@ -78,9 +78,6 @@ export default function App() {
   const [showNewSessionPaywall, setShowNewSessionPaywall] = useState(false);
   const pendingNewSessionRef = useRef<(() => void) | null>(null);
 
-  /* ─── MarketFocus from LanguageTransitionModal ─── */
-  const [selectedMarketFocus, setSelectedMarketFocus] = useState<MarketFocus | null>(null);
-
   /* ─── Language transition modal ─── */
   const [showLangModal, setShowLangModal] = useState(false);
   const pendingNavigationRef = useRef<(() => void) | null>(null);
@@ -90,6 +87,15 @@ export default function App() {
       if (saved === "es" || saved === "pt" || saved === "en") return saved;
     } catch { /* ignore */ }
     return "es";
+  });
+
+  /* ─── Market focus (region) — persisted in localStorage ─── */
+  const [marketFocus, setMarketFocus] = useState<MarketFocus | null>(() => {
+    try {
+      const saved = localStorage.getItem("influentia_market_focus");
+      if (saved === "mexico" || saved === "colombia" || saved === "brazil") return saved;
+    } catch { /* ignore */ }
+    return null;
   });
 
   const handleLangChange = (lang: LandingLang) => {
@@ -107,31 +113,9 @@ export default function App() {
       setAuthUser(user);
 
       if (user && !hadUser) {
-        let pendingAct: any = null;
-        try {
-          const saved = localStorage.getItem("pendingAuthAction");
-          if (saved) {
-            pendingAct = JSON.parse(saved);
-            localStorage.removeItem("pendingAuthAction");
-          }
-        } catch { }
-
         setPage((currentPage) => {
           if (currentPage === "landing") {
-            const pending = pendingSetupRef.current || (pendingAct?.mode === "registro" ? pendingAct.data : null);
-
-            // Read latest language from storage to avoid stale closure
-            let currentLang = "es";
-            try {
-              const savedLang = localStorage.getItem("influentia_lang");
-              if (savedLang === "es" || savedLang === "pt" || savedLang === "en") {
-                currentLang = savedLang;
-              }
-            } catch { }
-
-            // Check if user already completed language transition
-            const langDone = (() => { try { return localStorage.getItem("langTransitionDone") === "1"; } catch { return false; } })();
-
+            const pending = pendingSetupRef.current;
             if (pending) {
               setFlowState({
                 scenario: pending.scenario,
@@ -140,50 +124,20 @@ export default function App() {
                 guidedFields: pending.guidedFields,
               });
               pendingSetupRef.current = null;
-
-              if (currentLang === "en") {
-                window.location.hash = "#practice-session";
-                return "practice-session";
-              } else {
-                pendingNavigationRef.current = () => {
-                  setPage("practice-session");
-                  window.location.hash = "#practice-session";
-                };
-                setShowLangModal(true);
-                return "landing";
-              }
+              window.location.hash = "#practice-session";
+              return "practice-session";
             }
-
-            // No pending setup from PracticeWidget.
-            // First-time user (registro) → practice-session with defaults.
-            // Returning user (login) → dashboard.
-            const authAction = pendingAct?.mode;
-            const isFirstTimeUser = authAction === "registro" || !user.freeSessionUsed;
-
             setFlowState((prev) =>
               prev.scenario
                 ? prev
                 : {
                   scenario: "Sales pitch: Producto B2B SaaS para LATAM",
-                  interlocutor: "VP of Sales",
+                  interlocutor: "decision_maker",
                   scenarioType: "sales" as ScenarioType,
                 }
             );
-
-            const targetPage = isFirstTimeUser ? "practice-session" : "dashboard";
-
-
-            if (currentLang === "en" || langDone) {
-              window.location.hash = `#${targetPage}`;
-              return targetPage as Page;
-            } else {
-              pendingNavigationRef.current = () => {
-                setPage(targetPage);
-                window.location.hash = `#${targetPage}`;
-              };
-              setShowLangModal(true);
-              return "landing";
-            }
+            window.location.hash = "#dashboard";
+            return "dashboard";
           }
           return currentPage;
         });
@@ -194,29 +148,9 @@ export default function App() {
         setPage("landing");
         window.location.hash = "";
       }
-
-      // If user comes back non-null, we are definitely initialized.
-      // If user is null, it could be the immediate synchronous fire from the service
-      // before Supabase has actually checked local storage. We don't want to flash the landing page.
-      if (user) {
-        setIsInitializing(false);
-      }
     });
 
-    const isOauthRedirect = window.location.hash.includes("access_token=") || window.location.hash.includes("error_description=");
-
-    // Fallback timer: 
-    // If it's a normal load, 600ms is enough to know if there's no session in local storage.
-    // If it's an OAuth redirect, Supabase needs time to exchange tokens and fetch the profile
-    // over the network, which can take 1-2 seconds.
-    const fallbackTimer = setTimeout(() => {
-      setIsInitializing(false);
-    }, isOauthRedirect ? 3000 : 700);
-
-    return () => {
-      unsubscribe();
-      clearTimeout(fallbackTimer);
-    };
+    return unsubscribe;
   }, []);
 
   /* ─── Hash-based routing ─── */
@@ -230,7 +164,8 @@ export default function App() {
             ? prev
             : {
               scenario: "Sales pitch: Producto B2B SaaS para LATAM",
-              interlocutor: "VP of Sales",
+              interlocutor: "decision_maker",
+              scenarioType: "sales" as ScenarioType,
             }
         );
         setPage("dashboard");
@@ -251,13 +186,10 @@ export default function App() {
           ? prev
           : {
             scenario: "Sales pitch: Producto B2B SaaS para LATAM",
-            interlocutor: "VP of Sales",
+            interlocutor: "decision_maker",
+            scenarioType: "sales" as ScenarioType,
           }
       );
-      try {
-        localStorage.setItem("pendingAuthAction", JSON.stringify({ mode: "login" }));
-      } catch { }
-
       pendingNavigationRef.current = () => {
         setPage("dashboard");
         window.location.hash = "#dashboard";
@@ -280,9 +212,6 @@ export default function App() {
     });
 
     pendingSetupRef.current = data;
-    try {
-      localStorage.setItem("pendingAuthAction", JSON.stringify({ mode: "registro", data }));
-    } catch { }
 
     pendingNavigationRef.current = () => {
       setPage("practice-session");
@@ -357,14 +286,6 @@ export default function App() {
     window.location.hash = "#dashboard";
   };
 
-  if (isInitializing) {
-    return (
-      <div className="w-full h-screen bg-white flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-2 border-gray-200 border-t-[#0f172b] animate-spin" />
-      </div>
-    );
-  }
-
   return (
     <ErrorBoundary>
       <div className="size-full">
@@ -376,10 +297,10 @@ export default function App() {
         {page === "practice-session" && (
           <PracticeSessionPage
             scenario={flowState.scenario}
-            interlocutor={flowState.interlocutor || "Client"}
-            scenarioType={flowState.scenarioType}
+            interlocutor={flowState.interlocutor || "recruiter"}
+            scenarioType={flowState.scenarioType || "interview"}
             guidedFields={flowState.guidedFields}
-            marketFocus={selectedMarketFocus ?? authUser?.marketFocus}
+            marketFocus={marketFocus}
             onFinish={handlePracticeFinish}
             onNewPractice={handleNewPractice}
             userPlan={authUser?.plan}
@@ -411,10 +332,16 @@ export default function App() {
           {showLangModal && (
             <LanguageTransitionModal
               fromLang={landingLang}
-              onContinue={(marketFocus) => {
-                setSelectedMarketFocus(marketFocus);
+              onContinue={(selectedMarketFocus) => {
+                setMarketFocus(selectedMarketFocus);
+                try {
+                  if (selectedMarketFocus) {
+                    localStorage.setItem("influentia_market_focus", selectedMarketFocus);
+                  } else {
+                    localStorage.removeItem("influentia_market_focus");
+                  }
+                } catch { /* ignore */ }
                 setShowLangModal(false);
-                try { localStorage.setItem("langTransitionDone", "1"); } catch { /* ignore */ }
                 pendingNavigationRef.current?.();
                 pendingNavigationRef.current = null;
               }}

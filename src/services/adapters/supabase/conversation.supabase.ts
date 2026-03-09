@@ -1,180 +1,179 @@
-import { getSupabaseClient } from "../../supabase";
-import { projectId } from "../../../../utils/supabase/info";
-import type { IConversationService } from "../../interfaces/conversation";
+/**
+ * ══════════════════════════════════════════════════════════════
+ *  SupabaseConversationService — Real GPT-4o conversation via Edge Functions
+ *
+ *  Flow:
+ *  1. prepareSession: Assembles system prompt locally → sends to /prepare-session
+ *     → server stores in KV + calls GPT-4o for first message
+ *  2. processTurn: Sends user message to /process-turn
+ *     → server retrieves history from KV + calls GPT-4o → returns AI response
+ *  3. getSessionMessages: Returns locally cached messages
+ *  4. endConversation: Marks session complete
+ * ══════════════════════════════════════════════════════════════
+ */
+import type { IConversationService } from "../../interfaces";
 import type {
     SessionConfig,
     PreparedSession,
     ChatMessage,
     ConversationTurnResult,
-    ScriptSection,
 } from "../../types";
-import { ConversationError, AuthError } from "../../errors";
+import { ConversationError } from "../../errors";
+import {
+    assembleSystemPrompt,
+    DEFAULT_INTERLOCUTOR,
+    type InterlocutorType,
+} from "../../prompts";
+import { projectId, publicAnonKey } from "../../../../utils/supabase/info";
+
+const BASE_URL = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d`;
+
+async function serverFetch(path: string, body: Record<string, unknown>) {
+    const res = await fetch(`${BASE_URL}${path}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${publicAnonKey}`,
+        },
+        body: JSON.stringify(body),
+    });
+
+    if (!res.ok) {
+        const errBody = await res.text();
+        throw new Error(`Server ${res.status}: ${errBody.slice(0, 300)}`);
+    }
+    return res.json();
+}
 
 export class SupabaseConversationService implements IConversationService {
-    async generateContextSuggestions(scenarioType: string, scenario: string, interlocutor: string): Promise<{ fields: Array<{ label: string; placeholder: string; hint: string; pasteHint: string; suggestions: string[] }> }> {
-        try {
-            const supabase = getSupabaseClient();
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) throw new AuthError("AUTH_UNKNOWN", new Error("Unauthorized"));
-
-            const { data, error } = await supabase.functions.invoke('generate-scenario-data', {
-                body: { action: "context_suggestions", scenarioType, scenario, interlocutor },
-            });
-
-            if (error) throw new Error(error.message);
-            if (data.error) throw new Error(data.error);
-
-            return data;
-        } catch (err: any) {
-            console.error("🚨 Supabase Edge Function [generateContextSuggestions] failed:", err);
-            throw err instanceof Error ? err : new Error(err.message || 'Unknown error');
-        }
-    }
-
-    async generatePreBriefing(params: {
-        scenarioType: string;
-        scenario: string;
-        interlocutor: string;
-        guidedFields?: Record<string, string>;
-        marketFocus?: string | null;
-        extraContext?: string;
-    }): Promise<{ sections: ScriptSection[] }> {
-        for (let attempt = 0; attempt < 3; attempt++) {
-            try {
-                const supabase = getSupabaseClient();
-                const { data: { session } } = await supabase.auth.getSession();
-                if (!session) throw new AuthError("AUTH_UNKNOWN", new Error("Unauthorized"));
-
-                const { data, error } = await supabase.functions.invoke('generate-scenario-data', {
-                    body: {
-                        action: "pre_briefing",
-                        scenario: params.scenario,
-                        scenarioType: params.scenarioType,
-                        interlocutor: params.interlocutor,
-                        guidedFields: params.guidedFields,
-                        marketFocus: params.marketFocus,
-                    }
-                });
-
-                if (error) {
-                    throw new Error(`Edge Function error: ${error.message}`);
-                }
-
-                if (data?.error) throw new Error(data.error);
-
-                return { sections: data.sections };
-            } catch (err: any) {
-                const msg = err instanceof Error ? err.message : String(err);
-                if ((msg.includes("Lock") || msg.includes("AbortError")) && attempt < 2) {
-                    console.warn(`[generatePreBriefing] Lock error, retrying (${attempt + 1}/3)...`);
-                    await new Promise(r => setTimeout(r, 1000 + Math.random() * 500));
-                    continue;
-                }
-                console.error("🚨 Edge Function [generatePreBriefing → generate-script] failed:", err);
-                throw err instanceof Error ? err : new Error(msg || 'Unknown error');
-            }
-        }
-        throw new Error("Failed after retries");
-    }
+    /** Local cache of messages per session (avoids extra server calls) */
+    private localMessages: Map<string, ChatMessage[]> = new Map();
 
     async prepareSession(config: SessionConfig): Promise<PreparedSession> {
-        for (let attempt = 0; attempt < 3; attempt++) {
-            try {
-                const supabase = getSupabaseClient();
-                const { data: { session } } = await supabase.auth.getSession();
-                if (!session) throw new AuthError("AUTH_UNKNOWN", new Error("Unauthorized"));
+        try {
+            // Assemble system prompt locally (uses frontend prompt assembler)
+            const interlocutor = (config.interlocutor ||
+                DEFAULT_INTERLOCUTOR[config.scenarioType ?? "interview"]) as InterlocutorType;
 
-                const { data, error } = await supabase.functions.invoke('prepare-session', {
-                    body: config,
+            // Convert guidedFields to extractedContext for the prompt assembler
+            let extractedContext = config.context || "";
+            if (config.guidedFields && Object.keys(config.guidedFields).length > 0) {
+                const contextParts = Object.entries(config.guidedFields)
+                    .filter(([, v]) => v.trim().length > 0)
+                    .map(([k, v]) => `${k}: ${v.trim()}`);
+                if (contextParts.length > 0) {
+                    extractedContext =
+                        (extractedContext ? extractedContext + "\n\n" : "") +
+                        contextParts.join("\n\n");
+                }
+            }
+
+            console.log(
+                `[SupabaseConversation] assembleSystemPrompt inputs:`,
+                {
+                    interlocutor,
+                    scenario: config.scenario,
+                    marketFocus: config.marketFocus,
+                    hasContext: !!extractedContext,
+                    scenarioType: config.scenarioType,
+                }
+            );
+
+            const { systemPrompt, voiceId, subProfile, estimatedTokens } =
+                assembleSystemPrompt({
+                    interlocutor,
+                    scenario: config.scenario,
+                    marketFocus: config.marketFocus ?? undefined,
+                    extractedContext: extractedContext || undefined,
+                    includeFirstMessage: true,
+                    scenarioType: config.scenarioType,
                 });
 
-                if (error) {
-                    throw new ConversationError("SESSION_CREATION_FAILED", new Error(`Edge Function Error: ${error.message}`));
-                }
+            console.log(
+                `[SupabaseConversation] Preparing session | interlocutor=${interlocutor} | sub-profile=${subProfile ?? "none"} | voice=${voiceId} | prompt tokens=~${estimatedTokens}`
+            );
 
-                if (data?.error) {
-                    throw new ConversationError("SESSION_CREATION_FAILED", new Error(data.error));
-                }
+            const data = await serverFetch("/prepare-session", {
+                systemPrompt,
+                scenario: config.scenario,
+                interlocutor,
+                scenarioType: config.scenarioType ?? "interview",
+                voiceId,
+            });
 
-                return data as PreparedSession;
-            } catch (err: any) {
-                const msg = err instanceof Error ? err.message : String(err);
-                if ((msg.includes("Lock") || msg.includes("AbortError")) && attempt < 2) {
-                    console.warn(`[prepareSession] Lock error, retrying (${attempt + 1}/3)...`);
-                    await new Promise(r => setTimeout(r, 1000 + Math.random() * 500));
-                    continue;
-                }
-                console.error("🚨 Supabase Edge Function [prepare-session] failed:", err);
-                if (err instanceof ConversationError || err instanceof AuthError) throw err;
-                throw new ConversationError("SESSION_CREATION_FAILED", err instanceof Error ? err : new Error(msg || "Failed to prepare session"));
-            }
+            const sessionId = data.sessionId;
+            const firstMessage: ChatMessage = data.firstMessage;
+
+            // Cache the first message locally
+            this.localMessages.set(sessionId, [firstMessage]);
+
+            console.log(
+                `[SupabaseConversation] Session ${sessionId} ready — AI: "${firstMessage.text.slice(0, 60)}..."`
+            );
+
+            return {
+                sessionId,
+                systemPrompt,
+                firstMessage,
+                voiceId,
+            };
+        } catch (err) {
+            console.error("[SupabaseConversation] prepareSession failed — FULL ERROR:", err);
+            console.error("[SupabaseConversation] Error message:", err instanceof Error ? err.message : String(err));
+            console.error("[SupabaseConversation] Error stack:", err instanceof Error ? err.stack : "no stack");
+            throw new ConversationError("SESSION_CREATION_FAILED");
         }
-        throw new ConversationError("SESSION_CREATION_FAILED", new Error("Failed after retries"));
     }
 
     async processTurn(
         sessionId: string,
         userMessage: string
     ): Promise<ConversationTurnResult> {
-        try {
-            const supabase = getSupabaseClient();
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) throw new AuthError("AUTH_UNKNOWN", new Error("Unauthorized"));
+        // Add user message to local cache immediately
+        const cached = this.localMessages.get(sessionId) ?? [];
+        const userMsg: ChatMessage = {
+            role: "user",
+            label: "You",
+            time: new Date().toLocaleTimeString("en-US", {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+            }),
+            text: userMessage,
+        };
+        cached.push(userMsg);
 
-            const { data, error } = await supabase.functions.invoke('process-turn', {
-                body: { sessionId, userMessage },
+        try {
+            const data = await serverFetch("/process-turn", {
+                sessionId,
+                userMessage,
             });
 
-            if (error) {
-                throw new ConversationError("TURN_PROCESSING_FAILED", new Error(`Edge Function Error: ${error.message}`));
+            const aiMessage: ChatMessage = data.aiMessage;
+            const isComplete: boolean = data.isComplete === true;
+
+            // Cache AI response
+            cached.push(aiMessage);
+            this.localMessages.set(sessionId, cached);
+
+            if (data._debug) {
+                console.log(
+                    `[SupabaseConversation] Turn ${data._debug.turnCount} | AI: ${aiMessage.text.length} chars | isComplete=${isComplete}`
+                );
             }
 
-            if (data.error) {
-                throw new ConversationError("TURN_PROCESSING_FAILED", new Error(data.error));
-            }
-
-            return data as ConversationTurnResult;
-        } catch (err: any) {
-            console.error("🚨 Supabase Edge Function [process-turn] failed:", err);
-            if (err instanceof ConversationError || err instanceof AuthError) throw err;
-            throw new ConversationError("TURN_PROCESSING_FAILED", err instanceof Error ? err : new Error(err.message || "Failed to process turn"));
+            return { aiMessage, isComplete };
+        } catch (err) {
+            console.error("[SupabaseConversation] processTurn failed:", err);
+            throw new ConversationError("TURN_PROCESSING_FAILED");
         }
     }
 
     async getSessionMessages(sessionId: string): Promise<ChatMessage[]> {
-        try {
-            const supabase = getSupabaseClient();
-            const { data, error } = await supabase
-                .from("sessions")
-                .select("history")
-                .eq("id", sessionId)
-                .single();
-
-            if (error) throw error;
-
-            // Return the history array, filtering out any internal markers if they leaked
-            return (data.history || []).map((msg: any) => ({
-                role: msg.role,
-                text: msg.text,
-                time: msg.time,
-                label: msg.label,
-            }));
-        } catch (err: any) {
-            throw new ConversationError("CONVERSATION_UNKNOWN", err instanceof Error ? err : new Error(err.message || "Failed to fetch messages"));
-        }
+        return this.localMessages.get(sessionId) ?? [];
     }
 
-    async endConversation(sessionId: string): Promise<void> {
-        try {
-            const supabase = getSupabaseClient();
-            const { error } = await supabase
-                .from("sessions")
-                .update({ status: "completed" })
-                .eq("id", sessionId);
-
-            if (error) throw error;
-        } catch (err: any) {
-            throw new ConversationError("CONVERSATION_UNKNOWN", err instanceof Error ? err : new Error(err.message || "Failed to end conversation"));
-        }
+    async endConversation(_sessionId: string): Promise<void> {
+        // Session state is managed server-side; nothing to do here
     }
 }

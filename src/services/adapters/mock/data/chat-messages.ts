@@ -611,10 +611,16 @@ export function getTrySaying(
     return { starter: bestMatch.starter, why: bestMatch.why };
   }
 
-  // Fallback: return first suggestion as a general starter
-  return suggestions.length > 0
-    ? { starter: suggestions[0].starter, why: suggestions[0].why }
-    : null;
+  // Fallback: rotate through suggestions based on AI text hash (avoids always showing the same tip)
+  if (suggestions.length > 0) {
+    let hash = 0;
+    for (let i = 0; i < aiText.length; i++) {
+      hash = ((hash << 5) - hash + aiText.charCodeAt(i)) | 0;
+    }
+    const idx = Math.abs(hash) % suggestions.length;
+    return { starter: suggestions[idx].starter, why: suggestions[idx].why };
+  }
+  return null;
 }
 
 /* ══════════════════════════════════════════════════════════════

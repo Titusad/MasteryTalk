@@ -3,9 +3,9 @@ import { cors } from "npm:hono/cors";
 import { logger } from "npm:hono/logger";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import * as kv from "./kv_store.tsx";
+import { buildPreBriefingPrompt } from "./prebriefing-prompt.ts";
 
-// Set the basePath so Hono can match the full URL path from Supabase Edge Runtime
-const app = new Hono().basePath("/functions/v1/server");
+const app = new Hono();
 
 // Enable logger
 app.use('*', logger(console.log));
@@ -15,20 +15,12 @@ app.use(
   "/*",
   cors({
     origin: "*",
-    allowHeaders: ["Content-Type", "Authorization", "x-client-info", "apikey", "x-invoke-path"],
+    allowHeaders: ["Content-Type", "Authorization"],
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     exposeHeaders: ["Content-Length"],
     maxAge: 600,
   }),
 );
-
-app.all("/debug-catchall/*", (c) => {
-  return c.json({
-    url: c.req.url,
-    path: c.req.path,
-    method: c.req.method,
-  });
-});
 
 /* ── Supabase admin client (service role) ── */
 function getAdminClient() {
@@ -48,17 +40,17 @@ async function getAuthUser(authHeader: string | undefined) {
   return user;
 }
 
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════
 // Health check endpoint
-// ═══════════════════════════════════════════════════════════════
-app.get("/make-server-4e8a5b39/health", (c) => {
+// ═════════════════════════════════════════════════════════════
+app.get("/make-server-08b8658d/health", (c) => {
   return c.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
 // ═══════════════════════════════════════════════════════════════
 // Auth status — verify Supabase auth is working
 // ═══════════════════════════════════════════════════════════════
-app.get("/make-server-4e8a5b39/auth/status", async (c) => {
+app.get("/make-server-08b8658d/auth/status", async (c) => {
   try {
     const user = await getAuthUser(c.req.header("Authorization"));
     if (!user) {
@@ -83,7 +75,7 @@ app.get("/make-server-4e8a5b39/auth/status", async (c) => {
 // Ensure profile — creates a profile row if it doesn't exist
 // Called by the frontend after OAuth login as a safety net
 // ═══════════════════════════════════════════════════════════════
-app.post("/make-server-4e8a5b39/auth/ensure-profile", async (c) => {
+app.post("/make-server-08b8658d/auth/ensure-profile", async (c) => {
   try {
     const user = await getAuthUser(c.req.header("Authorization"));
     if (!user) {
@@ -141,7 +133,7 @@ app.post("/make-server-4e8a5b39/auth/ensure-profile", async (c) => {
 // Email Signup — creates user with auto-confirmed email
 // Used for testing auth flow without configuring OAuth providers
 // ═══════════════════════════════════════════════════════════════
-app.post("/make-server-4e8a5b39/auth/signup", async (c) => {
+app.post("/make-server-08b8658d/auth/signup", async (c) => {
   try {
     const body = await c.req.json();
     const { email, password, name } = body;
@@ -194,7 +186,7 @@ app.post("/make-server-4e8a5b39/auth/signup", async (c) => {
 // ═══════════════════════════════════════════════════════════════
 // GET /profile — Fetch user profile from KV
 // ═══════════════════════════════════════════════════════════════
-app.get("/make-server-4e8a5b39/profile", async (c) => {
+app.get("/make-server-08b8658d/profile", async (c) => {
   try {
     const user = await getAuthUser(c.req.header("Authorization"));
     if (!user) {
@@ -226,7 +218,7 @@ app.get("/make-server-4e8a5b39/profile", async (c) => {
 // ═══════════════════════════════════════════════════════════════
 // PUT /profile — Update user profile in KV
 // ═══════════════════════════════════════════════════════════════
-app.put("/make-server-4e8a5b39/profile", async (c) => {
+app.put("/make-server-08b8658d/profile", async (c) => {
   try {
     const user = await getAuthUser(c.req.header("Authorization"));
     if (!user) {
@@ -261,7 +253,7 @@ app.put("/make-server-4e8a5b39/profile", async (c) => {
 // ═══════════════════════════════════════════════════════════════
 // POST /sessions — Save a practice session
 // ═══════════════════════════════════════════════════════════════
-app.post("/make-server-4e8a5b39/sessions", async (c) => {
+app.post("/make-server-08b8658d/sessions", async (c) => {
   try {
     const user = await getAuthUser(c.req.header("Authorization"));
     if (!user) {
@@ -309,7 +301,7 @@ app.post("/make-server-4e8a5b39/sessions", async (c) => {
 // ═══════════════════════════════════════════════════════════════
 // GET /sessions — List user's practice sessions
 // ═══════════════════════════════════════════════════════════════
-app.get("/make-server-4e8a5b39/sessions", async (c) => {
+app.get("/make-server-08b8658d/sessions", async (c) => {
   try {
     const user = await getAuthUser(c.req.header("Authorization"));
     if (!user) {
@@ -340,7 +332,7 @@ app.get("/make-server-4e8a5b39/sessions", async (c) => {
 // ═══════════════════════════════════════════════════════════════
 // POST /profile/mark-free-used — Mark free session as used
 // ═══════════════════════════════════════════════════════════════
-app.post("/make-server-4e8a5b39/profile/mark-free-used", async (c) => {
+app.post("/make-server-08b8658d/profile/mark-free-used", async (c) => {
   try {
     const user = await getAuthUser(c.req.header("Authorization"));
     if (!user) {
@@ -374,9 +366,9 @@ app.post("/make-server-4e8a5b39/profile/mark-free-used", async (c) => {
 
 // ═══════════════════════════════════════════════════════════════
 // POST /generate-script — Generate a pre-briefing conversation script via GPT-4o
-// Takes scenario context and produces a structured script with highlights
+// Uses the strategic prompt builder from prebriefing-prompt.ts
 // ═══════════════════════════════════════════════════════════════
-app.post("/make-server-4e8a5b39/generate-script", async (c) => {
+app.post("/make-server-08b8658d/generate-script", async (c) => {
   try {
     const body = await c.req.json();
     const { scenario, interlocutor, scenarioType, guidedFields, marketFocus } = body;
@@ -391,157 +383,252 @@ app.post("/make-server-4e8a5b39/generate-script", async (c) => {
       return c.json({ error: "OpenAI API key not configured on server" }, 500);
     }
 
-    // Build context from guided fields
-    const guidedContext = guidedFields
-      ? Object.entries(guidedFields)
-        .filter(([_, v]) => v && String(v).trim())
-        .map(([k, v]) => `- ${k}: ${v}`)
-        .join("\n")
-      : "";
-
-    const scenarioLabel = scenarioType === "interview" ? "Job Interview" : "Sales Pitch";
-
-    // Build the system prompt for pre-briefing script generation
-    const systemPrompt = `You are an expert executive communication coach and speechwriter specializing in helping Latin American professionals prepare for high-stakes business conversations in English.
-
-Your task: Generate a PREPARATION SCRIPT — a structured conversation strategy the user will study BEFORE their practice session. This is NOT a post-session improvement; it's a PRE-SESSION game plan.
-
-=== SCENARIO TYPE ===
-${scenarioLabel}
-
-=== INTERLOCUTOR ===
-The user will be speaking with: ${interlocutor}
-
-=== USER'S CONTEXT ===
-${guidedContext || "No additional context provided."}
-
-${marketFocus ? `=== REGIONAL CONTEXT ===\nThe user is based in ${marketFocus === "brazil" ? "Brazil" : marketFocus === "mexico" ? "Mexico" : marketFocus === "colombia" ? "Colombia" : "Latin America"}. Adapt vocabulary and cultural framing accordingly.` : ""}
-
-=== OUTPUT FORMAT (MANDATORY JSON) ===
-Respond with ONLY a valid JSON object. No markdown, no code fences, no commentary.
-
-{
-  "sections": [
-    {
-      "num": 1,
-      "title": "Section Title in English",
-      "paragraphs": [
-        {
-          "text": "The paragraph text before any highlighted phrase. ",
-          "highlights": [
-            {
-              "phrase": "the exact power phrase to highlight",
-              "color": "#E1D5F8",
-              "tooltip": "Brief explanation in Spanish of WHY this phrase works (max 15 words)"
-            }
-          ],
-          "suffix": " any text that follows the last highlight in this paragraph."
-        }
-      ]
-    }
-  ]
-}
-
-=== CRITICAL RULES ===
-
-1. STRUCTURE: Create exactly 3 sections for the script:
-${scenarioType === "interview" ? `   - Section 1: "Personal Pitch — Your Value Story" (who you are, your differentiator)
-   - Section 2: "STAR Story — Prove It With Impact" (a structured achievement narrative)
-   - Section 3: "Strategic Close — Your Questions Matter" (thoughtful questions + confident wrap-up)` :
-        `   - Section 1: "Opening — Set the Frame" (establish credibility, state your purpose)
-   - Section 2: "Value Proposition — Lead with Impact" (core argument with data points)
-   - Section 3: "Close — Secure the Next Step" (handle objections, propose concrete next step)`}
-
-2. PARAGRAPH FORMAT: Each paragraph has:
-   - "text": Text BEFORE the first highlight (can be empty string "")
-   - "highlights": Array of 1-2 highlighted phrases with color and tooltip
-   - "suffix": Text AFTER the last highlight (can be empty string "")
-   - The full readable paragraph = text + highlights[0].phrase + middle_text + highlights[1].phrase + suffix
-
-3. HIGHLIGHT COLORS (use the exact hex values):
-   - "#E1D5F8" (purple): Structure improvements — frameworks, transitions, signposting
-   - "#FFE9C7" (peach): Impact phrases — power phrases, persuasion triggers, data claims
-   - "#D9ECF0" (blue): Engagement hooks — questions, callbacks, inclusive language
-
-4. CONTENT GUIDELINES:
-   - Write in natural spoken English (this will be read aloud)
-   - Each section should have 2-3 paragraphs
-   - Include 4-6 total highlights across all sections
-   - Distribute colors: mix purple, peach, and blue
-   - Tooltips must be in Spanish and explain the communication strategy
-   - Total script: 200-350 words (2-3 minute read)
-   - If the user provided specific details (company, product, role), weave them in
-   - If no specific details, create realistic but generic business content
-
-5. QUALITY CHECKS:
-   - Every highlight "phrase" should be a natural substring that flows in the paragraph
-   - Tooltips should explain WHY the phrase works, not just translate it
-   - The script should feel like advice from a senior mentor, not a template`;
-
-    const userMessage = `Generate a pre-briefing conversation script for this ${scenarioLabel.toLowerCase()} scenario.
-
-Scenario: ${scenario || "General " + scenarioLabel}
-Interlocutor: ${interlocutor}
-${guidedContext ? `\nUser's preparation notes:\n${guidedContext}` : ""}
-
-Remember: Return ONLY valid JSON. No markdown fences.`;
-
-    console.log(`[Generate Script] Calling GPT-4o for ${scenarioType || "default"} scenario, interlocutor: ${interlocutor}`);
-
-    const openaiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${openaiKey}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4o",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userMessage },
-        ],
-        temperature: 0.7,
-        max_tokens: 2000,
-        response_format: { type: "json_object" },
-      }),
+    // Build strategic prompt using the dedicated builder
+    const { systemPrompt, fewShotUser, fewShotAssistant, userMessage } = buildPreBriefingPrompt({
+      scenario: scenario || "",
+      interlocutor: interlocutor || "recruiter",
+      scenarioType: scenarioType || "interview",
+      guidedFields,
+      marketFocus,
     });
 
-    if (!openaiResponse.ok) {
-      const errBody = await openaiResponse.text();
-      console.log(`[Generate Script] OpenAI error ${openaiResponse.status}:`, errBody);
-      return c.json({
-        error: `OpenAI API error: ${openaiResponse.status}`,
-        details: errBody,
-      }, 502);
+    console.log(`[Generate Script v3] Calling GPT-4o with 4-message few-shot pattern for ${scenarioType || "default"}, interlocutor: ${interlocutor}, fields: ${guidedFields ? Object.keys(guidedFields).length : 0}`);
+
+    // ── Helper: call OpenAI ──
+    async function callOpenAI(messages: Array<{ role: string; content: string }>, temp: number, maxTok: number) {
+      const res = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${openaiKey}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-4o",
+          messages,
+          temperature: temp,
+          max_tokens: maxTok,
+          response_format: { type: "json_object" },
+        }),
+      });
+      if (!res.ok) {
+        const errBody = await res.text();
+        throw new Error(`OpenAI ${res.status}: ${errBody.slice(0, 300)}`);
+      }
+      const data = await res.json();
+      return data.choices?.[0]?.message?.content || "";
     }
 
-    const openaiData = await openaiResponse.json();
-    const content = openaiData.choices?.[0]?.message?.content;
-
-    if (!content) {
-      console.log("[Generate Script] No content in OpenAI response");
-      return c.json({ error: "Empty response from OpenAI" }, 502);
+    // ── Helper: count words in all sections ──
+    function countWords(sections: any[]): number {
+      let total = 0;
+      for (const s of sections) {
+        for (const p of s.paragraphs || []) {
+          total += (p.text || "").split(/\s+/).filter(Boolean).length;
+          for (const h of p.highlights || []) {
+            total += (h.phrase || "").split(/\s+/).filter(Boolean).length;
+          }
+          total += (p.suffix || "").split(/\s+/).filter(Boolean).length;
+        }
+      }
+      return total;
     }
+
+    // ── Helper: detect first-person voice ──
+    // ONLY checks body text (text + suffix), NOT highlight phrases.
+    // Highlights are suggested phrases the user should SAY → first person is correct there.
+    function hasFirstPersonVoice(sections: any[]): boolean {
+      const firstPersonPatterns = /\b(I am|I'm a|I have|I was|I led|I've been|My expertise|My experience|My background)\b/i;
+      for (const s of sections) {
+        for (const p of s.paragraphs || []) {
+          // Only check coaching body text, NOT highlight phrases
+          const bodyText = `${p.text || ""} ${p.suffix || ""}`;
+          if (firstPersonPatterns.test(bodyText)) return true;
+        }
+      }
+      return false;
+    }
+
+    // ── Helper: check contingency paragraphs ──
+    function hasContingencyInEachSection(sections: any[]): boolean {
+      for (const s of sections) {
+        const paras = s.paragraphs || [];
+        if (paras.length === 0) return false;
+        const lastPara = paras[paras.length - 1];
+        const lastText = `${lastPara.text || ""} ${lastPara.suffix || ""}`;
+        if (!/\b(if they|when they)\b/i.test(lastText)) return false;
+      }
+      return true;
+    }
+
+    // ═══ CALL 1: Generate with few-shot ═══
+    const content1 = await callOpenAI([
+      { role: "system", content: systemPrompt },
+      { role: "user", content: fewShotUser },
+      { role: "assistant", content: fewShotAssistant },
+      { role: "user", content: userMessage },
+    ], 0.85, 2500);
 
     let parsed;
     try {
-      parsed = JSON.parse(content);
-    } catch (parseErr) {
-      console.log("[Generate Script] Failed to parse OpenAI JSON:", content.slice(0, 200));
-      return c.json({ error: "Invalid JSON from OpenAI", raw: content.slice(0, 500) }, 502);
+      parsed = JSON.parse(content1);
+    } catch {
+      console.log("[Generate Script v3] Failed to parse initial JSON:", content1.slice(0, 200));
+      return c.json({ error: "Invalid JSON from OpenAI", raw: content1.slice(0, 500) }, 502);
     }
 
-    const sections = parsed.sections;
+    let sections = parsed.sections;
     if (!Array.isArray(sections) || sections.length === 0) {
-      console.log("[Generate Script] No sections in parsed response");
-      return c.json({ error: "No sections in generated script", parsed }, 502);
+      return c.json({ error: "No sections in generated script" }, 502);
     }
 
-    console.log(`[Generate Script] Success — ${sections.length} sections generated`);
-    return c.json({ sections });
+    const wordCount = countWords(sections);
+    const isFirstPerson = hasFirstPersonVoice(sections);
+    const hasContingency = hasContingencyInEachSection(sections);
+
+    console.log(`[Generate Script v3] Call 1 result — words: ${wordCount}, firstPerson: ${isFirstPerson}, contingencies: ${hasContingency}`);
+
+    // ═══ CALL 2 (conditional): Rewrite if quality gates fail ═══
+    const needsRewrite = wordCount < 150 || isFirstPerson || !hasContingency;
+
+    if (needsRewrite) {
+      console.log(`[Generate Script v3] Quality gates FAILED — triggering rewrite call. Reasons: ${wordCount < 150 ? "TOO_SHORT " : ""}${isFirstPerson ? "FIRST_PERSON " : ""}${!hasContingency ? "NO_CONTINGENCY" : ""}`);
+
+      const rewritePrompt = `You are an elite executive communication coach. You must REWRITE the following pre-briefing script JSON to fix these problems:
+
+${wordCount < 150 ? `❌ TOO SHORT: Currently ${wordCount} words. EXPAND every paragraph to 2-3 sentences. Target: 200-280 words total.` : ""}
+${isFirstPerson ? `❌ WRONG VOICE: The coaching body text (text and suffix fields) uses first person ("I am a...", "I have..."). REWRITE the body text in second-person coaching voice ("Here's how you open...", "You'll want to lead with...", "When they ask about X, pivot to..."). HOWEVER, highlighted phrases (inside "highlights[].phrase") that represent what the user should SAY must stay in FIRST PERSON ("I've spent 8 years...", "I led a team of..."). The pattern is: coaching text in second person, suggested phrases in first person.` : ""}
+${!hasContingency ? `❌ MISSING CONTINGENCY: The last paragraph of EACH section must start with "If they..." or "When they..." and provide a specific pivot strategy with exact language the user can memorize.` : ""}
+
+REWRITE RULES:
+- Keep the same JSON structure: { "sections": [...] } with the same highlight format
+- Keep all existing highlights but you may add more (6-10 total)
+- Every paragraph must be 2-3 sentences
+- Body text (text + suffix) must be second-person coaching: "Here's what you do..." / "You want to say something like: '...'"
+- Highlighted phrases that are lines the user should practice MUST remain in FIRST PERSON ("I built...", "I led...", "I'm confident...")
+- The last paragraph of each section MUST be a contingency starting with "If they..." or "When they..."
+- Preserve all specific details from the original (company names, metrics, role details)
+- Target 200-280 words total
+
+HERE IS THE SCRIPT TO REWRITE:
+${content1}
+
+Return ONLY the rewritten JSON. No markdown, no explanation.`;
+
+      try {
+        const content2 = await callOpenAI([
+          { role: "user", content: rewritePrompt },
+        ], 0.9, 2500);
+
+        const parsed2 = JSON.parse(content2);
+        if (Array.isArray(parsed2.sections) && parsed2.sections.length > 0) {
+          const newWordCount = countWords(parsed2.sections);
+          const stillFirstPerson = hasFirstPersonVoice(parsed2.sections);
+          console.log(`[Generate Script v3] Rewrite result — words: ${newWordCount}, firstPerson: ${stillFirstPerson}`);
+
+          // Use rewrite if it's an improvement
+          if (newWordCount > wordCount || (!stillFirstPerson && isFirstPerson)) {
+            sections = parsed2.sections;
+            console.log("[Generate Script v3] ✅ Using rewritten version");
+          } else {
+            console.log("[Generate Script v3] ⚠️ Rewrite wasn't better, keeping original");
+          }
+        }
+      } catch (rewriteErr) {
+        console.log("[Generate Script v3] Rewrite call failed, keeping original:", String(rewriteErr));
+      }
+    } else {
+      console.log("[Generate Script v3] ✅ All quality gates passed on first call");
+    }
+
+    const finalWordCount = countWords(sections);
+    console.log(`[Generate Script v3] Final output — ${sections.length} sections, ${finalWordCount} words`);
+    return c.json({ sections, _debug: { version: "v3-validate-rewrite", wordCount: finalWordCount, wasRewritten: needsRewrite } });
   } catch (err) {
     console.log("[Generate Script Error]", err);
     return c.json({ error: `Script generation failed: ${err}` }, 500);
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// TTS — Text-to-Speech via ElevenLabs for pre-briefing narration
+// Accepts { text, role } where role controls voice tonality:
+//   "coach"     → warm, supportive narration (default)
+//   "user_line" → confident, assertive delivery for suggested phrases
+// Returns audio/mpeg stream
+// ═══════════════════════════════════════════════════════════════
+
+/* ElevenLabs voice settings per role */
+const ELEVEN_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"; // Bella — warm, natural, expressive female
+const ELEVEN_MODEL = "eleven_multilingual_v2";
+
+const VOICE_PROFILES: Record<string, { stability: number; similarity_boost: number; style: number; use_speaker_boost: boolean }> = {
+  coach: {
+    stability: 0.50,          // moderate variation → natural warmth
+    similarity_boost: 0.75,
+    style: 0.35,              // subtle expressiveness
+    use_speaker_boost: true,
+  },
+  user_line: {
+    stability: 0.30,          // more dynamic → confident energy
+    similarity_boost: 0.80,
+    style: 0.65,              // stronger expressiveness → assertive
+    use_speaker_boost: true,
+  },
+};
+
+app.post("/make-server-08b8658d/tts", async (c) => {
+  try {
+    const { text, role } = await c.req.json();
+    if (!text || typeof text !== "string") {
+      return c.json({ error: "Missing 'text' field for TTS" }, 400);
+    }
+
+    const elevenKey = Deno.env.get("ELEVENLABS_API_KEY");
+    if (!elevenKey) {
+      return c.json({ error: "ELEVENLABS_API_KEY not configured on server" }, 500);
+    }
+
+    const effectiveRole = role === "user_line" ? "user_line" : "coach";
+    const voiceSettings = VOICE_PROFILES[effectiveRole];
+
+    console.log(`[TTS ElevenLabs] role=${effectiveRole}, chars=${text.length}`);
+
+    const ttsResponse = await fetch(
+      `https://api.elevenlabs.io/v1/text-to-speech/${ELEVEN_VOICE_ID}`,
+      {
+        method: "POST",
+        headers: {
+          "xi-api-key": elevenKey,
+          "Content-Type": "application/json",
+          "Accept": "audio/mpeg",
+        },
+        body: JSON.stringify({
+          text,
+          model_id: ELEVEN_MODEL,
+          voice_settings: voiceSettings,
+        }),
+      },
+    );
+
+    if (!ttsResponse.ok) {
+      const errBody = await ttsResponse.text();
+      console.log(`[TTS ElevenLabs] Error ${ttsResponse.status}: ${errBody}`);
+      return c.json({ error: `ElevenLabs TTS failed (${ttsResponse.status}): ${errBody}` }, 502);
+    }
+
+    console.log(`[TTS ElevenLabs] ✅ Audio generated — role=${effectiveRole}`);
+
+    return new Response(ttsResponse.body, {
+      status: 200,
+      headers: {
+        "Content-Type": "audio/mpeg",
+        "Access-Control-Allow-Origin": "*",
+        "Cache-Control": "public, max-age=3600",
+      },
+    });
+  } catch (err) {
+    console.log("[TTS ElevenLabs Error]", err);
+    return c.json({ error: `TTS failed: ${err}` }, 500);
   }
 });
 

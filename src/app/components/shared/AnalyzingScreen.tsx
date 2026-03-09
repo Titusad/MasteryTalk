@@ -1,8 +1,23 @@
-import { useState, useEffect } from "react";
-import { CheckCircle2 } from "lucide-react";
+/**
+ * ══════════════════════════════════════════════════════════════
+ *  inFluentia PRO — AnalyzingScreen
+ *  Full-screen dark transition loader with progress bar,
+ *  sequential step indicators, and motivational affirmations.
+ *
+ *  canComplete (new): when false, progress bar caps at 92% and
+ *  the screen stays visible until the prop flips to true.
+ *  This eliminates the ugly second loader when GPT takes longer
+ *  than the fixed animation duration.
+ * ══════════════════════════════════════════════════════════════
+ */
+
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { CheckCircle2 } from "lucide-react";
 import { BrandLogo } from "./BrandLogo";
 import { COLORS } from "./design-tokens";
+
+/* ── Config per variant ── */
 
 interface AnalysisConfig {
     title: string;
@@ -22,9 +37,9 @@ const ANALYSIS_CONFIGS: Record<string, AnalysisConfig> = {
             { text: "Generating personalized feedback...", duration: 1600 },
         ],
         affirmations: [
-            "People have a better impression of you than you think. It's called the Liking Gap — and science confirms it.",
-            "Every conversation you face brings you closer to fluency. Progress isn't always visible, but it's always real.",
-            "Your accent isn't a barrier — it's your story. Clarity and confidence matter more than perfection.",
+            "People have a better impression of you than you think. It\u2019s called the Liking Gap \u2014 and science confirms it.",
+            "Every conversation you face brings you closer to fluency. Progress isn\u2019t always visible, but it\u2019s always real.",
+            "Your accent isn\u2019t a barrier \u2014 it\u2019s your story. Clarity and confidence matter more than perfection.",
         ],
     },
     script: {
@@ -37,13 +52,13 @@ const ANALYSIS_CONFIGS: Record<string, AnalysisConfig> = {
             { text: "Generating optimized script...", duration: 1200 },
         ],
         affirmations: [
-            "Professional English fluency isn't about speaking fast — it's about strategic pauses, clarity, and control.",
-            "A small grammar mistake is human and doesn't diminish your arguments. Authenticity builds trust.",
+            "Professional English fluency isn\u2019t about speaking fast \u2014 it\u2019s about strategic pauses, clarity, and control.",
+            "A small grammar mistake is human and doesn\u2019t diminish your arguments. Authenticity builds trust.",
         ],
     },
     results: {
         title: "Calculating your results",
-        subtitle: "We're preparing the complete summary of your session",
+        subtitle: "We\u2019re preparing the complete summary of your session",
         steps: [
             { text: "Evaluating your performance...", duration: 1100 },
             { text: "Comparing with your initial practice...", duration: 1300 },
@@ -51,9 +66,9 @@ const ANALYSIS_CONFIGS: Record<string, AnalysisConfig> = {
             { text: "Preparing final summary...", duration: 1300 },
         ],
         affirmations: [
-            "Clarity over speed. Your accent tells your story — it doesn't limit your impact.",
+            "Clarity over speed. Your accent tells your story \u2014 it doesn\u2019t limit your impact.",
             "Practicing is more valuable than memorizing. Each session builds neural pathways that stick.",
-            "The most successful professionals aren't the ones who never make mistakes — they're the ones who practice more.",
+            "The most successful professionals aren\u2019t the ones who never make mistakes \u2014 they\u2019re the ones who practice more.",
         ],
     },
     "generating-script": {
@@ -67,25 +82,51 @@ const ANALYSIS_CONFIGS: Record<string, AnalysisConfig> = {
         ],
         affirmations: [
             "Your ideas have value. Language is just the vehicle.",
-            "90% of success in executive communication is preparation. You're already one step ahead by being here.",
+            "90% of success in executive communication is preparation. You\u2019re already one step ahead by being here.",
             "Structure beats improvisation. Having a plan gives you freedom to be natural.",
         ],
     },
 };
 
+/* ── Component ── */
+
 export function AnalyzingScreen({
     variant = "feedback",
     onComplete,
+    canComplete = true,
 }: {
     variant?: "feedback" | "script" | "results" | "generating-script";
     onComplete: () => void;
+    canComplete?: boolean;
 }) {
     const config = ANALYSIS_CONFIGS[variant];
     const [activeStep, setActiveStep] = useState(0);
     const [progress, setProgress] = useState(0);
     const [affirmationIdx, setAffirmationIdx] = useState(0);
+    const [animTimerDone, setAnimTimerDone] = useState(false);
+    const canCompleteRef = useRef(canComplete);
+
+    /* Keep ref in sync so the interval callback reads latest value */
+    useEffect(() => {
+        canCompleteRef.current = canComplete;
+    }, [canComplete]);
+
+    /* When canComplete flips to true AND animation timer already finished → fire onComplete */
+    useEffect(() => {
+        if (animTimerDone && canComplete) {
+            onComplete();
+        }
+    }, [animTimerDone, canComplete, onComplete]);
+
+    /* When canComplete flips true and progress already at 92+, snap to 100% */
+    useEffect(() => {
+        if (canComplete && progress >= 92) {
+            setProgress(100);
+        }
+    }, [canComplete, progress >= 92]);
 
     useEffect(() => {
+        // Step progression
         let cumulative = 0;
         const timers: ReturnType<typeof setTimeout>[] = [];
         config.steps.forEach((s, i) => {
@@ -95,22 +136,25 @@ export function AnalyzingScreen({
             }
         });
 
+        // Smooth progress bar — cap at 92% if canComplete is not yet true
         const totalDuration = config.steps.reduce((sum, s) => sum + s.duration, 0);
         const interval = 40;
         let elapsed = 0;
         const progressTimer = setInterval(() => {
             elapsed += interval;
-            const pct = Math.min((elapsed / totalDuration) * 100, 100);
-            setProgress(pct);
-            if (pct >= 100) clearInterval(progressTimer);
+            const rawPct = Math.min((elapsed / totalDuration) * 100, 100);
+            setProgress(canCompleteRef.current ? rawPct : Math.min(rawPct, 92));
+            if (rawPct >= 100) clearInterval(progressTimer);
         }, interval);
 
+        // Affirmation rotation — switch every ~3.5s so user can read
         const affirmationTimer = setInterval(() => {
             setAffirmationIdx((prev) => (prev + 1) % config.affirmations.length);
         }, 3500);
 
+        // Mark animation timer done (but don't auto-advance — useEffect above handles that)
         const finishTimer = setTimeout(() => {
-            onComplete();
+            setAnimTimerDone(true);
         }, totalDuration + 400);
 
         return () => {
@@ -119,7 +163,7 @@ export function AnalyzingScreen({
             clearInterval(affirmationTimer);
             clearTimeout(finishTimer);
         };
-    }, [onComplete]);
+    }, []);
 
     return (
         <div
@@ -182,6 +226,7 @@ export function AnalyzingScreen({
                     </motion.div>
                 </div>
 
+                {/* Title */}
                 <motion.h2
                     className="text-white text-xl mb-2"
                     style={{ fontWeight: 500 }}
@@ -269,7 +314,7 @@ export function AnalyzingScreen({
                     })}
                 </div>
 
-                {/* Mindset Affirmation */}
+                {/* Mindset Affirmation — large, rotating */}
                 <div className="mt-10 mb-2 min-h-[80px] flex items-center justify-center">
                     <AnimatePresence mode="wait">
                         <motion.p
@@ -286,6 +331,7 @@ export function AnalyzingScreen({
                     </AnimatePresence>
                 </div>
 
+                {/* Skip button */}
                 <motion.button
                     className="mt-8 text-sm text-white/30 hover:text-white/60 transition-colors underline underline-offset-2"
                     initial={{ opacity: 0 }}
