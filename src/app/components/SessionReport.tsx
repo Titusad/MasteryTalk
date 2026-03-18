@@ -8,12 +8,13 @@
  *  2. Your Script
  *  3. Next Steps (from AI summary)
  *  4. Preparation Utilization (interview + briefing only)
- *  5. Motivational banner
- *  6. Download PDF + Go To Dashboard CTAs
+ *  5. Pronunciation Analysis (Azure Speech data)
+ *  6. Motivational banner
+ *  7. Download PDF + Go To Dashboard CTAs
  * ══════════════════════════════════════════════════════════════
  */
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   FileText,
   Sparkles,
@@ -24,6 +25,9 @@ import {
   ArrowRight,
   Lightbulb,
   ClipboardCheck,
+  Mic,
+  BarChart3,
+  Award,
 } from "lucide-react";
 import { motion } from "motion/react";
 import {
@@ -165,6 +169,7 @@ export function SessionReport({
   embedded = false,
   onDownloadReport,
   userPlan = "free",
+  pronunciationData,
   interviewBriefing,
   interlocutor,
   scenario,
@@ -184,6 +189,47 @@ export function SessionReport({
   const overallSentiment = sessionSummary?.overallSentiment || null;
   const nextSteps = sessionSummary?.nextSteps || [];
   const sessionHighlight = sessionSummary?.sessionHighlight || null;
+
+  /* ── Pronunciation computed data ── */
+  const pronScores = useMemo(() => {
+    if (!pronunciationData?.length) return null;
+    const turns = pronunciationData;
+    const accuracy = turns.reduce((s, t) => s + t.assessment.accuracyScore, 0) / turns.length;
+    const fluency = turns.reduce((s, t) => s + t.assessment.fluencyScore, 0) / turns.length;
+    const prosody = turns.reduce((s, t) => s + t.assessment.prosodyScore, 0) / turns.length;
+    const overall = turns.reduce((s, t) => s + t.assessment.pronScore, 0) / turns.length;
+    return { accuracy, fluency, prosody, overall, turnCount: turns.length };
+  }, [pronunciationData]);
+
+  const problemWords = useMemo(() => {
+    if (!pronunciationData?.length) return [];
+    const wordMap = new Map<string, { count: number; totalScore: number; errorType: string }>();
+    for (const turn of pronunciationData) {
+      for (const w of turn.assessment.words) {
+        if (w.accuracyScore < 60 || w.errorType === "Mispronunciation") {
+          const key = w.word.toLowerCase();
+          const existing = wordMap.get(key);
+          if (existing) {
+            existing.count++;
+            existing.totalScore += w.accuracyScore;
+          } else {
+            wordMap.set(key, { count: 1, totalScore: w.accuracyScore, errorType: w.errorType });
+          }
+        }
+      }
+    }
+    return Array.from(wordMap.entries())
+      .map(([word, data]) => ({ word, avgScore: Math.round(data.totalScore / data.count), errorType: data.errorType, count: data.count }))
+      .sort((a, b) => a.avgScore - b.avgScore)
+      .slice(0, 8);
+  }, [pronunciationData]);
+
+  const pronTip = useMemo(() => {
+    if (!pronScores) return "";
+    if (pronScores.fluency >= 80) return "Your speech flow is strong. Focus on refining intonation and rhythm for even more natural delivery.";
+    if (pronScores.fluency >= 60) return "Practice linking words together smoothly. Try reading professional articles aloud for 5 minutes daily.";
+    return "Start with shorter sentences and gradually build complexity. Record yourself and compare with native speakers.";
+  }, [pronScores]);
 
   return (
     <div
@@ -409,6 +455,133 @@ export function SessionReport({
                 );
               })}
             </div>
+          </ReportSection>
+        )}
+
+        {/* ═══════════════════════════════════════════════
+           PRONUNCIATION ANALYSIS (Azure Speech data)
+           ═══════════════════════════════════════════════ */}
+        {pronScores && (
+          <ReportSection
+            icon={<Mic className="w-5 h-5 text-white" />}
+            iconBg="#6366f1"
+            title="Pronunciation Analysis"
+            delay={0.26}
+          >
+            {/* Subtitle */}
+            <p className="text-xs text-[#94a3b8] -mt-4 mb-5">
+              {pronScores.turnCount} turn{pronScores.turnCount !== 1 ? "s" : ""} analyzed by Azure Speech AI
+            </p>
+
+            {/* Score gauges row */}
+            <div className="grid grid-cols-4 gap-3 mb-6">
+              {[
+                { label: "Accuracy", value: pronScores.accuracy },
+                { label: "Fluency", value: pronScores.fluency },
+                { label: "Intonation", value: pronScores.prosody },
+                { label: "Overall", value: pronScores.overall },
+              ].map((s, i) => {
+                const color = s.value >= 80 ? "#22c55e" : s.value >= 60 ? "#f59e0b" : "#ef4444";
+                const bg = s.value >= 80 ? "rgba(34,197,94,0.08)" : s.value >= 60 ? "rgba(245,158,11,0.08)" : "rgba(239,68,68,0.08)";
+                const radius = 28;
+                const circumference = 2 * Math.PI * radius;
+                const filled = (s.value / 100) * circumference;
+                return (
+                  <motion.div
+                    key={s.label}
+                    className="flex flex-col items-center rounded-xl py-4"
+                    style={{ backgroundColor: bg }}
+                    initial={{ opacity: 0, scale: 0.85 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.4, delay: 0.3 + i * 0.08 }}
+                  >
+                    <div className="relative w-[64px] h-[64px] mb-2">
+                      <svg width={64} height={64} className="-rotate-90">
+                        <circle cx={32} cy={32} r={radius} fill="none" stroke="#e2e8f0" strokeWidth={5} />
+                        <motion.circle
+                          cx={32} cy={32} r={radius} fill="none"
+                          stroke={color} strokeWidth={5} strokeLinecap="round"
+                          strokeDasharray={circumference}
+                          initial={{ strokeDashoffset: circumference }}
+                          animate={{ strokeDashoffset: circumference - filled }}
+                          transition={{ duration: 1, delay: 0.4 + i * 0.1, ease: "easeOut" }}
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-base" style={{ fontWeight: 700, color }}>{Math.round(s.value)}</span>
+                      </div>
+                    </div>
+                    <span className="text-[10px] text-[#62748e]" style={{ fontWeight: 500 }}>{s.label}</span>
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            {/* Overall badge */}
+            <div className="flex justify-center mb-6">
+              {(() => {
+                const ov = pronScores.overall;
+                const color = ov >= 80 ? "#22c55e" : ov >= 60 ? "#f59e0b" : "#ef4444";
+                const bg = ov >= 80 ? "rgba(34,197,94,0.1)" : ov >= 60 ? "rgba(245,158,11,0.1)" : "rgba(239,68,68,0.1)";
+                const label = ov >= 90 ? "Excellent" : ov >= 80 ? "Good" : ov >= 60 ? "Fair" : ov >= 40 ? "Needs Work" : "Practice More";
+                return (
+                  <motion.div
+                    className="px-5 py-2 rounded-full flex items-center gap-2"
+                    style={{ backgroundColor: bg, border: `1px solid ${color}30` }}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.5 }}
+                  >
+                    <Award className="w-4 h-4" style={{ color }} />
+                    <span className="text-sm" style={{ fontWeight: 600, color }}>
+                      Overall: {Math.round(ov)}% — {label}
+                    </span>
+                  </motion.div>
+                );
+              })()}
+            </div>
+
+            {/* Problem words */}
+            {problemWords.length > 0 && (
+              <div className="mb-5">
+                <h3 className="text-sm text-[#0f172b] mb-3" style={{ fontWeight: 600 }}>
+                  Words to Practice
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {problemWords.map((pw) => {
+                    const color = pw.avgScore >= 40 ? "#f59e0b" : "#ef4444";
+                    const bg = pw.avgScore >= 40 ? "rgba(245,158,11,0.1)" : "rgba(239,68,68,0.1)";
+                    return (
+                      <motion.span
+                        key={pw.word}
+                        className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border"
+                        style={{ backgroundColor: bg, borderColor: `${color}30`, color }}
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <span style={{ fontWeight: 600 }}>{pw.word}</span>
+                        <span className="opacity-60" style={{ fontWeight: 500 }}>{pw.avgScore}%</span>
+                        {pw.count > 1 && (
+                          <span className="text-[9px] opacity-50">×{pw.count}</span>
+                        )}
+                      </motion.span>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Fluency tip */}
+            {pronTip && (
+              <div className="bg-[#f0f4ff] border border-[#c7d2fe] rounded-xl p-4 flex items-start gap-3">
+                <Lightbulb className="w-4 h-4 text-[#6366f1] shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-[#6366f1] mb-1" style={{ fontWeight: 600 }}>Tip</p>
+                  <p className="text-sm text-[#314158] leading-relaxed">{pronTip}</p>
+                </div>
+              </div>
+            )}
           </ReportSection>
         )}
 

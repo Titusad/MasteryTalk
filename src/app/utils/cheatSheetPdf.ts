@@ -19,6 +19,7 @@
  */
 
 import type { InterviewBriefingData } from "../../services/types";
+import type { TurnPronunciationData } from "../../services/types";
 
 /* ── Color constants ── */
 const DARK = "#0f172a";
@@ -86,8 +87,10 @@ export async function downloadSessionReportPdf(opts: {
     sessionDuration?: string;
     /** User-written drafts from "Your Response" tab, keyed by question id */
     userDrafts?: Record<number, string>;
+    /** Azure pronunciation assessment data from the session */
+    pronunciationData?: TurnPronunciationData[];
 }): Promise<void> {
-    const { briefing, interlocutor = "", scenario, scenarioType, feedback, summary, sessionDuration, userDrafts } = opts;
+    const { briefing, interlocutor = "", scenario, scenarioType, feedback, summary, sessionDuration, userDrafts, pronunciationData } = opts;
 
     const jsPDFModule = await import("jspdf");
     const jsPDF = jsPDFModule.default;
@@ -396,6 +399,134 @@ export async function downloadSessionReportPdf(opts: {
                 }
             }
         }
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       PRONUNCIATION ANALYSIS (if Azure Speech data available)
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    if (pronunciationData && pronunciationData.length > 0) {
+        const turns = pronunciationData;
+        const accuracy = turns.reduce((s, t) => s + t.assessment.accuracyScore, 0) / turns.length;
+        const fluency = turns.reduce((s, t) => s + t.assessment.fluencyScore, 0) / turns.length;
+        const prosody = turns.reduce((s, t) => s + t.assessment.prosodyScore, 0) / turns.length;
+        const overall = turns.reduce((s, t) => s + t.assessment.pronScore, 0) / turns.length;
+
+        sectionTitle("Pronunciation Analysis");
+
+        // Subtitle
+        doc.setFontSize(8);
+        doc.setTextColor(LIGHT);
+        doc.setFont("helvetica", "normal");
+        doc.text(`${turns.length} turn${turns.length !== 1 ? "s" : ""} analyzed by Azure Speech AI`, margin + 2, y);
+        y += 6;
+
+        // Score bars
+        const pronScores = [
+            { label: "Accuracy", value: accuracy },
+            { label: "Fluency", value: fluency },
+            { label: "Intonation & Flow", value: prosody },
+            { label: "Overall", value: overall },
+        ];
+        for (const ps of pronScores) {
+            checkPageBreak(8);
+            doc.setFontSize(8.5);
+            doc.setTextColor(MID);
+            doc.setFont("helvetica", "normal");
+            doc.text(ps.label, margin + 2, y);
+
+            const miniBarW = 40;
+            const miniBarH = 3.5;
+            const bx = margin + 50;
+            roundedRect(bx, y - 2.8, miniBarW, miniBarH, "#e2e8f0", 1.5);
+            const fW = (ps.value / 100) * miniBarW;
+            const barColor = ps.value >= 80 ? SUCCESS : ps.value >= 60 ? WARNING : DANGER;
+            roundedRect(bx, y - 2.8, fW, miniBarH, barColor, 1.5);
+
+            doc.setFontSize(8);
+            doc.setTextColor(DARK);
+            doc.setFont("helvetica", "bold");
+            doc.text(`${Math.round(ps.value)}%`, bx + miniBarW + 3, y);
+            y += 5.5;
+        }
+
+        // Problem words table
+        const problemWordMap = new Map<string, { count: number; totalScore: number; errorType: string }>();
+        for (const turn of turns) {
+            for (const w of turn.assessment.words) {
+                if (w.accuracyScore < 60 || w.errorType === "Mispronunciation") {
+                    const key = w.word.toLowerCase();
+                    const existing = problemWordMap.get(key);
+                    if (existing) {
+                        existing.count++;
+                        existing.totalScore += w.accuracyScore;
+                    } else {
+                        problemWordMap.set(key, { count: 1, totalScore: w.accuracyScore, errorType: w.errorType });
+                    }
+                }
+            }
+        }
+        const pWords = Array.from(problemWordMap.entries())
+            .map(([word, data]) => ({ word, avgScore: Math.round(data.totalScore / data.count), errorType: data.errorType, count: data.count }))
+            .sort((a, b) => a.avgScore - b.avgScore)
+            .slice(0, 8);
+
+        if (pWords.length > 0) {
+            y += 3;
+            checkPageBreak(12);
+            doc.setFontSize(9);
+            doc.setTextColor(DARK);
+            doc.setFont("helvetica", "bold");
+            doc.text("Words to Practice", margin + 2, y);
+            y += 5;
+
+            // Table header
+            doc.setFontSize(7);
+            doc.setTextColor(LIGHT);
+            doc.setFont("helvetica", "bold");
+            doc.text("WORD", margin + 2, y);
+            doc.text("SCORE", margin + 50, y);
+            doc.text("ERROR TYPE", margin + 70, y);
+            doc.text("COUNT", margin + 110, y);
+            y += 1;
+            doc.setDrawColor("#e2e8f0");
+            doc.setLineWidth(0.2);
+            doc.line(margin + 2, y, pageWidth - margin - 2, y);
+            y += 3;
+
+            for (const pw of pWords) {
+                checkPageBreak(5);
+                doc.setFontSize(8.5);
+                doc.setFont("helvetica", "bold");
+                doc.setTextColor(DARK);
+                doc.text(pw.word, margin + 2, y);
+
+                const sc = pw.avgScore;
+                doc.setTextColor(sc >= 40 ? WARNING : DANGER);
+                doc.text(`${sc}%`, margin + 50, y);
+
+                doc.setFont("helvetica", "normal");
+                doc.setTextColor(MID);
+                doc.text(pw.errorType || "—", margin + 70, y);
+                doc.text(`×${pw.count}`, margin + 110, y);
+                y += 4.5;
+            }
+        }
+
+        // Fluency tip
+        y += 3;
+        checkPageBreak(10);
+        const tip = fluency >= 80
+            ? "Your speech flow is strong. Focus on refining intonation and rhythm for even more natural delivery."
+            : fluency >= 60
+                ? "Practice linking words together smoothly. Try reading professional articles aloud for 5 minutes daily."
+                : "Start with shorter sentences and gradually build complexity. Record yourself and compare with native speakers.";
+        doc.setFontSize(7.5);
+        doc.setTextColor(ACCENT);
+        doc.setFont("helvetica", "bold");
+        doc.text("TIP", margin + 2, y);
+        y += 3.5;
+        addWrappedText(tip, margin + 2, contentWidth - 4, 8.5, MID, "italic", 4);
+        y += 2;
     }
 
     /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
