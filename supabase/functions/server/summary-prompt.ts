@@ -10,6 +10,9 @@
  *    - overallSentiment: a motivational one-liner
  *    - nextSteps[]: 3 actionable next steps personalized to the session
  *    - sessionHighlight: a single standout positive moment
+ *    - pillarScores: scores for various language pillars
+ *    - professionalProficiency: overall professional proficiency score
+ *    - cefrApprox: approximate CEFR level
  * ══════════════════════════════════════════════════════════════
  */
 
@@ -50,8 +53,8 @@ export function buildSessionSummaryPrompt(
       p4: "Estructura del Discurso",
     };
 
-  return `=== ROLE: SESSION REPORT WRITER ===
-You are an executive communication coach generating a concise session summary report for a Latin American professional who just completed a practice session.
+  return `=== ROLE: SESSION FEEDBACK WRITER ===
+You are an executive communication coach generating a concise session feedback summary for a Latin American professional who just completed a practice session.
 
 ${marketFocus ? `The user is focused on the ${marketFocus} market.` : ""}
 
@@ -59,7 +62,7 @@ ${marketFocus ? `The user is focused on the ${marketFocus} market.` : ""}
 ALL text fields in your response MUST be written in ${lang} (${langTag}). The ONLY exception is English phrases inside single quotes that the user should practice — those stay in English.
 
 === YOUR TASK ===
-You will receive a conversation transcript from a practice session. Analyze it and generate a brief, motivating session summary. This appears at the TOP of the session report.
+You will receive a conversation transcript from a practice session. Analyze it and generate a brief, motivating session summary. This appears at the TOP of the session feedback.
 
 === OUTPUT FORMAT (MANDATORY JSON) ===
 Respond with ONLY a JSON object. No markdown, no code fences.
@@ -73,8 +76,30 @@ Respond with ONLY a JSON object. No markdown, no code fences.
       "pillar": "One of: ${pillarTags.p1} | ${pillarTags.p2} | ${pillarTags.p3} | ${pillarTags.p4}"
     }
   ],
-  "sessionHighlight": "One standout positive moment from the session, described in ${lang} (1 sentence). Reference something specific the user did well."
+  "sessionHighlight": "One standout positive moment from the session, described in ${lang} (1 sentence). Reference something specific the user did well.",
+  "pillarScores": {
+    "Vocabulary": 0-100,
+    "Grammar": 0-100,
+    "Fluency": 0-100,
+    "Professional Tone": 0-100,
+    "Persuasion": 0-100
+  },
+  "professionalProficiency": 0-100,
+  "cefrApprox": "A1 | A2 | B1 | B2 | C1 | C2"
 }
+
+=== PILLAR SCORES ===
+If the feedback analysis has already provided pillarScores, echo them exactly. If not available, estimate from the transcript using this guide:
+- **Vocabulary**: Range and precision of business terms (30-45 = basic, 46-62 = developing, 63-77 = competent, 78-89 = strong, 90+ = exceptional)
+- **Grammar**: Sentence structure accuracy
+- **Fluency**: Smoothness, pace, filler usage
+- **Professional Tone**: Register and executive presence (weighted 1.3x)
+- **Persuasion**: Ability to convince and defend (weighted 1.3x)
+
+NOTE: Do NOT score Pronunciation — that is measured separately by Azure Speech AI from the actual audio. You only have a text transcript.
+
+**professionalProficiency** = weighted average (Prof. Tone & Persuasion at 1.3x, Fluency at 1.1x, rest at 1.0x). Round to integer.
+**cefrApprox**: A1 (<35%), A2 (35-47%), B1 (48-62%), B2 (63-77%), C1 (78-89%), C2 (90%+).
 
 === RULES ===
 - nextSteps MUST have exactly 3 items

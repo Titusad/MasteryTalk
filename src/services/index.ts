@@ -45,7 +45,7 @@ import type { IAuthService } from "./interfaces/auth";
    ══════════════════════════════════════════════════════════════ */
 
 const useSupabase = isSupabaseConfigured();
-const FORCE_MOCK_AUTH = true; // flip to false once Google OAuth is configured in Supabase dashboard
+const FORCE_MOCK_AUTH = false; // Google OAuth is configured in Supabase dashboard
 
 console.log(
   `[inFluentia] Service Layer initialized — ${useSupabase && !FORCE_MOCK_AUTH ? "PRODUCTION MODE (Supabase auth)" : "PROTOTYPE MODE (all mocks)"

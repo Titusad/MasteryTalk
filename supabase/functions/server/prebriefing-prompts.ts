@@ -18,6 +18,8 @@
  * ══════════════════════════════════════════════════════════════
  */
 
+import { resolveLocale } from "./locale-utils.ts";
+
 /* ═══════════════════════════════════════════════════════════════
    INTERLOCUTOR INTELLIGENCE
    What each interlocutor EVALUATES and CARES ABOUT.
@@ -95,7 +97,7 @@ const REGIONAL_COACHING: Record<string, string> = {
 - Portuguese speakers naturally hedge with softeners ("maybe we could...", "I think perhaps..."). Replace these with commitment language ("I recommend...", "Our data shows...").
 - Brazil's tech ecosystem is world-class (Nubank, VTEX, iFood, Mercado Livre). Help them LEVERAGE this credibility as a differentiator, not undersell it.
 - Time zone proximity to US East Coast is an advantage — weave it into logistics arguments.
-- Write tooltips in Spanish (the app's coaching language), but acknowledge the Brazilian context.`,
+- Write coaching annotations in Portuguese (Brazilian) for Brazilian users — tooltips, suffixes, and coaching notes.`,
 
     mexico: `REGIONAL COACHING — MEXICO:
 - Mexican professionals sometimes default to deferential language with US counterparts. Coach them to project AUTHORITY and executive presence, not just technical competence.
@@ -159,8 +161,12 @@ function processGuidedFields(
         // Semantic labeling based on known field keys
         if (normalizedKey.includes("job description") || normalizedKey === "role") {
             arsenalLines.push(`TARGET ROLE / JOB DESCRIPTION:\n"""${value}"""`);
-        } else if (normalizedKey.includes("key experience") || normalizedKey === "strength") {
+        } else if (normalizedKey.includes("key experience") || normalizedKey === "strength" || normalizedKey.includes("professional experience")) {
             arsenalLines.push(`USER'S RELEVANT EXPERIENCE & STRENGTHS:\n"""${value}"""`);
+        } else if (normalizedKey === "cvsummary") {
+            arsenalLines.push(`USER'S CV / RESUME SUMMARY (extracted by AI):\n"""${value}"""`);
+        } else if (normalizedKey === "company" && scenarioType === "interview") {
+            arsenalLines.push(`TARGET COMPANY / EMPLOYER:\n"""${value}"""`);
         } else if (normalizedKey.includes("prospect") || normalizedKey.includes("company") || normalizedKey === "product") {
             arsenalLines.push(`PROSPECT / TARGET COMPANY INTELLIGENCE:\n"""${value}"""`);
         } else if (normalizedKey.includes("deck") || normalizedKey.includes("talking points") || normalizedKey === "problem") {
@@ -176,7 +182,7 @@ function processGuidedFields(
         if (!filledKeys.some((k) => k.includes("job") || k === "role")) {
             gapLines.push("- No job description provided. Infer a realistic senior role from the user's experience.");
         }
-        if (!filledKeys.some((k) => k.includes("experience") || k === "strength")) {
+        if (!filledKeys.some((k) => k.includes("experience") || k === "strength" || k === "cvsummary")) {
             gapLines.push("- No experience details. Focus the script on STRUCTURE and universal interview strategy.");
         }
     } else {
@@ -203,7 +209,7 @@ export interface PreBriefingPromptConfig {
     interlocutor: string;
     scenarioType: string;
     guidedFields?: Record<string, string> | null;
-    marketFocus?: string | null;
+    locale?: string | null;
 }
 
 export interface PreBriefingPromptResult {
@@ -213,368 +219,130 @@ export interface PreBriefingPromptResult {
     userMessage: string;
 }
 
-export function buildPreBriefingPrompt(
-    config: PreBriefingPromptConfig
-): PreBriefingPromptResult {
-    const {
-        scenario,
-        interlocutor,
-        scenarioType,
-        guidedFields,
-        marketFocus,
-    } = config;
+export function buildPreBriefingPrompt(config: PreBriefingPromptConfig): PreBriefingPromptResult {
+    const { scenario, interlocutor, scenarioType, guidedFields, locale } = config;
+    const lc = resolveLocale(locale);
 
-    const scenarioLabel =
-        scenarioType === "interview" ? "Job Interview" : "Sales Pitch";
+    // Get interlocutor intelligence
+    const interlocutorKey = interlocutor.toLowerCase().replace(/[\s-]+/g, "_");
+    const intel = INTERLOCUTOR_INTEL[interlocutorKey] || INTERLOCUTOR_INTEL["recruiter"] || "";
 
-    const interlocutorIntel =
-        INTERLOCUTOR_INTEL[interlocutor] ??
-        `INTERLOCUTOR: ${interlocutor}\nA senior business professional evaluating the user's readiness.`;
+    // Get regional coaching
+    const coaching = REGIONAL_COACHING[lc.regionalKey] || REGIONAL_COACHING["global"];
 
-    const regionalCoaching =
-        REGIONAL_COACHING[marketFocus ?? ""] ?? REGIONAL_COACHING.global;
+    // Process user data
+    const { userArsenal, gaps } = processGuidedFields(guidedFields, scenarioType);
 
-    const userData = processGuidedFields(guidedFields, scenarioType);
+    const lang = lc.lang;
+    const langTag = lc.langTag;
 
-    // ── Build the system prompt ──
+    const systemPrompt = `=== ROLE: EXECUTIVE STRATEGY ARCHITECT ===
+You are an elite executive communication strategist. You prepare LATAM professionals for high-stakes conversations with U.S. business counterparts.
 
-    const systemPrompt = `You are an elite executive communication strategist who has coached 500+ Latin American professionals to win high-stakes business conversations with U.S. executives. You combine the strategic thinking of a McKinsey consultant with the empathy of an executive coach.
+You do NOT write generic scripts. You create PERSONALIZED CONVERSATION STRATEGIES based on:
+1. WHO they're talking to (the interlocutor's psychology and evaluation criteria)
+2. WHAT the user brings to the table (their data, experience, context)
+3. HOW to structure the conversation for maximum impact
 
-Your task: Create a PREPARATION SCRIPT — a personalized conversation strategy the user will study and internalize BEFORE their practice session. This is their game plan, not a post-mortem.
+=== LANGUAGE ===
+- Write ALL script content, section titles, tooltips, and coaching notes in English (this is what the user will practice saying).
+- Write "suffix" coaching annotations in ${lang} (${langTag}) — these are reading aids, not spoken content.
 
-═══════════════════════════════════════════════════════════════
-PHASE 1: STRATEGIC ANALYSIS (internal reasoning — do NOT output this)
-═══════════════════════════════════════════════════════════════
+=== THE INTERLOCUTOR ===
+${intel}
 
-Before writing the script, you MUST analyze these 4 dimensions internally:
+=== REGIONAL CONTEXT ===
+${coaching}
 
-1. INTERLOCUTOR DECODE: What does this specific person care about? What's their decision framework? What will make them lean forward vs. check their phone?
+=== THE USER'S ARSENAL ===
+${userArsenal}
 
-2. USER–INTERLOCUTOR FIT: Based on the user's profile/experience, what are their natural STRENGTHS that align with what this interlocutor values? What are the GAPS they need to compensate for?
+=== IDENTIFIED GAPS ===
+${gaps}
 
-3. STRATEGIC NARRATIVE: What's the ONE compelling story arc that connects the user's background to what the interlocutor needs? Not a list of facts — a NARRATIVE with a throughline.
-
-4. RISK MAP: What are the 2-3 moments where this conversation could go wrong? (e.g., "When asked about team size, the user might undersell." / "The pricing objection will come — they need an anchor ready.")
-
-Use this analysis to write every word of the script. The script should feel like it was written BY someone who deeply understands both the user AND the person they'll be talking to.
-
-═══════════════════════════════════════════════════════════════
-SCENARIO TYPE: ${scenarioLabel.toUpperCase()}
-═══════════════════════════════════════════════════════════════
-
-═══════════════════════════════════════════════════════════════
-INTERLOCUTOR INTELLIGENCE
-═══════════════════════════════════════════════════════════════
-${interlocutorIntel}
-
-═══════════════════════════════════════════════════════════════
-THE USER'S ARSENAL (THIS IS YOUR PRIMARY RAW MATERIAL)
-═══════════════════════════════════════════════════════════════
-CRITICAL INSTRUCTION: Everything below is what the user provided about themselves. Your script MUST weave in EVERY specific detail — names, companies, metrics, technologies, achievements. If they said "grew ARR 3x", that number MUST appear in the script. If they mentioned "PulseIn", that company name MUST be in the script. Generic scripts that ignore user data are UNACCEPTABLE.
-
-${userData.userArsenal}
-
-DATA GAPS:
-${userData.gaps}
-
-═══════════════════════════════════════════════════════════════
-${regionalCoaching}
-═══════════════════════════════════════════════════════════════
-
-═══════════════════════════════════════════════════════════════
-SCRIPT ARCHITECTURE
-═══════════════════════════════════════════════════════════════
-
-${buildSectionArchitecture(scenarioType)}
-
-═══════════════════════════════════════════════════════════════
-WRITING PHILOSOPHY
-═══════════════════════════════════════════════════════════════
-
-1. VOICE — SECOND PERSON COACHING (THIS IS CRITICAL):
-You are a coach talking TO the user. NEVER write body text (the "text" and "suffix" JSON fields) in first person ("I am a designer...", "I have 8 years..."). ALWAYS write body text in second person ("Here's how you open...", "You'll want to lead with...", "When they ask about X, pivot to...").
-
-HOWEVER, highlighted phrases (the "phrase" field inside highlights[]) that represent WHAT THE USER SHOULD SAY must be in FIRST PERSON. These are lines the user will practice speaking as themselves.
-
-❌ WRONG: Body text says "I am a seasoned UX/UI Designer with 8 years of experience leading design teams."
-❌ WRONG: Highlight phrase says "You've spent over 5 years designing user experiences" (this is what they should SAY → must be first person)
-✅ RIGHT: Body text says "Here's how you open: you've got 8 years leading design teams, and that's your anchor. Lead with it. Say something like:"
-✅ RIGHT: Highlight phrase says "I've spent the last 8 years building and scaling design systems"
-
-The pattern: coaching narration in SECOND person → suggested phrases to practice in FIRST person.
-
-2. SPECIFICITY OVER GENERALITY: Every paragraph must contain at least ONE specific detail from the user's profile. "I led a cross-functional team" is generic. "At Techgenies, you led 6 engineers to ship a micro-learning feature that increased daily engagement by 40%" is specific. ALWAYS prefer the specific version.
-
-3. CONTINGENCY THINKING: The LAST paragraph of EVERY section must be a contingency paragraph. These are mandatory, not optional. Start them with "If they..." or "When they..." and provide specific pivot language the user can memorize.
-
-4. SPOKEN ENGLISH: This will be read aloud and potentially used for shadowing practice. Write in natural spoken English — contractions, conversational rhythm, the way a confident senior professional actually talks.
-
-5. POWER PHRASES: Highlight phrases that the user should memorize and practice. These should be phrases that a senior U.S. executive would use — not textbook English, but boardroom English.
-
-═══════════════════════════════════════════════════════════════
-EXAMPLE OF EXPECTED PARAGRAPH LENGTH AND QUALITY
-═══════════════════════════════════════════════════════════════
-
-Here is ONE example paragraph at the correct length (2 sentences). Every paragraph you write should be this compact:
-
-"Open with a strategic summary, not a resume walkthrough — say: 'I've spent 8 years designing UX for complex platforms, most recently leading a medical records redesign at Techgenies that cut nurse onboarding time by 60%.' That establishes seniority, domain relevance, and a quantified result in one breath."
-
-And here is an example contingency paragraph:
-
-"If they ask about failure, pivot to systemic improvement: 'I pushed a migration too fast, broke 3 workflows, owned it, rolled back in 4 hours, and built a phased plan that became the standard.' Own it fast, show the fix was structural, land on a result."
-
-These paragraphs are the MAXIMUM acceptable length. Shorter is better. Every word must earn its place.
-
-═══════════════════════════════════════════════════════════════
-OUTPUT FORMAT (MANDATORY JSON)
-═══════════════════════════════════════════════════════════════
-
-Respond with ONLY a valid JSON object. No markdown, no code fences, no commentary.
+=== OUTPUT FORMAT (MANDATORY JSON) ===
+Respond with ONLY a valid JSON object. No markdown, no code fences.
 
 {
   "sections": [
     {
       "num": 1,
-      "title": "Section Title in English",
+      "title": "Section title (English, action-oriented, max 5 words)",
       "paragraphs": [
         {
-          "text": "Text before the first highlighted phrase. ",
+          "text": "Coaching context in English (1 sentence that sets up the highlights below)",
           "highlights": [
             {
-              "phrase": "the exact power phrase to highlight",
-              "color": "#E1D5F8",
-              "tooltip": "Brief explanation in Spanish of WHY this phrase works (max 15 words)"
+              "phrase": "The exact English phrase the user should say (spoken, natural, executive-level)",
+              "color": "#dcfce7 | #dbeafe | #f3e8ff | #fef3c7",
+              "tooltip": "Why this phrase works — in ${lang} (1 short sentence)"
             }
           ],
-          "suffix": " any text that follows the last highlight."
+          "suffix": "Optional coaching note in ${lang} — when to pause, body language, tone guidance"
         }
       ]
     }
   ]
 }
 
-PARAGRAPH STRUCTURE:
-- "text": Everything BEFORE the first highlight (can be "")
-- "highlights": Array of 1-2 highlighted power phrases with color and tooltip
-- "suffix": Everything AFTER the last highlight (can be "")
-- The full readable paragraph = text + highlights[0].phrase + (middle text if 2 highlights) + highlights[1].phrase + suffix
-- CRITICAL: Every highlight "phrase" must be a VERBATIM substring that appears naturally when you concatenate text + highlights + suffix
+=== STRUCTURAL RULES ===
+- Generate 3-5 sections depending on scenario complexity
+- Each section should have 1-2 paragraphs
+- Each paragraph should have 1-3 highlighted phrases
+- Highlights are the CORE DELIVERABLE — these are what the user practices saying aloud
+- Color coding: green (#dcfce7) = key openers, blue (#dbeafe) = data/metrics, purple (#f3e8ff) = strategic phrases, amber (#fef3c7) = closing/transition
+- Total word count across all highlights: 200-400 words (this will be spoken via TTS shadowing)
 
-HIGHLIGHT COLORS (exact hex values):
-- "#E1D5F8" (purple): Structure & frameworks — transitions, signposting, conversational architecture
-- "#FFE9C7" (peach): Impact language — power phrases, data claims, persuasion triggers, commitment language
-- "#D9ECF0" (blue): Engagement & connection — questions, callbacks, inclusive language, relationship builders
+=== QUALITY CHECKLIST ===
+- [ ] Every highlight phrase sounds natural when spoken aloud (no written-English artifacts)
+- [ ] Phrases use the user's actual data/numbers/context when available
+- [ ] The script builds a strategic ARC: opening → build credibility → handle anticipated challenges → close strong
+- [ ] Tooltips explain the BUSINESS PSYCHOLOGY, not just grammar
+- [ ] Domain vocabulary from the user's input is preserved and elevated`;
 
-QUANTITY & DISTRIBUTION:
-- Total highlights across all sections: 6-10
-- Color distribution: aim for ~3 purple, ~4 peach, ~3 blue (roughly balanced)
-- Each section should have 2-3 highlights minimum
-- Tooltips must be in Spanish and explain the STRATEGY (why it works), not just describe the phrase
-
-SCRIPT LENGTH:
-- Target: 200-280 words total (90-120 second read-aloud)
-- Each section: 2 paragraphs (one strategy + one contingency)
-- Each paragraph MUST be 2-3 sentences. Aim for 2.
-- The LAST paragraph of each section MUST be a dedicated contingency paragraph starting with "If they..." or "When they..." — this is NOT optional.
-- ${scenarioType === "interview" ? "3 sections for interview" : "3 sections for sales pitch"}
-
-⚠️ BREVITY IS KING:
-Target 200-280 words. This is a cheat sheet, not an essay. Every sentence = one clear instruction or one power phrase to memorize. Cut coaching rationale, cut motivation, cut repetition. If a sentence doesn't tell the user WHAT TO SAY or WHAT TO DO, delete it.
-
-═══════════════════════════════════════════════════════════════
-QUALITY GATES (verify before outputting)
-═══════════════════════════════════════════════════════════════
-- [ ] Every specific detail the user provided appears in the script
-- [ ] Each section includes at least one contingency ("If they ask X... / If they push back...")
-- [ ] Highlights are genuine power phrases a senior executive would use
-- [ ] Tooltips explain WHY the phrase works strategically, not just what it means
-- [ ] The script feels like personalized coaching, not a fill-in-the-blank template
-- [ ] Total word count is 200-280 words
-- [ ] The narrative has a throughline — each section builds on the previous one`;
-
-    // ── Build the user message ──
-
-    // ── Few-shot example (teaches GPT-4o the exact voice, length, and structure) ──
-
-    const fewShotUser = `Generate a pre-briefing conversation script for this scenario.
-
-Scenario type: Job Interview
-Interlocutor: hiring_manager
-
-Remember:
-- Return ONLY valid JSON. No markdown fences.
-- Use ALL the user's specific details from the arsenal above.
-- Each section needs contingency pivots.
-- 200-280 words total. This is a cheat sheet, not an essay.
-- Each paragraph: 2 sentences max.
-- The LAST paragraph of each section MUST be a contingency paragraph ("If they..." / "When they...").
-- If a sentence doesn't tell the user WHAT TO SAY or WHAT TO DO, delete it.`;
+    // Few-shot example for consistent output quality
+    const fewShotUser = `Scenario: "Technical Interview: Senior React Developer at Toptal"
+Interlocutor: recruiter
+User arsenal: 5 years React experience, led team of 4, built fintech dashboard
+Gaps: No specific role description provided`;
 
     const fewShotAssistant = JSON.stringify({
-        "sections": [
+        sections: [
             {
-                "num": 1,
-                "title": "Your Value Story — Lead with Impact",
-                "paragraphs": [
+                num: 1,
+                title: "Opening & Personal Pitch",
+                paragraphs: [
                     {
-                        "text": "Open with a strategic summary, not a resume walkthrough — say: '",
-                        "highlights": [
+                        text: "Start with a confident self-introduction that positions you as the ideal candidate.",
+                        highlights: [
                             {
-                                "phrase": "I've spent 6 years building and scaling data infrastructure — most recently at DataFlow, where I led 12 engineers to cut processing time by 73%",
-                                "color": "#FFE9C7",
-                                "tooltip": "Ancla tu valor con antigüedad + métrica cuantificada en una sola frase"
-                            }
+                                phrase: "Thank you for this opportunity. I'm a senior frontend engineer with five years specializing in React for high-scale fintech applications.",
+                                color: "#dcfce7",
+                                tooltip: lc.isBrazil
+                                    ? "Posiciona voce como especialista, nao como generalista — recrutadores filtram em 30 segundos"
+                                    : "Te posiciona como especialista, no generalista — los reclutadores filtran en 30 segundos",
+                            },
                         ],
-                        "suffix": ".' That establishes seniority, team scale, and a quantified result in one breath."
+                        suffix: lc.isBrazil
+                            ? "Pause de 1 segundo apos 'applications' para que o recrutador absorva."
+                            : "Pausa de 1 segundo despues de 'applications' para que el reclutador absorva.",
                     },
-                    {
-                        "text": "If they jump to 'Tell me about yourself,' compress to: '",
-                        "highlights": [
-                            {
-                                "phrase": "I build data systems that scale — I took DataFlow from 18-hour batches to real-time",
-                                "color": "#E1D5F8",
-                                "tooltip": "Versión de 10 segundos de tu pitch — memorízala para interrupciones"
-                            }
-                        ],
-                        "suffix": ".' If they ask 'Why are you leaving?', pivot: 'I've built something I'm proud of, now I want to apply it at larger scale.'"
-                    }
-                ]
+                ],
             },
-            {
-                "num": 2,
-                "title": "Prove It — Your STAR Power Play",
-                "paragraphs": [
-                    {
-                        "text": "Structure your strongest story tight: 'At DataFlow, ",
-                        "highlights": [
-                            {
-                                "phrase": "the business was making decisions on data that was 18 hours old",
-                                "color": "#FFE9C7",
-                                "tooltip": "Cuantificar el dolor ANTES de la solución hace tu impacto más dramático"
-                            }
-                        ],
-                        "suffix": " — I proposed a streaming migration using Kafka and Flink, coordinated across 3 teams, and we went to sub-second processing that enabled real-time pricing worth $2.3M in Q1.' Always translate technical work into dollars."
-                    },
-                    {
-                        "text": "If they probe with 'What would you do differently?', show growth: '",
-                        "highlights": [
-                            {
-                                "phrase": "I underestimated the change management side — getting 40 analysts to trust real-time data required an enablement track I hadn't planned",
-                                "color": "#D9ECF0",
-                                "tooltip": "Vulnerabilidad estratégica demuestra madurez — los managers valoran honestidad intelectual"
-                            }
-                        ],
-                        "suffix": ".' Now you always build adoption plans alongside technical ones."
-                    }
-                ]
-            },
-            {
-                "num": 3,
-                "title": "Strategic Close — Own the Room",
-                "paragraphs": [
-                    {
-                        "text": "Don't say 'No questions.' Ask: '",
-                        "highlights": [
-                            {
-                                "phrase": "How does the data team interact with product today — reactive or embedded?",
-                                "color": "#D9ECF0",
-                                "tooltip": "Preguntas sobre org design demuestran que piensas como líder, no como ejecutor"
-                            }
-                        ],
-                        "suffix": "' Then close with your anchor phrase: 'I build data systems that teams actually trust and use to make decisions.'"
-                    },
-                    {
-                        "text": "When salary comes up, deflect early: '",
-                        "highlights": [
-                            {
-                                "phrase": "I'm focused on the right mutual fit — I'm confident we can align on compensation",
-                                "color": "#E1D5F8",
-                                "tooltip": "Redirigir salario sin esquivarlo mantiene tu poder de negociación"
-                            }
-                        ],
-                        "suffix": ".' If they press, give a researched range. If they ask weaknesses: 'I over-engineer early — I've learned to prototype first, which made me faster.'"
-                    }
-                ]
-            }
-        ]
+        ],
     });
 
-    const userMessage = `Generate a pre-briefing conversation script for this scenario.
-
-Scenario type: ${scenarioLabel}
+    const userMessage = `Scenario: "${scenario}"
 Interlocutor: ${interlocutor}
-${scenario ? `Scenario context: ${scenario}` : ""}
+Scenario type: ${scenarioType}
 
-Remember:
-- Return ONLY valid JSON. No markdown fences.
-- Use ALL the user's specific details from the arsenal above.
-- Each section needs contingency pivots.
-- 200-280 words total. This is a cheat sheet, not an essay.
-- Each paragraph: 2 sentences max.
-- The LAST paragraph of each section MUST be a contingency ("If they..." / "When they...").
-- If a sentence doesn't tell the user WHAT TO SAY or WHAT TO DO, delete it.
-- Body text in SECOND PERSON coaching voice. Highlight phrases in FIRST PERSON.`;
+=== USER DATA ===
+${userArsenal}
+
+=== GAPS ===
+${gaps}
+
+Generate the personalized conversation strategy script now. Remember: highlights are the spoken phrases, tooltips are in ${lang}.`;
 
     return { systemPrompt, fewShotUser, fewShotAssistant, userMessage };
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   SECTION ARCHITECTURE (varies by scenario type)
-   ═══════════════════════════════════════════════════════════════ */
-
-function buildSectionArchitecture(scenarioType: string): string {
-    if (scenarioType === "interview") {
-        return `Create exactly 3 sections:
-
-SECTION 1: "Your Value Story — Lead with Impact"
-Purpose: The first 60 seconds that determine everything. Not a chronological career summary — a STRATEGIC NARRATIVE that answers "Why should we hire you for THIS role?"
-Must include:
-- A hook that connects the user's background to the role's core need
-- ONE quantified achievement that proves capability (from user's data)
-- A clear differentiator: what makes them different from the other 10 candidates
-- Contingency: "If they interrupt with 'Tell me about yourself', pivot to..."
-
-SECTION 2: "Prove It — Your STAR Power Play"
-Purpose: A structured achievement narrative that demonstrates real impact. Not just what happened — WHY it matters to this interviewer.
-Must include:
-- A STAR-structured story using the user's REAL experience (Situation, Task, Action, Result)
-- Specific metrics from the user's profile woven into the Result
-- Connection to the target role: "This matters for your team because..."
-- Contingency: "If they probe deeper on the methodology / challenge the numbers..."
-
-SECTION 3: "Strategic Close — Own the Room"
-Purpose: Turn the power dynamic. The questions you ask reveal more about your seniority than the answers you gave.
-Must include:
-- 2 strategic questions that demonstrate you've researched the role/company
-- A confident wrap-up that leaves a lasting impression
-- An "anchor phrase" — the one thing you want them to remember about you
-- Contingency: "If they ask about weaknesses or salary expectations..."`;
-    }
-
-    // Sales
-    return `Create exactly 3 sections:
-
-SECTION 1: "Frame the Conversation — Credibility First"
-Purpose: The first 60 seconds that determine whether you get 15 more minutes. Establish WHY you're worth their time.
-Must include:
-- A credibility anchor: who you are and why you understand THEIR world
-- The prospect's pain point (from user's data) stated back to them
-- A clear "here's what I want to accomplish in this conversation" frame
-- Contingency: "If they say 'We already have a solution for that'..."
-
-SECTION 2: "Value Architecture — Lead with Their ROI"
-Purpose: Not a feature dump. A business case that connects your solution to their specific pain points and goals.
-Must include:
-- The core value proposition framed as THEIR outcome, not your feature
-- At least ONE quantified claim (from user's data: case studies, metrics, savings)
-- A differentiation statement vs. what they're currently using
-- Contingency: "If they challenge on pricing or ask 'Why not just build this ourselves?'..."
-
-SECTION 3: "Secure the Next Step — Close with Confidence"
-Purpose: Don't end with "any questions?" End with a SPECIFIC next step that keeps momentum.
-Must include:
-- A summary that ties everything back to the prospect's priorities
-- A concrete next step proposal (demo, pilot, stakeholder meeting)
-- An urgency frame that's genuine, not pushy
-- Contingency: "If they say 'Let me think about it' or 'Send me materials'..."`;
 }

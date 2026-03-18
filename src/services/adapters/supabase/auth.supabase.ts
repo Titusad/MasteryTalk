@@ -126,30 +126,34 @@ export class SupabaseAuthService implements IAuthService {
   }
 
   /**
-   * Try to fetch existing profile, or create one if it doesn't exist.
-   * This handles both:
-   * - Normal flow: profiles table exists with trigger → fetch works
-   * - Figma Make flow: profiles table might not exist → upsert via client
+   * Try to fetch existing profile, or fall back to synthetic.
+   * Optimized: if profiles table doesn't exist (Figma Make env),
+   * skips cascade of retries and goes straight to synthetic profile.
    */
   private async fetchOrCreateProfile(authUser: AuthUser): Promise<ProfileRow> {
     const supabase = getSupabaseClient();
 
-    // Attempt 1: Direct fetch
+    // Attempt 1: Direct fetch — works if profiles table exists
     try {
       return await this.fetchProfile(authUser.id);
-    } catch {
-      console.log("[inFluentia Auth] Profile not found, attempting to create...");
+    } catch (err: any) {
+      const msg = String(err?.message || err).toLowerCase();
+      // If table doesn't exist, skip all retries → synthetic profile immediately
+      const isTableMissing =
+        msg.includes("relation") ||
+        msg.includes("does not exist") ||
+        msg.includes("undefined_table") ||
+        msg.includes("42p01");
+
+      if (isTableMissing) {
+        console.log("[inFluentia Auth] Profiles table not found — using synthetic profile (fast path)");
+        return this.syntheticProfile(authUser.id);
+      }
+
+      console.log("[inFluentia Auth] Profile not found, attempting upsert...");
     }
 
-    // Attempt 2: Wait for trigger (if exists) and retry
-    await new Promise((r) => setTimeout(r, 800));
-    try {
-      return await this.fetchProfile(authUser.id);
-    } catch {
-      console.log("[inFluentia Auth] Still no profile after wait, attempting upsert...");
-    }
-
-    // Attempt 3: Try to upsert directly via client
+    // Attempt 2: Try to upsert directly (table exists but row doesn't)
     const defaultProfile: Omit<ProfileRow, "created_at"> & { id: string } = {
       id: authUser.id,
       market_focus: null,
@@ -172,13 +176,18 @@ export class SupabaseAuthService implements IAuthService {
         return data as ProfileRow;
       }
     } catch (upsertErr) {
-      console.warn("[inFluentia Auth] Upsert failed (table may not exist):", upsertErr);
+      console.warn("[inFluentia Auth] Upsert failed:", upsertErr);
     }
 
-    // Attempt 4: Return a synthetic profile (works even without profiles table)
-    console.log("[inFluentia Auth] Using synthetic profile (no DB table)");
+    // Fallback: synthetic profile
+    console.log("[inFluentia Auth] Using synthetic profile (fallback)");
+    return this.syntheticProfile(authUser.id);
+  }
+
+  /** Generate a synthetic profile when no DB table is available */
+  private syntheticProfile(uid: string): ProfileRow {
     return {
-      id: authUser.id,
+      id: uid,
       market_focus: null,
       plan: "free",
       plan_status: "active",
@@ -227,8 +236,7 @@ export class SupabaseAuthService implements IAuthService {
          */
         ...(provider === "google" && {
           queryParams: {
-            access_type: "offline",
-            prompt: "consent",
+            prompt: "select_account",
           },
         }),
       },
@@ -266,15 +274,23 @@ export class SupabaseAuthService implements IAuthService {
     /**
      * IMPORTANT: signInWithOAuth initiates a full-page redirect to the OAuth
      * provider. The promise resolves immediately (before the browser navigates),
-     * so this return IS reached briefly. 
-     * 
-     * We purposefully hang the promise here. If we return immediately, the UI
-     * will think auth is "done" and transition to the next screen (flashing it)
-     * right before the browser finally navigates away to Google.
-     * The hanging promise prevents `AuthModal` from firing `onAuthComplete`.
+     * so this return IS reached briefly. However, the browser navigates away
+     * milliseconds later, so any code the caller runs after `await signIn()`
+     * is effectively a no-op in redirect flow.
+     *
+     * After the OAuth redirect completes, the page reloads from scratch.
+     * The `onAuthStateChange` listener in the constructor detects the new
+     * session and sets `currentUser`. App.tsx subscribes via
+     * `authService.onAuthStateChanged()` to react to this (F1-07).
+     *
+     * In mock mode, signIn() resolves with the user directly, so callers
+     * can safely chain `onAuthComplete?.()` — it works for mocks but is
+     * harmlessly ignored in redirect flow.
+     *
+     * For popup-based flow (alternative), use:
+     *   supabase.auth.signInWithOAuth({ options: { skipBrowserRedirect: true } })
+     * and handle the popup manually.
      */
-    await new Promise((resolve) => setTimeout(resolve, 10000));
-
     return (
       this.currentUser ?? {
         uid: "",
@@ -331,7 +347,7 @@ export class SupabaseAuthService implements IAuthService {
    * triggers or other mechanisms.
    */
   private async ensureServerProfile(accessToken: string): Promise<void> {
-    const serverUrl = `https://${projectId}.supabase.co/functions/v1/server/make-server-4e8a5b39/auth/ensure-profile`;
+    const serverUrl = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/auth/ensure-profile`;
     const response = await fetch(serverUrl, {
       method: "POST",
       headers: {

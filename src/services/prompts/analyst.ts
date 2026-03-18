@@ -41,6 +41,11 @@ export const OPPORTUNITY_TAGS = [
   "Defensa de Valor",
   "Alineacion Cultural",
   "Estructura del Discurso",
+  /* PT-BR variants */
+  "Resiliência Linguística",
+  "Defesa de Valor",
+  "Alinhamento Cultural",
+  "Estrutura do Discurso",
 ] as const;
 
 export type OpportunityTag = (typeof OPPORTUNITY_TAGS)[number];
@@ -55,6 +60,38 @@ export type OpportunityTag = (typeof OPPORTUNITY_TAGS)[number];
 export function buildFeedbackAnalystPrompt(
   marketFocus?: MarketFocus | null
 ): string {
+  const isBrazil = marketFocus === "brazil";
+  const lang = isBrazil ? "Portuguese (Brazilian)" : "Spanish";
+  const langTag = isBrazil ? "PT-BR" : "ES";
+
+  const pillarTags = isBrazil
+    ? {
+      p1: "Resiliência Linguística",
+      p2: "Defesa de Valor",
+      p3: "Alinhamento Cultural",
+      p4: "Estrutura do Discurso",
+    }
+    : {
+      p1: "Resiliencia Linguistica",
+      p2: "Defensa de Valor",
+      p3: "Alineacion Cultural",
+      p4: "Estructura del Discurso",
+    };
+
+  const toneGood1 = isBrazil
+    ? "Voce defendeu sua tarifa com conviccao, o que demonstra preparacao."
+    : "Defendiste tu tarifa con convicción, lo que demuestra preparación.";
+  const toneGood2 = isBrazil
+    ? "Quando mencionaram a concorrencia, sua resposta foi reativa. Tente com: 'I appreciate the comparison. Let me show you why our integration speed changes the ROI calculation.'"
+    : "Cuando mencionaron a la competencia, tu respuesta fue reactiva. Prueba con: 'I appreciate the comparison. Let me show you why our integration speed changes the ROI calculation.'";
+  const toneBad1 = isBrazil
+    ? "O usuario demonstrou competencia em..."
+    : "El usuario demostró competencia en...";
+
+  const scarcityPhrase = isBrazil
+    ? "Nos turnos disponíveis, observou-se..."
+    : "En los turnos disponibles, se observó...";
+
   return `=== ROLE: THE EXECUTIVE COMMUNICATION COACH ===
 You are an expert in executive communication, international negotiation, and professional coaching. You have just observed a simulated business conversation between a Latin American professional and a demanding U.S. business counterpart.
 
@@ -74,25 +111,25 @@ USE THESE NOTES to make your feedback feel insightful and specific, as if you we
 === THE 4 ANALYSIS PILLARS ===
 Analyze the conversation through these 4 lenses, mapped to the coaching signals in internal_analysis:
 
-**PILLAR 1: Linguistic Resilience** (tag: "Resiliencia Linguistica")
+**PILLAR 1: Linguistic Resilience** (tag: "${pillarTags.p1}")
 Signals: LANGUAGE PERSISTENCE, VOCABULARY
 - Did they maintain English throughout, even under pressure?
 - Did they use precise business vocabulary or resort to vague/generic terms?
 - Did they use Spanish/Portuguese filler words, switch languages, or lose fluency at critical moments?
 - Were there missed opportunities to use power phrases that would have elevated their message?
 
-**PILLAR 2: ROI & Value Defense** (tag: "Defensa de Valor")
+**PILLAR 2: ROI & Value Defense** (tag: "${pillarTags.p2}")
 Signals: RATE DEFENSE, DEFLECTION
 - When challenged on pricing, timelines, or deliverables — did they defend with data and value, or cave?
 - Did they deflect hard questions or answer them directly?
 - Did they anchor their position or let the counterpart set the frame?
 - Was there a moment where they conceded too quickly or without getting something in return?
 
-**PILLAR 3: Cultural Alignment** (tag: "Alineacion Cultural")
+**PILLAR 3: Cultural Alignment** (tag: "${pillarTags.p3}")
 Signals: EXECUTIVE PRESENCE, CONFIDENCE
 ${buildCulturalDirective(marketFocus)}
 
-**PILLAR 4: Discourse Structure** (tag: "Estructura del Discurso")
+**PILLAR 4: Discourse Structure** (tag: "${pillarTags.p4}")
 Signals: CLARITY
 - Was their communication direct and organized, or did they ramble?
 - Did they use frameworks or structure (first/second/third, problem/solution/benefit)?
@@ -112,7 +149,7 @@ Reference these arc patterns in your feedback. The user needs to understand thei
 If the conversation was SHORT (4-5 user turns), adapt your approach:
 - Reduce strengths to 2 (instead of 3) — don't fabricate a third strength from thin data.
 - Reduce opportunities to 2 (instead of 3-4) — focus on the highest-impact observations.
-- In descriptions, be explicit about what you observed in limited data: "En los turnos disponibles, se observó..." rather than making sweeping generalizations.
+- In descriptions, be explicit about what you observed in limited data: "${scarcityPhrase}" rather than making sweeping generalizations.
 - Focus on QUALITY of insight over QUANTITY. A short session with 2 precise observations beats 4 vague ones.
 
 If the conversation was LONG (7-8 user turns), you have rich data:
@@ -125,22 +162,22 @@ Respond with ONLY a JSON object. No markdown, no code fences, no commentary. Pur
 {
   "strengths": [
     {
-      "title": "Short title in Spanish (max 6 words)",
-      "desc": "Description in Spanish (2-3 sentences). Be specific — reference what the user actually said or did. Mention the business impact of this strength."
+      "title": "Short title in ${lang} (max 6 words)",
+      "desc": "Description in ${lang} (2-3 sentences). Be specific — reference what the user actually said or did. Mention the business impact of this strength."
     }
   ],
   "opportunities": [
     {
-      "title": "Short title in Spanish (max 6 words)",
-      "tag": "One of: Resiliencia Linguistica | Defensa de Valor | Alineacion Cultural | Estructura del Discurso",
-      "desc": "Description in Spanish (2-3 sentences). Include a SPECIFIC English example phrase the user could have used. Format the English phrase in single quotes. Explain WHY this phrase works in a business context."
+      "title": "Short title in ${lang} (max 6 words)",
+      "tag": "One of: ${pillarTags.p1} | ${pillarTags.p2} | ${pillarTags.p3} | ${pillarTags.p4}",
+      "desc": "Description in ${lang} (2-3 sentences). Include a SPECIFIC English example phrase the user could have used. Format the English phrase in single quotes. Explain WHY this phrase works in a business context."
     }
   ]
 }
 
 === FIELD RULES ===
-- "title": In Spanish. Concise. Action-oriented (e.g., "Apertura clara y directa", not "Tu apertura fue buena").
-- "desc": In Spanish, but MUST include at least one English example phrase in single quotes for opportunities. This is critical — the frontend highlights these English phrases visually.
+- "title": In ${lang}. Concise. Action-oriented.
+- "desc": In ${lang}, but MUST include at least one English example phrase in single quotes for opportunities. This is critical — the frontend highlights these English phrases visually.
 - "tag": ONLY for opportunities. Must be exactly one of the 4 pillar tags listed above.
 - strengths[].desc: No English examples needed — focus on what they did well and its business impact.
 - opportunities[].desc: MUST contain an English example phrase that the user could have used instead.
@@ -158,10 +195,9 @@ You are the COACH, not the opponent. The AI interlocutor was confrontational and
 - Be supportive but honest. Don't sugarcoat, but don't be harsh.
 - Frame everything as growth opportunity, not failure.
 - Use "you" directly — speak to the user as their personal coach.
-- Good: "Defendiste tu tarifa con convicción, lo que demuestra preparación."
-- Good: "Cuando mencionaron a la competencia, tu respuesta fue reactiva. Prueba con: 'I appreciate the comparison. Let me show you why our integration speed changes the ROI calculation.'"
-- Bad: "El usuario demostró competencia en..." (too distant/academic)
-- Bad: "¡Excelente trabajo!" (empty praise, no substance)`;
+- Good: "${toneGood1}"
+- Good: "${toneGood2}"
+- Bad: "${toneBad1}" (too distant/academic)`;
 }
 
 /* ── Cultural Alignment directive (varies by market) ── */

@@ -1,47 +1,51 @@
 /**
  * ══════════════════════════════════════════════════════════════
- *  inFluentia PRO — Informe de Sesión (MVP)
- *  Organizado en 3 secciones: Preparación, Análisis, Próximos Pasos.
+ *  inFluentia PRO — Session Report (Final Report after feedback)
+ *
+ *  This is the FULL REPORT page shown after the user clicks
+ *  "Generate Report" in Session Feedback. Contains:
+ *  1. Hero
+ *  2. Your Script
+ *  3. Next Steps (from AI summary)
+ *  4. Preparation Utilization (interview + briefing only)
+ *  5. Motivational banner
+ *  6. Download PDF + Go To Dashboard CTAs
  * ══════════════════════════════════════════════════════════════
  */
 
 import { useState } from "react";
 import {
-  Target,
   FileText,
-  Globe,
-  TrendingUp,
-  Lightbulb,
-  CheckCircle2,
-  Zap,
   Sparkles,
-  AudioLines,
-  ChevronDown,
-  ChevronRight,
   Check,
   Trophy,
-  ClipboardList,
   Download,
   Lock,
+  ArrowRight,
+  Lightbulb,
+  ClipboardCheck,
 } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import {
   PastelBlobs,
   MiniFooter,
 } from "./shared";
 import {
-  getPowerPhrasesForScenario,
-  getBeforeAfterForScenario,
-  getPowerQuestions,
-  getCulturalTips,
-  getStrengthsForScenario,
   getScriptSectionsForScenario,
 } from "../../services/scenario-data";
 import type {
   ScenarioType,
-  ResultsSummary,
   UserPlan,
+  Strength,
+  Opportunity,
+  BeforeAfterComparison,
+  ScriptSection,
+  SessionSummary,
+  TurnPronunciationData,
+  InterviewBriefingData,
 } from "../../services/types";
+import { downloadSessionReportPdf } from "../utils/cheatSheetPdf";
+
 /* ─── Scenario labels ─── */
 const SCENARIO_LABELS_MAP: Record<string, string> = {
   sales: "Sales Pitch",
@@ -51,46 +55,41 @@ const SCENARIO_LABELS_MAP: Record<string, string> = {
   networking: "Networking",
 };
 
-/* ─── Guided field labels (matching PracticeWidget) ─── */
-const GUIDED_FIELD_LABELS: Record<string, { key: string; label: string }[]> = {
-  interview: [
-    { key: "role", label: "Position applied for" },
-    { key: "strength", label: "Your most relevant strength" },
-  ],
-  sales: [
-    { key: "product", label: "Product or service" },
-    { key: "problem", label: "Problem it solves" },
-  ],
-  /* Non-MVP scenarios — kept as stubs for type safety */
-  csuite: [],
-  negotiation: [],
-  networking: [],
+/* ─── Pillar color map (for Next Steps badges) ─── */
+const PILLAR_COLORS: Record<string, { bg: string; text: string }> = {
+  "Resiliencia Linguistica": { bg: "rgba(96,165,250,0.15)", text: "#60a5fa" },
+  "Defensa de Valor": { bg: "rgba(251,191,36,0.15)", text: "#fbbf24" },
+  "Alineacion Cultural": { bg: "rgba(80,200,120,0.15)", text: "#50C878" },
+  "Estructura del Discurso": { bg: "rgba(168,85,247,0.15)", text: "#a855f7" },
+  "Resiliência Linguística": { bg: "rgba(96,165,250,0.15)", text: "#60a5fa" },
+  "Defesa de Valor": { bg: "rgba(251,191,36,0.15)", text: "#fbbf24" },
+  "Alinhamento Cultural": { bg: "rgba(80,200,120,0.15)", text: "#50C878" },
+  "Estrutura do Discurso": { bg: "rgba(168,85,247,0.15)", text: "#a855f7" },
+  Vocabulary: { bg: "rgba(96,165,250,0.15)", text: "#60a5fa" },
+  Grammar: { bg: "rgba(168,85,247,0.15)", text: "#a855f7" },
+  Fluency: { bg: "rgba(251,191,36,0.15)", text: "#fbbf24" },
+  Pronunciation: { bg: "rgba(239,68,68,0.12)", text: "#ef4444" },
+  "Professional Tone": { bg: "rgba(80,200,120,0.15)", text: "#50C878" },
+  Persuasion: { bg: "rgba(99,102,241,0.15)", text: "#6366f1" },
 };
 
-/* ─── Section wrapper component ─── */
+/* ─── Section wrapper ─── */
 function ReportSection({
-  number,
   icon,
   iconBg = "#0f172b",
   title,
   delay = 0,
   children,
-  dark = false,
 }: {
-  number: number;
   icon: React.ReactNode;
   iconBg?: string;
   title: string;
   delay?: number;
   children: React.ReactNode;
-  dark?: boolean;
 }) {
   return (
     <motion.div
-      className={`rounded-3xl p-6 md:p-8 mb-6 ${dark
-        ? "bg-gradient-to-br from-[#0f172b] to-[#1e293b]"
-        : "bg-white border border-[#e2e8f0]"
-        }`}
+      className="rounded-3xl bg-white border border-[#e2e8f0] p-6 md:p-8 mb-6"
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay }}
@@ -102,79 +101,34 @@ function ReportSection({
         >
           {icon}
         </div>
-        <div className="flex items-center gap-2.5">
-          <span
-            className={`text-[10px] px-2 py-0.5 rounded-full ${dark
-              ? "bg-white/10 text-white/50"
-              : "bg-[#f1f5f9] text-[#62748e]"
-              }`}
-            style={{ fontWeight: 600 }}
-          >
-            {number}
-          </span>
-          <h2
-            className={`text-xl ${dark ? "text-white" : "text-[#0f172b]"}`}
-            style={{ fontWeight: 500 }}
-          >
-            {title}
-          </h2>
-        </div>
+        <h2 className="text-xl text-[#0f172b]" style={{ fontWeight: 500 }}>
+          {title}
+        </h2>
       </div>
       {children}
     </motion.div>
   );
 }
 
-/* ─── Collapsible sub-section for dark cards ─── */
-function CollapsibleDarkSection({
-  icon,
-  label,
-  badge,
-  defaultOpen = false,
-  children,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  badge?: React.ReactNode;
-  defaultOpen?: boolean;
-  children: React.ReactNode;
-}) {
-  const [open, setOpen] = useState(defaultOpen);
-  return (
-    <div className="mb-4 last:mb-0">
-      <button
-        onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 mb-3 group w-full text-left"
-      >
-        {icon}
-        <p
-          className="text-sm text-white/70 group-hover:text-white/90 transition-colors"
-          style={{ fontWeight: 500 }}
-        >
-          {label}
-        </p>
-        {badge}
-        {open ? (
-          <ChevronDown className="w-3.5 h-3.5 text-white/40 ml-auto" />
-        ) : (
-          <ChevronRight className="w-3.5 h-3.5 text-white/40 ml-auto" />
-        )}
-      </button>
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="overflow-hidden"
-          >
-            {children}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
+/* ═══════════════════════════════════════════════════════════════
+   Real Feedback Data (from /analyze-feedback) — kept for prop compat
+   ═══════════════════════════════════════════════════════════════ */
+interface RealFeedbackData {
+  strengths: Strength[];
+  opportunities: Opportunity[];
+  beforeAfter: BeforeAfterComparison[];
+  pillarScores?: Record<string, number> | null;
+  professionalProficiency?: number | null;
+  /** Preparation Utilization — interview + briefing only */
+  preparationUtilization?: {
+    score: number;
+    verdict: string;
+    insights: Array<{
+      aspect: string;
+      observation: string;
+      rating: "strong" | "partial" | "missed";
+    }>;
+  } | null;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -184,43 +138,52 @@ function CollapsibleDarkSection({
 export interface SessionReportProps {
   scenarioType?: ScenarioType;
   guidedFields?: Record<string, string>;
-  resultsSummary?: ResultsSummary | null;
-  /** Finish button label and handler */
+  realFeedback?: RealFeedbackData | null;
+  sessionSummary?: SessionSummary | null;
+  generatedScript?: ScriptSection[] | null;
+  sessionDuration?: string;
   onFinish?: () => void;
   finishLabel?: string;
-  /** If true, hides the hero & background (for embedding inside another page) */
   embedded?: boolean;
-  /** Download report handler — triggers paywall for free users */
   onDownloadReport?: () => void;
-  /** Current user plan — controls download button appearance */
   userPlan?: UserPlan;
+  pronunciationData?: TurnPronunciationData[];
+  /** Interview briefing data for comprehensive PDF report */
+  interviewBriefing?: InterviewBriefingData | null;
+  interlocutor?: string;
+  scenario?: string;
 }
 
 export function SessionReport({
   scenarioType,
-  guidedFields = {},
-  resultsSummary,
+  realFeedback,
+  sessionSummary,
+  generatedScript,
+  sessionDuration,
   onFinish,
   finishLabel = "Go To Dashboard",
   embedded = false,
   onDownloadReport,
   userPlan = "free",
+  interviewBriefing,
+  interlocutor,
+  scenario,
 }: SessionReportProps) {
   const scenarioLabel = scenarioType
     ? SCENARIO_LABELS_MAP[scenarioType] ?? "your conversation"
     : "your conversation";
 
   /* ── Data sources ── */
-  const scenarioPhrases = Object.values(getPowerPhrasesForScenario(scenarioType)).flat();
-  const powerQuestions = getPowerQuestions(scenarioType);
-  const beforeAfter = getBeforeAfterForScenario(scenarioType);
-  const strengths = getStrengthsForScenario(scenarioType);
-  const scriptSections = getScriptSectionsForScenario(scenarioType);
-  const culturalTips = getCulturalTips(scenarioType);
-  const fieldLabels = scenarioType ? GUIDED_FIELD_LABELS[scenarioType] : [];
+  const scriptSections = generatedScript?.length
+    ? generatedScript
+    : getScriptSectionsForScenario(scenarioType);
+  const isRealData = !!(realFeedback?.strengths?.length);
+  const totalTime = sessionDuration || "4 min";
 
-  /* Stats (MVP-simplified) */
-  const totalTime = resultsSummary?.totalTime ?? "4 min";
+  /* ── Summary data ── */
+  const overallSentiment = sessionSummary?.overallSentiment || null;
+  const nextSteps = sessionSummary?.nextSteps || [];
+  const sessionHighlight = sessionSummary?.sessionHighlight || null;
 
   return (
     <div
@@ -230,7 +193,9 @@ export function SessionReport({
       {!embedded && <PastelBlobs />}
 
       <main className={`relative max-w-[800px] mx-auto px-6 ${embedded ? "pt-0 pb-8" : "pt-10 pb-20"}`}>
-        {/* ── Hero ── */}
+        {/* ═══════════════════════════════════════════════
+           HERO
+           ═══════════════════════════════════════════════ */}
         {!embedded && (
           <motion.div
             className="text-center mb-10"
@@ -241,80 +206,65 @@ export function SessionReport({
             <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#dcfce7] to-[#d1fae5] flex items-center justify-center mx-auto mb-5">
               <Trophy className="w-8 h-8 text-[#00A63E]" />
             </div>
-            <h1 className="text-3xl md:text-[42px] text-[#0f172b] mb-3" style={{ fontWeight: 300, lineHeight: 1.2 }}>
+            <h1
+              className="text-3xl md:text-[42px] text-[#0f172b] mb-3"
+              style={{ fontWeight: 300, lineHeight: 1.2 }}
+            >
               Session Report
             </h1>
-            <p className="text-[#45556c] max-w-lg mx-auto">
-              Your complete {scenarioLabel} practice report. Review each section before your next real conversation.
-            </p>
+            {overallSentiment ? (
+              <p className="text-[#45556c] max-w-lg mx-auto text-lg" style={{ fontWeight: 400 }}>
+                {overallSentiment}
+              </p>
+            ) : (
+              <p className="text-[#45556c] max-w-lg mx-auto">
+                Your complete {scenarioLabel} practice report.
+              </p>
+            )}
+            <div className="flex items-center justify-center gap-3 mt-4">
+              {isRealData && (
+                <span
+                  className="inline-flex items-center gap-1.5 text-[10px] bg-[#50C878]/15 text-[#16a34a] px-3 py-1 rounded-full"
+                  style={{ fontWeight: 600 }}
+                >
+                  <Sparkles className="w-3 h-3" /> AI-generated
+                </span>
+              )}
+              <span className="text-[10px] bg-[#f1f5f9] text-[#62748e] px-3 py-1 rounded-full" style={{ fontWeight: 500 }}>
+                {totalTime}
+              </span>
+            </div>
           </motion.div>
         )}
 
-        {/* ── Performance Overview ── */}
-        <motion.div
-          className="flex justify-center gap-3 mb-8"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.05 }}
-        >
-          {[
-            { label: "Total Duration", value: totalTime, icon: <TrendingUp className="w-4 h-4" /> },
-            { label: "Improvements", value: String(beforeAfter.length), icon: <Zap className="w-4 h-4" /> },
-          ].map((stat, i) => (
-            <div key={i} className="bg-white border border-[#e2e8f0] rounded-2xl p-5 text-center flex-1 max-w-[200px]">
-              <div className="w-8 h-8 rounded-lg bg-[#f0f4f8] flex items-center justify-center mx-auto mb-2 text-[#45556c]">
-                {stat.icon}
-              </div>
-              <p className="text-2xl text-[#0f172b] mb-1" style={{ fontWeight: 600 }}>{stat.value}</p>
-              <p className="text-xs text-[#45556c]">{stat.label}</p>
-            </div>
-          ))}
-        </motion.div>
-
         {/* ═══════════════════════════════════════════════
-           SECCIÓN 1: Tu Estrategia
+           SESSION HIGHLIGHT
            ═══════════════════════════════════════════════ */}
-        {(Object.values(guidedFields).some(v => v?.trim())) && (
-          <ReportSection
-            number={1}
-            icon={<ClipboardList className="w-5 h-5 text-white" />}
-            title="Your Strategy"
-            delay={0.1}
+        {sessionHighlight && (
+          <motion.div
+            className="bg-gradient-to-r from-[#f0fdf4] to-[#ecfdf5] border border-[#bbf7d0] rounded-2xl p-5 mb-6 flex items-start gap-3"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.08 }}
           >
-            {/* Guided fields (context from setup) */}
-            {fieldLabels.length > 0 && Object.values(guidedFields).some(v => v?.trim()) && (
-              <div className="mb-6 bg-[#f8fafc] rounded-xl border border-[#e2e8f0] p-5">
-                <p className="text-[10px] uppercase tracking-wider text-[#94a3b8] mb-3" style={{ fontWeight: 600 }}>
-                  Initial Context
-                </p>
-                <div className="space-y-3">
-                  {fieldLabels.map(({ key, label }) => {
-                    const value = guidedFields[key];
-                    if (!value?.trim()) return null;
-                    return (
-                      <div key={key}>
-                        <p className="text-xs text-[#62748e] mb-0.5">{label}</p>
-                        <p className="text-sm text-[#0f172b]" style={{ fontWeight: 500 }}>
-                          {value}
-                        </p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </ReportSection>
+            <div className="w-8 h-8 rounded-full bg-[#50C878]/20 flex items-center justify-center shrink-0">
+              <Sparkles className="w-4 h-4 text-[#16a34a]" />
+            </div>
+            <div>
+              <p className="text-[10px] uppercase tracking-wider text-[#16a34a] mb-1" style={{ fontWeight: 600 }}>Session highlight</p>
+              <p className="text-sm text-[#0f172b] leading-relaxed">{sessionHighlight}</p>
+            </div>
+          </motion.div>
         )}
 
         {/* ═══════════════════════════════════════════════
-           SECCIÓN 2: Tu Guión
+           YOUR SCRIPT
            ═══════════════════════════════════════════════ */}
         {scriptSections.length > 0 && (
           <ReportSection
-            number={2}
             icon={<FileText className="w-5 h-5 text-white" />}
             title="Your Script"
-            delay={0.15}
+            delay={0.12}
           >
             <div className="space-y-4">
               {scriptSections.map((section) => (
@@ -350,205 +300,126 @@ export function SessionReport({
         )}
 
         {/* ═══════════════════════════════════════════════
-           SECCIÓN 3: Inteligencia Cultural
+           NEXT STEPS (from AI summary)
            ═══════════════════════════════════════════════ */}
-        {culturalTips.length > 0 && (
+        {nextSteps.length > 0 && (
           <ReportSection
-            number={3}
-            icon={<Globe className="w-5 h-5 text-white" />}
-            title="Cultural Intelligence"
+            icon={<ArrowRight className="w-5 h-5 text-white" />}
+            iconBg="#6366f1"
+            title="Next Steps"
             delay={0.2}
           >
-            <div className="flex items-center gap-2 mb-5">
-              <span
-                className="text-[10px] bg-[#50C878]/15 text-[#16a34a] px-2.5 py-0.5 rounded-full"
-                style={{ fontWeight: 600 }}
-              >
-                LATAM → US
-              </span>
-              <p className="text-xs text-[#62748e]">Cultural adaptations for your communication</p>
-            </div>
             <div className="space-y-3">
-              {culturalTips.filter(t => t.type === "do").map((tip, i) => (
-                <div key={`do-${i}`} className="bg-[#f0fdf4] border border-[#bbf7d0] rounded-xl px-5 py-4 flex items-start gap-3">
-                  <span className="text-[10px] bg-[#16a34a]/15 text-[#16a34a] rounded-full px-2 py-0.5 shrink-0 mt-0.5" style={{ fontWeight: 600 }}>
-                    DO
-                  </span>
-                  <div>
-                    <p className="text-sm text-[#0f172b]" style={{ fontWeight: 500 }}>{tip.title}</p>
-                    <p className="text-xs text-[#45556c] mt-0.5">{tip.description}</p>
-                  </div>
-                </div>
-              ))}
-              {culturalTips.filter(t => t.type === "avoid").map((tip, i) => (
-                <div key={`avoid-${i}`} className="bg-[#fef2f2] border border-[#fecaca] rounded-xl px-5 py-4 flex items-start gap-3">
-                  <span className="text-[10px] bg-red-500/15 text-red-600 rounded-full px-2 py-0.5 shrink-0 mt-0.5" style={{ fontWeight: 600 }}>
-                    AVOID
-                  </span>
-                  <div>
-                    <p className="text-sm text-[#0f172b]" style={{ fontWeight: 500 }}>{tip.title}</p>
-                    <p className="text-xs text-[#45556c] mt-0.5">{tip.description}</p>
-                  </div>
-                </div>
-              ))}
+              {nextSteps.map((step, i) => {
+                const pillarColor = PILLAR_COLORS[step.pillar] ?? { bg: "rgba(99,102,241,0.1)", text: "#6366f1" };
+                return (
+                  <motion.div
+                    key={i}
+                    className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-5"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.24 + i * 0.08 }}
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 className="text-[#0f172b] text-sm" style={{ fontWeight: 600 }}>{step.title}</h3>
+                      <span
+                        className="text-[10px] px-2.5 py-0.5 rounded-full shrink-0 ml-3"
+                        style={{ fontWeight: 600, backgroundColor: pillarColor.bg, color: pillarColor.text }}
+                      >
+                        {step.pillar}
+                      </span>
+                    </div>
+                    <p className="text-sm text-[#45556c] leading-relaxed">{step.desc}</p>
+                  </motion.div>
+                );
+              })}
             </div>
           </ReportSection>
         )}
 
         {/* ═══════════════════════════════════════════════
-           SECCIÓN 4: Análisis de tu Práctica
+           PREPARATION UTILIZATION (interview + briefing only)
            ═══════════════════════════════════════════════ */}
-        <ReportSection
-          number={4}
-          icon={<Target className="w-5 h-5 text-white" />}
-          title="Practice Analysis"
-          delay={0.25}
-          dark
-        >
-          {/* Strengths */}
-          <div className="mb-6">
-            <div className="flex items-center gap-2 mb-3">
-              <CheckCircle2 className="w-4 h-4 text-[#50C878]" />
-              <p className="text-sm text-white/70" style={{ fontWeight: 500 }}>What worked well</p>
-            </div>
-            <div className="space-y-2">
-              {strengths.slice(0, 3).map((s, i) => (
-                <div key={i} className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 flex items-start gap-2.5">
-                  <span className="w-5 h-5 rounded-full bg-[#50C878]/20 text-[#50C878] flex items-center justify-center shrink-0 text-[10px]" style={{ fontWeight: 600 }}>
-                    ✓
+        {realFeedback?.preparationUtilization && (
+          <ReportSection
+            icon={<ClipboardCheck className="w-5 h-5 text-white" />}
+            iconBg="#6366f1"
+            title="Preparation Score"
+            delay={0.24}
+          >
+            {/* Score + Verdict */}
+            <div className="flex items-center gap-5 mb-5">
+              <div className="relative w-[80px] h-[80px] shrink-0">
+                <svg width={80} height={80} className="-rotate-90">
+                  <circle cx={40} cy={40} r={34} fill="none" stroke="#e2e8f0" strokeWidth={8} />
+                  <motion.circle
+                    cx={40} cy={40} r={34} fill="none"
+                    stroke={realFeedback.preparationUtilization.score >= 75 ? "#22c55e" : realFeedback.preparationUtilization.score >= 50 ? "#6366f1" : "#f59e0b"}
+                    strokeWidth={8} strokeLinecap="round"
+                    strokeDasharray={2 * Math.PI * 34}
+                    initial={{ strokeDashoffset: 2 * Math.PI * 34 }}
+                    animate={{ strokeDashoffset: 2 * Math.PI * 34 * (1 - realFeedback.preparationUtilization.score / 100) }}
+                    transition={{ duration: 1, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-xl text-[#0f172b]" style={{ fontWeight: 700 }}>
+                    {realFeedback.preparationUtilization.score}%
                   </span>
-                  <div>
-                    <p className="text-white text-sm" style={{ fontWeight: 500 }}>{s.title}</p>
-                    <p className="text-white/40 text-xs mt-0.5">{s.desc}</p>
-                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Grammar corrections */}
-          {beforeAfter.length > 0 && (
-            <div className="mb-6">
-              <div className="flex items-center gap-2 mb-3">
-                <Zap className="w-4 h-4 text-[#fbbf24]" />
-                <p className="text-sm text-white/70" style={{ fontWeight: 500 }}>Key improvements</p>
               </div>
-              <div className="space-y-2">
-                {beforeAfter.slice(0, 3).map((ba, i) => (
-                  <div key={i} className="bg-white/5 border border-white/10 rounded-xl px-4 py-3">
-                    <div className="flex items-start gap-2 mb-2">
-                      <span className="text-[10px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded-md" style={{ fontWeight: 500 }}>Before</span>
-                      <p className="text-sm text-white/50 line-through">{ba.userOriginal}</p>
-                    </div>
-                    <div className="flex items-start gap-2 mb-2">
-                      <span className="text-[10px] bg-[#50C878]/20 text-[#50C878] px-2 py-0.5 rounded-md" style={{ fontWeight: 500 }}>After</span>
-                      <p className="text-sm text-white" style={{ fontWeight: 500 }}>{ba.professionalVersion}</p>
-                    </div>
-                    <div className="flex items-center gap-1.5 ml-1">
-                      <Lightbulb className="w-3 h-3 text-[#fbbf24]" />
-                      <span className="text-[10px] text-[#fbbf24]/80" style={{ fontWeight: 500 }}>{ba.technique}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Pronunciation */}
-          {resultsSummary?.improvementAreas && (
-            <div className="mb-6">
-              <div className="flex items-center gap-2 mb-3">
-                <AudioLines className="w-4 h-4 text-[#60a5fa]" />
-                <p className="text-sm text-white/70" style={{ fontWeight: 500 }}>Pronunciation</p>
-              </div>
-              {resultsSummary.overallSentiment && (
-                <p className="text-xs text-white/50 mb-3">{resultsSummary.overallSentiment}</p>
-              )}
-              <div className="flex flex-wrap gap-2">
-                {resultsSummary.improvementAreas.map((area) => {
-                  const colorMap: Record<string, { bg: string; text: string }> = {
-                    "Clarity": { bg: "rgba(251,191,36,0.15)", text: "#fbbf24" },
-                    "Rhythm": { bg: "rgba(96,165,250,0.15)", text: "#60a5fa" },
-                    "Intonation": { bg: "rgba(168,85,247,0.15)", text: "#a855f7" },
-                  };
-                  const c = colorMap[area.category] ?? { bg: "rgba(255,255,255,0.1)", text: "#94a3b8" };
-                  return (
-                    <div
-                      key={area.category}
-                      className="flex items-center gap-2 px-3 py-2 rounded-xl"
-                      style={{ backgroundColor: c.bg }}
-                    >
-                      <span className="text-[10px]" style={{ fontWeight: 600, color: c.text }}>{area.category}</span>
-                      <span className="text-[10px]" style={{ color: c.text, opacity: 0.7 }}>{area.description}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Power Phrases */}
-          <CollapsibleDarkSection
-            icon={<Sparkles className="w-4 h-4 text-[#fbbf24]" />}
-            label="Power Phrases"
-            defaultOpen
-          >
-            <div className="space-y-2">
-              {scenarioPhrases.slice(0, 4).map((p, i) => (
-                <motion.div
-                  key={p.id}
-                  className="bg-white/5 border border-white/10 rounded-xl px-4 py-3"
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 + i * 0.05 }}
-                >
-                  <p className="text-white text-sm" style={{ fontWeight: 500 }}>"{p.phrase}"</p>
-                  <p className="text-white/40 text-xs mt-1">{p.context}</p>
-                </motion.div>
-              ))}
-              {scenarioPhrases.length > 4 && (
-                <p className="text-xs text-white/30 text-center mt-2">
-                  +{scenarioPhrases.length - 4} more available in your next session
+              <div>
+                <p className="text-sm text-[#0f172b] mb-1" style={{ fontWeight: 600 }}>
+                  {realFeedback.preparationUtilization.verdict}
                 </p>
-              )}
-            </div>
-          </CollapsibleDarkSection>
-
-          {/* Power Questions */}
-          <CollapsibleDarkSection
-            icon={<Target className="w-4 h-4 text-[#818cf8]" />}
-            label="Power Questions"
-          >
-            <div className="space-y-2">
-              {powerQuestions.slice(0, 3).map((q, i) => (
-                <motion.div
-                  key={i}
-                  className="bg-white/5 border border-white/10 rounded-xl px-4 py-3"
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.35 + i * 0.05 }}
-                >
-                  <p className="text-white text-sm" style={{ fontWeight: 500 }}>"{q.question}"</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-[10px] bg-[#6366f1]/30 text-[#a5b4fc] px-2 py-0.5 rounded-full">{q.timing}</span>
-                  </div>
-                </motion.div>
-              ))}
-              {powerQuestions.length > 3 && (
-                <p className="text-xs text-white/30 text-center mt-2">
-                  +{powerQuestions.length - 3} more available in your next session
+                <p className="text-xs text-[#62748e]">
+                  How well you leveraged your pre-interview preparation during the live conversation.
                 </p>
-              )}
+              </div>
             </div>
-          </CollapsibleDarkSection>
-        </ReportSection>
 
-        {/* ── Motivational banner ── */}
+            {/* Insight items */}
+            <div className="space-y-2.5">
+              {realFeedback.preparationUtilization.insights.map((ins, i) => {
+                const cfg = {
+                  strong: { bg: "bg-[#f0fdf4]", border: "border-[#bbf7d0]", dot: "#22c55e", label: "Strong" },
+                  partial: { bg: "bg-[#fffbeb]", border: "border-[#fde68a]", dot: "#f59e0b", label: "Partial" },
+                  missed: { bg: "bg-[#fef2f2]", border: "border-[#fecaca]", dot: "#ef4444", label: "Missed" },
+                }[ins.rating] ?? { bg: "bg-[#f8fafc]", border: "border-[#e2e8f0]", dot: "#94a3b8", label: ins.rating };
+
+                return (
+                  <motion.div
+                    key={i}
+                    className={`${cfg.bg} ${cfg.border} border rounded-xl px-4 py-3`}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.28 + i * 0.06 }}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: cfg.dot }} />
+                      <span className="text-[10px] text-[#62748e] uppercase tracking-wider" style={{ fontWeight: 600 }}>
+                        {ins.aspect}
+                      </span>
+                      <span className="text-[10px] ml-auto px-2 py-0.5 rounded-full bg-white/70" style={{ fontWeight: 600, color: cfg.dot }}>
+                        {cfg.label}
+                      </span>
+                    </div>
+                    <p className="text-sm text-[#314158] leading-relaxed">{ins.observation}</p>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </ReportSection>
+        )}
+
+        {/* ═══════════════════════════════════════════════
+           MOTIVATIONAL BANNER
+           ═══════════════════════════════════════════════ */}
         <motion.div
           className="rounded-3xl bg-gradient-to-br from-[#0f172b] to-[#1e293b] p-8 text-center mb-10"
           initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, delay: 0.35 }}
+          transition={{ duration: 0.6, delay: 0.28 }}
         >
           <div className="text-4xl mb-4">🚀</div>
           <h2 className="text-white text-2xl mb-3" style={{ fontWeight: 500 }}>
@@ -559,20 +430,21 @@ export function SessionReport({
           </p>
         </motion.div>
 
-        {/* ── Download & Finish CTAs ── */}
+        {/* ═══════════════════════════════════════════════
+           CTAs: Download + Finish
+           ═══════════════════════════════════════════════ */}
         <motion.div
           className="flex flex-col items-center gap-4"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
+          transition={{ duration: 0.5, delay: 0.32 }}
         >
-          {/* Download Report button */}
           {onDownloadReport && (
             <button
               onClick={onDownloadReport}
               className={`px-8 py-3.5 rounded-full flex items-center gap-2.5 shadow-md transition-all text-lg ${userPlan === "free"
-                ? "bg-gradient-to-r from-[#f59e0b] to-[#f97316] text-white hover:from-[#d97706] hover:to-[#ea580c]"
-                : "bg-white border border-[#e2e8f0] text-[#0f172b] hover:bg-[#f8fafc]"
+                  ? "bg-gradient-to-r from-[#f59e0b] to-[#f97316] text-white hover:from-[#d97706] hover:to-[#ea580c]"
+                  : "bg-white border border-[#e2e8f0] text-[#0f172b] hover:bg-[#f8fafc]"
                 }`}
               style={{ fontWeight: 500 }}
             >
@@ -596,7 +468,6 @@ export function SessionReport({
             </p>
           )}
 
-          {/* Finish button */}
           {onFinish && (
             <button
               onClick={onFinish}

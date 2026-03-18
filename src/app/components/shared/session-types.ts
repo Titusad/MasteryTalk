@@ -3,6 +3,7 @@
  * Single source of truth for the MVP session flow.
  */
 export type Step =
+  | "key-experience"
   | "extra-context"
   | "generating-script"
   | "pre-briefing"

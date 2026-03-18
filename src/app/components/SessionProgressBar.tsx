@@ -22,7 +22,7 @@ const PHASES: Phase[] = [
   {
     id: "prep",
     label: "Preparation",
-    steps: ["extra-context", "generating-script", "pre-briefing"],
+    steps: ["key-experience", "extra-context", "generating-script", "pre-briefing"],
   },
   {
     id: "practice",

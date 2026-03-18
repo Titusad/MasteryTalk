@@ -9,6 +9,7 @@ import type {
   TranscriptionResult,
   PronunciationResult,
   ShadowingPhrase,
+  AzurePronunciationAssessment,
 } from "../types";
 
 export interface ISpeechService {
@@ -39,4 +40,14 @@ export interface ISpeechService {
    * In mock: returns hardcoded phrases with stress markers.
    */
   getShadowingPhrases(sessionId: string): Promise<ShadowingPhrase[]>;
+
+  /**
+   * Assess pronunciation of an audio blob via Azure Speech Services.
+   * Returns a full assessment with word-level detail, or null on failure.
+   * Non-blocking — conversation continues even if assessment fails.
+   */
+  assessPronunciation(
+    audioBlob: Blob,
+    referenceText: string
+  ): Promise<AzurePronunciationAssessment | null>;
 }

@@ -73,9 +73,10 @@ export class SupabaseConversationService implements IConversationService {
                 {
                     interlocutor,
                     scenario: config.scenario,
-                    marketFocus: config.marketFocus,
                     hasContext: !!extractedContext,
                     scenarioType: config.scenarioType,
+                    hasBriefingQuestions: !!config.interviewBriefing?.anticipatedQuestions?.length,
+                    hasDrafts: !!config.interviewBriefing?.userDrafts && Object.keys(config.interviewBriefing.userDrafts).length > 0,
                 }
             );
 
@@ -83,10 +84,12 @@ export class SupabaseConversationService implements IConversationService {
                 assembleSystemPrompt({
                     interlocutor,
                     scenario: config.scenario,
-                    marketFocus: config.marketFocus ?? undefined,
                     extractedContext: extractedContext || undefined,
                     includeFirstMessage: true,
                     scenarioType: config.scenarioType,
+                    // Gap A+B: inject briefing questions + user drafts into interviewer prompt
+                    anticipatedQuestions: config.interviewBriefing?.anticipatedQuestions,
+                    userDrafts: config.interviewBriefing?.userDrafts,
                 });
 
             console.log(
@@ -99,10 +102,17 @@ export class SupabaseConversationService implements IConversationService {
                 interlocutor,
                 scenarioType: config.scenarioType ?? "interview",
                 voiceId,
+                // Gap C: pass briefing data so it's stored in KV for the analyst
+                interviewBriefing: config.interviewBriefing ?? null,
             });
 
             const sessionId = data.sessionId;
             const firstMessage: ChatMessage = data.firstMessage;
+
+            // Attach coaching hint from server to the first message
+            if (data.coachingHint) {
+                firstMessage.coachingHint = data.coachingHint;
+            }
 
             // Cache the first message locally
             this.localMessages.set(sessionId, [firstMessage]);
@@ -151,6 +161,12 @@ export class SupabaseConversationService implements IConversationService {
 
             const aiMessage: ChatMessage = data.aiMessage;
             const isComplete: boolean = data.isComplete === true;
+            const coachingHint = data.coachingHint || null;
+
+            // Attach coaching hint to the AI message
+            if (coachingHint) {
+                aiMessage.coachingHint = coachingHint;
+            }
 
             // Cache AI response
             cached.push(aiMessage);
@@ -162,7 +178,7 @@ export class SupabaseConversationService implements IConversationService {
                 );
             }
 
-            return { aiMessage, isComplete };
+            return { aiMessage, isComplete, coachingHint };
         } catch (err) {
             console.error("[SupabaseConversation] processTurn failed:", err);
             throw new ConversationError("TURN_PROCESSING_FAILED");
@@ -170,7 +186,8 @@ export class SupabaseConversationService implements IConversationService {
     }
 
     async getSessionMessages(sessionId: string): Promise<ChatMessage[]> {
-        return this.localMessages.get(sessionId) ?? [];
+        // Return a shallow clone to prevent React state mutation via shared reference
+        return [...(this.localMessages.get(sessionId) ?? [])];
     }
 
     async endConversation(_sessionId: string): Promise<void> {

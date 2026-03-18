@@ -40,7 +40,7 @@ import {
   detectSubProfile,
   type InterlocutorType,
 } from "./personas";
-import { getRegionalBlock, type MarketFocus } from "./regions";
+import { getRegionalBlock } from "./regions";
 import { getVoiceId } from "./voice-map";
 import type { ScenarioType, ArenaPhase } from "../types";
 import { TTS_TEXT_OPTIMIZATION_BLOCK } from "./tts-sync";
@@ -98,6 +98,49 @@ function buildScenarioAdaptationBlock(scenarioType?: ScenarioType | null): strin
   return SCENARIO_ADAPTATION[scenarioType] ?? null;
 }
 
+/* ── Block 4.7: Briefing Questions + User Drafts (Gap A+B) ── */
+
+function buildBriefingQuestionsBlock(
+  questions: AssemblyConfig["anticipatedQuestions"],
+  drafts?: Record<number, string>
+): string | null {
+  if (!questions || questions.length === 0) return null;
+
+  const lines: string[] = [
+    `=== BRIEFING: ANTICIPATED QUESTIONS (${questions.length} questions) ===`,
+    `The candidate prepared for these specific questions during the pre-interview briefing.`,
+    `USE THESE as your primary question bank — ask them in a natural order that fits the conversation flow.`,
+    `You do NOT need to ask all of them; adapt based on the candidate's answers. But at least 3-4 should appear.`,
+    ``,
+  ];
+
+  for (const q of questions) {
+    lines.push(`--- QUESTION ${q.id}: "${q.question}" ---`);
+    lines.push(`Recommended approach: ${q.approach}`);
+    if (q.framework) {
+      lines.push(`Expected framework: ${q.framework.name} — ${q.framework.description}`);
+    }
+    if (q.keyPhrases && q.keyPhrases.length > 0) {
+      lines.push(`Key phrases candidate practiced: ${q.keyPhrases.join(", ")}`);
+    }
+
+    // Gap B: inject user's draft if present
+    const draft = drafts?.[q.id];
+    if (draft && draft.trim().length > 0) {
+      lines.push(`CANDIDATE'S PREPARED DRAFT: "${draft.trim()}"`);
+      lines.push(`→ Use this knowledge to probe deeper: ask follow-up questions about specifics they mentioned.`);
+      lines.push(`→ If their draft mentions a claim (numbers, achievements, projects), challenge them to elaborate.`);
+      lines.push(`→ Do NOT reveal that you've seen their draft — act as if their answer is spontaneous.`);
+    }
+    lines.push(``);
+  }
+
+  lines.push(`IMPORTANT: Evaluate whether the candidate actually uses the frameworks and key phrases they practiced.`);
+  lines.push(`If they deviate significantly from their preparation, note this in internalAnalysis.`);
+
+  return lines.join("\n");
+}
+
 /* ── Assembly Configuration ── */
 
 export interface AssemblyConfig {
@@ -105,8 +148,6 @@ export interface AssemblyConfig {
   interlocutor: InterlocutorType;
   /** The scenario text from PracticeWidget */
   scenario: string;
-  /** User's market focus from their profile */
-  marketFocus?: MarketFocus | null;
   /** Context extracted from uploaded PDF/URL by Gemini Flash (optional) */
   extractedContext?: string | null;
   /** Whether this is the initial prepare-session call (includes Block 7) */
@@ -128,6 +169,25 @@ export interface AssemblyConfig {
    * re-assembles with updated arenaPhase.
    */
   turnNumber?: number;
+  /**
+   * Anticipated interview questions from the Briefing screen (Gap A).
+   * When present, the interviewer AI will use these as its question bank
+   * instead of generating generic questions.
+   */
+  anticipatedQuestions?: Array<{
+    id: number;
+    question: string;
+    approach: string;
+    suggestedOpener: string;
+    framework?: { name: string; description: string };
+    keyPhrases: string[];
+  }>;
+  /**
+   * User-drafted responses from the "Your Response" tab (Gap B).
+   * Keyed by question index. The AI will probe deeper on topics
+   * the user prepared, testing their ability to elaborate under pressure.
+   */
+  userDrafts?: Record<number, string>;
 }
 
 export interface AssemblyResult {
@@ -151,11 +211,12 @@ export function assembleSystemPrompt(config: AssemblyConfig): AssemblyResult {
   const {
     interlocutor,
     scenario,
-    marketFocus,
     extractedContext,
     includeFirstMessage = false,
     scenarioType,
     arenaPhase,
+    anticipatedQuestions,
+    userDrafts,
   } = config;
 
   // Detect sub-profile from scenario keywords
@@ -172,8 +233,8 @@ export function assembleSystemPrompt(config: AssemblyConfig): AssemblyResult {
   // Block 2: Interlocutor Persona (+ sub-profile if detected)
   blocks.push(getPersonaBlock(interlocutor, subProfile));
 
-  // Block 3: Regional Context
-  blocks.push(getRegionalBlock(marketFocus));
+  // Block 3: Regional Context (always GLOBAL — region selection removed)
+  blocks.push(getRegionalBlock());
 
   // Block 4: User Scenario
   blocks.push(buildScenarioBlock(scenario));
@@ -182,6 +243,12 @@ export function assembleSystemPrompt(config: AssemblyConfig): AssemblyResult {
   const adaptationBlock = buildScenarioAdaptationBlock(scenarioType);
   if (adaptationBlock) {
     blocks.push(adaptationBlock);
+  }
+
+  // Block 4.7: Briefing Questions + User Drafts (Gap A+B)
+  const briefingQuestionsBlock = buildBriefingQuestionsBlock(anticipatedQuestions, userDrafts);
+  if (briefingQuestionsBlock) {
+    blocks.push(briefingQuestionsBlock);
   }
 
   // Block 5: Extracted Context (only if present)

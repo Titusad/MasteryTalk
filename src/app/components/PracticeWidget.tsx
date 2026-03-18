@@ -6,10 +6,9 @@ import type { AuthProvider, ScenarioType } from "../../services/types";
 import { isAuthError } from "../../services/errors";
 import { useLandingCopy } from "./LandingLangContext";
 import { ArrowRight, Sparkles, X, Loader2, Check, ArrowLeft } from "lucide-react";
-import { Mic, Target, UserRound, Users, Briefcase, UserCheck, Heart, Shield, Search, Building2 } from "lucide-react";
+import { Mic, Target } from "lucide-react";
 import { SmoothHeight } from "./shared";
 import {
-  INTERLOCUTORS_BY_SCENARIO,
   DEFAULT_INTERLOCUTOR,
   type InterlocutorType,
 } from "../../services/prompts";
@@ -26,20 +25,6 @@ const SCENARIO_TYPES: ScenarioOption[] = [
   { id: "interview", label: "Entrevista", icon: Mic, defaultInterlocutor: DEFAULT_INTERLOCUTOR.interview },
   { id: "sales", label: "Ventas", icon: Target, defaultInterlocutor: DEFAULT_INTERLOCUTOR.sales },
 ];
-
-/* ─── Icon mapping per interlocutor ─── */
-const INTERLOCUTOR_ICONS: Record<InterlocutorType, typeof Users> = {
-  // Interview
-  recruiter: UserCheck,
-  sme: Briefcase,
-  hiring_manager: Users,
-  hr: Heart,
-  // Sales
-  gatekeeper: Shield,
-  technical_buyer: Search,
-  champion: UserRound,
-  decision_maker: Building2,
-};
 
 /* ─── Guided Field shape (used by PracticeSetupModal with i18n) ─── */
 interface GuidedField {
@@ -99,7 +84,7 @@ function PracticeSetupModal({
   const guidedFieldDefs: Record<string, GuidedField[]> = {
     interview: [
       { key: "role", label: sm.guidedFields.interview.role, placeholder: sm.guidedFields.interview.rolePlaceholder },
-      { key: "strength", label: sm.guidedFields.interview.strength, placeholder: sm.guidedFields.interview.strengthPlaceholder },
+      { key: "company", label: sm.guidedFields.interview.company, placeholder: sm.guidedFields.interview.companyPlaceholder },
     ],
     sales: [
       { key: "product", label: sm.guidedFields.sales.product, placeholder: sm.guidedFields.sales.productPlaceholder },
@@ -111,67 +96,36 @@ function PracticeSetupModal({
   const detectedType = detectScenarioFromInput(scenario);
 
   const [selectedScenario, setSelectedScenario] = useState<ScenarioType | null>(detectedType);
-  const [selectedInterlocutor, setSelectedInterlocutor] = useState<InterlocutorType | null>(() => {
-    if (detectedType) {
-      return SCENARIO_TYPES.find((s) => s.id === detectedType)?.defaultInterlocutor ?? null;
-    }
-    return null;
-  });
-  const [interlocutorOverridden, setInterlocutorOverridden] = useState(false);
+
+  /* ── Interlocutor auto-derived from scenario type (no user selector) ── */
+  const selectedInterlocutor: InterlocutorType | null = selectedScenario
+    ? DEFAULT_INTERLOCUTOR[selectedScenario]
+    : null;
 
   const [guidedValues, setGuidedValues] = useState<Record<string, string>>({});
   const [loadingProvider, setLoadingProvider] = useState<AuthProvider | null>(null);
   const [inlineError, setInlineError] = useState<string | null>(null);
-  const [modalStep, setModalStep] = useState<"interlocutor" | "context" | "ready">("interlocutor");
+  const [modalStep, setModalStep] = useState<"context" | "ready">("context");
 
-  /* ── Handle scenario type change (reset interlocutor to default) ── */
+  /* ── Handle scenario type change ── */
   const handleScenarioChange = (newScenario: ScenarioType) => {
     if (newScenario === selectedScenario) return;
     setSelectedScenario(newScenario);
-    setInterlocutorOverridden(false);
-    const defaultInt = DEFAULT_INTERLOCUTOR[newScenario];
-    setSelectedInterlocutor(defaultInt);
     setGuidedValues({});
   };
 
-  /* ── Dynamic interlocutor labels (filtered by selected scenario) ── */
-  const i18nLabel = (id: InterlocutorType): string =>
-    (sm.interlocutors as Record<string, string>)[id] ?? id;
-  const i18nSub = (id: InterlocutorType): string =>
-    (sm.interlocutors as Record<string, string>)[`${id}Sub`] ?? "";
-
-  const interlocutorIds: InterlocutorType[] = selectedScenario
-    ? INTERLOCUTORS_BY_SCENARIO[selectedScenario]
-    : [];
-
-  const interlocutors = interlocutorIds.map((id) => ({
-    id,
-    label: i18nLabel(id),
-    sublabel: i18nSub(id),
-    icon: INTERLOCUTOR_ICONS[id] ?? Users,
-  }));
-
-  /* ── Auto-select interlocutor when scenario changes ── */
-  useEffect(() => {
-    if (selectedScenario && !interlocutorOverridden) {
-      const card = SCENARIO_TYPES.find((s) => s.id === selectedScenario);
-      if (card) setSelectedInterlocutor(card.defaultInterlocutor);
-    }
-  }, [selectedScenario, interlocutorOverridden]);
-
-  /* ── Compute progress steps ── */
+  /* ── Compute progress steps (2 steps now) ── */
   const currentFields = selectedScenario ? guidedFieldDefs[selectedScenario] : [];
   const hasAnyGuidedInput = currentFields.some(
     (f) => (guidedValues[f.key] ?? "").trim().length > 0
   );
 
-  const STEP_ORDER: (typeof modalStep)[] = ["interlocutor", "context", "ready"];
+  const STEP_ORDER: (typeof modalStep)[] = ["context", "ready"];
   const currentStepIdx = STEP_ORDER.indexOf(modalStep);
 
   const progressSteps = [
     { label: sm.stepLabels[0], done: currentStepIdx > 0 },
-    { label: sm.stepLabels[1], done: currentStepIdx > 1 },
-    { label: sm.stepLabels[2], done: modalStep === "ready" },
+    { label: sm.stepLabels[1], done: modalStep === "ready" },
   ];
 
   /* ── Validation ── */
@@ -183,26 +137,27 @@ function PracticeSetupModal({
     setLoadingProvider(provider);
     setInlineError(null);
 
-    // CRITICAL: Save setup data to localStorage BEFORE the OAuth redirect.
-    // Google OAuth causes a full page reload, so onAuthComplete() would never fire.
-    const setupData: SetupModalResult = {
-      scenario,
-      scenarioType: selectedScenario,
-      interlocutor: selectedInterlocutor,
-      guidedFields: { ...guidedValues },
-    };
     try {
-      localStorage.setItem("pendingAuthAction", JSON.stringify({ mode: "registro", data: setupData }));
-    } catch { /* ignore */ }
+      // DEV MODE: Persist setup in sessionStorage so it survives OAuth redirect
+      try {
+        sessionStorage.setItem("influentia_pending_setup", JSON.stringify({
+          scenario,
+          scenarioType: selectedScenario,
+          interlocutor: selectedInterlocutor,
+          guidedFields: { ...guidedValues },
+        }));
+        sessionStorage.setItem("influentia_oauth_pending", "true");
+      } catch { /* ignore */ }
 
-    try {
       await authService.signIn(provider);
-      // If signIn didn't redirect (e.g., popup flow), continue normally:
       setLoadingProvider(null);
       onClose();
-      onAuthComplete?.(setupData, "registro");
     } catch (err) {
       setLoadingProvider(null);
+      try {
+        sessionStorage.removeItem("influentia_pending_setup");
+        sessionStorage.removeItem("influentia_oauth_pending");
+      } catch { /* ignore */ }
       if (isAuthError(err)) {
         setInlineError(err.userMessage);
       } else {
@@ -240,7 +195,7 @@ function PracticeSetupModal({
         </button>
 
         <div className="px-12 pt-10 pb-6">
-          {/* ── Endowed Progress Stepper ── */}
+          {/* ── Endowed Progress Stepper (2 steps) ── */}
           <div className="flex items-center gap-2 mb-8">
             {progressSteps.map((step, i) => {
               const isActive = !step.done && (i === 0 || progressSteps[i - 1].done);
@@ -318,16 +273,12 @@ function PracticeSetupModal({
               >
                 {modalStep === "ready"
                   ? sm.titles.ready
-                  : modalStep === "context"
-                    ? sm.titles.context
-                    : sm.titles.interlocutor}
+                  : sm.titles.context}
               </h3>
               <p className="text-[#45556c] text-sm text-center mb-6">
                 {modalStep === "ready"
                   ? sm.subtitles.ready
-                  : modalStep === "context"
-                    ? sm.subtitles.context
-                    : sm.subtitles.interlocutor}
+                  : sm.subtitles.context}
               </p>
             </motion.div>
           </AnimatePresence>
@@ -336,9 +287,9 @@ function PracticeSetupModal({
         {/* ── Step content — single AnimatePresence for all steps ── */}
         <SmoothHeight>
           <AnimatePresence mode="wait" initial={false}>
-            {modalStep === "interlocutor" && (
+            {modalStep === "context" && (
               <motion.div
-                key="step-interlocutor"
+                key="step-context"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
@@ -370,116 +321,8 @@ function PracticeSetupModal({
                     </div>
                   </div>
 
-                  {/* ── 2×2 Interlocutor Card Grid ── */}
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={selectedScenario ?? "empty"}
-                      className="grid grid-cols-1 sm:grid-cols-2 gap-3"
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
-                    >
-                      {interlocutors.map((item, i) => {
-                        const isSelected = selectedInterlocutor === item.id;
-                        const Icon = item.icon;
-                        return (
-                          <motion.button
-                            key={item.id}
-                            onClick={() => {
-                              setSelectedInterlocutor(item.id);
-                              setInterlocutorOverridden(true);
-                            }}
-                            className={`relative flex items-start gap-3.5 rounded-2xl p-4 text-left border-2 transition-all duration-200 ${isSelected
-                              ? "border-[#0f172b] bg-[#0f172b] text-white"
-                              : "border-[#e2e8f0] bg-[#f8fafc] text-[#314158] hover:border-[#cad5e2] hover:bg-white"
-                              }`}
-                            initial={{ opacity: 0, y: 6 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.25, delay: i * 0.04 }}
-                            whileTap={{ scale: 0.98 }}
-                          >
-                            {/* Icon circle */}
-                            <div
-                              className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-colors duration-200 ${isSelected
-                                ? "bg-white/15"
-                                : "bg-[#0f172b]/5"
-                                }`}
-                            >
-                              <Icon
-                                className={`w-4 h-4 transition-colors duration-200 ${isSelected ? "text-white" : "text-[#0f172b]"
-                                  }`}
-                                strokeWidth={1.5}
-                              />
-                            </div>
-                            {/* Text */}
-                            <div className="min-w-0">
-                              <p
-                                className="text-sm leading-snug"
-                                style={{ fontWeight: 600 }}
-                              >
-                                {item.label}
-                              </p>
-                              <p
-                                className={`text-[12px] leading-snug mt-0.5 transition-colors duration-200 ${isSelected ? "text-white/65" : "text-[#62748e]"
-                                  }`}
-                              >
-                                {item.sublabel}
-                              </p>
-                            </div>
-                            {/* Selection indicator */}
-                            {isSelected && (
-                              <motion.div
-                                className="absolute top-3 right-3 w-5 h-5 rounded-full bg-white flex items-center justify-center"
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                transition={{ duration: 0.2, ease: [0.25, 1, 0.5, 1] }}
-                              >
-                                <Check className="w-3 h-3 text-[#0f172b]" />
-                              </motion.div>
-                            )}
-                          </motion.button>
-                        );
-                      })}
-                    </motion.div>
-                  </AnimatePresence>
-
-                  {/* Next button */}
-                  <AnimatePresence>
-                    {selectedInterlocutor && (
-                      <motion.div
-                        className="mt-6"
-                        initial={{ opacity: 0, y: 6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 6 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <button
-                          className="w-full py-3.5 rounded-full flex items-center justify-center gap-2.5 transition-all shadow-lg bg-[#2d2d2d] text-white hover:bg-[#1a1a1a]"
-                          style={{ fontWeight: 500 }}
-                          onClick={() => setModalStep("context")}
-                        >
-                          {sm.next}
-                          <ArrowRight className="w-4 h-4" />
-                        </button>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </motion.div>
-            )}
-
-            {modalStep === "context" && (
-              <motion.div
-                key="step-context"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
-              >
-                {/* ── Guided Fields (2 only) ── */}
-                {selectedScenario && (
-                  <div className="px-12 pb-8">
+                  {/* ── Guided Fields (2 only) ── */}
+                  {selectedScenario && (
                     <div className="space-y-6">
                       {currentFields.map((field, i) => (
                         <motion.div
@@ -509,8 +352,8 @@ function PracticeSetupModal({
                         </motion.div>
                       ))}
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
 
                 {/* ── Next button ── */}
                 <div className="px-12 pb-10 pt-4">
@@ -534,18 +377,6 @@ function PracticeSetupModal({
                   >
                     {sm.next}
                     <ArrowRight className="w-4 h-4" />
-                  </button>
-
-                  {/* Back button */}
-                  <button
-                    className="w-full mt-4 py-2.5 text-sm text-[#62748e] hover:text-[#0f172b] flex items-center justify-center gap-1.5 transition-colors"
-                    style={{ fontWeight: 500 }}
-                    onClick={() => {
-                      setModalStep("interlocutor");
-                    }}
-                  >
-                    <ArrowLeft className="w-3.5 h-3.5" />
-                    {sm.back}
                   </button>
                 </div>
               </motion.div>
@@ -627,6 +458,16 @@ function PracticeSetupModal({
                   <p className="text-center text-sm text-[#4b5563] mt-7">
                     {sm.trustLine}
                   </p>
+
+                  {/* Back button */}
+                  <button
+                    className="w-full mt-4 py-2.5 text-sm text-[#62748e] hover:text-[#0f172b] flex items-center justify-center gap-1.5 transition-colors"
+                    style={{ fontWeight: 500 }}
+                    onClick={() => setModalStep("context")}
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    {sm.back}
+                  </button>
                 </div>
               </motion.div>
             )}

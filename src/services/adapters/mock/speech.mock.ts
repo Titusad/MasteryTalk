@@ -17,6 +17,7 @@ import type {
   TranscriptionResult,
   PronunciationResult,
   ShadowingPhrase,
+  AzurePronunciationAssessment,
 } from "../../types";
 import { SpeechError } from "../../errors";
 import { MOCK_SHADOWING_PHRASES } from "./data/shadowing-data";
@@ -117,7 +118,7 @@ export class MockSpeechService implements ISpeechService {
     });
 
     // Start "playback" (just waits)
-    playbackPromise.catch(() => {});
+    playbackPromise.catch(() => { });
 
     return {
       stop: () => {
@@ -175,5 +176,13 @@ export class MockSpeechService implements ISpeechService {
       ? getShadowingForScenario(scenario as any)
       : MOCK_SHADOWING_PHRASES;
     return phrases.map((p) => ({ ...p }));
+  }
+
+  async assessPronunciation(
+    _audioBlob: Blob,
+    _referenceText: string
+  ): Promise<AzurePronunciationAssessment | null> {
+    // Mock: return null (no pronunciation assessment in mock mode)
+    return null;
   }
 }

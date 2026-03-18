@@ -175,22 +175,9 @@ export interface LandingCopy {
   };
   /* ── Practice Setup Modal ── */
   setupModal: {
-    stepLabels: [string, string, string];
-    titles: { interlocutor: string; context: string; ready: string };
-    subtitles: { interlocutor: string; context: string; ready: string };
-    interlocutors: {
-      // Interview
-      recruiter: string; recruiterSub: string;
-      sme: string; smeSub: string;
-      hiring_manager: string; hiring_managerSub: string;
-      hr: string; hrSub: string;
-      // Sales
-      gatekeeper: string; gatekeeperSub: string;
-      technical_buyer: string; technical_buyerSub: string;
-      champion: string; championSub: string;
-      decision_maker: string; decision_makerSub: string;
-    };
-    autoSelected: string;
+    stepLabels: [string, string];
+    titles: { context: string; ready: string };
+    subtitles: { context: string; ready: string };
     next: string;
     back: string;
     contextReady: string;
@@ -202,8 +189,79 @@ export interface LandingCopy {
     trustLine: string;
     scenarioLabels: { sales: string; interview: string };
     guidedFields: {
-      interview: { role: string; rolePlaceholder: string; strength: string; strengthPlaceholder: string };
+      interview: { role: string; rolePlaceholder: string; company: string; companyPlaceholder: string };
       sales: { product: string; productPlaceholder: string; problem: string; problemPlaceholder: string };
+    };
+  };
+  /* ── Dashboard ── */
+  dashboard: {
+    greetingMorning: string;
+    greetingAfternoon: string;
+    greetingEvening: string;
+    subtitleWithData: string;
+    subtitleEmpty: string;
+    history: string;
+    proficiency: {
+      title: string;
+      descWithData: string;
+      descEmpty: string;
+      cefrTitle: string;
+      cefrDisclaimer: string;
+    };
+    stats: {
+      sessions: string;
+      biggestGain: string;
+      focusArea: string;
+      streak: string;
+    };
+    radar: {
+      title: string;
+      descWithData: string;
+      descEmpty: string;
+    };
+    progress: {
+      title: string;
+      descMultiple: string;
+      descSingle: string;
+      descEmpty: string;
+      emptyOneSessions: string;
+      emptyNoSessions: string;
+    };
+    quickStart: {
+      title: string;
+      salesLabel: string;
+      salesDesc: string;
+      interviewLabel: string;
+      interviewDesc: string;
+    };
+    improvement: {
+      title: string;
+      youSaid: string;
+      proVersion: string;
+      technique: string;
+    };
+    recentSessions: {
+      title: string;
+      viewAll: string;
+      empty: string;
+    };
+    recommended: {
+      title: string;
+      aiBadge: string;
+      focusHint: string;
+      defaultHint: string;
+      firstHint: string;
+      startSession: string;
+      descFocus: string;
+      descPracticed: string;
+      descNew: string;
+      scenarioInterview: string;
+      scenarioSales: string;
+      scenarioInterviewDesc: string;
+      scenarioSalesDesc: string;
+      tagInterview: string;
+      tagSales: string;
+      duration: string;
     };
   };
 }
@@ -238,7 +296,7 @@ export const ES: LandingCopy = {
     steps: [
       { title: "Preparación", desc: "Elige escenario, define contexto y recibe tu guión personalizado con pilares de valor y tips clave." },
       { title: "Práctica", desc: "Simula tu conversación con IA que asume un rol realista mientras hablas por voz." },
-      { title: "Feedback", desc: "Análisis en 3 dimensiones, correcciones clave, power phrases e informe de sesión completo." },
+      { title: "Feedback", desc: "Análisis en 3 dimensiones, correcciones clave, power phrases y feedback de sesión completo." },
     ],
   },
   screens: {
@@ -334,7 +392,7 @@ export const ES: LandingCopy = {
     freeSession: {
       title: "1ª Sesión Gratis",
       desc: "Experimenta la sesión completa sin compromiso",
-      features: ["Simulación completa con IA", "Feedback + Guión personalizado", "Informe de sesión detallado", "Sin tarjeta de crédito"],
+      features: ["Simulación completa con IA", "Feedback + Guión personalizado", "Feedback de sesión detallado", "Sin tarjeta de crédito"],
       button: "Empezar gratis",
     },
     packs: [
@@ -406,22 +464,9 @@ export const ES: LandingCopy = {
     errorFallback: "Ocurrió un error inesperado. Intenta de nuevo.",
   },
   setupModal: {
-    stepLabels: ["Interlocutor", "Contexto", "Listo"],
-    titles: { interlocutor: "Configura tu práctica", context: "Agrega contexto", ready: "¡Todo Listo!" },
-    subtitles: { interlocutor: "Elige con quién vas a practicar", context: "Describe la situación para una simulación más realista", ready: "Inicia sesión para finalizar tu práctica" },
-    interlocutors: {
-      // Interview
-      recruiter: "The Recruiter", recruiterSub: "El conector eficiente",
-      sme: "The SME", smeSub: "Evaluador técnico / funcional",
-      hiring_manager: "The Hiring Manager", hiring_managerSub: "El socio estratégico",
-      hr: "HR / People & Culture", hrSub: "El guardián de la marca",
-      // Sales
-      gatekeeper: "The Gatekeeper", gatekeeperSub: "El filtro inicial (SDR)",
-      technical_buyer: "The Technical Buyer", technical_buyerSub: "El especialista evaluador",
-      champion: "The Champion", championSub: "Tu aliado interno",
-      decision_maker: "The Decision Maker", decision_makerSub: "C-Level / El que firma",
-    },
-    autoSelected: "Auto-seleccionado por tu escenario — puedes cambiarlo",
+    stepLabels: ["Contexto", "Listo"],
+    titles: { context: "Agrega contexto", ready: "¡Todo Listo!" },
+    subtitles: { context: "Describe la situación para una simulación más realista", ready: "Inicia sesión para finalizar tu práctica" },
     next: "Siguiente",
     back: "Atrás",
     contextReady: "Tu contexto está listo — avanza al último paso",
@@ -433,8 +478,78 @@ export const ES: LandingCopy = {
     trustLine: "1ª sesión gratis · Sin tarjeta · Sin suscripción",
     scenarioLabels: { sales: "ventas", interview: "entrevista" },
     guidedFields: {
-      interview: { role: "Puesto al que aplicas", rolePlaceholder: "Ej: Senior Product Manager en fintech", strength: "Tu fortaleza más relevante", strengthPlaceholder: "Ej: 5 años liderando equipos de producto en LATAM" },
+      interview: { role: "Puesto al que aplicas", rolePlaceholder: "Ej: Senior Product Manager en fintech", company: "Empresa o tipo de empresa", companyPlaceholder: "Ej: Startup fintech, Consultora Big 4, Empresa de tecnología" },
       sales: { product: "¿Qué producto o servicio presentas?", productPlaceholder: "Ej: Plataforma de marketing automation B2B", problem: "¿Qué problema resuelve para tu cliente?", problemPlaceholder: "Ej: Reduce el tiempo de onboarding de leads en un 40%" },
+    },
+  },
+  dashboard: {
+    greetingMorning: "¡Buenos días!",
+    greetingAfternoon: "¡Buenas tardes!",
+    greetingEvening: "¡Buenas noches!",
+    subtitleWithData: "Aquí está tu progreso hasta ahora",
+    subtitleEmpty: "Aún no has iniciado ninguna sesión",
+    history: "Historial de sesiones",
+    proficiency: {
+      title: "Proficiencia en inglés",
+      descWithData: "Tu nivel de inglés ha mejorado significativamente",
+      descEmpty: "Aún no has iniciado ninguna sesión",
+      cefrTitle: "Nivel CEFR",
+      cefrDisclaimer: "Basado en tu progreso en sesiones",
+    },
+    stats: {
+      sessions: "Sesiones completadas",
+      biggestGain: "Mayor mejora",
+      focusArea: "Área de enfoque",
+      streak: "Racha de sesiones",
+    },
+    radar: {
+      title: "Radar de habilidades",
+      descWithData: "Visualiza tus fortalezas y áreas de mejora",
+      descEmpty: "Aún no has iniciado ninguna sesión",
+    },
+    progress: {
+      title: "Progreso",
+      descMultiple: "Has completado múltiples sesiones",
+      descSingle: "Has completado una sesión",
+      descEmpty: "Aún no has iniciado ninguna sesión",
+      emptyOneSessions: "Inicia tu primera sesión para ver tu progreso",
+      emptyNoSessions: "Inicia sesiones para ver tu progreso",
+    },
+    quickStart: {
+      title: "Comenzar rápido",
+      salesLabel: "Pitch de ventas",
+      salesDesc: "Practica cómo presentar tu producto o servicio a un cliente potencial",
+      interviewLabel: "Entrevista de trabajo",
+      interviewDesc: "Prepárate para responder preguntas clave en tu próxima entrevista",
+    },
+    improvement: {
+      title: "Mejoras sugeridas",
+      youSaid: "Dijiste",
+      proVersion: "Versión PRO",
+      technique: "Técnica",
+    },
+    recentSessions: {
+      title: "Sesiones recientes",
+      viewAll: "Ver todas",
+      empty: "No hay sesiones recientes",
+    },
+    recommended: {
+      title: "Recomendaciones",
+      aiBadge: "AI",
+      focusHint: "Enfócate en",
+      defaultHint: "Practica más",
+      firstHint: "Comienza con",
+      startSession: "Iniciar sesión",
+      descFocus: "Tu {pillar} está en {score}% — fortalezcámoslo con una sesión enfocada.",
+      descPracticed: "Basándonos en tus sesiones, te recomendamos enfocarte en pronunciación y gramática.",
+      descNew: "Comienza con un escenario popular para profesionales de nearshoring en LATAM.",
+      scenarioInterview: "Entrevista de trabajo",
+      scenarioSales: "Pitch de ventas SaaS B2B",
+      scenarioInterviewDesc: "Practica respuestas STAR y fortalece tu posicionamiento profesional en inglés.",
+      scenarioSalesDesc: "Practica un pitch convincente en inglés para el mercado US.",
+      tagInterview: "Entrevista",
+      tagSales: "Ventas",
+      duration: "~8 min",
     },
   },
 };
@@ -469,7 +584,7 @@ export const PT: LandingCopy = {
     steps: [
       { title: "Preparação", desc: "Escolha cenário, defina contexto e receba seu roteiro personalizado com pilares de valor e dicas-chave." },
       { title: "Prática", desc: "Simule sua conversa com IA que assume um papel realista enquanto você fala por voz." },
-      { title: "Feedback", desc: "Análise em 3 dimensões, correções-chave, power phrases e relatório de sessão completo." },
+      { title: "Feedback", desc: "Análise em 3 dimensões, correções-chave, power phrases e feedback de sessão completo." },
     ],
   },
   screens: {
@@ -565,7 +680,7 @@ export const PT: LandingCopy = {
     freeSession: {
       title: "1ª Sessão Grátis",
       desc: "Experimente a sessão completa sem compromisso",
-      features: ["Simulação completa com IA", "Feedback + Roteiro personalizado", "Relatório detalhado da sessão", "Sem cartão de crédito"],
+      features: ["Simulação completa com IA", "Feedback + Roteiro personalizado", "Feedback detalhado da sessão", "Sem cartão de crédito"],
       button: "Começar grátis",
     },
     packs: [
@@ -637,22 +752,9 @@ export const PT: LandingCopy = {
     errorFallback: "Ocorreu um erro inesperado. Tente novamente.",
   },
   setupModal: {
-    stepLabels: ["Interlocutor", "Contexto", "Pronto"],
-    titles: { interlocutor: "Configure sua prática", context: "Adicione contexto", ready: "Tudo Pronto!" },
-    subtitles: { interlocutor: "Escolha com quem você vai praticar", context: "Descreva a situação para uma simulação mais realista", ready: "Entre para finalizar sua prática" },
-    interlocutors: {
-      // Interview
-      recruiter: "The Recruiter", recruiterSub: "O conector eficiente",
-      sme: "The SME", smeSub: "Avaliador técnico / funcional",
-      hiring_manager: "The Hiring Manager", hiring_managerSub: "O parceiro estratégico",
-      hr: "HR / People & Culture", hrSub: "O guardião da marca",
-      // Sales
-      gatekeeper: "The Gatekeeper", gatekeeperSub: "O filtro inicial (SDR)",
-      technical_buyer: "The Technical Buyer", technical_buyerSub: "O especialista avaliador",
-      champion: "The Champion", championSub: "Seu aliado interno",
-      decision_maker: "The Decision Maker", decision_makerSub: "C-Level / Quem assina",
-    },
-    autoSelected: "Auto-selecionado pelo seu cenário — pode alterar",
+    stepLabels: ["Contexto", "Pronto"],
+    titles: { context: "Adicione contexto", ready: "Tudo Pronto!" },
+    subtitles: { context: "Descreva a situação para uma simulação mais realista", ready: "Entre para finalizar sua prática" },
     next: "Próximo",
     back: "Voltar",
     contextReady: "Seu contexto está pronto — avance para o último passo",
@@ -664,8 +766,78 @@ export const PT: LandingCopy = {
     trustLine: "1ª sessão grátis · Sem cartão · Sem assinatura",
     scenarioLabels: { sales: "vendas", interview: "entrevista" },
     guidedFields: {
-      interview: { role: "Papel que você está se candidatando", rolePlaceholder: "Ex: Senior Product Manager em fintech", strength: "Sua principal fortaleza", strengthPlaceholder: "Ex: 5 anos liderando equipes de produto na América Latina" },
+      interview: { role: "Cargo que você está se candidatando", rolePlaceholder: "Ex: Senior Product Manager em fintech", company: "Empresa ou tipo de empresa", companyPlaceholder: "Ex: Startup fintech, Consultoria Big 4, Empresa de tecnologia" },
       sales: { product: "Qual produto ou serviço você apresenta?", productPlaceholder: "Ex: Plataforma de marketing automation B2B", problem: "Que problema resolve para seu cliente?", problemPlaceholder: "Ex: Reduz o tempo de onboarding de leads em 40%" },
+    },
+  },
+  dashboard: {
+    greetingMorning: "Bom dia!",
+    greetingAfternoon: "Boa tarde!",
+    greetingEvening: "Boa noite!",
+    subtitleWithData: "Aqui está o seu progresso até agora",
+    subtitleEmpty: "Você ainda não iniciou nenhuma sessão",
+    history: "Histórico de sessões",
+    proficiency: {
+      title: "Proficiência em inglês",
+      descWithData: "O seu nível de inglês melhorou significativamente",
+      descEmpty: "Você ainda não iniciou nenhuma sessão",
+      cefrTitle: "Nível CEFR",
+      cefrDisclaimer: "Baseado no seu progresso em sessões",
+    },
+    stats: {
+      sessions: "Sessões concluídas",
+      biggestGain: "Maior melhoria",
+      focusArea: "Área de foco",
+      streak: "Racha de sessões",
+    },
+    radar: {
+      title: "Radar de habilidades",
+      descWithData: "Visualize suas forças e áreas de melhoria",
+      descEmpty: "Você ainda não iniciou nenhuma sessão",
+    },
+    progress: {
+      title: "Progresso",
+      descMultiple: "Você concluiu várias sessões",
+      descSingle: "Você concluiu uma sessão",
+      descEmpty: "Você ainda não iniciou nenhuma sessão",
+      emptyOneSessions: "Inicie sua primeira sessão para ver seu progresso",
+      emptyNoSessions: "Inicie sessões para ver seu progresso",
+    },
+    quickStart: {
+      title: "Início rápido",
+      salesLabel: "Pitch de vendas",
+      salesDesc: "Pratique como apresentar seu produto ou serviço a um cliente potencial",
+      interviewLabel: "Entrevista de trabalho",
+      interviewDesc: "Prepare-se para responder perguntas-chave na sua próxima entrevista",
+    },
+    improvement: {
+      title: "Melhorias sugeridas",
+      youSaid: "Você disse",
+      proVersion: "Versão PRO",
+      technique: "Técnica",
+    },
+    recentSessions: {
+      title: "Sessões recentes",
+      viewAll: "Ver todas",
+      empty: "Não há sessões recentes",
+    },
+    recommended: {
+      title: "Recomendações",
+      aiBadge: "AI",
+      focusHint: "Foque em",
+      defaultHint: "Pratique mais",
+      firstHint: "Comece com",
+      startSession: "Iniciar sessão",
+      descFocus: "Seu {pillar} está em {score}% — vamos fortalecê-lo com uma sessão focada.",
+      descPracticed: "Com base nas suas sessões, recomendamos focar em pronúncia e gramática.",
+      descNew: "Comece com um cenário popular para profissionais de nearshoring na América Latina.",
+      scenarioInterview: "Entrevista de emprego",
+      scenarioSales: "Pitch de vendas SaaS B2B",
+      scenarioInterviewDesc: "Pratique respostas STAR e fortaleça seu posicionamento profissional em inglês.",
+      scenarioSalesDesc: "Pratique um pitch convincente em inglês para o mercado americano.",
+      tagInterview: "Entrevista",
+      tagSales: "Vendas",
+      duration: "~8 min",
     },
   },
 };
@@ -700,7 +872,7 @@ export const EN: LandingCopy = {
     steps: [
       { title: "Preparation", desc: "Choose a scenario, define context, and receive a personalized script with value pillars and key tips." },
       { title: "Practice", desc: "Simulate your conversation with AI that takes on a realistic role while you speak by voice." },
-      { title: "Feedback", desc: "3-dimension analysis, key corrections, power phrases, and a complete session report." },
+      { title: "Feedback", desc: "3-dimension analysis, key corrections, power phrases, and a complete session feedback." },
     ],
   },
   screens: {
@@ -796,7 +968,7 @@ export const EN: LandingCopy = {
     freeSession: {
       title: "1st Session Free",
       desc: "Experience the full session with no commitment",
-      features: ["Full AI simulation", "Feedback + Personalized script", "Detailed session report", "No credit card required"],
+      features: ["Full AI simulation", "Feedback + Personalized script", "Detailed session feedback", "No credit card required"],
       button: "Start free",
     },
     packs: [
@@ -868,22 +1040,9 @@ export const EN: LandingCopy = {
     errorFallback: "An unexpected error occurred. Please try again.",
   },
   setupModal: {
-    stepLabels: ["Interlocutor", "Context", "Ready"],
-    titles: { interlocutor: "Set up your practice", context: "Add context", ready: "All Set!" },
-    subtitles: { interlocutor: "Choose who you'll be practicing with", context: "Describe the situation for a more realistic simulation", ready: "Sign in to finalize your practice" },
-    interlocutors: {
-      // Interview
-      recruiter: "The Recruiter", recruiterSub: "The efficient connector",
-      sme: "The SME", smeSub: "Technical / functional evaluator",
-      hiring_manager: "The Hiring Manager", hiring_managerSub: "The strategic partner",
-      hr: "HR / People & Culture", hrSub: "The brand guardian",
-      // Sales
-      gatekeeper: "The Gatekeeper", gatekeeperSub: "The initial filter (SDR)",
-      technical_buyer: "The Technical Buyer", technical_buyerSub: "The proof-seeking specialist",
-      champion: "The Champion", championSub: "Your internal ally",
-      decision_maker: "The Decision Maker", decision_makerSub: "C-Level / Signs the check",
-    },
-    autoSelected: "Auto-selected based on your scenario — you can change it",
+    stepLabels: ["Context", "Ready"],
+    titles: { context: "Add context", ready: "All Set!" },
+    subtitles: { context: "Describe the situation for a more realistic simulation", ready: "Sign in to finalize your practice" },
     next: "Next",
     back: "Back",
     contextReady: "Your context is ready — proceed to the last step",
@@ -895,8 +1054,78 @@ export const EN: LandingCopy = {
     trustLine: "1st session free · No credit card · No subscription",
     scenarioLabels: { sales: "sales", interview: "interview" },
     guidedFields: {
-      interview: { role: "Role you're applying for", rolePlaceholder: "e.g. Senior Product Manager at a fintech", strength: "Your most relevant strength", strengthPlaceholder: "e.g. 5 years leading product teams across LATAM" },
+      interview: { role: "Role you're applying for", rolePlaceholder: "e.g. Senior Product Manager at a fintech", company: "Company or company type", companyPlaceholder: "e.g. Fintech startup, Big 4 consulting, Tech company" },
       sales: { product: "What product or service are you presenting?", productPlaceholder: "e.g. B2B marketing automation platform", problem: "What problem does it solve for your client?", problemPlaceholder: "e.g. Reduces lead onboarding time by 40%" },
+    },
+  },
+  dashboard: {
+    greetingMorning: "Good morning!",
+    greetingAfternoon: "Good afternoon!",
+    greetingEvening: "Good evening!",
+    subtitleWithData: "Here's your progress so far",
+    subtitleEmpty: "You haven't started any sessions yet",
+    history: "Session history",
+    proficiency: {
+      title: "English proficiency",
+      descWithData: "Your English level has improved significantly",
+      descEmpty: "You haven't started any sessions yet",
+      cefrTitle: "CEFR level",
+      cefrDisclaimer: "Based on your session progress",
+    },
+    stats: {
+      sessions: "Completed sessions",
+      biggestGain: "Biggest gain",
+      focusArea: "Focus area",
+      streak: "Session streak",
+    },
+    radar: {
+      title: "Skill radar",
+      descWithData: "Visualize your strengths and areas for improvement",
+      descEmpty: "You haven't started any sessions yet",
+    },
+    progress: {
+      title: "Progress",
+      descMultiple: "You've completed multiple sessions",
+      descSingle: "You've completed one session",
+      descEmpty: "You haven't started any sessions yet",
+      emptyOneSessions: "Start your first session to see your progress",
+      emptyNoSessions: "Start sessions to see your progress",
+    },
+    quickStart: {
+      title: "Quick start",
+      salesLabel: "Sales pitch",
+      salesDesc: "Practice presenting your product or service to a potential client",
+      interviewLabel: "Job interview",
+      interviewDesc: "Prepare to answer key questions in your next interview",
+    },
+    improvement: {
+      title: "Suggested improvements",
+      youSaid: "You said",
+      proVersion: "Pro version",
+      technique: "Technique",
+    },
+    recentSessions: {
+      title: "Recent sessions",
+      viewAll: "View all",
+      empty: "No recent sessions",
+    },
+    recommended: {
+      title: "Recommendations",
+      aiBadge: "AI",
+      focusHint: "Focus on",
+      defaultHint: "Practice more",
+      firstHint: "Start with",
+      startSession: "Start session",
+      descFocus: "Your {pillar} is at {score}% — let's focus on it with a targeted session.",
+      descPracticed: "Based on your sessions, we recommend focusing on pronunciation and grammar.",
+      descNew: "Start with a popular scenario for nearshoring professionals in LATAM.",
+      scenarioInterview: "Job interview",
+      scenarioSales: "Sales pitch SaaS B2B",
+      scenarioInterviewDesc: "Practice STAR responses and strengthen your professional positioning in English.",
+      scenarioSalesDesc: "Practice a convincing pitch in English for the US market.",
+      tagInterview: "Interview",
+      tagSales: "Sales",
+      duration: "~8 min",
     },
   },
 };
