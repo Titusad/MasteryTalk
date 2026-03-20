@@ -35,6 +35,7 @@ import {
   interviewBriefingCache,
   feedbackCache,
   summaryCache,
+  improvedScriptCache,
   pronDataCache,
   cleanupExpiredCache,
 } from "../utils/sessionCache";
@@ -201,6 +202,20 @@ export function PracticeSessionPage({
     if (initialHistoryState?.step === "session-recap") return "ready";
     return "idle";
   });
+
+  /* Real AI-generated Golden Master Script from /generate-improved-script */
+  const [improvedScript, setImprovedScript] = useState<ScriptSection[] | null>(() => {
+    if (initialHistoryState?.sessionId) {
+      return improvedScriptCache.get(initialHistoryState.sessionId) || null;
+    }
+    return null;
+  });
+  const [improvedScriptStatus, setImprovedScriptStatus] = useState<"idle" | "loading" | "ready" | "error">(() => {
+    if (isDevPreview) return "ready";
+    if (initialHistoryState?.step === "session-recap") return "ready";
+    return "idle";
+  });
+
   /* Azure pronunciation assessment data accumulated during the session */
   const [sessionPronData, setSessionPronData] = useState<TurnPronunciationData[]>(() => {
     if (devMockPronData) return devMockPronData;
@@ -521,6 +536,44 @@ export function PracticeSessionPage({
       });
   }, [sessionId, scenarioType]);
 
+  /* ── Golden Script generation: call /generate-improved-script async ── */
+  const fireImprovedScriptGeneration = useCallback(() => {
+    if (!sessionId) return;
+    setImprovedScript(null);
+    setImprovedScriptStatus("loading");
+
+    const serverUrl = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/generate-improved-script`;
+
+    fetch(serverUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${publicAnonKey}`,
+      },
+      body: JSON.stringify({
+        sessionId,
+        locale: _detectedLocale,
+      }),
+    })
+      .then((res) => {
+        if (!res.ok) return res.text().then((t) => { throw new Error(`Script ${res.status}: ${t.slice(0, 200)}`); });
+        return res.json();
+      })
+      .then((data) => {
+        if (data && data.sections) {
+          setImprovedScript(data.sections);
+          improvedScriptCache.set(sessionId, data.sections);
+          setImprovedScriptStatus("ready");
+        } else {
+          setImprovedScriptStatus("error");
+        }
+      })
+      .catch((err) => {
+        console.error("[GenerateImprovedScript] ❌ Failed:", err.message);
+        setImprovedScriptStatus("error");
+      });
+  }, [sessionId]);
+
   /* ── Persist completed session to backend (fire-and-forget) ── */
   const sessionSavedRef = useRef(false);
   const saveSessionToBackend = useCallback(() => {
@@ -554,6 +607,7 @@ export function PracticeSessionPage({
         professionalProficiency: sessionSummary.professionalProficiency ?? null,
         cefrApprox: sessionSummary.cefrApprox || null,
       } : null,
+      improvedScript: improvedScript || null,
       practiceSessionId: sessionId,
       // Include interview briefing data for dashboard cross-reference
       interviewBriefing: scenarioType === "interview" && interviewBriefing ? {
@@ -956,6 +1010,7 @@ export function PracticeSessionPage({
                   if (sessionId && pronData.length > 0) pronDataCache.set(sessionId, pronData);
                   setStep("analyzing");
                   fireFeedbackAnalysis();
+                  fireImprovedScriptGeneration(); // Fire in parallel!
                   // Save pronunciation data to KV in background (non-blocking)
                   if (pronData.length > 0 && sessionId) {
                     const saveUrl = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/save-pronunciation`;

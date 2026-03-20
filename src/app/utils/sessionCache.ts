@@ -116,6 +116,12 @@ export const summaryCache = {
     clear: (sessionId: string) => removeItem(`summary_${sessionId}`),
 };
 
+export const improvedScriptCache = {
+    get: (sessionId: string) => getItem<any[]>(`improvedScript_${sessionId}`),
+    set: (sessionId: string, script: any[]) => setItem(`improvedScript_${sessionId}`, script),
+    clear: (sessionId: string) => removeItem(`improvedScript_${sessionId}`),
+};
+
 export const pronDataCache = {
     get: (sessionId: string) => getItem<any[]>(`prondata_${sessionId}`),
     set: (sessionId: string, data: any[]) => setItem(`prondata_${sessionId}`, data),

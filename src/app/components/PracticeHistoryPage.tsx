@@ -57,6 +57,15 @@ interface PersistedSession {
     professionalProficiency?: number | null;
     cefrApprox?: string | null;
   } | null;
+  improvedScript?: Array<{
+    num: number;
+    title: string;
+    paragraphs: Array<{
+      text: string;
+      suffix?: string;
+      highlights?: Array<{ phrase: string }>;
+    }>;
+  }> | null;
   interviewBriefing?: {
     anticipatedQuestions?: Array<{ theme: string; question: string }>;
   } | null;
@@ -410,6 +419,7 @@ export function PracticeHistoryPage({
                 guidedFields={{}}
                 realFeedback={practice.rawSession?.feedback as any}
                 sessionSummary={practice.rawSession?.summary as any}
+                improvedScript={practice.rawSession?.improvedScript as any}
                 interviewBriefing={practice.rawSession?.interviewBriefing as any}
                 sessionDuration={practice.duration}
                 interlocutor={practice.tag}

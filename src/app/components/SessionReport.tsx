@@ -152,6 +152,7 @@ export interface SessionReportProps {
   realFeedback?: RealFeedbackData | null;
   sessionSummary?: SessionSummary | null;
   generatedScript?: ScriptSection[] | null;
+  improvedScript?: ScriptSection[] | null;
   sessionDuration?: string;
   onFinish?: () => void;
   finishLabel?: string;
@@ -170,6 +171,7 @@ export function SessionReport({
   realFeedback,
   sessionSummary,
   generatedScript,
+  improvedScript,
   sessionDuration,
   onFinish,
   finishLabel = "Go To Dashboard",
@@ -186,9 +188,9 @@ export function SessionReport({
     : "your conversation";
 
   /* ── Data sources ── */
-  const scriptSections = generatedScript?.length
-    ? generatedScript
-    : getScriptSectionsForScenario(scenarioType);
+  const scriptSections = improvedScript?.length
+    ? improvedScript
+    : (generatedScript?.length ? generatedScript : []);
   const isRealData = !!(realFeedback?.strengths?.length);
   const totalTime = sessionDuration || "4 min";
 
