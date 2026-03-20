@@ -119,7 +119,7 @@ export const authService: IAuthService = useSupabase
 
 ### Internal sub-steps (8 total):
 1. Scenario Selection (PracticeWidget)
-2. Strategy Builder (StrategyBuilder)
+2. Key Experience (KeyExperienceScreen)
 3. Briefing Room (BriefingRoom)
 4. Arena — Live Conversation (ArenaSystem)
 5. Mindset Pulse (post-session reflection)
@@ -147,7 +147,7 @@ src/app/
     DashboardPage.tsx              ← User dashboard with practice history
     PracticeHistoryPage.tsx        ← Full history list
     PracticeWidget.tsx             ← Scenario setup flow
-    StrategyBuilder.tsx            ← Pre-session strategy planning
+    KeyExperienceScreen.tsx        ← Pre-session context gathering
     PracticeSessionPage.tsx        ← Main session page (hosts Arena)
     SessionProgressBar.tsx         ← 3-step visual stepper
     SessionReport.tsx              ← Post-session feedback display

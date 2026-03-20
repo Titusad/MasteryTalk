@@ -187,6 +187,17 @@ Respond with ONLY a JSON object. No markdown, no code fences, no commentary.
     "Impact": 0-100
   },
   "interviewReadinessScore": 0-100,
+  "preparationUtilization": {
+    "score": 0-100,
+    "verdict": "Short verdict in ${lang} (e.g. 'Strong Alignment', 'Abandoned Preparation')",
+    "insights": [
+      {
+        "aspect": "Framework usage | Key phrases | Pivot execution",
+        "observation": "What happened in ${lang}",
+        "rating": "strong | partial | missed"
+      }
+    ]
+  },
   "contentInsights": [
     {
       "dimension": "Relevance | Structure | Examples | Impact",

@@ -96,6 +96,12 @@ export const toolkitCache = {
     clear: (sKey: string) => removeItem(`toolkit_${sKey}`),
 };
 
+export const cvMatchCache = {
+    get: (sKey: string) => getItem<any>(`cvmatch_${sKey}`),
+    set: (sKey: string, data: any) => setItem(`cvmatch_${sKey}`, data),
+    clear: (sKey: string) => removeItem(`cvmatch_${sKey}`),
+};
+
 /* ── Post-session cache (keyed by sessionId) ── */
 
 export const feedbackCache = {

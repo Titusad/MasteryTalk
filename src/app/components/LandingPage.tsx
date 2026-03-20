@@ -9,6 +9,7 @@ import {
   Zap,
   Gift,
   Globe,
+  LogOut,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { PracticeWidget } from "./PracticeWidget";
@@ -88,7 +89,21 @@ function LanguageSwitcher({ lang, onChange }: { lang: LandingLang; onChange: (l:
 }
 
 /* ═══════════════════════ MAIN COMPONENT ═══════════════════════ */
-export function LandingPage({ onAuthComplete, landingLang, onLangChange }: { onAuthComplete?: (data: SetupModalResult, authMode?: "login" | "registro") => void; landingLang?: LandingLang; onLangChange?: (l: LandingLang) => void }) {
+export function LandingPage({
+  onAuthComplete,
+  landingLang,
+  onLangChange,
+  authUser,
+  onLogout,
+  onGoToDashboard
+}: {
+  onAuthComplete?: (data: SetupModalResult, authMode?: "login" | "registro") => void;
+  landingLang?: LandingLang;
+  onLangChange?: (l: LandingLang) => void;
+  authUser?: import("../../services/types").User | null;
+  onLogout?: () => void;
+  onGoToDashboard?: () => void;
+}) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [lang, setLangLocal] = useState<LandingLang>(landingLang ?? "es");
@@ -140,10 +155,26 @@ export function LandingPage({ onAuthComplete, landingLang, onLangChange }: { onA
             </nav>
             <div className="hidden md:flex items-center gap-3">
               <LanguageSwitcher lang={lang} onChange={setLang} />
-              <button className="text-[#4B505B] hover:text-gray-900 text-sm transition-colors" onClick={() => openAuth("login")}>{copy.nav.login}</button>
-              <button className="bg-[#2d2d2d] text-white text-sm px-6 py-2.5 rounded-full hover:bg-[#1a1a1a] transition-colors" onClick={() => openAuth("registro")}>
-                {copy.nav.register}
-              </button>
+              {authUser ? (
+                <>
+                  <span className="text-sm text-[#4B505B] font-medium mr-2 max-w-[150px] truncate" title={authUser.email || ""}>
+                    Hola {authUser.displayName ? authUser.displayName.split(" ")[0] : "Usuario"}
+                  </span>
+                  <button className="text-[#4B505B] hover:text-gray-900 text-sm transition-colors p-2" onClick={onLogout} title="Cerrar sesión">
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                  <button className="bg-[#2d2d2d] text-white text-sm px-6 py-2.5 rounded-full hover:bg-[#1a1a1a] transition-colors" onClick={onGoToDashboard}>
+                    Dashboard
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button className="text-[#4B505B] hover:text-gray-900 text-sm transition-colors" onClick={() => openAuth("login")}>{copy.nav.login}</button>
+                  <button className="bg-[#2d2d2d] text-white text-sm px-6 py-2.5 rounded-full hover:bg-[#1a1a1a] transition-colors" onClick={() => openAuth("registro")}>
+                    {copy.nav.register}
+                  </button>
+                </>
+              )}
             </div>
             <div className="flex md:hidden items-center gap-3">
               <LanguageSwitcher lang={lang} onChange={setLang} />
@@ -156,10 +187,24 @@ export function LandingPage({ onAuthComplete, landingLang, onLangChange }: { onA
           </div>
           {mobileMenuOpen && (
             <div className="md:hidden border-t border-gray-200 bg-white px-6 py-4 space-y-3">
-              <a href="#how" className="block text-[#4B505B] py-2">{copy.nav.howItWorks}</a>
-              <a href="#benefits" className="block text-[#4B505B] py-2">{copy.nav.benefits}</a>
-              <a href="#pricing" className="block text-[#4B505B] py-2">{copy.nav.pricing}</a>
-              <button className="w-full bg-[#2d2d2d] text-white py-3 rounded-full mt-2" style={{ fontWeight: 500 }} onClick={() => openAuth("registro")}>{copy.nav.register}</button>
+              <a href="#how" className="block text-[#4B505B] py-2" onClick={() => setMobileMenuOpen(false)}>{copy.nav.howItWorks}</a>
+              <a href="#benefits" className="block text-[#4B505B] py-2" onClick={() => setMobileMenuOpen(false)}>{copy.nav.benefits}</a>
+              <a href="#pricing" className="block text-[#4B505B] py-2" onClick={() => setMobileMenuOpen(false)}>{copy.nav.pricing}</a>
+              {authUser ? (
+                <>
+                  <span className="block text-[#4B505B] font-medium py-2 border-t border-gray-100 mt-2 pt-4">
+                    Hola {authUser.displayName ? authUser.displayName.split(" ")[0] : "Usuario"}
+                  </span>
+                  <button className="w-full text-left text-[#4B505B] py-2 flex items-center gap-2" onClick={() => { setMobileMenuOpen(false); onLogout?.(); }}>
+                    <LogOut className="w-4 h-4" /> Cerrar sesión
+                  </button>
+                  <button className="w-full bg-[#2d2d2d] text-white py-3 rounded-full mt-2" style={{ fontWeight: 500 }} onClick={() => { setMobileMenuOpen(false); onGoToDashboard?.(); }}>
+                    Dashboard
+                  </button>
+                </>
+              ) : (
+                <button className="w-full bg-[#2d2d2d] text-white py-3 rounded-full mt-2" style={{ fontWeight: 500 }} onClick={() => openAuth("registro")}>{copy.nav.register}</button>
+              )}
             </div>
           )}
         </header>

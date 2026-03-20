@@ -39,7 +39,7 @@ Estado actual: **prototipo funcional, flujo E2E verificado.**
 | F0-00 | App compila sin errores | Build/preview en Figma Make | Sin errores de Vite/TypeScript en consola. La app renderiza. | **P0** |
 | F0-00b | ErrorBoundary funciona | Provocar error en componente hijo | ErrorBoundary muestra fallback con error message, NO pantalla blanca. | **P0** |
 | F0-01 | Landing Page renderiza | Abrir app (hash vacio) | Landing Page visible con hero, PracticeWidget, pricing, FAQ. Sin pantalla blanca. | **P0** |
-| F0-02 | Flujo completo 8 steps | `[MOCK]` 1. Escribir escenario en PracticeWidget 2. Click "Comenzar practica" 3. Completar PracticeSetupModal 4. Auth mock (Google) 5. LanguageTransitionModal 6. StrategyBuilder (3 pillars o skip) 7. Extra Context (skip) 8. Generating Script (loader) 9. Pre-Briefing 10. Voice Practice (Arena) 11. Analyzing Feedback 12. ConversationFeedback 13. Session Report 14. Dashboard | El usuario llega al Dashboard sin errores, crashes, ni pantallas en blanco. | **P0** |
+| F0-02 | Flujo completo 8 steps | `[MOCK]` 1. Escribir escenario en PracticeWidget 2. Click "Comenzar practica" 3. Completar PracticeSetupModal 4. Auth mock (Google) 5. LanguageTransitionModal 6. KeyExperienceScreen (background) 7. Extra Context (skip) 8. Generating Script (loader) 9. Pre-Briefing 10. Voice Practice (Arena) 11. Analyzing Feedback 12. ConversationFeedback 13. Session Report 14. Dashboard | El usuario llega al Dashboard sin errores, crashes, ni pantallas en blanco. | **P0** |
 
 ---
 
@@ -90,15 +90,15 @@ Estado actual: **prototipo funcional, flujo E2E verificado.**
 
 ---
 
-### 0.5 Strategy Builder (Pantalla 4a)
+### 0.5 Key Experience (Pantalla 4a)
 
 | ID | Test | Pasos | Resultado Esperado | Prioridad |
 |---|---|---|---|---|
-| F0-19 | Stepper horizontal visible | `[MOCK]` Llegar a Strategy Builder | 3 pasos en stepper, paso 1 activo. | **P1** |
-| F0-20 | Coach questions por scenario | `[MOCK]` Verificar con "sales" y luego "interview" | Preguntas diferentes por scenario type. | **P1** |
-| F0-21 | Framework tooltips | `[MOCK]` Hover/click en tooltip de framework | STAR (interview), BATNA (negotiation), SPIN/MEDDIC (sales) visibles. | **P2** |
-| F0-22 | Skip Strategy | `[MOCK]` Click "Skip" | Avanza a Extra Context sin pillars. | **P1** |
-| F0-23 | Complete 3 pillars | `[MOCK]` Llenar los 3 pilares y completar | Stepper muestra 3/3, boton "Continue to Practice". | **P0** |
+| F0-19 | Pantalla visible | `[MOCK]` Llegar a Key Experience | Formulario de background visible. | **P1** |
+| F0-20 | Campos por scenario | `[MOCK]` Verificar con scenario type de entrevista | Campos adaptados solicitando perfil. | **P1** |
+| F0-21 | Tooltips de ayuda | `[MOCK]` Hover/click en tooltip de ayuda | Explicaciones visibles. | **P2** |
+| F0-22 | Skip Background | `[MOCK]` Click "Skip" | Avanza a Extra Context sin datos. | **P1** |
+| F0-23 | Guardar datos | `[MOCK]` Llenar formulario y confirmar | Avanza a Extra Context correctamente. | **P0** |
 
 ---
 

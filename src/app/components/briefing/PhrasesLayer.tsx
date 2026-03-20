@@ -12,17 +12,28 @@
  */
 
 import { useState, useCallback } from "react";
-import { Play, Square, Mic, Check, Volume2 } from "lucide-react";
-import { motion } from "motion/react";
+import { Play, Square, Mic, Check, Volume2, Loader2, Lightbulb, RotateCcw } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 import type { ScriptHighlight } from "../../../services/types";
+import { realSpeechService } from "../../../services";
 import { useBriefingTTS } from "./useBriefingTTS";
 import { useMediaRecorder } from "../../hooks/useMediaRecorder";
 import { RecordingWaveformBars, RecordingTimer } from "../shared";
 
-type PhraseStep = "idle" | "listened" | "recording" | "done";
+type PhraseStep = "idle" | "listened" | "recording" | "processing" | "done";
+
+interface DrillResult {
+    accuracy: number;
+    fluency: number;
+    prosody: number;
+    overall: number;
+    wordResults: { word: string; score: number; errorType: string }[];
+}
 
 interface PhraseState {
     step: PhraseStep;
+    result?: DrillResult | null;
+    errorMsg?: string;
 }
 
 interface PhrasesLayerProps {
@@ -43,11 +54,11 @@ export function PhrasesLayer({ cardId, phrases }: PhrasesLayerProps) {
 
     const completedCount = phraseStates.filter((s) => s.step === "done").length;
 
-    /* Update a single phrase's step */
-    const updatePhrase = useCallback((idx: number, step: PhraseStep) => {
-        setPhraseStates((prev) => {
+    /* Update a single phrase's state cleanly */
+    const updatePhraseState = useCallback((idx: number, newState: Partial<PhraseState>) => {
+        setPhraseStates((prev: PhraseState[]) => {
             const next = [...prev];
-            next[idx] = { step };
+            next[idx] = { ...next[idx], ...newState };
             return next;
         });
     }, []);
@@ -71,25 +82,57 @@ export function PhrasesLayer({ cardId, phrases }: PhrasesLayerProps) {
         [cardId, tts]
     );
 
-    /* Record: shadow one phrase */
     const handleStartRecording = useCallback(
         async (idx: number) => {
             tts.stop(); // stop any TTS
             setRecordingIdx(idx);
-            updatePhrase(idx, "recording");
+            updatePhraseState(idx, { step: "recording", errorMsg: undefined });
             await recorder.start();
         },
-        [tts, recorder, updatePhrase]
+        [tts, recorder, updatePhraseState]
     );
 
     const handleStopRecording = useCallback(
-        async (idx: number) => {
-            await recorder.stop();
+        async (idx: number, phraseText: string) => {
+            const blob = await recorder.stop();
             setRecordingIdx(null);
-            updatePhrase(idx, "done");
+            
+            if (!blob || blob.size < 1000) {
+                updatePhraseState(idx, { step: "idle", errorMsg: "Audio too short. Please try again." });
+                return;
+            }
+
+            // Show processing
+            updatePhraseState(idx, { step: "processing", errorMsg: undefined });
+
+            try {
+                const assessment = await realSpeechService.assessPronunciation(blob, phraseText);
+                if (assessment) {
+                    const drillResult: DrillResult = {
+                        accuracy: assessment.accuracyScore,
+                        fluency: assessment.fluencyScore,
+                        prosody: assessment.prosodyScore,
+                        overall: assessment.pronScore,
+                        wordResults: assessment.words.map((w) => ({
+                            word: w.word,
+                            score: w.accuracyScore,
+                            errorType: w.errorType,
+                        })),
+                    };
+                    updatePhraseState(idx, { step: "done", result: drillResult });
+                } else {
+                    updatePhraseState(idx, { step: "idle", errorMsg: "Could not evaluate pronunciation." });
+                }
+            } catch (err) {
+                updatePhraseState(idx, { step: "idle", errorMsg: "Evaluation failed. Please check your connection." });
+            }
         },
-        [recorder, updatePhrase]
+        [recorder, updatePhraseState]
     );
+
+    const handleRetry = useCallback((idx: number) => {
+        updatePhraseState(idx, { step: "listened", result: null, errorMsg: undefined }); // allows immediate practice
+    }, [updatePhraseState]);
 
     if (!phrases.length) {
         return (
@@ -111,10 +154,11 @@ export function PhrasesLayer({ cardId, phrases }: PhrasesLayerProps) {
                 const isPlaying = tts.playingKey === ttsKey;
                 const isRecording = recordingIdx === i && recorder.isRecording;
                 const isRecordingStarting = recordingIdx === i && state.step === "recording" && !recorder.isRecording;
+                const isProcessing = state.step === "processing";
                 const isDone = state.step === "done";
                 const hasListened = state.step !== "idle";
-                /* Disable interaction while another phrase is recording */
-                const otherRecording = recordingIdx !== null && recordingIdx !== i;
+                /* Disable interaction while another phrase is recording or processing */
+                const otherRecording = (recordingIdx !== null && recordingIdx !== i) || phraseStates.some((s: PhraseState, sIdx: number) => sIdx !== i && s.step === "processing");
 
                 return (
                     <motion.div
@@ -141,13 +185,17 @@ export function PhrasesLayer({ cardId, phrases }: PhrasesLayerProps) {
                                             ? "bg-[#6366f1] text-white"
                                             : isRecording
                                                 ? "bg-red-500 text-white"
-                                                : "bg-[#f1f5f9] text-[#45556c]"
+                                                : isProcessing
+                                                    ? "bg-indigo-100 text-indigo-500"
+                                                    : "bg-[#f1f5f9] text-[#45556c]"
                                     }`}
                             >
                                 {isDone ? (
                                     <Check className="w-3.5 h-3.5" />
                                 ) : isRecording ? (
                                     <Mic className="w-3.5 h-3.5" />
+                                ) : isProcessing ? (
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
                                 ) : (
                                     <span className="text-xs" style={{ fontWeight: 700 }}>{i + 1}</span>
                                 )}
@@ -163,6 +211,9 @@ export function PhrasesLayer({ cardId, phrases }: PhrasesLayerProps) {
                                 </p>
                                 {kp.tooltip && (
                                     <p className="text-xs text-[#62748e] mt-0.5 truncate">{kp.tooltip}</p>
+                                )}
+                                {state.errorMsg && (
+                                    <p className="text-[11px] text-red-500 mt-1.5">{state.errorMsg}</p>
                                 )}
                             </div>
 
@@ -181,7 +232,7 @@ export function PhrasesLayer({ cardId, phrases }: PhrasesLayerProps) {
                         </div>
 
                         {/* Action buttons row */}
-                        {!isDone && (
+                        {!isDone && !isProcessing && (
                             <div className="flex items-center gap-2 px-4 pb-3">
                                 {/* Listen button */}
                                 <button
@@ -244,7 +295,7 @@ export function PhrasesLayer({ cardId, phrases }: PhrasesLayerProps) {
                                 <RecordingWaveformBars color="#ef4444" count={5} height={20} />
                                 <RecordingTimer timeMs={recorder.recordingTime} />
                                 <button
-                                    onClick={() => handleStopRecording(i)}
+                                    onClick={() => handleStopRecording(i, kp.phrase)}
                                     className="flex items-center gap-1.5 bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600 transition-colors text-xs"
                                     style={{ fontWeight: 500 }}
                                     aria-label="Stop recording"
@@ -255,13 +306,90 @@ export function PhrasesLayer({ cardId, phrases }: PhrasesLayerProps) {
                             </motion.div>
                         )}
 
-                        {/* Done state inline */}
-                        {isDone && (
-                            <div className="px-4 pb-3">
-                                <span className="text-[11px] text-emerald-600 flex items-center gap-1" style={{ fontWeight: 500 }}>
-                                    <Check className="w-3 h-3" />
-                                    Listened & shadowed
-                                </span>
+                        {/* Processing state */}
+                        {isProcessing && (
+                            <div className="px-4 pb-3 flex items-center gap-2 text-[#6366f1] text-xs" style={{ fontWeight: 500 }}>
+                                Evaluating pronunciation...
+                            </div>
+                        )}
+
+                        {/* Done state with Results inline */}
+                        {isDone && state.result && (
+                            <div className="px-4 pb-4">
+                                <div className="p-3 bg-white/50 border border-[#e2e8f0] rounded-xl flex flex-col gap-3">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="text-center">
+                                                <div className="relative group inline-block">
+                                                    <p className="text-[9px] text-[#94a3b8] uppercase tracking-wider cursor-help border-b border-dashed border-[#cbd5e1] pb-0.5" style={{ fontWeight: 600 }}>Accuracy</p>
+                                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 w-44 p-2 bg-[#0f172b] text-white text-[10px] leading-relaxed rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 text-center pointer-events-none">
+                                                        Mide qué tan fiel fue tu pronunciación comparada con los fonemas de palabras nativas.
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="w-px h-6 bg-[#e2e8f0]" />
+                                            <div className="text-center">
+                                                <p className="text-lg text-[#0f172b]" style={{ fontWeight: 700 }}>
+                                                    {Math.round(state.result.fluency)}%
+                                                </p>
+                                                <p className="text-[9px] text-[#94a3b8] uppercase tracking-wider" style={{ fontWeight: 600 }}>Fluency</p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => handleRetry(i)}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#e2e8f0] text-xs text-[#45556c] hover:bg-[#f8fafc] transition-colors"
+                                            style={{ fontWeight: 500 }}
+                                        >
+                                            <RotateCcw className="w-3 h-3" />
+                                            Retry
+                                        </button>
+                                    </div>
+                                    
+                                    {/* Fluency Tip */}
+                                    {state.result.fluency < 80 && (
+                                        <div className="flex items-start gap-2 bg-indigo-50/50 border border-indigo-100 rounded-lg p-2.5">
+                                            <Lightbulb className="w-3.5 h-3.5 text-indigo-500 shrink-0 mt-0.5" />
+                                            <p className="text-[11px] text-indigo-700 leading-relaxed">
+                                                Try to link the words smoothly. Listen to the native pronunciation again to catch the rhythm.
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {/* Words Breakdown */}
+                                    <div className="flex flex-wrap gap-1 mt-0.5">
+                                        {state.result.wordResults.map((w: { word: string; score: number; errorType: string }, wIdx: number) => {
+                                            const isOmission = w.errorType === "Omission";
+                                            const isBad = w.score < 60 || isOmission;
+                                            const isWarn = w.score >= 60 && w.score < 80 && !isOmission;
+
+                                            return (
+                                                <div key={wIdx} className="relative group cursor-help">
+                                                    <span
+                                                        className={`text-xs px-1.5 py-0.5 rounded transition-colors ${
+                                                            isOmission
+                                                                ? "text-red-400 line-through bg-red-50/50"
+                                                                : isBad
+                                                                ? "text-red-600 bg-red-50"
+                                                                : isWarn
+                                                                ? "text-amber-600 bg-amber-50"
+                                                                : "text-emerald-700"
+                                                        }`}
+                                                        style={{ fontWeight: isBad || isWarn ? 600 : 400 }}
+                                                    >
+                                                        {w.word}
+                                                    </span>
+                                                    {/* Tooltip */}
+                                                    {(isBad || isWarn) && (
+                                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 w-max max-w-[120px] bg-[#0f172b] text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10 text-center">
+                                                            {isOmission ? "Word skipped" : `${Math.round(w.score)}% accuracy`}
+                                                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-[#0f172b]" />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </motion.div>

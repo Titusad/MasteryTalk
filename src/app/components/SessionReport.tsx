@@ -123,6 +123,13 @@ interface RealFeedbackData {
   beforeAfter: BeforeAfterComparison[];
   pillarScores?: Record<string, number> | null;
   professionalProficiency?: number | null;
+  contentScores?: Record<string, number> | null;
+  interviewReadinessScore?: number | null;
+  contentInsights?: Array<{
+    dimension: string;
+    observation: string;
+    tip: string;
+  }> | null;
   /** Preparation Utilization — interview + briefing only */
   preparationUtilization?: {
     score: number;

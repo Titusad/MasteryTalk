@@ -6,6 +6,7 @@ const DesignSystemPage = lazy(() => import("./components/DesignSystemPage").then
 const PracticeSessionPage = lazy(() => import("./components/PracticeSessionPage").then(m => ({ default: m.PracticeSessionPage })));
 const DashboardPage = lazy(() => import("./components/DashboardPage").then(m => ({ default: m.DashboardPage })));
 const PracticeHistoryPage = lazy(() => import("./components/PracticeHistoryPage").then(m => ({ default: m.PracticeHistoryPage })));
+const AccountPage = lazy(() => import("./components/AccountPage").then(m => ({ default: m.AccountPage })));
 import { LoadingScreen } from "./components/LoadingScreen";
 import { LanguageTransitionModal } from "./components/LanguageTransitionModal";
 import { authService } from "../services";
@@ -28,7 +29,8 @@ type Page =
   | "loading"
   | "practice-session"
   | "dashboard"
-  | "practice-history";
+  | "practice-history"
+  | "account";
 
 /* ─── Shared flow state ─── */
 interface FlowState {
@@ -71,6 +73,7 @@ export default function App() {
   });
 
   /* ─── Auth state ─── */
+  const [isInitializing, setIsInitializing] = useState(true);
   const [authUser, setAuthUser] = useState<User | null>(null);
 
   /* ─── Onboarding profile ─── */
@@ -222,22 +225,11 @@ export default function App() {
     const init = async () => {
       const isOAuthReturn = sessionStorage.getItem(OAUTH_PENDING_KEY) === "true";
 
-      // Flow A: Clear stale Supabase session so user always starts fresh
-      // Optimized: use local session check instead of network signOut call
-      if (!isOAuthReturn) {
-        try {
-          const supabase = (await import("../services/supabase")).getSupabaseClient();
-          const { data: { session } } = await supabase.auth.getSession();
-          if (session) {
-            await authService.signOut();
-          }
-        } catch { /* ignore — no session to clear */ }
-      }
-
       if (cancelled) return;
 
       // Now subscribe to auth state changes
       unsubscribe = authService.onAuthStateChanged((user) => {
+        setIsInitializing(false);
         const hadUser = prevAuthUserRef.current !== null;
         prevAuthUserRef.current = user;
         setAuthUser(user);
@@ -334,8 +326,12 @@ export default function App() {
             return;
           }
 
-          // No pending setup at all — stay on current page (don't auto-navigate)
-          // This prevents stale sessions from hijacking the flow
+          // No pending setup at all. If user is on the landing page (hash is empty), auto-redirect to dashboard.
+          // This ensures returning users don't stay on the landing page.
+          if (!window.location.hash || window.location.hash === "#" || window.location.hash === "#/") {
+            setPage("dashboard");
+            window.location.hash = "#dashboard";
+          }
         }
 
         if (!user && hadUser) {
@@ -384,6 +380,7 @@ export default function App() {
         setPage("dashboard");
       } else if (hash === "#practice-session") setPage("practice-session");
       else if (hash === "#practice-history") setPage("practice-history");
+      else if (hash === "#account") setPage("account");
       else setPage("landing");
     };
     window.addEventListener("hashchange", handleHash);
@@ -407,16 +404,12 @@ export default function App() {
         setPage("dashboard");
         window.location.hash = "#dashboard";
       };
-      console.log("[DEBUG] pendingNavigationRef SET at handleAuthComplete login (line ~398)");
-      // Skip language transition modal for EN users (already in English)
-      if (landingLang === "en") {
-        pendingNavigationRef.current();
-        pendingNavigationRef.current = null;
-      } else {
-        langModalDismissedRef.current = false; // Reset guard before showing modal
-        setShowLangModal(true);
-        console.log("[DEBUG] setShowLangModal(true) at handleAuthComplete login");
-      }
+      console.log("[DEBUG] Navigation SET at handleAuthComplete login (line ~398). Bypassing Lang modal for returning users.");
+      
+      // For returning users (login), always skip the language transition modal
+      pendingNavigationRef.current();
+      pendingNavigationRef.current = null;
+      
       return;
     }
 
@@ -502,13 +495,32 @@ export default function App() {
     window.location.hash = "#dashboard";
   };
 
+  if (isInitializing) {
+    return (
+      <div className="w-full min-h-screen flex items-center justify-center bg-[#f8fafc]">
+        <div className="w-8 h-8 rounded-full border-2 border-[#0f172b] border-t-transparent animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <ErrorBoundary>
       <div className="size-full">
         <Suspense fallback={<LoadingScreen scenario="" />}>
           {page === "design-system" && <DesignSystemPage />}
           {page === "landing" && (
-            <LandingPage onAuthComplete={handleAuthComplete} landingLang={landingLang} onLangChange={handleLangChange} />
+            <LandingPage
+              onAuthComplete={handleAuthComplete}
+              landingLang={landingLang}
+              onLangChange={handleLangChange}
+              authUser={authUser}
+              onLogout={() => {
+                authService.signOut().catch(() => {});
+                handleBackToLanding();
+                setAuthUser(null);
+              }}
+              onGoToDashboard={handleBackToDashboard}
+            />
           )}
           {page === "loading" && <LoadingScreen scenario={flowState.scenario} />}
           {page === "practice-session" && (
@@ -538,6 +550,10 @@ export default function App() {
               firstPracticeInterlocutor={flowState.interlocutor}
               onLogout={handleBackToLanding}
               onNavigateToHistory={handleNavigateToHistory}
+              onNavigateToAccount={() => {
+                setPage("account");
+                window.location.hash = "#account";
+              }}
               onStartNewPractice={handleStartNewPractice}
               userProfile={userProfile}
               onProfileUpdate={handleProfileUpdate}
@@ -551,6 +567,18 @@ export default function App() {
               firstPracticeInterlocutor={flowState.interlocutor}
               onBack={handleBackToDashboard}
               onLogout={handleBackToLanding}
+            />
+          )}
+          {page === "account" && (
+            <AccountPage
+              userProfile={userProfile}
+              authUser={authUser}
+              onBack={handleBackToDashboard}
+              onLogout={() => {
+                authService.signOut().catch(() => {});
+                handleBackToLanding();
+                setAuthUser(null);
+              }}
             />
           )}
           {showLangModal && (
@@ -601,8 +629,8 @@ export default function App() {
           />
         </Suspense>
 
-        {/* Dev Preview Menu — floating dropdown for rapid UI testing */}
-        <DevPreviewMenu onNavigate={handleDevNavigate} />
+        {/* Dev Preview Menu — floating dropdown for rapid UI testing (disabled for prod) */}
+        {/* <DevPreviewMenu onNavigate={handleDevNavigate} /> */}
       </div>
     </ErrorBoundary>
   );

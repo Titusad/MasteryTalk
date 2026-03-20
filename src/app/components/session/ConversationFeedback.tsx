@@ -64,6 +64,15 @@ export interface RealFeedbackData {
   professionalProficiency?: number | null;
   contentScores?: Record<string, number> | null;
   interviewReadinessScore?: number | null;
+  preparationUtilization?: {
+    score: number;
+    verdict: string;
+    insights: Array<{
+      aspect: string;
+      observation: string;
+      rating: "strong" | "partial" | "missed";
+    }>;
+  } | null;
   contentInsights?: Array<{
     dimension: string;
     observation: string;
@@ -1118,6 +1127,7 @@ function ConversationFeedback({
               sessionId={sessionId}
               scenarioType={scenarioType}
               scenarioLabel={scenarioLabel}
+              beforeAfter={realFeedback?.beforeAfter}
             />
           ) : (
             <div className="text-center py-10">

@@ -15,6 +15,7 @@ import {
   BarChart3,
   Info,
   MessageCircleQuestion,
+  LogOut,
 } from "lucide-react";
 import { motion } from "motion/react";
 import {
@@ -47,6 +48,7 @@ interface DashboardPageProps {
   firstPracticeInterlocutor?: string;
   onLogout?: () => void;
   onNavigateToHistory?: () => void;
+  onNavigateToAccount?: () => void;
   onStartNewPractice?: (scenario: string, scenarioType?: string) => void;
   userProfile?: import("../../services/types").OnboardingProfile | null;
   onProfileUpdate?: (
@@ -439,6 +441,7 @@ export function DashboardPage({
   firstPracticeInterlocutor,
   onLogout,
   onNavigateToHistory,
+  onNavigateToAccount,
   onStartNewPractice,
   lang = "es",
 }: DashboardPageProps) {
@@ -689,20 +692,29 @@ export function DashboardPage({
               </button>
             )}
 
-            <div
-              className="w-10 h-10 rounded-full bg-[#0f172b] flex items-center justify-center cursor-pointer"
-              onClick={() => {
-                authService.signOut().catch(() => { });
-                onLogout?.();
-              }}
-              title="Sign out"
-            >
-              <span
-                className="text-white text-sm"
-                style={{ fontWeight: 500 }}
+            <div className="flex items-center gap-3">
+              <button
+                className="text-[#45556c] hover:text-[#0f172b] transition-colors p-2 rounded-full cursor-pointer flex items-center justify-center"
+                onClick={() => {
+                  authService.signOut().catch(() => { });
+                  onLogout?.();
+                }}
+                title="Cerrar sesión"
               >
-                {avatarInitials}
-              </span>
+                <LogOut className="w-5 h-5" />
+              </button>
+              <div
+                className="w-10 h-10 rounded-full bg-[#0f172b] flex items-center justify-center cursor-pointer"
+                title="Mi cuenta"
+                onClick={() => onNavigateToAccount?.()}
+              >
+                <span
+                  className="text-white text-sm"
+                  style={{ fontWeight: 500 }}
+                >
+                  {avatarInitials}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -717,8 +729,8 @@ export function DashboardPage({
               className="text-2xl md:text-3xl text-[#0f172b]"
               style={{ fontWeight: 300 }}
             >
-              {greeting},{" "}
-              <span style={{ fontWeight: 500 }}>{userName || "David"}</span>
+              Hola{" "}
+              <span style={{ fontWeight: 500 }}>{userName ? userName.trim().split(" ")[0] : "David"}</span>
             </h2>
             <p className="text-sm text-[#62748e] mt-1">
               {hasRealData

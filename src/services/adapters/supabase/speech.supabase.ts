@@ -110,15 +110,15 @@ export class SupabaseSpeechService implements ISpeechService {
      * Transcribe an audio Blob via the server's Whisper endpoint.
      * This is the primary method — called directly from VoicePractice.
      */
-    async transcribeBlob(audioBlob: Blob): Promise<TranscriptionResult> {
+    async transcribeBlob(audioBlob: Blob, language: string = "en"): Promise<TranscriptionResult> {
+        // Convert to WAV first to ensure maximum fidelity for Whisper (especially with accents)
+        const wavBlob = await convertBlobToWav(audioBlob);
+        
         const formData = new FormData();
-        // Determine file extension from MIME type
-        const ext = audioBlob.type.includes("mp4")
-            ? "mp4"
-            : audioBlob.type.includes("ogg")
-                ? "ogg"
-                : "webm";
-        formData.append("audio", audioBlob, `recording.${ext}`);
+        const isWav = wavBlob.type === "audio/wav";
+        const ext = isWav ? "wav" : (wavBlob.type.includes("mp4") ? "mp4" : "webm");
+        formData.append("audio", wavBlob, `recording.${ext}`);
+        formData.append("language", language);
 
         console.log(
             `[SupabaseSpeech] Sending ${audioBlob.size} bytes (${audioBlob.type}) to Whisper`

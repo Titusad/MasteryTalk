@@ -25,9 +25,10 @@ import {
     AlertTriangle,
     Loader2,
     BookmarkCheck,
+    Lightbulb,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import type { TurnPronunciationData } from "../../services/types";
+import type { TurnPronunciationData, BeforeAfterComparison } from "../../services/types";
 import { realSpeechService } from "../../services";
 import { shadowingScoresCache } from "../utils/sessionCache";
 import {
@@ -127,7 +128,8 @@ function splitStress(word: string): [string, string, string] {
 /* ── Extract full-sentence phrases from pronunciation data ── */
 
 export function extractShadowingPhrases(
-    turns: TurnPronunciationData[]
+    turns: TurnPronunciationData[],
+    beforeAfter?: BeforeAfterComparison[]
 ): ShadowingPhrase[] {
     const phrases: ShadowingPhrase[] = [];
 
@@ -154,9 +156,24 @@ export function extractShadowingPhrases(
 
         const ipa = phonemesToIpa(focusWordData.phonemes || []);
 
+        const normalize = (s: string) => s.toLowerCase().replace(/[^\w\s]/g, '').trim();
+        const normRecognized = normalize(recognizedText);
+        
+        let sentenceToPractice = recognizedText;
+        if (beforeAfter && beforeAfter.length > 0) {
+            const matched = beforeAfter.find(ba => {
+                if (!ba.userOriginal) return false;
+                const normOriginal = normalize(ba.userOriginal);
+                return normRecognized.includes(normOriginal) || normOriginal.includes(normRecognized);
+            });
+            if (matched && matched.professionalVersion) {
+                sentenceToPractice = matched.professionalVersion;
+            }
+        }
+
         phrases.push({
             id: `shadowing-t${turn.turnIndex}`,
-            sentence: recognizedText.trim(),
+            sentence: sentenceToPractice.trim(),
             focusWord: focusWordData.word.toLowerCase(),
             ipa,
             originalScore: accuracyScore,
@@ -320,6 +337,7 @@ export interface ShadowingModalProps {
     mode?: "practice" | "review";
     /** When mode="review", the SR phrases being reviewed (for updating box/interval) */
     reviewSRPhrases?: SpacedRepetitionPhrase[];
+    initialIndex?: number;
     onClose: () => void;
     onComplete?: (avgScore: number, passed: number, total: number) => void;
     /** Called after review mode completes with updated SR phrase data */
@@ -336,11 +354,12 @@ export function ShadowingModal({
     sessionId,
     mode = "practice",
     reviewSRPhrases,
+    initialIndex = 0,
     onClose,
     onComplete,
     onReviewComplete,
 }: ShadowingModalProps) {
-    const [currentIndex, setCurrentIndex] = useState(0);
+    const [currentIndex, setCurrentIndex] = useState(initialIndex);
     const [phase, setPhase] = useState<Phase>("idle");
     const [result, setResult] = useState<DrillResult | null>(null);
     const [errorMsg, setErrorMsg] = useState("");
@@ -927,6 +946,55 @@ export function ShadowingModal({
                                         </p>
                                     )}
                                 </div>
+
+                                {/* Word-level feedback */}
+                                {result.wordResults && result.wordResults.length > 0 && (
+                                    <div className="w-full mt-4 mb-2">
+                                        <p className="text-xs text-[#64748b] mb-2 text-center" style={{ fontWeight: 500 }}>
+                                            Word-level analysis: (hover for tips)
+                                        </p>
+                                        <div className="flex flex-wrap justify-center gap-1.5 p-3 bg-[#f8fafc] rounded-xl border border-[#e2e8f0]">
+                                            {result.wordResults.map((w, i) => {
+                                                const color = w.score >= 80 ? "#334155" : w.score >= 60 ? "#f59e0b" : "#ef4444";
+                                                const bg = w.score >= 80 ? "transparent" : w.score >= 60 ? "rgba(245,158,11,0.1)" : "rgba(239,68,68,0.1)";
+                                                const isError = w.errorType && w.errorType !== "None";
+                                                
+                                                return (
+                                                    <div 
+                                                        key={i} 
+                                                        className="relative group cursor-default px-1.5 py-0.5 rounded transition-colors"
+                                                        style={{ backgroundColor: bg }}
+                                                    >
+                                                        <span style={{ color: color, fontWeight: w.score < 80 ? 600 : 400 }}>
+                                                            {w.word}
+                                                        </span>
+                                                        {/* Tooltip */}
+                                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 opacity-0 group-hover:opacity-100 transition-opacity z-10 w-max px-2.5 py-1.5 bg-[#0f172b] text-white text-[10px] rounded-lg shadow-xl pointer-events-none">
+                                                            Score: {Math.round(w.score)}%
+                                                            {isError && <span className="block text-red-300 font-medium mt-0.5 text-[9px] uppercase tracking-wider">{w.errorType}</span>}
+                                                            {w.errorType === 'Omission' && <span className="block text-gray-300 mt-0.5">Don't skip this sound!</span>}
+                                                            {w.errorType === 'Insertion' && <span className="block text-gray-300 mt-0.5">Extra word added.</span>}
+                                                            {w.errorType === 'Mispronunciation' && <span className="block text-gray-300 mt-0.5">Check your vowel/consonants.</span>}
+                                                            {/* Arrow */}
+                                                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-[#0f172b]" />
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                {/* Fluency heuristic Tip */}
+                                {result.fluency < 80 && (
+                                    <div className="w-full mt-2 bg-[#f0fdfa] border border-[#ccfbf1] rounded-xl p-3 flex gap-3 text-left">
+                                        <Lightbulb className="w-4 h-4 text-[#14b8a6] shrink-0 mt-0.5" />
+                                        <p className="text-xs text-[#134e4a] leading-relaxed">
+                                            <strong>Fluency Tip: </strong> 
+                                            Tu ritmo se nota fragmentado. Intenta agrupar las palabras <em>(linking)</em> en lugar de decirlas una por una. Escucha a la IA de nuevo para imitar su fluidez.
+                                        </p>
+                                    </div>
+                                )}
 
                                 {flaggedForSR.has(currentIndex) && (
                                     <motion.div

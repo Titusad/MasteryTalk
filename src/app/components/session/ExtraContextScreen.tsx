@@ -372,8 +372,8 @@ function ExtraContextScreen({
                                     />
                                     {manualExperience.length > 0 && (
                                         <div className="flex justify-end mt-1">
-                                            <span className={`text-[10px] ${manualExperience.length > 1500 ? "text-amber-500" : "text-[#c4cdd5]"}`}>
-                                                {manualExperience.length} / 2,000 chars
+                                            <span className={`text-[10px] ${manualExperience.length > 4000 ? "text-amber-500" : "text-[#c4cdd5]"}`}>
+                                                {manualExperience.length} / 5,000 chars
                                             </span>
                                         </div>
                                     )}
@@ -440,8 +440,8 @@ function ExtraContextScreen({
                                     {/* Character count */}
                                     {currentValue.length > 0 && (
                                         <div className="flex justify-end mt-1">
-                                            <span className={`text-[10px] ${currentValue.length > 1500 ? "text-amber-500" : "text-[#c4cdd5]"}`}>
-                                                {currentValue.length} / 2,000 chars
+                                            <span className={`text-[10px] ${currentValue.length > 4000 ? "text-amber-500" : "text-[#c4cdd5]"}`}>
+                                                {currentValue.length} / 5,000 chars
                                             </span>
                                         </div>
                                     )}

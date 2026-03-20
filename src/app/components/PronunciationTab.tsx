@@ -589,6 +589,7 @@ export interface PronunciationTabProps {
     sessionId?: string | null;
     scenarioType?: string;
     scenarioLabel?: string;
+    beforeAfter?: BeforeAfterComparison[];
 }
 
 export function PronunciationTab({
@@ -596,8 +597,10 @@ export function PronunciationTab({
     sessionId,
     scenarioType,
     scenarioLabel = "Practice",
+    beforeAfter,
 }: PronunciationTabProps) {
     const [showShadowingModal, setShowShadowingModal] = useState(false);
+    const [initialShadowingIndex, setInitialShadowingIndex] = useState(0);
 
     /* -- Computed data -- */
     const scores = useMemo(
@@ -609,10 +612,10 @@ export function PronunciationTab({
         [pronunciationData]
     );
 
-    /* -- Shadowing phrases (full sentences) for modal -- */
+    /* -- Shadowing phrases for modal -- */
     const shadowingPhrases = useMemo(
-        () => extractShadowingPhrases(pronunciationData),
-        [pronunciationData]
+        () => extractShadowingPhrases(pronunciationData, beforeAfter),
+        [pronunciationData, beforeAfter]
     );
 
     /* -- Empty state -- */
@@ -754,15 +757,19 @@ export function PronunciationTab({
                         {/* Phrase preview list */}
                         <div className="space-y-2 mb-5">
                             {shadowingPhrases.map((sp, idx) => (
-                                <motion.div
+                                <motion.button
                                     key={sp.id}
-                                    className="flex items-center gap-3 p-3 rounded-xl bg-[#f8fafc] border border-[#e2e8f0]"
+                                    onClick={() => {
+                                        setInitialShadowingIndex(idx);
+                                        setShowShadowingModal(true);
+                                    }}
+                                    className="w-full flex items-center text-left gap-3 p-3 rounded-xl bg-[#f8fafc] border border-[#e2e8f0] hover:bg-white hover:border-[#c7d2fe] hover:shadow-sm transition-all cursor-pointer group"
                                     initial={{ opacity: 0, x: -8 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: 0.2 + idx * 0.06 }}
                                 >
                                     <span
-                                        className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] shrink-0"
+                                        className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] shrink-0 transition-transform group-hover:scale-105"
                                         style={{
                                             fontWeight: 700,
                                             backgroundColor: scoreBg(sp.originalScore),
@@ -771,9 +778,11 @@ export function PronunciationTab({
                                     >
                                         {idx + 1}
                                     </span>
-                                    <p className="text-sm text-[#1e293b] flex-1 min-w-0 truncate" style={{ fontWeight: 500 }}>
-                                        {sp.sentence}
-                                    </p>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm text-[#1e293b] truncate" style={{ fontWeight: 500 }}>
+                                            {sp.sentence}
+                                        </p>
+                                    </div>
                                     <span
                                         className="text-[10px] px-2 py-0.5 rounded-full shrink-0"
                                         style={{
@@ -782,15 +791,18 @@ export function PronunciationTab({
                                             color: scoreColor(sp.originalScore),
                                         }}
                                     >
-                                        {Math.round(sp.originalScore)}%
+                                        Repaso
                                     </span>
-                                </motion.div>
+                                </motion.button>
                             ))}
                         </div>
 
                         {/* CTA button */}
                         <motion.button
-                            onClick={() => setShowShadowingModal(true)}
+                            onClick={() => {
+                                setInitialShadowingIndex(0);
+                                setShowShadowingModal(true);
+                            }}
                             className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white text-sm hover:from-[#4f46e5] hover:to-[#7c3aed] transition-all shadow-md shadow-[#6366f1]/20 cursor-pointer flex items-center justify-center gap-2"
                             style={{ fontWeight: 600 }}
                             whileHover={{ scale: 1.01 }}
@@ -803,7 +815,6 @@ export function PronunciationTab({
                 )}
             </motion.div>
 
-            {/* Shadowing Modal */}
             {showShadowingModal && shadowingPhrases.length > 0 && (
                 <ShadowingModal
                     phrases={shadowingPhrases}
@@ -811,6 +822,7 @@ export function PronunciationTab({
                     scenarioType={scenarioType}
                     sessionId={sessionId}
                     mode="practice"
+                    initialIndex={initialShadowingIndex}
                     onClose={() => setShowShadowingModal(false)}
                 />
             )}

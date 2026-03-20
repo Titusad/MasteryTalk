@@ -31,6 +31,7 @@ import {
   scenarioKey,
   scriptCache,
   toolkitCache,
+  cvMatchCache,
   interviewBriefingCache,
   feedbackCache,
   summaryCache,
@@ -39,6 +40,7 @@ import {
 } from "../utils/sessionCache";
 import { detectLanguageBackground } from "../../services/locale-detect";
 import { downloadSessionReportPdf } from "../utils/cheatSheetPdf";
+import { analyzeCvMatch, type CVMatchResult } from "../../services/cvMatchService";
 
 /** Detect locale once at module level — stable across renders */
 const _detectedLocale = detectLanguageBackground();
@@ -118,9 +120,21 @@ export function PracticeSessionPage({
 }: PracticeSessionPageProps) {
   const isDevPreview = !!devInitialStep;
 
+  /* Recover session state from browser history if navigating Back/Forward */
+  const initialHistoryState = useMemo(() => {
+    if (typeof window !== "undefined" && window.history.state?.influSession) {
+      return window.history.state.influSession as { step: Step; sessionId: string };
+    }
+    return null;
+  }, []);
+
   /* Determine initial step: if interview + no keyExperience in profile → key-experience first */
   const needsKeyExperience = scenarioType === "interview" && !userProfile?.keyExperience;
-  const [step, setStep] = useState<Step>(devInitialStep ?? (needsKeyExperience ? "key-experience" : "extra-context"));
+  const [step, setStep] = useState<Step>(() => {
+    if (devInitialStep) return devInitialStep;
+    if (initialHistoryState?.step) return initialHistoryState.step;
+    return needsKeyExperience ? "key-experience" : "extra-context";
+  });
 
   /* ── Scenario cache key for pre-session data (script, toolkit) ── */
   const sKey = useMemo(
@@ -148,22 +162,67 @@ export function PracticeSessionPage({
   /* Service data */
   const [serviceError, setServiceError] = useState<ServiceError | null>(null);
 
-  /* Real AI-generated feedback from /analyze-feedback */
-  const [realFeedback, setRealFeedback] = useState<RealFeedbackData | null>(devMockFeedback ?? null);
-  const [feedbackStatus, setFeedbackStatus] = useState<"idle" | "loading" | "ready" | "error">(isDevPreview ? "ready" : "idle");
-  const [feedbackAnimDone, setFeedbackAnimDone] = useState(isDevPreview);
+  /* Session initialization via conversationService (declared early so callbacks below can reference it) */
+  const [sessionId, setSessionId] = useState<string | null>(() => {
+    if (isDevPreview) return "dev-preview-session";
+    if (initialHistoryState?.sessionId) return initialHistoryState.sessionId;
+    return null;
+  });
 
-  /* Azure pronunciation assessment data accumulated during the session */
-  const [sessionPronData, setSessionPronData] = useState<TurnPronunciationData[]>(devMockPronData ?? []);
+  /* Real AI-generated feedback from /analyze-feedback */
+  const [realFeedback, setRealFeedback] = useState<RealFeedbackData | null>(() => {
+    if (devMockFeedback) return devMockFeedback;
+    if (initialHistoryState?.sessionId) {
+      return feedbackCache.get(initialHistoryState.sessionId) || null;
+    }
+    return null;
+  });
+  const [feedbackStatus, setFeedbackStatus] = useState<"idle" | "loading" | "ready" | "error">(() => {
+    if (isDevPreview) return "ready";
+    if (initialHistoryState?.step === "conversation-feedback" || initialHistoryState?.step === "session-recap") return "ready";
+    return "idle";
+  });
+  const [feedbackAnimDone, setFeedbackAnimDone] = useState(() => {
+    if (isDevPreview) return true;
+    if (initialHistoryState?.step === "conversation-feedback" || initialHistoryState?.step === "session-recap") return true;
+    return false;
+  });
 
   /* Real AI-generated session summary from /generate-summary */
-  const [sessionSummary, setSessionSummary] = useState<SessionSummary | null>(devMockSummary ?? null);
+  const [sessionSummary, setSessionSummary] = useState<SessionSummary | null>(() => {
+    if (devMockSummary) return devMockSummary;
+    if (initialHistoryState?.sessionId) {
+      return summaryCache.get(initialHistoryState.sessionId) || null;
+    }
+    return null;
+  });
+  const [summaryStatus, setSummaryStatus] = useState<"idle" | "loading" | "ready" | "error">(() => {
+    if (isDevPreview) return "ready";
+    if (initialHistoryState?.step === "session-recap") return "ready";
+    return "idle";
+  });
+  /* Azure pronunciation assessment data accumulated during the session */
+  const [sessionPronData, setSessionPronData] = useState<TurnPronunciationData[]>(() => {
+    if (devMockPronData) return devMockPronData;
+    if (initialHistoryState?.sessionId) {
+      return pronDataCache.get(initialHistoryState.sessionId) || [];
+    }
+    return [];
+  });
+
 
   /* Session start timestamp for duration calculation */
   const sessionStartRef = useRef<number>(Date.now());
 
-  /* Session initialization via conversationService (declared early so callbacks below can reference it) */
-  const [sessionId, setSessionId] = useState<string | null>(isDevPreview ? "dev-preview-session" : null);
+  /* Sync relevant state to history for Back/Forward restoration */
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.history.replaceState(
+        { ...window.history.state, influSession: { step, sessionId } },
+        ""
+      );
+    }
+  }, [step, sessionId]);
 
   /* AI-generated pre-briefing script (NO mock fallback — real AI or error+retry) */
   const [generatedScript, setGeneratedScript] = useState<ScriptSection[] | null>(() => devMockScript ?? scriptCache.get(sKey));
@@ -194,6 +253,12 @@ export function PracticeSessionPage({
     powerQuestions: Array<{ question: string; rationale: string; timing: string }>;
     culturalTips: Array<{ title: string; description: string; type: "do" | "avoid" }>;
   } | null>(() => toolkitCache.get(sKey));
+
+  /* AI-generated CV Match analysis */
+  const [cvMatchData, setCvMatchData] = useState<CVMatchResult | null>(() => cvMatchCache.get(sKey));
+  const [cvMatchStatus, setCvMatchStatus] = useState<"idle" | "loading" | "success" | "error">(
+    cvMatchCache.get(sKey) ? "success" : "idle"
+  );
 
   /* ── Script / Briefing generation: call Edge Function ── */
   const fireScriptGeneration = useCallback((extraData?: Record<string, string>) => {
@@ -294,6 +359,23 @@ export function PracticeSessionPage({
         setScriptGenError(err.message);
         setScriptGenStatus("error");
       });
+
+    // ── Fire CV Match Analysis in parallel (non-blocking) ──
+    const userCv = allFields["cvSummary"] || allFields["manualExperience"] || allFields["Your key experience"];
+    const userJd = allFields["Job Description"];
+    if (userCv && userJd && !cvMatchCache.get(sKey)) {
+      setCvMatchStatus("loading");
+      analyzeCvMatch(userCv, userJd)
+        .then((data) => {
+          cvMatchCache.set(sKey, data);
+          setCvMatchData(data);
+          setCvMatchStatus("success");
+        })
+        .catch((err) => {
+          console.error("[CvMatchAnalysis] ❌ Failed:", err);
+          setCvMatchStatus("error");
+        });
+    }
 
     // ── Fire preparation toolkit generation in parallel (non-blocking) ──
     const toolkitUrl = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/generate-preparation-toolkit`;
@@ -399,6 +481,7 @@ export function PracticeSessionPage({
   const fireSummaryGeneration = useCallback(() => {
     if (!sessionId) return;
     setSessionSummary(null);
+    setSummaryStatus("loading");
 
     const serverUrl = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/generate-summary`;
 
@@ -428,10 +511,12 @@ export function PracticeSessionPage({
           cefrApprox: data.cefrApprox || null,
         };
         setSessionSummary(sum);
+        setSummaryStatus("ready");
         if (sessionId) summaryCache.set(sessionId, sum);
       })
       .catch((err) => {
         console.error("[GenerateSummary] ❌ Failed:", err.message);
+        setSummaryStatus("error");
         // Non-blocking — report renders without summary
       });
   }, [sessionId, scenarioType]);
@@ -511,11 +596,14 @@ export function PracticeSessionPage({
   /* ── Auto-save session when entering session-recap with data ── */
   useEffect(() => {
     if (step === "session-recap" && sessionId && !sessionSavedRef.current) {
-      // Small delay to allow summary to arrive
-      const timer = setTimeout(() => saveSessionToBackend(), 2000);
-      return () => clearTimeout(timer);
+      if (
+        (feedbackStatus === "ready" || feedbackStatus === "error") &&
+        (summaryStatus === "ready" || summaryStatus === "error")
+      ) {
+        saveSessionToBackend();
+      }
     }
-  }, [step, sessionId, saveSessionToBackend]);
+  }, [step, sessionId, feedbackStatus, summaryStatus, saveSessionToBackend]);
 
   /* ── Auto-transition for feedback: when BOTH animation AND API are done ── */
   useEffect(() => {
@@ -714,6 +802,24 @@ export function PracticeSessionPage({
                       setInterviewBriefing(cachedBriefing);
                       setScriptGenStatus("ready");
                       setStep("pre-briefing");
+
+                      // Ensure CV Match fires on cache-hit if it was missing or failed previously
+                      const userCv = enriched["cvSummary"] || enriched["manualExperience"] || enriched["Your key experience"];
+                      const userJd = enriched["Job Description"];
+                      if (userCv && userJd && !cvMatchCache.get(sKey)) {
+                        setCvMatchStatus("loading");
+                        analyzeCvMatch(userCv, userJd)
+                          .then((data) => {
+                            cvMatchCache.set(sKey, data);
+                            setCvMatchData(data);
+                            setCvMatchStatus("success");
+                          })
+                          .catch((err) => {
+                            console.error("[CvMatchAnalysis] ❌ Failed:", err);
+                            setCvMatchStatus("error");
+                          });
+                      }
+
                       return;
                     }
                   } else {
@@ -816,6 +922,8 @@ export function PracticeSessionPage({
                 }}
                 onBack={() => setStep("extra-context")}
                 scenario={scenario}
+                cvMatchData={cvMatchData}
+                cvMatchStatus={cvMatchStatus}
               />
             )}
             {step === "pre-briefing" && generatedScript && scenarioType !== "interview" && (
@@ -925,7 +1033,7 @@ export function PracticeSessionPage({
                       } : null,
                       summary: sessionSummary ? {
                         overallSentiment: sessionSummary.overallSentiment,
-                        nextSteps: sessionSummary.nextSteps,
+                        nextSteps: sessionSummary.nextSteps.map(s => `${s.title}: ${s.desc}`),
                         sessionHighlight: sessionSummary.sessionHighlight,
                       } : null,
                       sessionDuration: `${Math.round((Date.now() - sessionStartRef.current) / 60000)} min`,

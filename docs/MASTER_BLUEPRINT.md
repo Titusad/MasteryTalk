@@ -68,7 +68,10 @@ en ingles, disenado para el mercado de nearshoring en Latinoamerica.
 | `@supabase/supabase-js` v2.98 | Cliente Supabase (auth real cuando `USE_MOCK = false`) |
 | `canvas-confetti` | Celebracion de confetti en CreditUpsellModal post-compra |
 
-> **Limpieza realizada (26 feb 2026):** Se eliminaron ~43 paquetes innecesarios del `package.json` (MUI, Radix UI, shadcn dependencies, react-dnd, react-slick, recharts, etc.). Eran residuos del scaffolding inicial de shadcn/ui. Los archivos de `ui/` siguen existiendo (son protegidos del sistema) pero son inertes — nada los importa y Vite los ignora.
+## 8.2 Deuda Técnica
+
+> **Limpieza realizada (26 feb 2026):** Se eliminaron ~43 paquetes innecesarios del `package.json` (MUI, Radix UI, shadcn dependencies, react-dnd, react-slick, recharts, etc.). Eran residuos del scaffolding inicial de shadcn/ui.
+> **Limpieza realizada (18 mar 2026):** Se eliminó de raíz la carpeta inerte `src/app/components/ui/` y sus 48 archivos inoperantes, dejando un workspace 100% limpio.
 
 ### Por que Supabase sobre Firebase
 
@@ -441,7 +444,7 @@ Landing Page (#) — i18n ES/PT
 
 PracticeSessionPage (#practice-session) — 8 internal steps (simplified in v5.0):
   |
-  1. strategy           → StrategyBuilder (3 value pillars, stepper horizontal)
+  1. key-experience       → KeyExperienceScreen (User background for AI context)
   2. extra-context       → ExtraContextScreen (skippable: escribir, URL, archivo)
   3. generating-script   → AnalyzingScreen(variant="script") + prepareSession()
   4. pre-briefing        → PreBriefingScreen (cheat sheet + cultural coaching card)
@@ -727,8 +730,7 @@ Resumen:
 
 | Item | Ubicacion | Impacto |
 |------|-----------|---------|
-| ~48 archivos shadcn/ui sin importar | `/src/app/components/ui/` | 0 (tree-shaking) |
-| Archivo monolitico | `PracticeSessionPage.tsx` (1339 lineas) | Legibilidad (reducido de 2891 con extraccion de SessionReport) |
+| Archivo monolitico | `PracticeSessionPage.tsx` | Legibilidad (Extraído KeyExperience, ExtraContext, Briefing, feedback, etc.) |
 | Archivo monolitico | `shared/index.tsx` (1254 lineas) | Legibilidad |
 | Blank screen issue | Toda la app | Debugging en progreso — ErrorBoundary + defensive init agregados |
 | Hash-based routing (no react-router) | `App.tsx` | Funcional pero basico. No soporta deep linking complejo |

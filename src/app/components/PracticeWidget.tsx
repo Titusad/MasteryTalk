@@ -77,8 +77,10 @@ function PracticeSetupModal({
   onClose: () => void;
   onAuthComplete?: (data: SetupModalResult, authMode?: "login" | "registro") => void;
 }) {
-  const { copy } = useLandingCopy();
+  const { copy, lang } = useLandingCopy();
   const sm = copy.setupModal;
+
+  const shortSoon = lang === "es" ? "PRONTO" : lang === "pt" ? "BREVE" : "SOON";
 
   /* ── Dynamic guided fields ── */
   const guidedFieldDefs: Record<string, GuidedField[]> = {
@@ -303,18 +305,23 @@ function PracticeSetupModal({
                         const isActive = selectedScenario === tab.id;
                         const TabIcon = tab.icon;
                         const tabLabel = sm.scenarioLabels[tab.id as "sales" | "interview"] ?? tab.label;
+                        const isDisabled = tab.id === "sales";
                         return (
                           <button
                             key={tab.id}
-                            onClick={() => handleScenarioChange(tab.id)}
+                            disabled={isDisabled}
+                            onClick={isDisabled ? undefined : () => handleScenarioChange(tab.id)}
                             className={`relative inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm transition-all duration-200 ${isActive
                               ? "bg-white text-[#0f172b] shadow-sm"
-                              : "text-[#62748e] hover:text-[#314158]"
+                              : isDisabled
+                                ? "text-[#94a3b8] opacity-60 cursor-not-allowed"
+                                : "text-[#62748e] hover:text-[#314158]"
                               }`}
                             style={{ fontWeight: isActive ? 600 : 400, textTransform: "capitalize" }}
                           >
                             <TabIcon className="w-3.5 h-3.5" strokeWidth={1.5} />
                             {tabLabel}
+                            {isDisabled && <span className="text-[9px] bg-[#e2e8f0] text-[#62748e] px-1.5 py-0.5 rounded-full ml-1 uppercase" style={{ fontWeight: 700 }}>{shortSoon}</span>}
                           </button>
                         );
                       })}
@@ -504,7 +511,8 @@ export function PracticeWidget({
     };
   }, [showModal]);
 
-  const { copy } = useLandingCopy();
+  const { copy, lang } = useLandingCopy();
+  const comingSoonText = lang === "es" ? "Próximamente" : lang === "pt" ? "Em breve" : "Coming soon";
 
   return (
     <>
@@ -543,51 +551,73 @@ export function PracticeWidget({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[
               {
-                id: "sales" as ScenarioType,
-                label: copy.widget.salesLabel,
-                description: copy.widget.salesDesc,
-                icon: Target,
-                scenarioText: copy.widget.salesLabel,
-              },
-              {
                 id: "interview" as ScenarioType,
                 label: copy.widget.interviewLabel,
                 description: copy.widget.interviewDesc,
                 icon: Mic,
                 scenarioText: copy.widget.interviewLabel,
               },
+              {
+                id: "sales" as ScenarioType,
+                label: copy.widget.salesLabel,
+                description: copy.widget.salesDesc,
+                icon: Target,
+                scenarioText: copy.widget.salesLabel,
+                disabled: true,
+                badge: comingSoonText,
+              },
             ].map((card) => {
               const Icon = card.icon;
               return (
                 <motion.button
                   key={card.id}
-                  onClick={() => handleScenarioClick(card)}
-                  className="group/card relative bg-[#f8fafc] hover:bg-[#0f172b] border-2 border-[#e2e8f0] hover:border-[#0f172b] rounded-2xl p-6 text-left transition-all duration-300 cursor-pointer"
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
+                  onClick={card.disabled ? undefined : () => handleScenarioClick(card)}
+                  className={`group/card relative rounded-2xl p-6 text-left transition-all duration-300 ${
+                    card.disabled
+                      ? "bg-[#f8fafc] border-2 border-[#e2e8f0] opacity-70 cursor-not-allowed"
+                      : "bg-[#f8fafc] hover:bg-[#0f172b] border-2 border-[#e2e8f0] hover:border-[#0f172b] cursor-pointer"
+                  }`}
+                  whileHover={card.disabled ? {} : { scale: 1.02, y: -2 }}
+                  whileTap={card.disabled ? {} : { scale: 0.98 }}
                 >
+                  {card.badge && (
+                    <div className="absolute top-4 right-4 bg-[#e2e8f0] text-[#45556c] text-[10px] uppercase px-2 py-0.5 rounded-full" style={{ fontWeight: 700, letterSpacing: "0.5px" }}>
+                      {card.badge}
+                    </div>
+                  )}
+
                   {/* Icon */}
-                  <div className="w-11 h-11 rounded-full bg-[#0f172b] group-hover/card:bg-white flex items-center justify-center mb-4 transition-colors duration-300">
-                    <Icon className="w-5 h-5 text-white group-hover/card:text-[#0f172b] transition-colors duration-300" strokeWidth={1.5} />
+                  <div className={`w-11 h-11 rounded-full flex items-center justify-center mb-4 transition-colors duration-300 ${
+                    card.disabled ? "bg-[#e2e8f0]" : "bg-[#0f172b] group-hover/card:bg-white"
+                  }`}>
+                    <Icon className={`w-5 h-5 transition-colors duration-300 ${
+                      card.disabled ? "text-[#94a3b8]" : "text-white group-hover/card:text-[#0f172b]"
+                    }`} strokeWidth={1.5} />
                   </div>
 
                   {/* Label */}
                   <p
-                    className="text-[#0f172b] group-hover/card:text-white text-[15px] mb-1.5 transition-colors duration-300"
+                    className={`text-[15px] mb-1.5 transition-colors duration-300 ${
+                      card.disabled ? "text-[#94a3b8]" : "text-[#0f172b] group-hover/card:text-white"
+                    }`}
                     style={{ fontWeight: 600 }}
                   >
                     {card.label}
                   </p>
 
                   {/* Description */}
-                  <p className="text-[#62748e] group-hover/card:text-white/70 text-[13px] leading-relaxed transition-colors duration-300">
+                  <p className={`text-[13px] leading-relaxed transition-colors duration-300 ${
+                      card.disabled ? "text-[#94a3b8]/70" : "text-[#62748e] group-hover/card:text-white/70"
+                  }`}>
                     {card.description}
                   </p>
 
                   {/* Arrow indicator */}
-                  <div className="absolute top-6 right-6 w-8 h-8 rounded-full bg-transparent group-hover/card:bg-white/15 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-all duration-300">
-                    <ArrowRight className="w-4 h-4 text-white" />
-                  </div>
+                  {!card.disabled && (
+                    <div className="absolute top-6 right-6 w-8 h-8 rounded-full bg-transparent group-hover/card:bg-white/15 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-all duration-300">
+                      <ArrowRight className="w-4 h-4 text-white" />
+                    </div>
+                  )}
                 </motion.button>
               );
             })}

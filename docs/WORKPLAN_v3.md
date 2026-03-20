@@ -30,7 +30,7 @@
 | SupabaseAuthService adapter | COMPLETADO | `/src/services/adapters/supabase/auth.supabase.ts` (preparado para Fase 1) |
 | SQL migration script | COMPLETADO | `/docs/FASE1_MIGRATION.sql` — 5 tablas, 1 trigger, 5 RLS sets, 3 indexes |
 | Shared design system | COMPLETADO | `/src/app/components/shared/index.tsx` (1254 lineas) — COLORS, BrandLogo, AnalyzingScreen, RecordButton, SmoothHeight, etc. |
-| StrategyBuilder con framework tooltips | COMPLETADO | STAR, BATNA, SPIN, MEDDIC por scenario type |
+| KeyExperienceScreen (Contexto AI) | COMPLETADO | Recolecta background para el inFluentia Prompt |
 | Paywall system (3 triggers) | COMPLETADO | `useUsageGating` hook + `CreditUpsellModal` con headers contextuales |
 | i18n ES/PT/EN | COMPLETADO | `landing-i18n.ts`, `CreditUpsellModal.tsx`, language switcher con flag emojis |
 | ErrorBoundary | COMPLETADO | `ErrorBoundary.tsx` wrapping todo `App.tsx` |

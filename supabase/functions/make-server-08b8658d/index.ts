@@ -2,13 +2,14 @@ import { Hono } from "npm:hono";
 import { cors } from "npm:hono/cors";
 import { logger } from "npm:hono/logger";
 import { createClient } from "npm:@supabase/supabase-js@2";
-import * as kv from "./kv_store.tsx";
-import { buildPreBriefingPrompt } from "./prebriefing-prompt.ts";
+import * as kv from "./kv_store.ts";
+import { buildPreBriefingPrompt } from "./prebriefing-prompts.ts";
 import { buildPreparationToolkitPrompt } from "./preparation-toolkit-prompt.ts";
 import { buildFeedbackAnalystPrompt, buildTranscriptForAnalyst } from "./analyst-prompt.ts";
 import { buildSessionSummaryPrompt } from "./summary-prompt.ts";
 import type { SummaryInput } from "./summary-prompt.ts";
 import { buildInterviewBriefingPrompt } from "./interview-briefing-prompt.ts";
+import { buildCvMatchPrompt } from "../_shared/prompts/cv-match-prompt.ts";
 
 const app = new Hono();
 
@@ -650,18 +651,21 @@ app.post("/make-server-08b8658d/transcribe", async (c) => {
 
     const formData = await c.req.formData();
     const audioFile = formData.get("audio");
+    const language = formData.get("language") as string | null;
 
     if (!audioFile || !(audioFile instanceof File)) {
       return c.json({ error: "Missing 'audio' file in form data" }, 400);
     }
 
-    console.log(`[Transcribe] Received audio: ${audioFile.name}, size=${audioFile.size}, type=${audioFile.type}`);
+    console.log(`[Transcribe] Received audio: ${audioFile.name}, size=${audioFile.size}, type=${audioFile.type}, lang=${language}`);
 
     // Forward to OpenAI Whisper API
     const whisperForm = new FormData();
-    whisperForm.append("file", audioFile, audioFile.name || "recording.webm");
+    whisperForm.append("file", audioFile, audioFile.name || "recording.wav");
     whisperForm.append("model", "whisper-1");
-    whisperForm.append("language", "en");
+    if (language) {
+      whisperForm.append("language", language);
+    }
     whisperForm.append("response_format", "verbose_json");
 
     const whisperRes = await fetch("https://api.openai.com/v1/audio/transcriptions", {
@@ -1119,6 +1123,51 @@ app.post("/make-server-08b8658d/tts", async (c) => {
   } catch (err) {
     console.log("[TTS OpenAI Error]", err);
     return c.json({ error: `TTS failed: ${err}` }, 500);
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// POST /analyze-cv-match — Analyze CV vs Job Description
+// ═══════════════════════════════════════════════════════════════
+app.post("/make-server-08b8658d/analyze-cv-match", async (c) => {
+  try {
+    const body = await c.req.json();
+    const { cv, jobDescription } = body;
+
+    if (!cv || !jobDescription) {
+      return c.json({ error: "Missing cv or jobDescription" }, 400);
+    }
+
+    const openaiKey = Deno.env.get("OPENAI_API_KEY");
+    if (!openaiKey) {
+      return c.json({ error: "OPENAI_API_KEY not configured on server" }, 500);
+    }
+
+    const systemPrompt = buildCvMatchPrompt();
+    const userMessage = `=== CV ===\n${cv}\n\n=== JOB DESCRIPTION ===\n${jobDescription}`;
+
+    console.log(`[AnalyzeCVMatch] Calling GPT-4o with prompt (${systemPrompt.length} chars)`);
+
+    const response = await callOpenAIChat(
+      [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userMessage },
+      ],
+      { temperature: 0.7, max_tokens: 1500, jsonMode: true },
+    );
+
+    let feedback;
+    try {
+      feedback = JSON.parse(response);
+    } catch (e) {
+      console.log("[AnalyzeCVMatch] Failed to parse JSON response:", response.slice(0, 200));
+      return c.json({ error: "Invalid JSON from GPT-4o CV match analysis", raw: response.slice(0, 500) }, 502);
+    }
+
+    return c.json(feedback);
+  } catch (err) {
+    console.error("[AnalyzeCVMatch] Error:", err);
+    return c.json({ error: "Internal Server Error in /analyze-cv-match" }, 500);
   }
 });
 

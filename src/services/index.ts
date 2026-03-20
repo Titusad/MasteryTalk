@@ -31,6 +31,7 @@ import { isSupabaseConfigured } from "./supabase";
 import { SupabaseAuthService } from "./adapters/supabase/auth.supabase";
 import { SupabaseConversationService } from "./adapters/supabase/conversation.supabase";
 import { SupabaseSpeechService } from "./adapters/supabase/speech.supabase";
+import { SupabaseFeedbackService } from "./adapters/supabase/feedback.supabase";
 
 /* ── Import interfaces for typed exports ── */
 import type { IAuthService } from "./interfaces/auth";
@@ -58,7 +59,7 @@ export const authService: IAuthService = useSupabase && !FORCE_MOCK_AUTH
 
 /* ── Mock services (legacy screens: ConversationFeedback, etc.) ── */
 export const conversationService = new MockConversationService();
-export const feedbackService = new MockFeedbackService();
+export const feedbackService = useSupabase ? new SupabaseFeedbackService() : new MockFeedbackService();
 export const speechService = new MockSpeechService();
 export const userService = new MockUserService();
 export const paymentService = new MockPaymentService();

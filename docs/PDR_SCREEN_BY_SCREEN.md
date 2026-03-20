@@ -14,7 +14,7 @@
 | 2 | [Auth Modal](#pantalla-2-auth-modal) | (overlay in PracticeWidget) | `AuthModal` (inline) | `authService.signIn()` |
 | 2.5 | [Language Transition Modal](#pantalla-25-language-transition-modal) | (overlay post-auth) | `LanguageTransitionModal` | Ninguno |
 | **Sub-steps del PracticeSessionPage (`#practice-session`):** |
-| 4a | [Strategy Builder](#pantalla-4a-strategy-builder) | `#practice-session` | `StrategyBuilder` | Ninguno (local) |
+| 4a | [Key Experience](#pantalla-4a-key-experience) | `#practice-session` | `KeyExperienceScreen` | Ninguno (local) |
 | 4b | [Extra Context](#pantalla-4b-extra-context) | `#practice-session` | `ExtraContextScreen` (inline, skippable) | Ninguno (local) |
 | 4c | [Generating Script](#pantalla-4c-generating-script-loader) | `#practice-session` | `AnalyzingScreen(variant="script")` | `conversationService.prepareSession()` |
 | 4d | [Pre-Briefing](#pantalla-4d-pre-briefing) | `#practice-session` | `PreBriefingScreen` (inline) | Ninguno (mock data) |
@@ -110,28 +110,22 @@ Comunicar al usuario que la interfaz de practica sera en ingles (inmersion), des
 
 ---
 
-## Pantalla 4a: Strategy Builder
+## Pantalla 4a: Key Experience
 
 ### Componente
-`StrategyBuilder.tsx` (~524 lineas)
+`KeyExperienceScreen` (inline en PracticeSessionPage)
 
 ### Objetivo
-Guiar al usuario a construir 3 "value pillars" para su conversacion usando preguntas de coach IA.
+Recolectar el background o experiencia del usuario de forma rapida para darle contexto personalizado a la IA antes del roleplay.
 
 ### UI
-- Stepper horizontal (3 pasos)
-- Framework tooltips contextuales: STAR (interview), BATNA (negotiation), SPIN (sales), MEDDIC (sales/csuite)
-- Cada pillar tiene: summary, why, how, result
-- Skip button disponible
+- Formulario de entrada de texto enfocado a background (ej. rol, años de experiencia).
+- Skip button disponible si no se quiere proveer
 - Animaciones con Motion
 
-### Coach Questions
-- 3 preguntas por scenario type, cada una con follow-up
-- 5 scenario types completos: interview, sales, csuite, negotiation, networking
-
 ### Salida
-- `onComplete({ pillars: ValuePillar[] })` → Se pasan como `strategyPillars` al `SessionConfig`
-- `onSkip()` → Avanza sin pillars
+- `onComplete()` → Se inyecta contexto al SessionConfig y avanza.
+- `onSkip()` → Avanza sin contexto extra.
 
 ---
 

@@ -12,6 +12,7 @@ import { BrandLogo, PastelBlobs, MiniFooter } from "./shared";
 import { authService, userService } from "../../services";
 import type { PracticeHistoryItem, ScenarioType } from "../../services/types";
 import { SessionReport } from "./SessionReport";
+import { projectId, publicAnonKey } from "../../../utils/supabase/info";
 
 /* ─── Props ─── */
 interface PracticeHistoryPageProps {
@@ -29,6 +30,57 @@ function detectScenarioType(title: string): ScenarioType {
   return "sales";
 }
 
+/* ─── Interfaces for real sessions ─── */
+interface PersistedSession {
+  id: string;
+  scenario: string;
+  interlocutor: string;
+  scenarioType: string;
+  duration: string;
+  created_at: string;
+  feedback?: {
+    strengths?: Array<{ title: string; desc: string }>;
+    opportunities?: Array<{ title: string; tag?: string; desc: string }>;
+    beforeAfter?: Array<{
+      userOriginal: string;
+      professionalVersion: string;
+      technique: string;
+    }>;
+    pillarScores?: Record<string, number> | null;
+    professionalProficiency?: number | null;
+  } | null;
+  summary?: {
+    overallSentiment?: string;
+    nextSteps?: Array<{ title: string; desc: string; pillar: string }>;
+    sessionHighlight?: string;
+    pillarScores?: Record<string, number> | null;
+    professionalProficiency?: number | null;
+    cefrApprox?: string | null;
+  } | null;
+  interviewBriefing?: {
+    anticipatedQuestions?: Array<{ theme: string; question: string }>;
+  } | null;
+}
+
+interface EnrichedHistoryItem extends PracticeHistoryItem {
+  hasInterviewBriefing?: boolean;
+  rawSession?: PersistedSession;
+}
+
+function toPracticeHistoryItem(s: PersistedSession): EnrichedHistoryItem {
+  const d = new Date(s.created_at);
+  const isToday = new Date().toDateString() === d.toDateString();
+  return {
+    title: s.scenario,
+    date: isToday ? "Today" : d.toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" }),
+    duration: s.duration || "8 min",
+    tag: s.interlocutor || "Client",
+    beforeAfterHighlight: s.feedback?.beforeAfter?.[0] || undefined,
+    hasInterviewBriefing: !!(s.interviewBriefing?.anticipatedQuestions?.length),
+    rawSession: s,
+  };
+}
+
 export function PracticeHistoryPage({
   userName,
   firstPracticeScenario,
@@ -37,7 +89,7 @@ export function PracticeHistoryPage({
   onLogout,
 }: PracticeHistoryPageProps) {
   const [expandedPractice, setExpandedPractice] = useState<number | null>(0);
-  const [practiceHistory, setPracticeHistory] = useState<PracticeHistoryItem[]>([]);
+  const [persistedSessions, setPersistedSessions] = useState<PersistedSession[]>([]);
   const [viewingReport, setViewingReport] = useState<number | null>(null);
 
   const avatarInitials = userName
@@ -46,14 +98,26 @@ export function PracticeHistoryPage({
 
   /* ─── Load practice history ─── */
   useEffect(() => {
-    userService
-      .getPracticeHistory("mock-uid")
-      .then(setPracticeHistory)
-      .catch(() => { });
+    const serverUrl = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/sessions`;
+    fetch(serverUrl, {
+      headers: { Authorization: `Bearer ${publicAnonKey}` },
+    })
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        const sessions: PersistedSession[] = data.sessions || [];
+        setPersistedSessions(sessions);
+      })
+      .catch((err) => {
+        console.warn("[PracticeHistory] Failed to load real sessions:", err.message);
+      });
   }, []);
 
   /* ─── Computed practices list (inject the latest session if available) ─── */
-  const practices: PracticeHistoryItem[] = firstPracticeScenario
+  const realHistoryItems = persistedSessions.map(toPracticeHistoryItem);
+  const practices: EnrichedHistoryItem[] = firstPracticeScenario
     ? [
       {
         title: firstPracticeScenario,
@@ -64,13 +128,13 @@ export function PracticeHistoryPage({
           userOriginal:
             "The main differentiator is that we offer bilingual support and integrations with local payment processors.",
           professionalVersion:
-            "We\u2019ve built a purpose-designed solution for the LATAM mid-market, with native bilingual capabilities and seamless integration into the local payment ecosystem.",
+            "We’ve built a purpose-designed solution for the LATAM mid-market, with native bilingual capabilities and seamless integration into the local payment ecosystem.",
           technique: "Value elevation",
         },
       },
-      ...practiceHistory,
+      ...realHistoryItems,
     ]
-    : practiceHistory;
+    : realHistoryItems;
 
   /* ─── Stats summary ─── */
   const totalSessions = practices.length;
@@ -344,6 +408,12 @@ export function PracticeHistoryPage({
               <SessionReport
                 scenarioType={detectedType}
                 guidedFields={{}}
+                realFeedback={practice.rawSession?.feedback as any}
+                sessionSummary={practice.rawSession?.summary as any}
+                interviewBriefing={practice.rawSession?.interviewBriefing as any}
+                sessionDuration={practice.duration}
+                interlocutor={practice.tag}
+                scenario={practice.title}
                 onFinish={() => setViewingReport(null)}
                 finishLabel="Back to history"
               />

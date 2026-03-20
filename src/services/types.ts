@@ -98,6 +98,23 @@ export interface SessionFeedbackResult {
   opportunities: Opportunity[];
   duration: string;
   scenarioType: string;
+  
+  // Extended AI Fields from /analyze-feedback
+  beforeAfter?: BeforeAfterComparison[];
+  pillarScores?: Record<string, number>;
+  professionalProficiency?: number;
+  contentScores?: ContentQualityScores;
+  interviewReadinessScore?: number;
+  preparationUtilization?: {
+    score: number;
+    verdict: string;
+    insights: Array<{
+      aspect: string;
+      observation: string;
+      rating: "strong" | "partial" | "missed";
+    }>;
+  };
+  contentInsights?: ContentInsight[];
 }
 
 /* ── Improved Script ── */
