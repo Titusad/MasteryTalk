@@ -89,6 +89,8 @@ export async function downloadSessionReportPdf(opts: {
     userDrafts?: Record<number, string>;
     /** Azure pronunciation assessment data from the session */
     pronunciationData?: TurnPronunciationData[];
+    /** The AI-generated golden rewrite of the user's responses */
+    improvedScript?: any;
 }): Promise<void> {
     const { briefing, interlocutor = "", scenario, scenarioType, feedback, summary, sessionDuration, userDrafts, pronunciationData } = opts;
 

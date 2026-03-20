@@ -625,16 +625,16 @@ export function SessionReport({
             <button
               onClick={onDownloadReport}
               className={`px-8 py-3.5 rounded-full flex items-center gap-2.5 shadow-md transition-all text-lg ${userPlan === "free"
-                  ? "bg-gradient-to-r from-[#f59e0b] to-[#f97316] text-white hover:from-[#d97706] hover:to-[#ea580c]"
+                  ? "bg-gradient-to-r from-[#10b981] to-[#059669] text-white hover:from-[#059669] hover:to-[#047857]"
                   : "bg-white border border-[#e2e8f0] text-[#0f172b] hover:bg-[#f8fafc]"
                 }`}
               style={{ fontWeight: 500 }}
             >
               {userPlan === "free" ? (
                 <>
-                  <Lock className="w-4 h-4" />
-                  Download Full Report (PDF)
-                  <Sparkles className="w-4 h-4" />
+                  <Download className="w-5 h-5" />
+                  Descargar Gratis (PDF)
+                  <Sparkles className="w-4 h-4 ml-1" />
                 </>
               ) : (
                 <>
@@ -643,11 +643,6 @@ export function SessionReport({
                 </>
               )}
             </button>
-          )}
-          {userPlan === "free" && onDownloadReport && (
-            <p className="text-[10px] text-[#92400e]/60">
-              Free users can view the report on screen · Download requires a session credit
-            </p>
           )}
 
           {onFinish && (

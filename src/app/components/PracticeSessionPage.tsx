@@ -1068,9 +1068,8 @@ export function PracticeSessionPage({
                 onFinish={onFinish}
                 finishLabel="Go To Dashboard"
                 onDownloadReport={() => {
-                  const gate = usageGating.canDownloadReport();
-                  if (gate.allowed) {
-                    downloadSessionReportPdf({
+                  // bypass gating to offer free tests
+                  downloadSessionReportPdf({
                       briefing: scenarioType === "interview" ? interviewBriefing : null,
                       interlocutor,
                       scenario,
@@ -1094,12 +1093,10 @@ export function PracticeSessionPage({
                       sessionDuration: `${Math.round((Date.now() - sessionStartRef.current) / 60000)} min`,
                       userDrafts: scenarioType === "interview" && Object.keys(userDrafts).length > 0 ? userDrafts : undefined,
                       pronunciationData: sessionPronData.length > 0 ? sessionPronData : undefined,
+                      improvedScript: improvedScript,
                     }).catch((err) => {
                       console.error("[SessionReport] PDF generation failed:", err);
                     });
-                  } else {
-                    handlePaywallTriggered("download-report");
-                  }
                 }}
                 userPlan={plan}
                 interviewBriefing={scenarioType === "interview" ? interviewBriefing : null}
