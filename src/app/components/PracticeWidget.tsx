@@ -107,7 +107,6 @@ function PracticeSetupModal({
   const [guidedValues, setGuidedValues] = useState<Record<string, string>>({});
   const [loadingProvider, setLoadingProvider] = useState<AuthProvider | null>(null);
   const [inlineError, setInlineError] = useState<string | null>(null);
-  const [modalStep, setModalStep] = useState<"context" | "ready">("context");
 
   /* ── Handle scenario type change ── */
   const handleScenarioChange = (newScenario: ScenarioType) => {
@@ -116,19 +115,10 @@ function PracticeSetupModal({
     setGuidedValues({});
   };
 
-  /* ── Compute progress steps (2 steps now) ── */
   const currentFields = selectedScenario ? guidedFieldDefs[selectedScenario] : [];
   const hasAnyGuidedInput = currentFields.some(
     (f) => (guidedValues[f.key] ?? "").trim().length > 0
   );
-
-  const STEP_ORDER: (typeof modalStep)[] = ["context", "ready"];
-  const currentStepIdx = STEP_ORDER.indexOf(modalStep);
-
-  const progressSteps = [
-    { label: sm.stepLabels[0], done: currentStepIdx > 0 },
-    { label: sm.stepLabels[1], done: modalStep === "ready" },
-  ];
 
   /* ── Validation ── */
   const canAuth = selectedScenario && selectedInterlocutor && hasAnyGuidedInput;
@@ -197,107 +187,19 @@ function PracticeSetupModal({
         </button>
 
         <div className="px-12 pt-10 pb-6">
-          {/* ── Endowed Progress Stepper (2 steps) ── */}
-          <div className="flex items-center gap-2 mb-8">
-            {progressSteps.map((step, i) => {
-              const isActive = !step.done && (i === 0 || progressSteps[i - 1].done);
-              return (
-                <div key={step.label} className="flex items-center gap-1.5 flex-1">
-                  <div className="flex items-center gap-1.5 flex-1">
-                    <motion.div
-                      className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${step.done
-                        ? "bg-[#0f172b]"
-                        : isActive
-                          ? "bg-[#0f172b]/10 ring-2 ring-[#0f172b]/30"
-                          : "bg-[#e2e8f0]"
-                        }`}
-                      layout
-                      transition={{ duration: 0.35, ease: [0.25, 1, 0.5, 1] }}
-                    >
-                      <AnimatePresence mode="wait">
-                        {step.done ? (
-                          <motion.div
-                            key="check"
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            exit={{ scale: 0 }}
-                            transition={{ duration: 0.2 }}
-                          >
-                            <Check className="w-3 h-3 text-white" />
-                          </motion.div>
-                        ) : isActive ? (
-                          <motion.div
-                            key="dot"
-                            className="w-1.5 h-1.5 rounded-full bg-[#0f172b]"
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            exit={{ scale: 0 }}
-                            transition={{ duration: 0.2 }}
-                          />
-                        ) : null}
-                      </AnimatePresence>
-                    </motion.div>
-                    <span
-                      className={`text-[13px] hidden sm:block transition-colors duration-300 ${step.done ? "text-[#0f172b]" : isActive ? "text-[#0f172b]" : "text-[#4b5563]"
-                        }`}
-                      style={{ fontWeight: step.done || isActive ? 600 : 400 }}
-                    >
-                      {step.label}
-                    </span>
-                  </div>
-                  {i < progressSteps.length - 1 && (
-                    <div className="h-[2px] w-full rounded-full bg-[#e2e8f0] overflow-hidden">
-                      <motion.div
-                        className="h-full bg-[#0f172b] rounded-full"
-                        initial={false}
-                        animate={{ width: step.done ? "100%" : "0%" }}
-                        transition={{ duration: 0.4, ease: [0.25, 1, 0.5, 1] }}
-                      />
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          {/* ── Title — crossfade on step change ── */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={modalStep}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.2 }}
-            >
-              <h3
-                className="text-2xl text-[#0f172b] mb-1.5 text-center"
-                style={{ fontWeight: 600 }}
-              >
-                {modalStep === "ready"
-                  ? sm.titles.ready
-                  : sm.titles.context}
-              </h3>
-              <p className="text-[#45556c] text-sm text-center mb-6">
-                {modalStep === "ready"
-                  ? sm.subtitles.ready
-                  : sm.subtitles.context}
-              </p>
-            </motion.div>
-          </AnimatePresence>
+          <h3
+            className="text-2xl text-[#0f172b] mb-1.5 text-center"
+            style={{ fontWeight: 600 }}
+          >
+            {sm.titles.context}
+          </h3>
+          <p className="text-[#45556c] text-sm text-center mb-6">
+            {sm.subtitles.context}
+          </p>
         </div>
 
-        {/* ── Step content — single AnimatePresence for all steps ── */}
-        <SmoothHeight>
-          <AnimatePresence mode="wait" initial={false}>
-            {modalStep === "context" && (
-              <motion.div
-                key="step-context"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
-              >
-                <div className="px-6 sm:px-12 pb-8">
+        {/* ── Step content ── */}
+        <div className="px-6 sm:px-12 pb-8">
                   {/* ── Scenario type toggle (Interview | Sales) ── */}
                   <div className="flex justify-center mb-6">
                     <div className="inline-flex rounded-full bg-[#f1f5f9] p-1 gap-1">
@@ -362,74 +264,10 @@ function PracticeSetupModal({
                   )}
                 </div>
 
-                {/* ── Next button ── */}
+                {/* ── Continue Action ── */}
                 <div className="px-12 pb-10 pt-4">
                   <div className="border-t border-[#e2e8f0]/70 -mx-12 mb-6" />
-                  <p
-                    className="text-sm text-[#0f172b] text-center mb-6"
-                    style={{ fontWeight: 500 }}
-                  >
-                    {hasAnyGuidedInput
-                      ? sm.contextReady
-                      : sm.contextNeeded}
-                  </p>
-                  <button
-                    className={`w-full py-3.5 rounded-full flex items-center justify-center gap-2.5 transition-all shadow-lg ${hasAnyGuidedInput
-                      ? "bg-[#2d2d2d] text-white hover:bg-[#1a1a1a]"
-                      : "bg-[#cad5e2] text-white cursor-not-allowed"
-                      }`}
-                    style={{ fontWeight: 500 }}
-                    onClick={() => setModalStep("ready")}
-                    disabled={!hasAnyGuidedInput}
-                  >
-                    {sm.next}
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </motion.div>
-            )}
-
-            {/* ── STEP: READY — Preview + Auth ── */}
-            {modalStep === "ready" && (
-              <motion.div
-                key="step-ready"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
-              >
-                <div className="px-12 pb-12 pt-5">
-                  {/* Subtle divider */}
-                  <div className="border-t border-[#e2e8f0]/70 -mx-12 mb-8" />
-
-                  {/* Value Preview teaser */}
-                  <motion.div
-                    className="bg-gradient-to-r from-[#f0f9ff] to-[#eef2ff] rounded-xl border border-[#bfdbfe]/40 p-6 mb-8"
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.35, delay: 0.08 }}
-                  >
-                    <div className="flex items-start gap-2.5">
-                      <Sparkles className="w-4 h-4 text-[#6366f1] shrink-0 mt-0.5" />
-                      <div>
-                        <p className="text-xs text-[#6366f1] mb-1" style={{ fontWeight: 600 }}>
-                          {sm.previewTitle}
-                        </p>
-                        <p className="text-xs text-[#314158] leading-relaxed">
-                          {sm.previewBody}{" "}
-                          {selectedScenario ? sm.scenarioLabels[selectedScenario as "sales" | "interview"] ?? "" : ""}...
-                        </p>
-                        {/* Blurred continuation */}
-                        <div className="relative overflow-hidden h-5 mt-1">
-                          <p className="text-xs text-[#314158] blur-[3px]">
-                            {sm.previewBlurred}
-                          </p>
-                          <div className="absolute inset-0 bg-gradient-to-t from-[#f0f9ff] to-transparent" />
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-
+                  
                   {/* Inline error */}
                   <AnimatePresence>
                     {inlineError && (
@@ -445,41 +283,44 @@ function PracticeSetupModal({
                     )}
                   </AnimatePresence>
 
-                  {/* Auth buttons */}
-                  <div className="flex flex-col gap-4">
-                    <button
-                      className="w-full py-4 rounded-full flex items-center justify-center gap-3 transition-all shadow-lg bg-[#2d2d2d] text-white hover:bg-[#1a1a1a]"
-                      style={{ fontWeight: 500 }}
-                      onClick={() => handleSocialLogin("google")}
-                      disabled={loadingProvider !== null}
-                    >
-                      {loadingProvider === "google" ? (
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                      ) : (
-                        <GoogleIcon />
-                      )}
-                      {sm.continueGoogle}
-                    </button>
-                  </div>
-
-                  <p className="text-center text-sm text-[#4b5563] mt-7">
-                    {sm.trustLine}
-                  </p>
-
-                  {/* Back button */}
-                  <button
-                    className="w-full mt-4 py-2.5 text-sm text-[#62748e] hover:text-[#0f172b] flex items-center justify-center gap-1.5 transition-colors"
-                    style={{ fontWeight: 500 }}
-                    onClick={() => setModalStep("context")}
-                  >
-                    <ArrowLeft className="w-3.5 h-3.5" />
-                    {sm.back}
-                  </button>
+                  {hasAnyGuidedInput ? (
+                      <div className="flex flex-col gap-4">
+                         <p className="text-sm text-[#0f172b] text-center mb-2" style={{ fontWeight: 500 }}>
+                           {sm.contextReady}
+                         </p>
+                        <button
+                          className="w-full py-4 rounded-full flex items-center justify-center gap-3 transition-all shadow-lg bg-[#2d2d2d] text-white hover:bg-[#1a1a1a]"
+                          style={{ fontWeight: 500 }}
+                          onClick={() => handleSocialLogin("google")}
+                          disabled={loadingProvider !== null}
+                        >
+                          {loadingProvider === "google" ? (
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                          ) : (
+                            <GoogleIcon />
+                          )}
+                          {sm.continueGoogle}
+                        </button>
+                        <p className="text-center text-sm text-[#4b5563] mt-3">
+                          {sm.trustLine}
+                        </p>
+                      </div>
+                  ) : (
+                      <div className="flex flex-col gap-4">
+                         <p className="text-sm text-[#0f172b] text-center mb-2" style={{ fontWeight: 500 }}>
+                           {sm.contextNeeded}
+                         </p>
+                        <button
+                          className="w-full py-4 rounded-full flex items-center justify-center gap-3 transition-all shadow-lg bg-[#cad5e2] text-white cursor-not-allowed"
+                          style={{ fontWeight: 500 }}
+                          disabled
+                        >
+                          <GoogleIcon />
+                          {sm.continueGoogle}
+                        </button>
+                      </div>
+                  )}
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </SmoothHeight>
       </motion.div>
     </motion.div>
   );
