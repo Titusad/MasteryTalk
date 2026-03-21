@@ -130,12 +130,12 @@ export function PracticeSessionPage({
     return null;
   }, []);
 
-  /* Determine initial step: if interview + no keyExperience in profile → key-experience first */
-  const needsKeyExperience = scenarioType === "interview" && !userProfile?.keyExperience;
+  /* Determine initial step: skip key-experience screen as per user request */
+  const needsKeyExperience = false;
   const [step, setStep] = useState<Step>(() => {
     if (devInitialStep) return devInitialStep;
     if (initialHistoryState?.step) return initialHistoryState.step;
-    return needsKeyExperience ? "key-experience" : "extra-context";
+    return "extra-context";
   });
 
   /* ── Scenario cache key for pre-session data (script, toolkit) ── */
@@ -893,7 +893,7 @@ export function PracticeSessionPage({
                   setStep("generating-script");
                   fireScriptGeneration(enriched);
                 }}
-                onBack={needsKeyExperience ? () => setStep("key-experience") : onFinish}
+                onBack={onFinish}
               />
             )}
             {step === "generating-script" && (
@@ -1006,7 +1006,7 @@ export function PracticeSessionPage({
                 interlocutor={interlocutor}
                 sessionId={sessionId}
                 scenarioType={scenarioType}
-                onViewFeedback={(pronData) => {
+                onViewFeedback={async (pronData) => {
                   setSessionPronData(pronData);
                   if (sessionId && pronData.length > 0) pronDataCache.set(sessionId, pronData);
                   setStep("analyzing");
