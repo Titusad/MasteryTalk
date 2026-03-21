@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
     FileText,
     ArrowRight,
@@ -101,19 +101,71 @@ function ExtraContextScreen({
     onProfileUpdate?: (profile: OnboardingProfile) => void;
 }) {
     const fields = scenarioType ? EXTRA_CONTEXT_FIELDS[scenarioType] ?? [] : [];
-    const [values, setValues] = useState<Record<string, string>>({});
+    const storageKey = `influ_extra_ctx_${scenarioType || "default"}`;
+
+    const [values, setValues] = useState<Record<string, string>>(() => {
+        if (typeof window !== "undefined") {
+            try {
+                const saved = sessionStorage.getItem(storageKey);
+                if (saved) return JSON.parse(saved).values || {};
+            } catch (e) {}
+        }
+        return {};
+    });
 
     /* ── CV Upload state (interview only) ── */
     const isInterview = scenarioType === "interview";
     const [cvFile, setCvFile] = useState<File | null>(null);
-    const [cvStatus, setCvStatus] = useState<"idle" | "uploading" | "done" | "error">("idle");
-    const [cvSummary, setCvSummary] = useState<string>(userProfile?.cvSummary ?? "");
-    const [cvFileName, setCvFileName] = useState<string>(userProfile?.cvFileName ?? "");
+
+    const initialCvSummary = (() => {
+        if (typeof window !== "undefined") {
+            try {
+                const saved = sessionStorage.getItem(storageKey);
+                if (saved && JSON.parse(saved).cvSummary) return JSON.parse(saved).cvSummary;
+            } catch (e) {}
+        }
+        return userProfile?.cvSummary ?? "";
+    })();
+    
+    const initialCvFileName = (() => {
+        if (typeof window !== "undefined") {
+            try {
+                const saved = sessionStorage.getItem(storageKey);
+                if (saved && JSON.parse(saved).cvFileName) return JSON.parse(saved).cvFileName;
+            } catch (e) {}
+        }
+        return userProfile?.cvFileName ?? "";
+    })();
+
+    const [cvSummary, setCvSummary] = useState<string>(initialCvSummary);
+    const [cvFileName, setCvFileName] = useState<string>(initialCvFileName);
+    const [cvStatus, setCvStatus] = useState<"idle" | "uploading" | "done" | "error">(initialCvSummary ? "done" : "idle");
     const [cvError, setCvError] = useState<string | null>(null);
     const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    
     /* ── Manual experience fallback (no PDF) ── */
-    const [manualExperience, setManualExperience] = useState("");
+    const [manualExperience, setManualExperience] = useState<string>(() => {
+        if (typeof window !== "undefined") {
+            try {
+                const saved = sessionStorage.getItem(storageKey);
+                if (saved && JSON.parse(saved).manualExperience) return JSON.parse(saved).manualExperience;
+            } catch (e) {}
+        }
+        return "";
+    });
+
+    // Auto-save to sessionStorage
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            sessionStorage.setItem(storageKey, JSON.stringify({
+                values,
+                cvSummary,
+                cvFileName,
+                manualExperience
+            }));
+        }
+    }, [values, cvSummary, cvFileName, manualExperience, storageKey]);
 
     const hasContent = Object.values(values).some((v) => v.trim().length > 0) || cvSummary.length > 0 || manualExperience.trim().length > 0;
 

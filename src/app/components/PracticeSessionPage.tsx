@@ -240,6 +240,45 @@ export function PracticeSessionPage({
     }
   }, [step, sessionId]);
 
+  /* ── Prevent accidental navigation and session loss during active practice ── */
+  useEffect(() => {
+    if (step === "practice" || step === "analyzing") {
+      const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+        e.preventDefault();
+        e.returnValue = "¿Seguro que quieres salir? Tu sesión en curso se perderá.";
+        return e.returnValue;
+      };
+
+      const handlePopState = (e: PopStateEvent) => {
+        if (!window.confirm("Tienes una sesión activa. Si retrocedes, tu progreso se perderá. ¿Salir de todos modos?")) {
+          // Push state back to stay on the current screen
+          window.history.pushState(
+            { ...window.history.state, influSession: { step, sessionId } },
+            "",
+            window.location.href
+          );
+        }
+      };
+
+      // Push a dummy state when entering practice so the first "back" click is trapped
+      if (typeof window !== "undefined") {
+        window.history.pushState(
+          { ...window.history.state, influSession: { step, sessionId } },
+          "",
+          window.location.href
+        );
+      }
+
+      window.addEventListener("beforeunload", handleBeforeUnload);
+      window.addEventListener("popstate", handlePopState);
+
+      return () => {
+        window.removeEventListener("beforeunload", handleBeforeUnload);
+        window.removeEventListener("popstate", handlePopState);
+      };
+    }
+  }, [step, sessionId]);
+
   /* AI-generated pre-briefing script (NO mock fallback — real AI or error+retry) */
   const [generatedScript, setGeneratedScript] = useState<ScriptSection[] | null>(() => devMockScript ?? scriptCache.get(sKey));
   const [scriptGenStatus, setScriptGenStatus] = useState<"idle" | "loading" | "ready" | "error">(() =>
