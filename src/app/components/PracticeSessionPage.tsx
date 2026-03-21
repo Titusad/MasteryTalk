@@ -577,7 +577,7 @@ export function PracticeSessionPage({
 
   /* ── Persist completed session to backend (fire-and-forget) ── */
   const sessionSavedRef = useRef(false);
-  const saveSessionToBackend = useCallback(() => {
+  const saveSessionToBackend = useCallback(async () => {
     if (sessionSavedRef.current || !sessionId || isDevPreview) return;
     sessionSavedRef.current = true;
 
