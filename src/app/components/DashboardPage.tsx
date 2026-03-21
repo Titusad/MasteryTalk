@@ -1226,16 +1226,18 @@ export function DashboardPage({
                 {(
                   [
                     {
-                      id: "sales",
-                      label: dc.quickStart.salesLabel,
-                      description: dc.quickStart.salesDesc,
-                      icon: Target,
-                    },
-                    {
                       id: "interview",
                       label: dc.quickStart.interviewLabel,
                       description: dc.quickStart.interviewDesc,
                       icon: Mic,
+                      disabled: false,
+                    },
+                    {
+                      id: "sales",
+                      label: dc.quickStart.salesLabel,
+                      description: dc.quickStart.salesDesc,
+                      icon: Target,
+                      disabled: true,
                     },
                   ] as const
                 ).map((card) => {
@@ -1243,29 +1245,58 @@ export function DashboardPage({
                   return (
                     <motion.button
                       key={card.id}
-                      onClick={() => handleStartSession(card.label, card.id)}
-                      className="group/card relative bg-[#f8fafc] hover:bg-[#0f172b] border-2 border-[#e2e8f0] hover:border-[#0f172b] rounded-xl p-5 text-left transition-all duration-300 cursor-pointer"
-                      whileHover={{ scale: 1.02, y: -2 }}
-                      whileTap={{ scale: 0.98 }}
+                      onClick={() => !card.disabled && handleStartSession(card.label, card.id)}
+                      className={`group/card relative rounded-xl p-5 text-left transition-all duration-300 ${
+                        card.disabled
+                          ? "bg-white border-2 border-gray-100 opacity-60 cursor-not-allowed"
+                          : "bg-[#f8fafc] hover:bg-[#0f172b] border-2 border-[#e2e8f0] hover:border-[#0f172b] cursor-pointer"
+                      }`}
+                      whileHover={card.disabled ? undefined : { scale: 1.02, y: -2 }}
+                      whileTap={card.disabled ? undefined : { scale: 0.98 }}
                     >
-                      <div className="w-9 h-9 rounded-full bg-[#0f172b] group-hover/card:bg-white flex items-center justify-center mb-3 transition-colors duration-300">
+                      <div className={`w-9 h-9 rounded-full flex items-center justify-center mb-3 transition-colors duration-300 ${
+                        card.disabled
+                          ? "bg-gray-100"
+                          : "bg-[#0f172b] group-hover/card:bg-white"
+                      }`}>
                         <Icon
-                          className="w-4 h-4 text-white group-hover/card:text-[#0f172b] transition-colors duration-300"
+                          className={`w-4 h-4 transition-colors duration-300 ${
+                            card.disabled
+                              ? "text-gray-400"
+                              : "text-white group-hover/card:text-[#0f172b]"
+                          }`}
                           strokeWidth={1.5}
                         />
                       </div>
-                      <p
-                        className="text-[#0f172b] group-hover/card:text-white text-sm mb-1 transition-colors duration-300"
-                        style={{ fontWeight: 600 }}
-                      >
-                        {card.label}
-                      </p>
-                      <p className="text-[#62748e] group-hover/card:text-white/70 text-xs leading-relaxed transition-colors duration-300">
+                      <div className="flex items-center justify-between mb-1">
+                        <p
+                          className={`text-sm transition-colors duration-300 ${
+                            card.disabled
+                              ? "text-gray-500"
+                              : "text-[#0f172b] group-hover/card:text-white"
+                          }`}
+                          style={{ fontWeight: 600 }}
+                        >
+                          {card.label}
+                        </p>
+                        {card.disabled && (
+                          <span className="text-[10px] uppercase font-bold tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
+                            Próximamente
+                          </span>
+                        )}
+                      </div>
+                      <p className={`text-xs leading-relaxed transition-colors duration-300 pr-8 ${
+                        card.disabled
+                          ? "text-gray-400"
+                          : "text-[#62748e] group-hover/card:text-white/70"
+                      }`}>
                         {card.description}
                       </p>
-                      <div className="absolute top-4 right-4 w-7 h-7 rounded-full bg-transparent group-hover/card:bg-white/15 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-all duration-300">
-                        <ArrowRight className="w-3.5 h-3.5 text-white" />
-                      </div>
+                      {!card.disabled && (
+                        <div className="absolute top-4 right-4 w-7 h-7 rounded-full bg-transparent group-hover/card:bg-white/15 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-all duration-300">
+                          <ArrowRight className="w-3.5 h-3.5 text-white" />
+                        </div>
+                      )}
                     </motion.button>
                   );
                 })}
