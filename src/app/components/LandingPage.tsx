@@ -593,8 +593,6 @@ export function LandingPage({
                 <div className="border-t border-gray-200 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
                     <p className="text-[#4B505B] text-sm">{copy.footer.copyright}</p>
-                    <a href="#design-system" className="text-[#4B505B]/50 hover:text-[#4B505B] text-xs transition-colors">Design System</a>
-                    <a href="#dashboard" className="text-[#4B505B]/50 hover:text-[#4B505B] text-xs transition-colors">{copy.footer.dashboardLink}</a>
                   </div>
                   <div className="flex items-center gap-4">
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="#4B505B"><path d={svgPaths.p3e7f1900} /></svg>
