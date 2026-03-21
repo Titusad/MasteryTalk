@@ -8,6 +8,7 @@ import { ServiceErrorBanner } from "./shared/ServiceErrorBanner";
 import { getBeforeAfterForScenario, getStrengthsForScenario } from "../../services/scenario-data";
 import { useMediaRecorder } from "../hooks/useMediaRecorder";
 import { projectId, publicAnonKey } from "../../../utils/supabase/info";
+import { getAuthToken } from "../../services/supabase";
 import type {
   ScenarioType,
   ScriptSection,
@@ -276,7 +277,7 @@ export function PracticeSessionPage({
   );
 
   /* ── Script / Briefing generation: call Edge Function ── */
-  const fireScriptGeneration = useCallback((extraData?: Record<string, string>) => {
+  const fireScriptGeneration = useCallback(async (extraData?: Record<string, string>) => {
     setScriptGenStatus("loading");
     setScriptGenError(null);
     setGeneratedScript(null);
@@ -294,7 +295,7 @@ export function PracticeSessionPage({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${publicAnonKey}`,
+          Authorization: `Bearer ${await getAuthToken()}`,
         },
         body: JSON.stringify({
           scenario,
@@ -341,7 +342,7 @@ export function PracticeSessionPage({
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${publicAnonKey}`,
+        Authorization: `Bearer ${await getAuthToken()}`,
       },
       body: JSON.stringify({
         scenario,
@@ -398,7 +399,7 @@ export function PracticeSessionPage({
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${publicAnonKey}`,
+        Authorization: `Bearer ${await getAuthToken()}`,
       },
       body: JSON.stringify({
         scenario,
@@ -439,7 +440,7 @@ export function PracticeSessionPage({
   }, [step, animationDone, scriptGenStatus, generatedScript, interviewBriefing, isDevPreview, devInitialStep]);
 
   /* ── Feedback analysis: call /analyze-feedback when entering "analyzing" step ── */
-  const fireFeedbackAnalysis = useCallback(() => {
+  const fireFeedbackAnalysis = useCallback(async () => {
     if (!sessionId) return;
     setFeedbackStatus("loading");
     setRealFeedback(null);
@@ -451,7 +452,7 @@ export function PracticeSessionPage({
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${publicAnonKey}`,
+        Authorization: `Bearer ${await getAuthToken()}`,
       },
       body: JSON.stringify({
         sessionId,
@@ -493,7 +494,7 @@ export function PracticeSessionPage({
   }, [sessionId, scenarioType]);
 
   /* ── Summary generation: call /generate-summary for session feedback ── */
-  const fireSummaryGeneration = useCallback(() => {
+  const fireSummaryGeneration = useCallback(async () => {
     if (!sessionId) return;
     setSessionSummary(null);
     setSummaryStatus("loading");
@@ -504,7 +505,7 @@ export function PracticeSessionPage({
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${publicAnonKey}`,
+        Authorization: `Bearer ${await getAuthToken()}`,
       },
       body: JSON.stringify({
         sessionId,
@@ -537,7 +538,7 @@ export function PracticeSessionPage({
   }, [sessionId, scenarioType]);
 
   /* ── Golden Script generation: call /generate-improved-script async ── */
-  const fireImprovedScriptGeneration = useCallback(() => {
+  const fireImprovedScriptGeneration = useCallback(async () => {
     if (!sessionId) return;
     setImprovedScript(null);
     setImprovedScriptStatus("loading");
@@ -548,7 +549,7 @@ export function PracticeSessionPage({
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${publicAnonKey}`,
+        Authorization: `Bearer ${await getAuthToken()}`,
       },
       body: JSON.stringify({
         sessionId,
@@ -628,7 +629,7 @@ export function PracticeSessionPage({
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${publicAnonKey}`,
+        Authorization: `Bearer ${await getAuthToken()}`,
       },
       body: JSON.stringify(payload),
     })
@@ -1018,7 +1019,7 @@ export function PracticeSessionPage({
                       method: "POST",
                       headers: {
                         "Content-Type": "application/json",
-                        Authorization: `Bearer ${publicAnonKey}`,
+                        Authorization: `Bearer ${await getAuthToken()}`,
                       },
                       body: JSON.stringify({ sessionId, turns: pronData }),
                     })

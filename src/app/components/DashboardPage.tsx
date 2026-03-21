@@ -33,6 +33,7 @@ import {
 } from "recharts";
 import { BrandLogo, PastelBlobs, MiniFooter } from "./shared";
 import { authService, userService, paymentService } from "../../services";
+import { getSupabaseClient } from "../../services/supabase";
 import type { PracticeHistoryItem } from "../../services/types";
 import type { LandingLang } from "./landing-i18n";
 import { LANDING_COPIES } from "./landing-i18n";
@@ -466,10 +467,15 @@ export function DashboardPage({
   const [freeSessionAvailable, setFreeSessionAvailable] = useState(false);
 
   /* ─── Fetch real sessions from backend ─── */
-  const fetchRealSessions = useCallback(() => {
+  const fetchRealSessions = useCallback(async () => {
     const serverUrl = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/sessions`;
+    
+    const supabase = getSupabaseClient();
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token || publicAnonKey;
+
     fetch(serverUrl, {
-      headers: { Authorization: `Bearer ${publicAnonKey}` },
+      headers: { Authorization: `Bearer ${token}` },
     })
       .then(async (res) => {
         if (!res.ok) throw new Error(`${res.status}`);
@@ -730,7 +736,7 @@ export function DashboardPage({
               style={{ fontWeight: 300 }}
             >
               Hola{" "}
-              <span style={{ fontWeight: 500 }}>{userName ? userName.trim().split(" ")[0] : "David"}</span>
+              <span style={{ fontWeight: 500 }}>{userName && userName.trim().length > 0 ? userName.trim().split(" ")[0] : "Explorador"}</span>
             </h2>
             <p className="text-sm text-[#62748e] mt-1">
               {hasRealData

@@ -13,6 +13,7 @@ import { authService, userService } from "../../services";
 import type { PracticeHistoryItem, ScenarioType } from "../../services/types";
 import { SessionReport } from "./SessionReport";
 import { projectId, publicAnonKey } from "../../../utils/supabase/info";
+import { getAuthToken } from "../../services/supabase";
 
 /* ─── Props ─── */
 interface PracticeHistoryPageProps {
@@ -107,11 +108,13 @@ export function PracticeHistoryPage({
 
   /* ─── Load practice history ─── */
   useEffect(() => {
-    const serverUrl = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/sessions`;
-    fetch(serverUrl, {
-      headers: { Authorization: `Bearer ${publicAnonKey}` },
-    })
-      .then(async (res) => {
+    const loadHistory = async () => {
+      const serverUrl = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/sessions`;
+      const token = await getAuthToken();
+      fetch(serverUrl, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then(async (res) => {
         if (!res.ok) throw new Error(`${res.status}`);
         return res.json();
       })
@@ -122,6 +125,8 @@ export function PracticeHistoryPage({
       .catch((err) => {
         console.warn("[PracticeHistory] Failed to load real sessions:", err.message);
       });
+    };
+    loadHistory();
   }, []);
 
   /* ─── Computed practices list (inject the latest session if available) ─── */

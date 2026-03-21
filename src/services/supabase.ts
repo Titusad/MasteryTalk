@@ -104,6 +104,12 @@ export function getSupabaseClient(): SupabaseClient {
   return _client;
 }
 
+export async function getAuthToken(): Promise<string> {
+  const { data: { session } } = await getSupabaseClient().auth.getSession();
+  return session?.access_token || SUPABASE_ANON_KEY || "";
+}
+
+
 /* ── Database type helpers ── */
 
 /**
