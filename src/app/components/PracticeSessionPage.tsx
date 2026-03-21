@@ -32,7 +32,7 @@ import {
   scenarioKey,
   scriptCache,
   toolkitCache,
-  cvMatchCache,
+  cvMatchCacheV2,
   interviewBriefingCache,
   feedbackCache,
   summaryCache,
@@ -310,9 +310,9 @@ export function PracticeSessionPage({
   } | null>(() => toolkitCache.get(sKey));
 
   /* AI-generated CV Match analysis */
-  const [cvMatchData, setCvMatchData] = useState<CVMatchResult | null>(() => cvMatchCache.get(sKey));
+  const [cvMatchData, setCvMatchData] = useState<CVMatchResult | null>(() => cvMatchCacheV2.get(sKey));
   const [cvMatchStatus, setCvMatchStatus] = useState<"idle" | "loading" | "success" | "error">(
-    cvMatchCache.get(sKey) ? "success" : "idle"
+    cvMatchCacheV2.get(sKey) ? "success" : "idle"
   );
 
   /* ── Script / Briefing generation: call Edge Function ── */
@@ -418,11 +418,11 @@ export function PracticeSessionPage({
     // ── Fire CV Match Analysis in parallel (non-blocking) ──
     const userCv = allFields["cvSummary"] || allFields["manualExperience"] || allFields["Your key experience"];
     const userJd = allFields["Job Description"];
-    if (userCv && userJd && !cvMatchCache.get(sKey)) {
+    if (userCv && userJd && !cvMatchCacheV2.get(sKey)) {
       setCvMatchStatus("loading");
       analyzeCvMatch(userCv, userJd)
         .then((data) => {
-          cvMatchCache.set(sKey, data);
+          cvMatchCacheV2.set(sKey, data);
           setCvMatchData(data);
           setCvMatchStatus("success");
         })
@@ -900,11 +900,11 @@ export function PracticeSessionPage({
                       // Ensure CV Match fires on cache-hit if it was missing or failed previously
                       const userCv = enriched["cvSummary"] || enriched["manualExperience"] || enriched["Your key experience"];
                       const userJd = enriched["Job Description"];
-                      if (userCv && userJd && !cvMatchCache.get(sKey)) {
+                      if (userCv && userJd && !cvMatchCacheV2.get(sKey)) {
                         setCvMatchStatus("loading");
                         analyzeCvMatch(userCv, userJd)
                           .then((data) => {
-                            cvMatchCache.set(sKey, data);
+                            cvMatchCacheV2.set(sKey, data);
                             setCvMatchData(data);
                             setCvMatchStatus("success");
                           })
@@ -1016,8 +1016,6 @@ export function PracticeSessionPage({
                 }}
                 onBack={() => setStep("extra-context")}
                 scenario={scenario}
-                cvMatchData={cvMatchData}
-                cvMatchStatus={cvMatchStatus}
               />
             )}
             {step === "pre-briefing" && generatedScript && scenarioType !== "interview" && (
@@ -1134,6 +1132,7 @@ export function PracticeSessionPage({
                       userDrafts: scenarioType === "interview" && Object.keys(userDrafts).length > 0 ? userDrafts : undefined,
                       pronunciationData: sessionPronData.length > 0 ? sessionPronData : undefined,
                       improvedScript: improvedScript,
+                      cvMatchData: (cvMatchStatus === "success" && cvMatchData) ? cvMatchData : null,
                     }).catch((err) => {
                       console.error("[SessionReport] PDF generation failed:", err);
                     });
@@ -1142,6 +1141,8 @@ export function PracticeSessionPage({
                 interviewBriefing={scenarioType === "interview" ? interviewBriefing : null}
                 interlocutor={interlocutor}
                 scenario={scenario}
+                cvMatchData={cvMatchData}
+                cvMatchStatus={cvMatchStatus}
               />
             )}
           </motion.div>

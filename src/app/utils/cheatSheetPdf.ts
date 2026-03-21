@@ -20,6 +20,7 @@
 
 import type { InterviewBriefingData } from "../../services/types";
 import type { TurnPronunciationData } from "../../services/types";
+import type { CVMatchResult } from "../../services/cvMatchService";
 
 /* ── Color constants ── */
 const DARK = "#0f172a";
@@ -91,8 +92,10 @@ export async function downloadSessionReportPdf(opts: {
     pronunciationData?: TurnPronunciationData[];
     /** The AI-generated golden rewrite of the user's responses */
     improvedScript?: any;
+    /** Output from resume tailoring, matching CV to JD */
+    cvMatchData?: CVMatchResult | null;
 }): Promise<void> {
-    const { briefing, interlocutor = "", scenario, scenarioType, feedback, summary, sessionDuration, userDrafts, pronunciationData } = opts;
+    const { briefing, interlocutor = "", scenario, scenarioType, feedback, summary, sessionDuration, userDrafts, pronunciationData, improvedScript, cvMatchData } = opts;
 
     const jsPDFModule = await import("jspdf");
     const jsPDF = jsPDFModule.default;
@@ -726,6 +729,62 @@ export async function downloadSessionReportPdf(opts: {
                 addWrappedText(tip.description, margin + 2, contentWidth - 4, 8, MID, "normal", 3.5);
                 y += 3;
             }
+        }
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       TAILORED RESUME BULLETS
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    if (cvMatchData && cvMatchData.tailoredBullets && cvMatchData.tailoredBullets.length > 0) {
+        sectionTitle("Tailored Resume Bullets");
+        doc.setFontSize(8);
+        doc.setTextColor(LIGHT);
+        doc.setFont("helvetica", "normal");
+        doc.text("AI-rewritten experience adapted for the Job Description", margin + 2, y);
+        y += 6;
+
+        for (let i = 0; i < cvMatchData.tailoredBullets.length; i++) {
+            const bullet = cvMatchData.tailoredBullets[i];
+            checkPageBreak(25);
+
+            // Container Box
+            roundedRect(margin, y, contentWidth, 24, "#f8fafc", 2);
+
+            // Context label
+            doc.setFontSize(7.5);
+            doc.setTextColor(MID);
+            doc.setFont("helvetica", "italic");
+            doc.text(`Based on: ${bullet.experienceContext}`, margin + 4, y + 5);
+            y += 8;
+
+            // Rewritten bullet
+            doc.setFontSize(9.5);
+            doc.setTextColor(DARK);
+            doc.setFont("helvetica", "bold");
+            const bulletLines = doc.splitTextToSize(`• ${bullet.rewrittenBullet}`, contentWidth - 8);
+            for (const line of bulletLines) {
+                checkPageBreak(5);
+                doc.text(line, margin + 4, y);
+                y += 4.5;
+            }
+
+            // Reason
+            y += 1;
+            doc.setFontSize(8);
+            doc.setTextColor(SUCCESS);
+            doc.setFont("helvetica", "bold");
+            doc.text("Why this works: ", margin + 4, y);
+            const reasonLines = doc.splitTextToSize(bullet.matchReason, contentWidth - 30);
+            const reasonX = margin + 27;
+            doc.setTextColor(MID);
+            doc.setFont("helvetica", "normal");
+            for (const line of reasonLines) {
+                checkPageBreak(4);
+                doc.text(line, reasonX, y);
+                y += 3.5;
+            }
+
+            y += 6; // Spacing after
         }
     }
 

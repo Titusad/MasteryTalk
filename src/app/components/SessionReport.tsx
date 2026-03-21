@@ -23,6 +23,7 @@ import {
   Download,
   Lock,
   ArrowRight,
+  Copy,
   Lightbulb,
   ClipboardCheck,
   Mic,
@@ -48,6 +49,7 @@ import type {
   TurnPronunciationData,
   InterviewBriefingData,
 } from "../../services/types";
+import type { CVMatchResult } from "../../services/cvMatchService";
 import { downloadSessionReportPdf } from "../utils/cheatSheetPdf";
 
 /* ─── Scenario labels ─── */
@@ -164,6 +166,8 @@ export interface SessionReportProps {
   interviewBriefing?: InterviewBriefingData | null;
   interlocutor?: string;
   scenario?: string;
+  cvMatchData?: CVMatchResult | null;
+  cvMatchStatus?: "idle" | "loading" | "success" | "error";
 }
 
 export function SessionReport({
@@ -182,6 +186,8 @@ export function SessionReport({
   interviewBriefing,
   interlocutor,
   scenario,
+  cvMatchData,
+  cvMatchStatus,
 }: SessionReportProps) {
   const scenarioLabel = scenarioType
     ? SCENARIO_LABELS_MAP[scenarioType] ?? "your conversation"
@@ -193,6 +199,15 @@ export function SessionReport({
     : (generatedScript?.length ? generatedScript : []);
   const isRealData = !!(realFeedback?.strengths?.length);
   const totalTime = sessionDuration || "4 min";
+
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const handleCopy = (text: string, index: number) => {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+      setCopiedIndex(index);
+      setTimeout(() => setCopiedIndex(null), 2000);
+    }
+  };
 
   /* ── Summary data ── */
   const overallSentiment = sessionSummary?.overallSentiment || null;
@@ -310,6 +325,57 @@ export function SessionReport({
               <p className="text-sm text-[#0f172b] leading-relaxed">{sessionHighlight}</p>
             </div>
           </motion.div>
+        )}
+
+        {/* ═══════════════════════════════════════════════
+           TAILORED RESUME
+           ═══════════════════════════════════════════════ */}
+        {cvMatchStatus === "success" && cvMatchData?.tailoredBullets && cvMatchData.tailoredBullets.length > 0 && (
+          <ReportSection
+            icon={<FileText className="w-5 h-5 text-white" />}
+            iconBg="#10b981"
+            title="Tailored Resume Bullets"
+            delay={0.10}
+          >
+            <div className="space-y-4">
+              {cvMatchData.tailoredBullets.map((bullet: any, i: number) => (
+                <motion.div
+                    key={i}
+                    className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl px-5 py-4 relative group hover:border-[#bfdbfe] transition-colors"
+                >
+                    <p className="text-[11px] text-[#62748e] mb-1.5 font-medium bg-[#e2e8f0]/60 inline-flex items-center px-2 py-0.5 rounded-md">
+                        Based on: {bullet.experienceContext}
+                    </p>
+                    <p className="text-[#0f172b] text-[15px] mb-4 mt-1 pr-10" style={{ fontWeight: 500, lineHeight: 1.6 }}>
+                        {bullet.rewrittenBullet}
+                    </p>
+                    
+                    {/* Copy Button */}
+                    <button 
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleCopy(bullet.rewrittenBullet, i);
+                        }}
+                        className={`absolute top-4 right-4 w-8 h-8 rounded-lg border flex items-center justify-center transition-all shadow-sm ${
+                            copiedIndex === i 
+                                ? "bg-[#10b981] border-[#10b981] text-white" 
+                                : "bg-white border-[#e2e8f0] text-[#62748e] hover:text-[#3b82f6] hover:border-[#bfdbfe]"
+                        }`}
+                        title="Copy to clipboard"
+                    >
+                        {copiedIndex === i ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                    </button>
+
+                    <div className="flex items-start gap-2 pt-3 border-t border-[#e2e8f0]">
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#10b981] mt-1.5 shrink-0" />
+                        <p className="text-[13px] text-[#45556c] leading-relaxed">
+                            <span className="font-semibold text-[#314158]">Why this works:</span> {bullet.matchReason}
+                        </p>
+                    </div>
+                </motion.div>
+              ))}
+            </div>
+          </ReportSection>
         )}
 
         {/* ═══════════════════════════════════════════════

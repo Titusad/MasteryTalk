@@ -25,6 +25,7 @@ interface BriefingCarouselProps {
     onCardComplete: (cardIndex: number) => void;
     activeCardIndex: number;
     onNavigate: (index: number) => void;
+    onDraftChange?: (questionId: number, text: string) => void;
 }
 
 export function BriefingCarousel({
@@ -34,6 +35,7 @@ export function BriefingCarousel({
     onCardComplete,
     activeCardIndex,
     onNavigate,
+    onDraftChange,
 }: BriefingCarouselProps) {
     const [showCelebration, setShowCelebration] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -159,6 +161,7 @@ export function BriefingCarousel({
                     isUnlocked={isCardUnlocked(activeCardIndex)}
                     isCardComplete={completedCards.has(activeCardIndex)}
                     onCardComplete={() => handleCardComplete(activeCardIndex)}
+                    onDraftChange={onDraftChange ? (text) => onDraftChange(cards[activeCardIndex].id, text) : undefined}
                 />
             </div>
 

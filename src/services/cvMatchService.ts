@@ -1,12 +1,13 @@
 import { projectId, publicAnonKey } from "../../utils/supabase/info";
 
-export interface CVMatchInsight {
-  finding: string;
-  actionableAdvice: string;
+export interface TailoredBullet {
+  experienceContext: string;
+  rewrittenBullet: string;
+  matchReason: string;
 }
 
 export interface CVMatchResult {
-  qualitativeInsights: CVMatchInsight[];
+  tailoredBullets: TailoredBullet[];
 }
 
 export const analyzeCvMatch = async (cv: string, jobDescription: string): Promise<CVMatchResult> => {
