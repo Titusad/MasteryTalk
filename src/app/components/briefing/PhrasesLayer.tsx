@@ -52,7 +52,12 @@ export function PhrasesLayer({ cardId, phrases }: PhrasesLayerProps) {
     /* Track which phrase is currently being recorded (only one at a time) */
     const [recordingIdx, setRecordingIdx] = useState<number | null>(null);
 
+    /* UI State for phrases visibility */
+    const [showAll, setShowAll] = useState(false);
+    const [isGeneratingMore, setIsGeneratingMore] = useState(false);
+
     const completedCount = phraseStates.filter((s) => s.step === "done").length;
+    const visiblePhrases = showAll ? phrases : phrases.slice(0, 2);
 
     /* Update a single phrase's state cleanly */
     const updatePhraseState = useCallback((idx: number, newState: Partial<PhraseState>) => {
@@ -148,7 +153,7 @@ export function PhrasesLayer({ cardId, phrases }: PhrasesLayerProps) {
                 Listen and shadow the phrases you'd like to practice
             </p>
 
-            {phrases.map((kp, i) => {
+            {visiblePhrases.map((kp, i) => {
                 const state = phraseStates[i];
                 const ttsKey = `card-${cardId}-phrase-${i}`;
                 const isPlaying = tts.playingKey === ttsKey;
@@ -395,6 +400,41 @@ export function PhrasesLayer({ cardId, phrases }: PhrasesLayerProps) {
                     </motion.div>
                 );
             })}
+
+            {/* "Generate more phrases" Button */}
+            {!showAll && phrases.length > 2 && (
+                <motion.div 
+                    className="pt-2 text-center"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                >
+                    <button
+                        onClick={() => {
+                            setIsGeneratingMore(true);
+                            setTimeout(() => {
+                                setIsGeneratingMore(false);
+                                setShowAll(true);
+                            }, 1200);
+                        }}
+                        disabled={isGeneratingMore}
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#e2e8f0] bg-white text-sm text-[#45556c] hover:bg-[#f8fafc] hover:text-[#0f172b] hover:border-[#cbd5e1] shadow-sm transition-all"
+                        style={{ fontWeight: 500 }}
+                    >
+                        {isGeneratingMore ? (
+                            <>
+                                <Loader2 className="w-4 h-4 animate-spin text-[#6366f1]" />
+                                Generating more phrases...
+                            </>
+                        ) : (
+                            <>
+                                <Lightbulb className="w-4 h-4 text-[#6366f1]" />
+                                Generate more phrases
+                            </>
+                        )}
+                    </button>
+                </motion.div>
+            )}
 
             {/* Informational progress — no gating */}
             {completedCount > 0 && (
