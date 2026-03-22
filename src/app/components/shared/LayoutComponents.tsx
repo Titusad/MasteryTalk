@@ -116,11 +116,13 @@ export function PageTitleBlock({
     iconBg = "#0f172b",
     title,
     subtitle,
+    children,
 }: {
     icon: React.ReactNode;
     iconBg?: string;
     title: string;
     subtitle: string;
+    children?: React.ReactNode;
 }) {
     return (
         <motion.div
@@ -129,19 +131,22 @@ export function PageTitleBlock({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
         >
-            <div
-                className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5"
-                style={{ background: iconBg }}
-            >
-                {icon}
+            <div className="flex items-center justify-center gap-4 mb-4">
+                <div
+                    className="w-14 h-14 rounded-full flex items-center justify-center shrink-0"
+                    style={{ background: iconBg }}
+                >
+                    {icon}
+                </div>
+                <h1
+                    className="text-2xl md:text-[32px] text-[#0f172b] text-left"
+                    style={{ fontWeight: 300, lineHeight: 1.25 }}
+                >
+                    {title}
+                </h1>
             </div>
-            <h1
-                className="text-2xl md:text-[32px] text-[#0f172b] mb-3"
-                style={{ fontWeight: 300, lineHeight: 1.25 }}
-            >
-                {title}
-            </h1>
-            <p className="text-base text-[#45556c]">{subtitle}</p>
+            <p className="text-base text-[#45556c] max-w-2xl mx-auto">{subtitle}</p>
+            {children && <div className="mt-4 flex flex-col md:flex-row items-center justify-center gap-3">{children}</div>}
         </motion.div>
     );
 }

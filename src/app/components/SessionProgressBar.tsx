@@ -50,7 +50,7 @@ export function SessionProgressBar({ currentStep }: SessionProgressBarProps) {
   const currentPhaseIdx = getPhaseIndex(currentStep);
 
   return (
-    <div className="flex items-center gap-0 w-full">
+    <div className="flex items-center gap-0 w-full pb-6 pt-2">
       {PHASES.map((phase, idx) => {
         const isCompleted = idx < currentPhaseIdx;
         const isCurrent = idx === currentPhaseIdx;

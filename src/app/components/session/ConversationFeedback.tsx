@@ -27,7 +27,7 @@ import {
   PolarAngleAxis,
   Radar,
 } from "recharts";
-import { PastelBlobs, MiniFooter } from "../shared";
+import { PastelBlobs, MiniFooter, PageTitleBlock } from "../shared";
 import {
   getBeforeAfterForScenario,
   getStrengthsForScenario,
@@ -40,6 +40,7 @@ import type {
   BeforeAfterComparison,
 } from "../../../services/types";
 import { PronunciationTab } from "../PronunciationTab";
+import { SessionProgressBar } from "../SessionProgressBar";
 
 import type { PaywallReason } from "../../hooks/useUsageGating";
 
@@ -405,45 +406,31 @@ function ConversationFeedback({
       <PastelBlobs />
 
       <main className="relative max-w-[800px] mx-auto px-6 pt-10 pb-20">
+        <div className="w-full mb-12">
+          <SessionProgressBar currentStep="conversation-feedback" />
+        </div>
         {/* ═══ HERO ═══ */}
-        <motion.div
-          className="text-center mb-10"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+        <PageTitleBlock
+            icon={<Trophy className="w-8 h-8 text-white" />}
+            title={isInterview ? "Interview Analysis" : "Session Feedback"}
+            subtitle={isInterview ? "Dual-axis evaluation: how you sounded and how well you answered." : `Your ${scenarioLabel} practice analysis is ready. Review your performance below.`}
         >
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#dcfce7] to-[#d1fae5] flex items-center justify-center mx-auto mb-5">
-            <Trophy className="w-8 h-8 text-[#00A63E]" />
-          </div>
-          <h1
-            className="text-3xl md:text-[42px] text-[#0f172b] mb-3"
-            style={{ fontWeight: 300, lineHeight: 1.2 }}
-          >
-            {isInterview
-              ? "Interview Analysis"
-              : "Session Feedback"}
-          </h1>
-          <p className="text-[#45556c] max-w-lg mx-auto">
-            {isInterview
-              ? "Dual-axis evaluation: how you sounded and how well you answered."
-              : `Your ${scenarioLabel} practice analysis is ready. Review your performance below.`}
-          </p>
           {isRealData ? (
             <span
-              className="inline-flex items-center gap-1.5 mt-3 text-[10px] bg-[#50C878]/15 text-[#16a34a] px-3 py-1 rounded-full"
+              className="inline-flex items-center gap-1.5 text-[10px] bg-[#50C878]/15 text-[#16a34a] px-3 py-1 rounded-full"
               style={{ fontWeight: 600 }}
             >
               <Sparkles className="w-3 h-3" /> AI-powered analysis
             </span>
           ) : (
             <span
-              className="inline-flex items-center gap-1.5 mt-3 text-[10px] bg-[#fef3c7] text-[#92400e] px-3 py-1 rounded-full"
+              className="inline-flex items-center gap-1.5 text-[10px] bg-[#fef3c7] text-[#92400e] px-3 py-1 rounded-full"
               style={{ fontWeight: 600 }}
             >
               ⚠️ AI analysis unavailable — showing sample feedback
             </span>
           )}
-        </motion.div>
+        </PageTitleBlock>
 
         {/* ═══ INTERVIEW READINESS SCORE (interview only) ═══ */}
         {isInterview && interviewReadiness !== null && (

@@ -541,6 +541,16 @@ export default function App() {
               devMockPronData={devPreview?.mockPronData}
               devMockScript={devPreview?.mockScript}
               devMockInterviewBriefing={devPreview?.mockInterviewBriefing}
+              userName={authUser?.displayName}
+              onLogout={() => {
+                authService.signOut().catch(() => {});
+                handleBackToLanding();
+                setAuthUser(null);
+              }}
+              onNavigateToAccount={() => {
+                setPage("account");
+                window.location.hash = "#account";
+              }}
             />
           )}
           {page === "dashboard" && (

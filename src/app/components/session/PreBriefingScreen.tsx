@@ -22,6 +22,7 @@ import {
 } from "../shared";
 import { projectId, publicAnonKey } from "../../../../utils/supabase/info";
 import type { ScenarioType, ScriptSection } from "../../../services/types";
+import { SessionProgressBar } from "../SessionProgressBar";
 
 /* ── Coaching Cue Formatter ──
    Detects coaching directives at the start of paragraph text
@@ -263,6 +264,9 @@ function PreBriefingScreen({
             <PastelBlobs />
 
             <main className="relative w-full max-w-[800px] mx-auto px-6 pt-12 pb-20">
+                <div className="w-full mb-12">
+                    <SessionProgressBar currentStep="pre-briefing" />
+                </div>
                 {/* Title */}
                 <PageTitleBlock
                     icon={<FileText className="w-8 h-8 text-white" />}

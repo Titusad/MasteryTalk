@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { LogOut } from "lucide-react";
 import { BrandLogo, AnalyzingScreen } from "./shared";
 import { realConversationService } from "../../services";
 import { toServiceError } from "../../services/errors";
@@ -80,6 +81,12 @@ interface PracticeSessionPageProps {
   devMockScript?: ScriptSection[] | null;
   /** Dev Preview: pre-loaded mock interview briefing */
   devMockInterviewBriefing?: InterviewBriefingData | null;
+  /** Logged in user name for header */
+  userName?: string;
+  /** Callback to handle logout from header */
+  onLogout?: () => void;
+  /** Callback to navigate to account page */
+  onNavigateToAccount?: () => void;
 }
 
 /** Repeat limits: free tier gets 1 repeat (2 total), paid gets 2 repeats (3 total) */
@@ -119,8 +126,20 @@ export function PracticeSessionPage({
   devMockPronData,
   devMockScript,
   devMockInterviewBriefing,
+  userName,
+  onLogout,
+  onNavigateToAccount,
 }: PracticeSessionPageProps) {
   const isDevPreview = !!devInitialStep;
+
+  const avatarInitials = userName
+    ? userName
+      .split(" ")
+      .map((w) => w[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase()
+    : "U";
 
   /* Recover session state from browser history if navigating Back/Forward */
   const initialHistoryState = useMemo(() => {
@@ -917,12 +936,30 @@ export function PracticeSessionPage({
 
   return (
     <div className="size-full flex flex-col" style={{ fontFamily: "'Inter', sans-serif" }}>
-      {/* Persistent header: BrandLogo + inline stepper */}
-      <header className="sticky top-0 z-50 bg-white border-b border-[#e2e8f0] shrink-0">
-        <div className="max-w-5xl mx-auto flex items-center justify-between px-6 h-16">
+      {/* Persistent header: BrandLogo + user profile */}
+      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-[#e2e8f0] shrink-0">
+        <div className="max-w-[1440px] mx-auto flex items-center justify-between px-6 md:px-8 h-16 md:h-20">
           <BrandLogo />
-          <div className="max-w-xs w-full -translate-y-2">
-            <SessionProgressBar currentStep={step} />
+          <div className="flex items-center gap-3">
+            <button
+              className="text-[#45556c] hover:text-[#0f172b] transition-colors p-2 rounded-full cursor-pointer flex items-center justify-center"
+              onClick={() => onLogout?.()}
+              title="Cerrar sesión"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
+            <div
+              className="w-10 h-10 rounded-full bg-[#0f172b] flex items-center justify-center cursor-pointer"
+              title="Mi cuenta"
+              onClick={() => onNavigateToAccount?.()}
+            >
+              <span
+                className="text-white text-sm"
+                style={{ fontWeight: 500 }}
+              >
+                {avatarInitials}
+              </span>
+            </div>
           </div>
         </div>
       </header>

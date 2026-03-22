@@ -34,7 +34,9 @@ import { motion } from "motion/react";
 import {
   PastelBlobs,
   MiniFooter,
+  PageTitleBlock,
 } from "./shared";
+import { SessionProgressBar } from "./SessionProgressBar";
 import {
   getScriptSectionsForScenario,
 } from "../../services/scenario-data";
@@ -263,48 +265,32 @@ export function SessionReport({
       {!embedded && <PastelBlobs />}
 
       <main className={`relative max-w-[800px] mx-auto px-6 ${embedded ? "pt-0 pb-8" : "pt-10 pb-20"}`}>
+        {!embedded && (
+          <div className="w-full mb-10 pt-4">
+            <SessionProgressBar currentStep="session-recap" />
+          </div>
+        )}
         {/* ═══════════════════════════════════════════════
            HERO
            ═══════════════════════════════════════════════ */}
         {!embedded && (
-          <motion.div
-            className="text-center mb-10"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+          <PageTitleBlock
+            icon={<Trophy className="w-8 h-8 text-white" />}
+            title="Session Report"
+            subtitle={overallSentiment ? overallSentiment : `Your complete ${scenarioLabel} practice report.`}
           >
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#dcfce7] to-[#d1fae5] flex items-center justify-center mx-auto mb-5">
-              <Trophy className="w-8 h-8 text-[#00A63E]" />
-            </div>
-            <h1
-              className="text-3xl md:text-[42px] text-[#0f172b] mb-3"
-              style={{ fontWeight: 300, lineHeight: 1.2 }}
-            >
-              Session Report
-            </h1>
-            {overallSentiment ? (
-              <p className="text-[#45556c] max-w-lg mx-auto text-lg" style={{ fontWeight: 400 }}>
-                {overallSentiment}
-              </p>
-            ) : (
-              <p className="text-[#45556c] max-w-lg mx-auto">
-                Your complete {scenarioLabel} practice report.
-              </p>
-            )}
-            <div className="flex items-center justify-center gap-3 mt-4">
-              {isRealData && (
-                <span
-                  className="inline-flex items-center gap-1.5 text-[10px] bg-[#50C878]/15 text-[#16a34a] px-3 py-1 rounded-full"
-                  style={{ fontWeight: 600 }}
-                >
-                  <Sparkles className="w-3 h-3" /> AI-generated
-                </span>
-              )}
-              <span className="text-[10px] bg-[#f1f5f9] text-[#62748e] px-3 py-1 rounded-full" style={{ fontWeight: 500 }}>
-                {totalTime}
+            {isRealData && (
+              <span
+                className="inline-flex items-center gap-1.5 text-[10px] bg-[#50C878]/15 text-[#16a34a] px-3 py-1 rounded-full"
+                style={{ fontWeight: 600 }}
+              >
+                <Sparkles className="w-3 h-3" /> AI-generated
               </span>
-            </div>
-          </motion.div>
+            )}
+            <span className="text-[10px] bg-[#f1f5f9] text-[#62748e] px-3 py-1 rounded-full" style={{ fontWeight: 500 }}>
+              {totalTime}
+            </span>
+          </PageTitleBlock>
         )}
 
         {/* ═══════════════════════════════════════════════

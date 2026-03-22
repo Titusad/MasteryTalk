@@ -13,6 +13,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { PastelBlobs, MiniFooter } from "../shared";
 import { projectId, publicAnonKey } from "../../../../utils/supabase/info";
 import type { OnboardingProfile } from "../../../services/types";
+import { SessionProgressBar } from "../SessionProgressBar";
 
 /* ═══════════════════════════════════════════════════════════
    KEY EXPERIENCE SCREEN (interview only — persisted to profile)
@@ -83,6 +84,9 @@ function KeyExperienceScreen({
             <PastelBlobs />
 
             <main className="relative w-full max-w-[768px] mx-auto px-6 pt-12 pb-20">
+                <div className="w-full mb-12">
+                    <SessionProgressBar currentStep="key-experience" />
+                </div>
                 <motion.div
                     className="text-center mb-10"
                     initial={{ opacity: 0, y: 16 }}

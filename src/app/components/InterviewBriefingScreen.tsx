@@ -32,6 +32,7 @@ import {
 import type { InterviewBriefingData } from "../../services/types";
 import { BriefingCarousel } from "./briefing/BriefingCarousel";
 import { ReadinessScore } from "./briefing/ReadinessScore";
+import { SessionProgressBar } from "./SessionProgressBar";
 
 /* ── Minimum cards to unlock practice ── */
 const MIN_CARDS_FOR_PRACTICE = 3;
@@ -104,18 +105,9 @@ export function InterviewBriefingScreen({
             <PastelBlobs />
 
             <main className="relative w-full max-w-[800px] mx-auto px-4 sm:px-6 pt-10 pb-20">
-                {/* Back Button */}
-                <motion.button
-                    onClick={onBack}
-                    className="flex items-center gap-1.5 text-sm text-[#45556c] hover:text-[#0f172b] mb-6 transition-colors"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.3 }}
-                >
-                    <ArrowLeft className="w-4 h-4" />
-                    Back
-                </motion.button>
-
+                <div className="w-full mb-12">
+                    <SessionProgressBar currentStep="pre-briefing" />
+                </div>
                 {/* Header */}
                 <PageTitleBlock
                     icon={<MessageCircleQuestion className="w-8 h-8 text-white" />}
@@ -186,6 +178,22 @@ export function InterviewBriefingScreen({
                         </div>
                     </motion.div>
                 )}
+
+                {/* Back Button (Bottom) */}
+                <motion.div
+                    className="mt-12 text-center flex justify-center"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                >
+                    <button
+                        onClick={onBack}
+                        className="flex items-center gap-1.5 text-sm text-[#45556c] hover:text-[#0f172b] transition-colors"
+                    >
+                        <ArrowLeft className="w-4 h-4" />
+                        Back
+                    </button>
+                </motion.div>
             </main>
         </div>
     );
