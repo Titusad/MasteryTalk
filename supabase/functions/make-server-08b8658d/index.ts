@@ -33,7 +33,7 @@ app.use(
   "/*",
   cors({
     origin: "*",
-    allowHeaders: ["Content-Type", "Authorization"],
+    allowHeaders: ["Content-Type", "Authorization", "apikey"],
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     exposeHeaders: ["Content-Length"],
     maxAge: 600,
@@ -1458,7 +1458,8 @@ app.post("/make-server-08b8658d/pronunciation-assess", async (c) => {
 
     console.log(`[PronunciationAssess] Calling Azure: url=${azureUrl.slice(0, 60)}..., contentType=${azureContentType}, audioSize=${audioBytes.byteLength}`);
 
-    // Retry once on transient network/5xx failures
+    // Retry once on transient failures — including Azure 401 (cold-start auth blip)
+    // and 5xx errors. 4xx other than 401 are real client errors, don't retry.
     let azureRes: Response | null = null;
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
@@ -1472,16 +1473,16 @@ app.post("/make-server-08b8658d/pronunciation-assess", async (c) => {
           },
           body: audioBytes,
         });
-        // If we got a response (even error), break — only retry on fetch exceptions
-        if (azureRes.ok || azureRes.status < 500) break;
-        if (attempt === 0) {
-          console.log(`[PronunciationAssess] Azure returned ${azureRes.status}, retrying once...`);
-          await new Promise(r => setTimeout(r, 500));
-        }
+        if (azureRes.ok) break;
+        // Retry on 401 (transient cold-start) and 5xx; break on other 4xx (real errors)
+        const shouldRetry = azureRes.status === 401 || azureRes.status >= 500;
+        if (!shouldRetry || attempt > 0) break;
+        console.log(`[PronunciationAssess] Azure returned ${azureRes.status} on attempt 1, retrying...`);
+        await new Promise(r => setTimeout(r, 600));
       } catch (fetchErr) {
         console.log(`[PronunciationAssess] Fetch attempt ${attempt + 1} failed: ${fetchErr}`);
         if (attempt === 0) {
-          await new Promise(r => setTimeout(r, 500));
+          await new Promise(r => setTimeout(r, 600));
         } else {
           return c.json({ error: `Azure fetch failed after retry: ${fetchErr}` }, 502);
         }

@@ -12,7 +12,7 @@ import { BrandLogo, PastelBlobs, MiniFooter } from "./shared";
 import { authService, userService } from "../../services";
 import type { PracticeHistoryItem, ScenarioType } from "../../services/types";
 import { SessionReport } from "./SessionReport";
-import { projectId } from "../../../utils/supabase/info";
+import { projectId, publicAnonKey } from "../../../utils/supabase/info";
 import { getAuthToken } from "../../services/supabase";
 
 /* ─── Props ─── */
@@ -113,7 +113,10 @@ export function PracticeHistoryPage({
         const token = await getAuthToken();
         const serverUrl = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/sessions`;
         const res = await fetch(serverUrl, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            apikey: publicAnonKey,
+          },
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();

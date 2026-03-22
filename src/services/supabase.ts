@@ -106,7 +106,10 @@ export function getSupabaseClient(): SupabaseClient {
 
 export async function getAuthToken(): Promise<string> {
   const { data: { session } } = await getSupabaseClient().auth.getSession();
-  return session?.access_token || SUPABASE_ANON_KEY || "";
+  if (!session?.access_token) {
+    throw new Error("getAuthToken: no active user session. User must be signed in.");
+  }
+  return session.access_token;
 }
 
 

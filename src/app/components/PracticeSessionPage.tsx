@@ -330,45 +330,50 @@ export function PracticeSessionPage({
     if (scenarioType === "interview") {
       const briefingUrl = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/generate-interview-briefing`;
 
-      fetch(briefingUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${await getAuthToken()}`,
-        },
-        body: JSON.stringify({
-          scenario,
-          interlocutor,
-          guidedFields: allFields,
-          locale: _detectedLocale,
-        }),
-      })
-        .then(async (res) => {
-          if (!res.ok) {
-            const errBody = await res.text();
-            throw new Error(`Server ${res.status}: ${errBody.slice(0, 200)}`);
-          }
-          return res.json();
-        })
-        .then((data) => {
-          const questions = data.anticipatedQuestions || [];
-          if (questions.length === 0) {
-            throw new Error("No anticipated questions generated");
-          }
-          const briefing: InterviewBriefingData = {
-            anticipatedQuestions: questions,
-            questionsToAsk: data.questionsToAsk || [],
-            culturalTips: data.culturalTips || [],
-          };
-          setInterviewBriefing(briefing);
-          interviewBriefingCache.set(sKey, briefing);
-          setScriptGenStatus("ready");
-        })
-        .catch((err) => {
-          console.error("[InterviewBriefing] ❌ Failed:", err.message);
-          setScriptGenError(err.message);
-          setScriptGenStatus("error");
+      try {
+        const token = await getAuthToken();
+        if (!token) throw new Error("No auth token available");
+
+        const res = await fetch(briefingUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+            apikey: publicAnonKey,
+          },
+          body: JSON.stringify({
+            scenario,
+            interlocutor,
+            guidedFields: allFields,
+            locale: _detectedLocale,
+          }),
         });
+
+        if (!res.ok) {
+          const errBody = await res.text();
+          throw new Error(`Server ${res.status}: ${errBody.slice(0, 200)}`);
+        }
+
+        const data = await res.json();
+        const questions = data.anticipatedQuestions || [];
+        if (questions.length === 0) {
+          throw new Error("No anticipated questions generated");
+        }
+
+        const briefing: InterviewBriefingData = {
+          anticipatedQuestions: questions,
+          questionsToAsk: data.questionsToAsk || [],
+          culturalTips: data.culturalTips || [],
+        };
+        setInterviewBriefing(briefing);
+        interviewBriefingCache.set(sKey, briefing);
+        setScriptGenStatus("ready");
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error("[InterviewBriefing] ❌ Failed:", msg);
+        setScriptGenError(msg);
+        setScriptGenStatus("error");
+      }
 
       return; // Interview uses single endpoint — no separate toolkit call
     }

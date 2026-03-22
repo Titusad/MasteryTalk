@@ -93,7 +93,9 @@ export class SupabaseAuthService implements IAuthService {
           console.log(`[inFluentia Auth] User loaded: ${this.currentUser.displayName} (${this.currentUser.plan})`);
 
           // Fire-and-forget: ensure server-side profile exists too
-          if (event === "SIGNED_IN") {
+          // Pass the access_token directly from the callback to avoid race conditions
+          // with a secondary getSession() call.
+          if (event === "SIGNED_IN" && session.access_token) {
             this.ensureServerProfile(session.access_token).catch((err) =>
               console.warn("[inFluentia Auth] ensure-profile server call failed (non-blocking):", err)
             );
@@ -346,13 +348,16 @@ export class SupabaseAuthService implements IAuthService {
    * on the server side, which might not happen immediately due to
    * triggers or other mechanisms.
    */
-  private async ensureServerProfile(accessToken: string): Promise<void> {
+  private async ensureServerProfile(token: string): Promise<void> {
+    console.warn("🚨 [DEBUG TOKEN] Tipo:", typeof token, "Valor (primeros 50 chars):", token.substring(0, 50));
+
     const serverUrl = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/auth/ensure-profile`;
     const response = await fetch(serverUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${token}`,
+        apikey: publicAnonKey,
       },
     });
 
