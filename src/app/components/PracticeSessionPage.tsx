@@ -487,6 +487,10 @@ export function PracticeSessionPage({
 
     const serverUrl = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/analyze-feedback`;
 
+    // Safety timeout: abort after 35s to prevent infinite hanging
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 35_000);
+
     fetch(serverUrl, {
       method: "POST",
       headers: {
@@ -498,8 +502,10 @@ export function PracticeSessionPage({
         scenarioType,
         locale: _detectedLocale,
       }),
+      signal: controller.signal,
     })
       .then(async (res) => {
+        clearTimeout(timeoutId);
         if (!res.ok) {
           const errBody = await res.text();
           throw new Error(`Server ${res.status}: ${errBody.slice(0, 200)}`);
@@ -526,6 +532,7 @@ export function PracticeSessionPage({
         setFeedbackStatus("ready");
       })
       .catch((err) => {
+        clearTimeout(timeoutId);
         console.error("[AnalyzeFeedback] ❌ Failed:", err.message);
         setFeedbackStatus("error");
         // Don't block the flow — user can still see mock feedback
@@ -703,6 +710,14 @@ export function PracticeSessionPage({
   useEffect(() => {
     if (step === "analyzing" && feedbackAnimDone && (feedbackStatus === "ready" || feedbackStatus === "error")) {
       setStep("conversation-feedback");
+    }
+    // Safety escape: if animation is done but feedback is still loading after 5s, force error status
+    if (step === "analyzing" && feedbackAnimDone && feedbackStatus === "loading") {
+      const escapeTimer = setTimeout(() => {
+        console.warn("[AnalyzeFeedback] ⚠️ Skip pressed but API still loading — forcing error status");
+        setFeedbackStatus("error");
+      }, 5000);
+      return () => clearTimeout(escapeTimer);
     }
   }, [step, feedbackAnimDone, feedbackStatus]);
 

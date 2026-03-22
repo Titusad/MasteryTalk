@@ -67,10 +67,28 @@ CREATE TABLE IF NOT EXISTS kv_store_08b8658d (
 
 | Service | Adapter | Status |
 |---------|---------|--------|
-| Auth | SupabaseAuthService | Real (auto-detected) |
-| User | MockUserService | Mock — needs `user.supabase.ts` |
-| Conversation | MockConversationService | Mock — needs AI integration |
-| Feedback | MockFeedbackService | Mock — needs AI integration |
-| Speech | MockSpeechService | Mock — needs ElevenLabs/Whisper |
-| Payment | MockPaymentService | Mock — needs Stripe/MercadoPago |
-| SpacedRepetition | MockSpacedRepetitionService | Mock — needs KV persistence |
+| Auth | SupabaseAuthService | ✅ Real — Google OAuth configurado (`FORCE_MOCK_AUTH = false`) |
+| Conversation (VoicePractice) | SupabaseConversationService | ✅ Real — GPT-4o via Edge Function (`realConversationService`) |
+| Speech | SupabaseSpeechService | ✅ Real — Whisper STT + ElevenLabs TTS via Edge Function (`realSpeechService`) |
+| Feedback | SupabaseFeedbackService | ✅ Real — activado cuando Supabase está configurado |
+| Conversation (legacy screens) | MockConversationService | ⚠️ Mock — pantallas antiguas, no prioritario |
+| User | MockUserService | ❌ Mock — falta `user.supabase.ts` |
+| Payment | MockPaymentService | ❌ Mock — falta integración Stripe/MercadoPago |
+| SpacedRepetition | MockSpacedRepetitionService | ❌ Mock — falta persistencia en BD (tabla `sr_cards`) |
+
+## Database schema (tipos definidos en `src/services/supabase.ts`)
+
+Tablas con row types listos para uso:
+- `profiles` → `ProfileRow`
+- `sessions` → `SessionRow`
+- `sr_cards` → `SRCardRow`
+- `power_phrases` → `PowerPhraseRow`
+- `audit_log` → `AuditLogRow`
+- `credit_purchases` → `CreditPurchaseRow`
+- `credit_balance` → `CreditBalanceRow`
+
+## Próximos pasos (pendientes)
+
+1. **`user.supabase.ts`** — adaptador real de usuario (lee/escribe `profiles`)
+2. **`spaced-repetition.supabase.ts`** — persistencia real de tarjetas SR en `sr_cards`
+3. **`payment.supabase.ts`** — integración Stripe o MercadoPago con `credit_purchases`

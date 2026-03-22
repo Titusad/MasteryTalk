@@ -12,7 +12,7 @@ import { BrandLogo, PastelBlobs, MiniFooter } from "./shared";
 import { authService, userService } from "../../services";
 import type { PracticeHistoryItem, ScenarioType } from "../../services/types";
 import { SessionReport } from "./SessionReport";
-import { projectId, publicAnonKey } from "../../../utils/supabase/info";
+import { projectId } from "../../../utils/supabase/info";
 import { getAuthToken } from "../../services/supabase";
 
 /* ─── Props ─── */
@@ -109,22 +109,19 @@ export function PracticeHistoryPage({
   /* ─── Load practice history ─── */
   useEffect(() => {
     const loadHistory = async () => {
-      const serverUrl = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/sessions`;
-      const token = await getAuthToken();
-      fetch(serverUrl, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then(async (res) => {
-        if (!res.ok) throw new Error(`${res.status}`);
-        return res.json();
-      })
-      .then((data) => {
+      try {
+        const token = await getAuthToken();
+        const serverUrl = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/sessions`;
+        const res = await fetch(serverUrl, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
         const sessions: PersistedSession[] = data.sessions || [];
         setPersistedSessions(sessions);
-      })
-      .catch((err) => {
-        console.warn("[PracticeHistory] Failed to load real sessions:", err.message);
-      });
+      } catch (err) {
+        console.warn("[PracticeHistory] Failed to load real sessions:", (err as Error).message);
+      }
     };
     loadHistory();
   }, []);
