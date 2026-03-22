@@ -37,15 +37,9 @@ export function buildFeedbackAnalystPrompt(
   const langTag = lc.langTag;
   const pillarTags = getPillarTags(lc);
 
-  const toneGood1 = lc.isBrazil
-    ? "Voce defendeu sua tarifa com conviccao, o que demonstra preparacao."
-    : "Defendiste tu tarifa con conviccion, lo que demuestra preparacion.";
-  const toneGood2 = lc.isBrazil
-    ? "Quando mencionaram a concorrencia, sua resposta foi reativa. Tente com: 'I appreciate the comparison. Let me show you why our integration speed changes the ROI calculation.'"
-    : "Cuando mencionaron a la competencia, tu respuesta fue reactiva. Prueba con: 'I appreciate the comparison. Let me show you why our integration speed changes the ROI calculation.'";
-  const toneBad = lc.isBrazil
-    ? "O usuario demonstrou competencia em..."
-    : "El usuario demostro competencia en...";
+  const toneGood1 = "You defended your pricing with conviction, demonstrating excellent preparation.";
+  const toneGood2 = "When they mentioned competitors, your response was reactive. Try this instead: 'I appreciate the comparison. Let me show you why our integration speed changes the ROI calculation.'";
+  const toneBad = "The user demonstrated competence in...";
 
   return `=== ROLE: THE EXECUTIVE COMMUNICATION COACH ===
 You are an expert in executive communication, international negotiation, and professional coaching. You have just observed a simulated business conversation between a Latin American professional and a demanding U.S. business counterpart.
@@ -94,9 +88,7 @@ BRIEFING EVALUATION CRITERIA:
 Include these observations in your strengths/opportunities. If they used their preparation well, it's a strength ("Excellent preparation transfer"). If they abandoned it under pressure, it's an opportunity.
 ` : ''}
 === LANGUAGE ===
-ALL text fields in your response (titles, descriptions) MUST be written in ${lang} (${langTag}). The ONLY exceptions are:
-- English phrases inside single quotes that the user should practice
-- The "beforeAfter" fields (userOriginal, professionalVersion, technique) which stay in English
+ALL text fields in your response (titles, descriptions, observations, tips, verdicts) MUST be written entirely in English. The only exceptions are if you need to quote the user directly in another language.
 
 === YOUR SECRET ADVANTAGE: X-RAY VISION ===
 In the conversation history you will receive, each AI turn includes a hidden field called "internalAnalysis". These are real-time coaching notes that the AI interlocutor generated DURING the conversation. The user NEVER saw these notes.
@@ -153,15 +145,15 @@ Respond with ONLY a JSON object. No markdown, no code fences, no commentary.
 {
   "strengths": [
     {
-      "title": "Short title in ${lang} (max 6 words)",
-      "desc": "Description in ${lang} (2-3 sentences). Be specific — reference what the user actually said or did."
+      "title": "Short title in English (max 6 words)",
+      "desc": "Description in English (2-3 sentences). Be specific — reference what the user actually said or did."
     }
   ],
   "opportunities": [
     {
-      "title": "Short title in ${lang} (max 6 words)",
+      "title": "Short title in English (max 6 words)",
       "tag": "One of: ${pillarTags.p1} | ${pillarTags.p2} | ${pillarTags.p3} | ${pillarTags.p4}",
-      "desc": "Description in ${lang} (2-3 sentences). Include a SPECIFIC English example phrase in single quotes."
+      "desc": "Description in English (2-3 sentences). Include a SPECIFIC English example phrase in single quotes."
     }
   ],
   "beforeAfter": [
@@ -178,6 +170,13 @@ Respond with ONLY a JSON object. No markdown, no code fences, no commentary.
     "Professional Tone": 0-100,
     "Persuasion": 0-100
   },
+  "languageInsights": [
+    {
+      "dimension": "Vocabulary | Grammar | Fluency | Professional Tone | Persuasion",
+      "observation": "What you noticed in English (1 sentence)",
+      "tip": "Actionable coaching tip in English (1-2 sentences). Include an English example phrase in single quotes if applicable."
+    }
+  ],
   "professionalProficiency": 0-100${isInterview ? `
   ,
   "contentScores": {
@@ -189,11 +188,11 @@ Respond with ONLY a JSON object. No markdown, no code fences, no commentary.
   "interviewReadinessScore": 0-100,
   "preparationUtilization": {
     "score": 0-100,
-    "verdict": "Short verdict in ${lang} (e.g. 'Strong Alignment', 'Abandoned Preparation')",
+    "verdict": "Short verdict in English (e.g. 'Strong Alignment', 'Abandoned Preparation')",
     "insights": [
       {
         "aspect": "Framework usage | Key phrases | Pivot execution",
-        "observation": "What happened in ${lang}",
+        "observation": "What happened in English",
         "rating": "strong | partial | missed"
       }
     ]
@@ -201,8 +200,8 @@ Respond with ONLY a JSON object. No markdown, no code fences, no commentary.
   "contentInsights": [
     {
       "dimension": "Relevance | Structure | Examples | Impact",
-      "observation": "What you noticed in ${lang} (1 sentence)",
-      "tip": "Actionable coaching tip in ${lang} (1-2 sentences). Include an English example phrase in single quotes if applicable."
+      "observation": "What you noticed in English (1 sentence)",
+      "tip": "Actionable coaching tip in English (1-2 sentences). Include an English example phrase in single quotes if applicable."
     }
   ]` : ''}
 }
@@ -216,6 +215,8 @@ Rate each of the 5 communication dimensions (0-100) based on the conversation:
 - **Persuasion**: Ability to convince, defend positions, handle objections
 
 NOTE: Do NOT score Pronunciation — that is measured separately by Azure Speech AI from the actual audio. You only have a text transcript, so you cannot assess pronunciation accurately.
+
+Also provide 2-3 "languageInsights" for the dimensions that need the most improvement (e.g. Persuasion, Professional Tone), explaining specifically what the issue was and how to fix it with an actionable tip.
 
 **professionalProficiency** = weighted average where Professional Tone and Persuasion get 1.3x weight, Fluency gets 1.1x, and the rest get 1.0x. Round to nearest integer.
 

@@ -32,7 +32,7 @@ import {
     ArrowRight,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import type { TurnPronunciationData } from "../../services/types";
+import type { TurnPronunciationData, BeforeAfterComparison } from "../../services/types";
 import { realSpeechService } from "../../services";
 import { shadowingScoresCache } from "../utils/sessionCache";
 import { ShadowingModal, extractShadowingPhrases } from "./ShadowingModal";
@@ -581,6 +581,41 @@ function ShadowingDrill({ phrase, onScoreUpdate }: { phrase: string; onScoreUpda
 }
 
 /* ================================================================
+   PLAYABLE WORD PILL — for Hesitation Triggers
+   ================================================================ */
+function PlayableWordPill({ word, delay }: { word: string; delay: number }) {
+    const [isPlaying, setIsPlaying] = useState(false);
+    return (
+        <motion.button
+            onClick={async () => {
+                if (isPlaying) return;
+                setIsPlaying(true);
+                try {
+                    await realSpeechService.speak(word);
+                    // Reset based on approx audio duration
+                    setTimeout(() => setIsPlaying(false), Math.max(1000, word.length * 80 + 500));
+                } catch (err) {
+                    setIsPlaying(false);
+                }
+            }}
+            className="flex items-center gap-1.5 bg-[#f59e0b]/15 border border-[#f59e0b]/30 text-[#fbbf24] text-sm px-3 py-1.5 rounded-lg hover:bg-[#f59e0b]/25 transition-colors cursor-pointer"
+            style={{ fontWeight: 500 }}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay }}
+            title="Click to hear native pronunciation"
+        >
+            {word}
+            {isPlaying ? (
+                <Volume2 className="w-3.5 h-3.5 animate-pulse" />
+            ) : (
+                <Volume2 className="w-3.5 h-3.5 opacity-60" />
+            )}
+        </motion.button>
+    );
+}
+
+/* ================================================================
    MAIN COMPONENT
    ================================================================ */
 
@@ -661,8 +696,7 @@ export function PronunciationTab({
                         </h2>
                         <p className="text-xs text-white/40 mt-0.5">
                             {pronunciationData.length} turn
-                            {pronunciationData.length !== 1 ? "s" : ""} analyzed by Azure
-                            Speech AI
+                            {pronunciationData.length !== 1 ? "s" : ""} analyzed
                         </p>
                     </div>
                 </div>
@@ -671,7 +705,7 @@ export function PronunciationTab({
                 <div className="flex justify-center gap-6 md:gap-10 mb-8">
                     <ScoreGauge score={scores.accuracy} label="Accuracy" delay={0.1} />
                     <ScoreGauge score={scores.fluency} label="Fluency" delay={0.2} />
-                    <ScoreGauge score={scores.prosody} label="Intonation & Flow" delay={0.3} />
+                    <ScoreGauge score={scores.prosody} label="Intonation" delay={0.3} />
                 </div>
 
                 {/* Overall score badge */}
@@ -696,13 +730,45 @@ export function PronunciationTab({
                     </motion.div>
                 </div>
 
-                {/* Explanation note */}
-                <div className="bg-white/5 border border-white/10 rounded-xl p-3 flex items-start gap-2.5">
-                    <Zap className="w-3.5 h-3.5 text-[#fbbf24] shrink-0 mt-0.5" />
-                    <p className="text-[11px] text-white/50 leading-relaxed">
-                        <span style={{ fontWeight: 600, color: "rgba(255,255,255,0.7)" }}>How it works:</span>{" "}
-                        During conversation, Azure analyzes your audio in the background. For the most accurate scores, use the Shadowing Tool below &mdash; where you repeat known phrases and get precise word-by-word feedback.
-                    </p>
+                {/* ACTIONABLE INSIGHTS (Moved up from former Fluency Insights) */}
+                <div className="border-t border-white/10 pt-6 mt-2">
+                    {/* Actionable tip */}
+                    <div className="bg-white/5 border border-white/10 rounded-xl p-5 mb-5 flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-full bg-[#8b5cf6]/20 flex items-center justify-center shrink-0">
+                            <Zap className="w-4 h-4 text-[#a78bfa]" />
+                        </div>
+                        <div>
+                            <p
+                                className="text-[10px] uppercase tracking-wider text-[#a78bfa] mb-1"
+                                style={{ fontWeight: 600 }}
+                            >
+                                Coach's Tip
+                            </p>
+                            <p className="text-sm text-white/80 leading-relaxed">
+                                {fluencyInsights.tip}
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Hesitation triggers with PlayableWordPill */}
+                    {fluencyInsights.hesitationTriggers.length > 0 && (
+                        <div>
+                            <div className="flex items-center gap-2 mb-3">
+                                <AlertTriangle className="w-4 h-4 text-[#f59e0b]" />
+                                <p
+                                    className="text-sm text-white/70"
+                                    style={{ fontWeight: 500 }}
+                                >
+                                    Words that caused hesitation:
+                                </p>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                                {fluencyInsights.hesitationTriggers.map((word, i) => (
+                                    <PlayableWordPill key={word} word={word} delay={0.4 + i * 0.05} />
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </motion.div>
 
@@ -735,10 +801,9 @@ export function PronunciationTab({
 
                 {/* How it works callout */}
                 <div className="bg-[#f0f4ff] border border-[#c7d2fe] rounded-xl p-3 mb-5 flex items-start gap-2.5">
-                    <Play className="w-3.5 h-3.5 text-[#6366f1] shrink-0 mt-0.5" />
                     <p className="text-[11px] text-[#45556c] leading-relaxed">
                         <span style={{ fontWeight: 600 }}>Why this works:</span>{" "}
-                        Azure compares your audio against the <em>exact target phrase</em> &mdash; giving you precise, word-by-word pronunciation scores. Practice complete sentences from your conversation for maximum impact.
+                        Our AI compares your audio against the <em>exact target phrase</em> &mdash; giving you precise, word-by-word pronunciation scores. Practice complete sentences from your conversation for maximum impact.
                     </p>
                 </div>
 
@@ -776,7 +841,7 @@ export function PronunciationTab({
                                             color: scoreColor(sp.originalScore),
                                         }}
                                     >
-                                        {idx + 1}
+                                        <Play className="w-3 h-3 ml-0.5" />
                                     </span>
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm text-[#1e293b] truncate" style={{ fontWeight: 500 }}>
@@ -791,7 +856,7 @@ export function PronunciationTab({
                                             color: scoreColor(sp.originalScore),
                                         }}
                                     >
-                                        Repaso
+                                        {scoreLabel(sp.originalScore)}
                                     </span>
                                 </motion.button>
                             ))}
@@ -826,144 +891,6 @@ export function PronunciationTab({
                     onClose={() => setShowShadowingModal(false)}
                 />
             )}
-
-            {/* ===============================================
-         SECTION 3: Fluency Insights
-         =============================================== */}
-            <motion.div
-                className="rounded-3xl bg-gradient-to-br from-[#0f172b] to-[#1e293b] p-6 md:p-8"
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-            >
-                {/* Section header */}
-                <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-full bg-[#8b5cf6] flex items-center justify-center shrink-0">
-                        <MessageSquare className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                        <h2 className="text-xl text-white" style={{ fontWeight: 500 }}>
-                            Fluency Insights
-                        </h2>
-                        <p className="text-xs text-white/40 mt-0.5">
-                            How natural & smooth your speech sounded
-                        </p>
-                    </div>
-                </div>
-
-                {/* Stats grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                    {[
-                        {
-                            label: "Fluency",
-                            value: `${Math.round(fluencyInsights.avgFluency)}%`,
-                            sub: scoreLabel(fluencyInsights.avgFluency),
-                            color: scoreColor(fluencyInsights.avgFluency),
-                        },
-                        {
-                            label: "Intonation & Flow",
-                            value: `${Math.round(fluencyInsights.avgProsody)}%`,
-                            sub: scoreLabel(fluencyInsights.avgProsody),
-                            color: scoreColor(fluencyInsights.avgProsody),
-                        },
-                        {
-                            label: "Words Spoken",
-                            value: String(fluencyInsights.totalWords),
-                            sub: `${pronunciationData.length} turns`,
-                            color: "#60a5fa",
-                        },
-                        {
-                            label: "Problem Words",
-                            value: String(fluencyInsights.totalProblemWords),
-                            sub:
-                                fluencyInsights.totalWords > 0
-                                    ? `${Math.round((fluencyInsights.totalProblemWords / fluencyInsights.totalWords) * 100)}% of total`
-                                    : "\u2014",
-                            color:
-                                fluencyInsights.totalProblemWords > 5 ? "#ef4444" : "#22c55e",
-                        },
-                    ].map((stat, i) => (
-                        <motion.div
-                            key={stat.label}
-                            className="bg-white/5 border border-white/10 rounded-xl p-4 text-center"
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.35 + i * 0.05 }}
-                        >
-                            <p
-                                className="text-xl mb-1"
-                                style={{ fontWeight: 700, color: stat.color }}
-                            >
-                                {stat.value}
-                            </p>
-                            <p
-                                className="text-xs text-white/60"
-                                style={{ fontWeight: 500 }}
-                            >
-                                {stat.label}
-                            </p>
-                            <p className="text-[10px] text-white/30 mt-0.5">{stat.sub}</p>
-                        </motion.div>
-                    ))}
-                </div>
-
-                {/* Hesitation triggers */}
-                {fluencyInsights.hesitationTriggers.length > 0 && (
-                    <motion.div
-                        className="mb-6"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.5 }}
-                    >
-                        <div className="flex items-center gap-2 mb-3">
-                            <AlertTriangle className="w-4 h-4 text-[#f59e0b]" />
-                            <p
-                                className="text-sm text-white/70"
-                                style={{ fontWeight: 500 }}
-                            >
-                                Words Causing Hesitation
-                            </p>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                            {fluencyInsights.hesitationTriggers.map((word, i) => (
-                                <motion.span
-                                    key={word}
-                                    className="bg-[#f59e0b]/15 border border-[#f59e0b]/30 text-[#fbbf24] text-sm px-3 py-1.5 rounded-lg"
-                                    style={{ fontWeight: 500 }}
-                                    initial={{ opacity: 0, scale: 0.8 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    transition={{ delay: 0.55 + i * 0.05 }}
-                                >
-                                    {word}
-                                </motion.span>
-                            ))}
-                        </div>
-                    </motion.div>
-                )}
-
-                {/* Actionable tip */}
-                <motion.div
-                    className="bg-white/5 border border-white/10 rounded-xl p-5 flex items-start gap-3"
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.6 }}
-                >
-                    <div className="w-8 h-8 rounded-full bg-[#8b5cf6]/20 flex items-center justify-center shrink-0">
-                        <Zap className="w-4 h-4 text-[#a78bfa]" />
-                    </div>
-                    <div>
-                        <p
-                            className="text-[10px] uppercase tracking-wider text-[#a78bfa] mb-1"
-                            style={{ fontWeight: 600 }}
-                        >
-                            Personalized Tip
-                        </p>
-                        <p className="text-sm text-white/80 leading-relaxed">
-                            {fluencyInsights.tip}
-                        </p>
-                    </div>
-                </motion.div>
-            </motion.div>
         </div>
     );
 }

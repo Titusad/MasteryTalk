@@ -1246,6 +1246,7 @@ ${transcript}`;
     const beforeAfter = feedback.beforeAfter || [];
     const pillarScores = feedback.pillarScores || null;
     const professionalProficiency = typeof feedback.professionalProficiency === "number" ? feedback.professionalProficiency : null;
+    const languageInsights = feedback.languageInsights || null;
 
     // Interview-specific: Content Quality scoring
     const contentScores = feedback.contentScores || null;
@@ -1260,6 +1261,7 @@ ${transcript}`;
       beforeAfter,
       pillarScores,
       professionalProficiency,
+      ...(languageInsights && { languageInsights }),
       // Interview-specific fields (null for non-interview scenarios)
       ...(contentScores && { contentScores }),
       ...(interviewReadinessScore !== null && { interviewReadinessScore }),

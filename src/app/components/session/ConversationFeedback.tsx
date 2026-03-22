@@ -79,6 +79,11 @@ export interface RealFeedbackData {
     observation: string;
     tip: string;
   }> | null;
+  languageInsights?: Array<{
+    dimension: string;
+    observation: string;
+    tip: string;
+  }> | null;
 }
 
 /* ── Data Constants ── */
@@ -133,6 +138,17 @@ const CONTENT_QUALITY_COLORS: Record<
   },
 };
 
+const LANGUAGE_PILLAR_COLORS: Record<
+  string,
+  { icon: string; bg: string; text: string }
+> = {
+  Vocabulary: { icon: "📚", bg: "rgba(16,185,129,0.12)", text: "#10b981" },
+  Grammar: { icon: "📐", bg: "rgba(59,130,246,0.12)", text: "#3b82f6" },
+  Fluency: { icon: "🌊", bg: "rgba(14,165,233,0.12)", text: "#0ea5e9" },
+  "Professional Tone": { icon: "🕴️", bg: "rgba(139,92,246,0.12)", text: "#8b5cf6" },
+  Persuasion: { icon: "🎯", bg: "rgba(245,158,11,0.12)", text: "#f59e0b" },
+};
+
 function feedbackProficiencyLabel(score: number): string {
   if (score >= 90) return "Expert";
   if (score >= 75) return "Advanced";
@@ -153,12 +169,15 @@ function ProficiencyGauge({
   score,
   size = 160,
   darkBg = false,
+  hideLabel = false,
+  strokeWidth = 10,
 }: {
   score: number;
   size?: number;
   darkBg?: boolean;
+  hideLabel?: boolean;
+  strokeWidth?: number;
 }) {
-  const strokeWidth = 10;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const progress = Math.min(100, Math.max(0, score)) / 100;
@@ -199,7 +218,7 @@ function ProficiencyGauge({
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <motion.span
-          className={`${size >= 140 ? "text-4xl" : "text-2xl"} ${darkBg ? "text-white" : "text-[#0f172b]"}`}
+          className={`${size >= 140 ? "text-4xl" : size >= 80 ? "text-2xl" : "text-lg"} ${darkBg ? "text-white" : "text-[#0f172b]"}`}
           style={{ fontWeight: 700 }}
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -207,12 +226,14 @@ function ProficiencyGauge({
         >
           {score}%
         </motion.span>
-        <span
-          className="text-xs mt-0.5"
-          style={{ fontWeight: 600, color }}
-        >
-          {feedbackProficiencyLabel(score)}
-        </span>
+        {!hideLabel && (
+          <span
+            className="text-xs mt-0.5"
+            style={{ fontWeight: 600, color }}
+          >
+            {feedbackProficiencyLabel(score)}
+          </span>
+        )}
       </div>
     </div>
   );
@@ -224,6 +245,8 @@ function FeedbackAccordion({
   title,
   badge,
   defaultOpen = false,
+  isOpen,
+  onToggle,
   children,
   delay = 0,
 }: {
@@ -231,10 +254,23 @@ function FeedbackAccordion({
   title: string;
   badge?: React.ReactNode;
   defaultOpen?: boolean;
+  isOpen?: boolean;
+  onToggle?: () => void;
   children: React.ReactNode;
   delay?: number;
 }) {
-  const [open, setOpen] = useState(defaultOpen);
+  const [internalOpen, setInternalOpen] = useState(defaultOpen);
+  const isControlled = isOpen !== undefined;
+  const open = isControlled ? isOpen : internalOpen;
+
+  const handleToggle = () => {
+    if (isControlled && onToggle) {
+      onToggle();
+    } else {
+      setInternalOpen(!open);
+    }
+  };
+
   return (
     <motion.div
       className="bg-white border border-[#e2e8f0] rounded-3xl overflow-hidden mb-4"
@@ -243,7 +279,7 @@ function FeedbackAccordion({
       transition={{ duration: 0.4, delay }}
     >
       <button
-        onClick={() => setOpen(!open)}
+        onClick={handleToggle}
         className="w-full flex items-center gap-3 p-5 md:p-6 text-left hover:bg-[#f8fafc] transition-colors"
       >
         <div className="w-10 h-10 rounded-xl bg-[#0f172b] flex items-center justify-center shrink-0">
@@ -308,6 +344,11 @@ function ConversationFeedback({
   pronunciationData?: TurnPronunciationData[];
   sessionId?: string | null;
 }) {
+  const [activeAccordion, setActiveAccordion] = useState<string | null>(null);
+
+  const handleAccordionToggle = (id: string) => {
+    setActiveAccordion((prev) => (prev === id ? null : id));
+  };
   const scenarioLabel = scenarioType
     ? (SCENARIO_LABELS_MAP[scenarioType] ?? "Practice")
     : "Sales Pitch";
@@ -397,6 +438,8 @@ function ConversationFeedback({
   const contentInsights = isInterview
     ? (realFeedback?.contentInsights ?? [])
     : [];
+  const languageInsights = realFeedback?.languageInsights ?? [];
+  const allInsights = [...languageInsights, ...contentInsights];
 
   return (
     <div
@@ -413,7 +456,7 @@ function ConversationFeedback({
         <PageTitleBlock
             icon={<Trophy className="w-8 h-8 text-white" />}
             title={isInterview ? "Interview Analysis" : "Session Feedback"}
-            subtitle={isInterview ? "Dual-axis evaluation: how you sounded and how well you answered." : `Your ${scenarioLabel} practice analysis is ready. Review your performance below.`}
+            subtitle={isInterview ? "Your Readiness Score evaluates your true preparedness for the role, prioritizing Content Quality (60%) over Language Proficiency (40%)." : `Your ${scenarioLabel} practice analysis is ready. Review your performance below.`}
         >
           {isRealData ? (
             <span
@@ -435,41 +478,62 @@ function ConversationFeedback({
         {/* ═══ INTERVIEW READINESS SCORE (interview only) ═══ */}
         {isInterview && interviewReadiness !== null && (
           <motion.div
-            className="bg-gradient-to-br from-[#0f172b] to-[#1e293b] rounded-3xl p-6 md:p-8 mb-6 text-center"
+            className="bg-gradient-to-br from-[#0f172b] to-[#1e293b] rounded-3xl p-6 md:p-8 mb-6 flex flex-col md:flex-row items-center md:items-stretch gap-8"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.08 }}
           >
-            <p
-              className="text-[10px] uppercase tracking-wider text-white/50 mb-4"
-              style={{ fontWeight: 600 }}
-            >
-              Interview Readiness Score
-            </p>
-            <div className="flex justify-center">
+            {/* Left side: Score Gauge */}
+            <div className="flex flex-col items-center justify-center shrink-0">
+              <p
+                className="text-[10px] uppercase tracking-wider text-white/50 mb-4 md:mb-5"
+                style={{ fontWeight: 600 }}
+              >
+                Readiness Score
+              </p>
               <ProficiencyGauge
                 score={interviewReadiness}
-                size={170}
+                size={120}
                 darkBg
               />
+              <p
+                className="mt-4 text-[10px] text-white/40 tracking-wider text-center"
+                style={{ fontWeight: 500 }}
+              >
+                CONTENT 60% <span className="mx-2 opacity-30">|</span> LANGUAGE 40%
+              </p>
             </div>
-            <p className="text-sm text-white/60 mt-4 max-w-md mx-auto">
-              Combined assessment of{" "}
-              <span
-                className="text-[#818cf8]"
-                style={{ fontWeight: 500 }}
-              >
-                how you sound
-              </span>{" "}
-              (40%) and{" "}
-              <span
-                className="text-[#fbbf24]"
-                style={{ fontWeight: 500 }}
-              >
-                what you say
-              </span>{" "}
-              (60%)
-            </p>
+
+            {/* Right side: Coach Verdict */}
+            <div className="flex-1 text-left border-t md:border-t-0 md:border-l border-white/10 pt-6 md:pt-0 md:pl-8 flex flex-col justify-center">
+              <h3 className="text-white text-lg mb-2" style={{ fontWeight: 500 }}>
+                Coach's Verdict
+              </h3>
+              <p className="text-white/80 text-sm mb-5 leading-relaxed">
+                {interviewReadiness >= 80 
+                  ? "Outstanding performance! You combined strong professional content with confident delivery. Focus on minor refinements to sound even more natural and persuasive."
+                  : interviewReadiness >= 60
+                  ? "Good effort. Your content is clear and structured, but there are opportunities to enhance your fluency and delivery to make a stronger impact."
+                  : "Keep practicing! You covered the basics, but building more solid structure and practicing your pacing will greatly improve your persuasiveness."}
+              </p>
+              
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <span className="text-lg leading-none mt-0.5">✨</span>
+                  <p className="text-sm text-white/70">
+                    <strong className="text-white">Top Strength:</strong>{" "}
+                    {strengths[0]?.title || "Structured and clear responses."}
+                  </p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="text-lg leading-none mt-0.5">🎯</span>
+                  <p className="text-sm text-white/70">
+                    <strong className="text-white">Next Focus:</strong>{" "}
+                    {realFeedback?.opportunities?.[0]?.title || "Improving persuasion and pacing."}
+                  </p>
+                </div>
+              </div>
+            </div>
           </motion.div>
         )}
 
@@ -503,42 +567,48 @@ function ConversationFeedback({
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.12 }}
             >
-              <div className="flex items-center gap-2 mb-1">
-                <div className="w-7 h-7 rounded-lg bg-[#eef2ff] flex items-center justify-center">
-                  <AudioLines className="w-3.5 h-3.5 text-[#6366f1]" />
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="w-7 h-7 rounded-lg bg-[#eef2ff] flex items-center justify-center">
+                      <AudioLines className="w-3.5 h-3.5 text-[#6366f1]" />
+                    </div>
+                    <p
+                      className="text-sm text-[#0f172b]"
+                      style={{ fontWeight: 600 }}
+                    >
+                      Language Proficiency
+                    </p>
+                  </div>
+                  <p className="text-[10px] text-[#94a3b8] ml-9">
+                    How did you sound?
+                  </p>
                 </div>
-                <p
-                  className="text-sm text-[#0f172b]"
-                  style={{ fontWeight: 600 }}
-                >
-                  Language Proficiency
-                </p>
+                {proficiencyScore !== null && (
+                  <div className="shrink-0 flex items-center justify-center">
+                    <ProficiencyGauge
+                      score={proficiencyScore}
+                      size={54}
+                      hideLabel={true}
+                      strokeWidth={5}
+                    />
+                  </div>
+                )}
               </div>
-              <p className="text-[10px] text-[#94a3b8] mb-3 ml-9">
-                How did you sound?
-              </p>
-              {proficiencyScore !== null && (
-                <div className="flex items-center justify-center mb-3">
-                  <ProficiencyGauge
-                    score={proficiencyScore}
-                    size={100}
-                  />
-                </div>
-              )}
               {hasRadarData ? (
                 <div
                   className="w-full"
-                  style={{ height: 210, margin: "0 auto" }}
+                  style={{ height: 230, margin: "0 auto" }}
                 >
                   <ResponsiveContainer
                     width="100%"
-                    height={210}
+                    height={230}
                   >
                     <RadarChart
                       data={radarData}
                       cx="50%"
                       cy="50%"
-                      outerRadius="68%"
+                      outerRadius="72%"
                     >
                       <PolarGrid
                         stroke="#e2e8f0"
@@ -629,6 +699,22 @@ function ConversationFeedback({
                   </p>
                 </div>
               )}
+
+              {/* Language Insight Summary */}
+              {hasRadarData && (
+                <div className="mt-4 pt-4 border-t border-[#e2e8f0]">
+                  {(() => {
+                    const sorted = [...radarData].sort((a, b) => b.score - a.score);
+                    const top = sorted[0];
+                    const bottom = sorted[sorted.length - 1];
+                    return (
+                      <p className="text-sm text-[#45556c] leading-relaxed">
+                        Your <strong className="text-[#0f172b]">{top.skill}</strong> is solid, demonstrating a great command in this area. However, there's significant room for growth in <strong className="text-[#0f172b]">{bottom.skill}</strong>. Focusing on this specific area during your next practice sessions will make the most noticeable difference in elevating your overall language proficiency and sounding much more natural.
+                      </p>
+                    );
+                  })()}
+                </div>
+              )}
             </motion.div>
 
             {/* Axis 2: Content Quality */}
@@ -638,52 +724,58 @@ function ConversationFeedback({
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.16 }}
             >
-              <div className="flex items-center gap-2 mb-1">
-                <div className="w-7 h-7 rounded-lg bg-[#fef3c7] flex items-center justify-center">
-                  <Target className="w-3.5 h-3.5 text-[#d97706]" />
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="w-7 h-7 rounded-lg bg-[#fef3c7] flex items-center justify-center">
+                      <Target className="w-3.5 h-3.5 text-[#d97706]" />
+                    </div>
+                    <p
+                      className="text-sm text-[#0f172b]"
+                      style={{ fontWeight: 600 }}
+                    >
+                      Content Quality
+                    </p>
+                  </div>
+                  <p className="text-[10px] text-[#94a3b8] ml-9">
+                    How well did you answer?
+                  </p>
                 </div>
-                <p
-                  className="text-sm text-[#0f172b]"
-                  style={{ fontWeight: 600 }}
-                >
-                  Content Quality
-                </p>
+                {hasContentData && (
+                  <div className="shrink-0 flex items-center justify-center">
+                    {(() => {
+                      const avg = Math.round(
+                        contentRadarData.reduce(
+                          (s, d) => s + d.score,
+                          0,
+                        ) / contentRadarData.length,
+                      );
+                      return (
+                        <ProficiencyGauge
+                          score={avg}
+                          size={54}
+                          hideLabel={true}
+                          strokeWidth={5}
+                        />
+                      );
+                    })()}
+                  </div>
+                )}
               </div>
-              <p className="text-[10px] text-[#94a3b8] mb-3 ml-9">
-                How well did you answer?
-              </p>
-              {hasContentData && (
-                <div className="flex items-center justify-center mb-3">
-                  {(() => {
-                    const avg = Math.round(
-                      contentRadarData.reduce(
-                        (s, d) => s + d.score,
-                        0,
-                      ) / contentRadarData.length,
-                    );
-                    return (
-                      <ProficiencyGauge
-                        score={avg}
-                        size={100}
-                      />
-                    );
-                  })()}
-                </div>
-              )}
               {hasContentData ? (
                 <div
                   className="w-full"
-                  style={{ height: 210, margin: "0 auto" }}
+                  style={{ height: 230, margin: "0 auto" }}
                 >
                   <ResponsiveContainer
                     width="100%"
-                    height={210}
+                    height={230}
                   >
                     <RadarChart
                       data={contentRadarData}
                       cx="50%"
                       cy="50%"
-                      outerRadius="68%"
+                      outerRadius="72%"
                     >
                       <PolarGrid
                         stroke="#e2e8f0"
@@ -748,6 +840,22 @@ function ConversationFeedback({
                   <p className="text-xs text-[#94a3b8]">
                     No content data yet
                   </p>
+                </div>
+              )}
+
+              {/* Content Insight Summary */}
+              {hasContentData && (
+                <div className="mt-4 pt-4 border-t border-[#e2e8f0]">
+                  {(() => {
+                    const sorted = [...contentRadarData].sort((a, b) => b.score - a.score);
+                    const top = sorted[0];
+                    const bottom = sorted[sorted.length - 1];
+                    return (
+                      <p className="text-sm text-[#45556c] leading-relaxed">
+                        Great work on your <strong className="text-[#0f172b]">{top.skill}</strong>! You're providing strong points here. Try to deliberately reinforce your <strong className="text-[#0f172b]">{bottom.skill}</strong>. Taking a few extra seconds to craft your responses with this element in mind will dramatically increase the professional impact and overall persuasiveness of your answers.
+                      </p>
+                    );
+                  })()}
                 </div>
               )}
             </motion.div>
@@ -907,41 +1015,51 @@ function ConversationFeedback({
                     </p>
                   </div>
                 )}
+
+                {/* Language Insight Summary for Non-Interview */}
+                {hasRadarData && (
+                  <div className="mt-4 pt-4 border-t border-[#e2e8f0]">
+                    {(() => {
+                      const sorted = [...radarData].sort((a, b) => b.score - a.score);
+                      const top = sorted[0];
+                      const bottom = sorted[sorted.length - 1];
+                      return (
+                        <p className="text-sm text-[#45556c] text-center leading-relaxed">
+                          Your <strong className="text-[#0f172b]">{top.skill}</strong> is solid. Focusing on <strong className="text-[#0f172b]">{bottom.skill}</strong> will elevate your overall proficiency.
+                        </p>
+                      );
+                    })()}
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>
         )}
 
-        {/* ═══ CONTENT INSIGHTS (interview only) ═══ */}
-        {isInterview && contentInsights.length > 0 && (
-          <motion.div
-            className="bg-white rounded-3xl border border-[#e2e8f0] p-5 md:p-6 mb-4"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.2 }}
+        {/* ═══ COACHING INSIGHTS (Language + Content) ═══ */}
+        {allInsights.length > 0 && (
+          <FeedbackAccordion
+            icon={<Lightbulb className="w-5 h-5 text-white" />}
+            title="Coaching Insights"
+            isOpen={activeAccordion === "coaching"}
+            onToggle={() => handleAccordionToggle("coaching")}
+            badge={
+              isInterview ? (
+                <span
+                  className="text-[10px] bg-[#fef3c7] text-[#92400e] px-2.5 py-0.5 rounded-full"
+                  style={{ fontWeight: 600 }}
+                >
+                  Language & Content
+                </span>
+              ) : null
+            }
+            delay={0.2}
           >
-            <div className="flex items-center gap-2 mb-4">
-              <Lightbulb className="w-4 h-4 text-[#d97706]" />
-              <p
-                className="text-sm text-[#0f172b]"
-                style={{ fontWeight: 600 }}
-              >
-                Content Coaching
-              </p>
-              <span
-                className="text-[10px] bg-[#fef3c7] text-[#92400e] px-2.5 py-0.5 rounded-full ml-auto"
-                style={{ fontWeight: 600 }}
-              >
-                Interview-specific
-              </span>
-            </div>
             <div className="space-y-3">
-              {contentInsights.map((insight, i) => {
-                const dimColor = CONTENT_QUALITY_COLORS[
-                  insight.dimension
-                ] ?? {
-                  icon: "\uD83D\uDCA1",
-                  bg: "rgba(99,102,241,0.1)",
+              {allInsights.map((insight, i) => {
+                const dimColor = CONTENT_QUALITY_COLORS[insight.dimension] || LANGUAGE_PILLAR_COLORS[insight.dimension] || {
+                  icon: "💡",
+                  bg: "rgba(99,102,241,0.12)",
                   text: "#6366f1",
                 };
                 return (
@@ -983,13 +1101,15 @@ function ConversationFeedback({
                 );
               })}
             </div>
-          </motion.div>
+          </FeedbackAccordion>
         )}
 
         {/* ═══ COLLAPSIBLE: Practice Analysis ═══ */}
         <FeedbackAccordion
           icon={<Target className="w-5 h-5 text-white" />}
           title="Practice Analysis"
+          isOpen={activeAccordion === "practice"}
+          onToggle={() => handleAccordionToggle("practice")}
           badge={
             <span
               className="text-[10px] bg-[#f1f5f9] text-[#62748e] px-2.5 py-0.5 rounded-full"
@@ -998,7 +1118,6 @@ function ConversationFeedback({
               {strengths.length + beforeAfter.length} insights
             </span>
           }
-          defaultOpen
           delay={0.14}
         >
           {/* Strengths */}
@@ -1109,10 +1228,13 @@ function ConversationFeedback({
           )}
         </FeedbackAccordion>
 
+
         {/* ═══ COLLAPSIBLE: Pronunciation Analysis ═══ */}
         <FeedbackAccordion
           icon={<Mic className="w-5 h-5 text-white" />}
           title="Pronunciation & Shadowing"
+          isOpen={activeAccordion === "pronunciation"}
+          onToggle={() => handleAccordionToggle("pronunciation")}
           badge={
             hasPronData ? (
               <span
