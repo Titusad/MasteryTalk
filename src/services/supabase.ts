@@ -22,7 +22,7 @@
  * ══════════════════════════════════════════════════════════════
  */
 
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient, type Session } from "@supabase/supabase-js";
 
 /* ── Environment variables ── */
 
@@ -52,9 +52,26 @@ export function isSupabaseConfigured(): boolean {
   return Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 }
 
-/* ── Client singleton ── */
+/* ── Client singleton + session cache ── */
 
 let _client: SupabaseClient | null = null;
+
+/**
+ * Module-level session cache — populated by onAuthStateChange.
+ *
+ * Problem this solves: Supabase JS v2's auth.getSession() can deadlock
+ * when its internal _initialize() mutex is still pending — even AFTER
+ * onAuthStateChange has already fired SIGNED_IN with a valid session.
+ * By caching the session at the onAuthStateChange level we get a reliable
+ * fast path that bypasses the mutex entirely.
+ */
+let _cachedSession: Session | null = null;
+
+function _setupSessionCache(client: SupabaseClient) {
+  client.auth.onAuthStateChange((_event, session) => {
+    _cachedSession = session;
+  });
+}
 
 /**
  * Eagerly create the Supabase client at module load if credentials exist.
@@ -71,6 +88,7 @@ if (SUPABASE_URL && SUPABASE_ANON_KEY) {
         detectSessionInUrl: true,
       },
     });
+    _setupSessionCache(_client);
     console.log("[inFluentia] Supabase client created eagerly at module load");
   } catch (err) {
     console.error("[inFluentia] Supabase client creation failed:", err);
@@ -100,6 +118,7 @@ export function getSupabaseClient(): SupabaseClient {
       detectSessionInUrl: true,
     },
   });
+  _setupSessionCache(_client);
 
   return _client;
 }
@@ -116,6 +135,18 @@ export async function getAuthToken(): Promise<string> {
     ]);
   }
 
+  // ── Fast path: use cached session from onAuthStateChange ──
+  // onAuthStateChange fires BEFORE auth.getSession() resolves its internal
+  // _initialize() mutex. Reading from cache bypasses the race condition entirely.
+  if (_cachedSession?.access_token) {
+    const expiresAt = _cachedSession.expires_at ?? 0;
+    const isValid = expiresAt === 0 || expiresAt * 1000 > Date.now() + 5_000;
+    if (isValid) {
+      return _cachedSession.access_token;
+    }
+    // Token expired — fall through to refresh
+  }
+
   // ── Attempt 1: normal getSession() ──
   const sessionResult = await withTimeout(client.auth.getSession(), TIMEOUT_MS);
 
@@ -124,8 +155,6 @@ export async function getAuthToken(): Promise<string> {
   }
 
   // ── Attempt 2: session timed out or missing — try a forced refresh ──
-  // This unsticks the internal Supabase auth state machine when a refresh
-  // token operation is deadlocked.
   console.warn("[getAuthToken] ⚠️ getSession() timed out or had no token. Attempting refreshSession()...");
   const refreshResult = await withTimeout(client.auth.refreshSession(), TIMEOUT_MS);
 
@@ -134,19 +163,15 @@ export async function getAuthToken(): Promise<string> {
     return refreshResult.data.session.access_token;
   }
 
-  // ── Attempt 3: both failed — clear stale auth state so the user gets a clean sign-in ──
-  // This prevents a permanent broken-auth loop across page reloads.
+  // ── Attempt 3: both failed — clear stale auth state ──
   console.error("[getAuthToken] ❌ Both getSession() and refreshSession() failed. Clearing stale auth state.");
   try {
-    // Purge Supabase auth keys from localStorage to break the deadlock
     Object.keys(localStorage).forEach((key) => {
       if (key.startsWith("sb-") && key.endsWith("-auth-token")) {
         localStorage.removeItem(key);
       }
     });
-  } catch (_) {
-    // localStorage may be unavailable in some environments — ignore
-  }
+  } catch (_) { /* ignore */ }
 
   throw new Error("getAuthToken: unable to obtain a valid session. Please sign in again.");
 }
