@@ -13,16 +13,16 @@ Respond with ONLY a JSON object. No markdown, no code fences.
 {
   "tailoredBullets": [
     {
-      "experienceContext": "Rol o experiencia original del usuario (ej: 'Gerente de Proyectos 2021-2023')",
+      "experienceContext": "User's original role or experience (e.g., 'Project Manager 2021-2023')",
       "rewrittenBullet": "The highly-impactful, tailored English bullet point ready to be copy-pasted into their resume (e.g., 'Led cross-functional teams of 12+ using Agile/Scrum methodologies, reducing time-to-market by 20% in alignment with company OKRs.')",
-      "matchReason": "Breve explicación en español de por qué agregaste estas palabras clave y cómo hace 'match' con la vacante."
+      "matchReason": "Brief explanation in English of why you added these keywords and how it matches the job description."
     }
   ]
 }
 
 === RULES ===
 1. Generate exactly 3 to 4 tailored bullets.
-2. "rewrittenBullet" MUST be in English and written in standard resume format (start with a strong action verb, include metrics if possible, use keywords from the JD).
+2. ALL output strings must be entirely in English. "rewrittenBullet" must be in standard resume format (start with a strong action verb, include metrics if possible, use keywords from the JD).
 3. Base these explicitly on the constraints of what the user actually provided in their CV summary/experience. Do not invent completely fake jobs, just reframe and elevate their existing experience to match the JD.
 4. Keep the tone encouraging but highly professional.
 `;

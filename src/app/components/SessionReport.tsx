@@ -146,6 +146,55 @@ interface RealFeedbackData {
   } | null;
 }
 
+/* ── Helpers for ProficiencyGauge ── */
+function feedbackProficiencyColor(score: number): string {
+  if (score >= 75) return "#22c55e";
+  if (score >= 60) return "#6366f1";
+  if (score >= 40) return "#f59e0b";
+  return "#ef4444";
+}
+function feedbackProficiencyLabel(score: number): string {
+  if (score >= 90) return "Exceptional";
+  if (score >= 80) return "Strong";
+  if (score >= 60) return "Intermediate";
+  if (score >= 40) return "Developing";
+  return "Needs Work";
+}
+
+/* ── Circular gauge SVG ── */
+function ProficiencyGauge({
+  score,
+  size = 160,
+  darkBg = false,
+  hideLabel = false,
+  strokeWidth = 10,
+}: {
+  score: number;
+  size?: number;
+  darkBg?: boolean;
+  hideLabel?: boolean;
+  strokeWidth?: number;
+}) {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const progress = Math.min(100, Math.max(0, score)) / 100;
+  const strokeDashoffset = Math.max(0, circumference * (1 - progress));
+  const color = feedbackProficiencyColor(score);
+
+  return (
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="-rotate-90">
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke={darkBg ? "rgba(255,255,255,0.15)" : "#e2e8f0"} strokeWidth={strokeWidth} />
+        <motion.circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeDasharray={circumference} initial={{ strokeDashoffset: circumference }} animate={{ strokeDashoffset }} transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.3 }} />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <motion.span className={`${size >= 140 ? "text-4xl" : size >= 80 ? "text-2xl" : "text-lg"} ${darkBg ? "text-white" : "text-[#0f172b]"}`} style={{ fontWeight: 700 }} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5, delay: 0.5 }}>{Math.round(score)}%</motion.span>
+        {!hideLabel && <span className="text-xs mt-0.5" style={{ fontWeight: 600, color }}>{feedbackProficiencyLabel(score)}</span>}
+      </div>
+    </div>
+  );
+}
+
 /* ═══════════════════════════════════════════════════════════════
    MAIN COMPONENT: SessionReport
    ═══════════════════════════════════════════════════════════════ */
@@ -215,6 +264,11 @@ export function SessionReport({
   const overallSentiment = sessionSummary?.overallSentiment || null;
   const nextSteps = sessionSummary?.nextSteps || [];
   const sessionHighlight = sessionSummary?.sessionHighlight || null;
+
+  /* ── Extra Executive Summary calculations ── */
+  const isInterview = scenarioType === "interview";
+  const interviewReadiness = isInterview && typeof realFeedback?.interviewReadinessScore === "number" ? Math.round(realFeedback.interviewReadinessScore) : null;
+  const topStrengths = (realFeedback?.strengths || []).slice(0, 2);
 
   /* ── Pronunciation computed data ── */
   const pronScores = useMemo(() => {
@@ -294,9 +348,55 @@ export function SessionReport({
         )}
 
         {/* ═══════════════════════════════════════════════
-           SESSION HIGHLIGHT
+           SESSION HIGHLIGHT / EXECUTIVE SUMMARY
            ═══════════════════════════════════════════════ */}
-        {sessionHighlight && (
+        {isInterview && interviewReadiness !== null && (
+          <motion.div
+            className="bg-gradient-to-br from-[#0f172b] to-[#1e293b] rounded-3xl p-6 md:p-8 mb-6 flex flex-col md:flex-row items-center md:items-stretch gap-8"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.08 }}
+          >
+            {/* Left side: Score Gauge */}
+            <div className="flex flex-col items-center justify-center shrink-0">
+              <p className="text-[10px] uppercase tracking-wider text-white/50 mb-4 md:mb-5" style={{ fontWeight: 600 }}>
+                Readiness Score
+              </p>
+              <ProficiencyGauge score={interviewReadiness} size={120} darkBg />
+            </div>
+
+            {/* Right side: Coach Verdict & High-level Strengths */}
+            <div className="flex-1 text-left border-t md:border-t-0 md:border-l border-white/10 pt-6 md:pt-0 md:pl-8 flex flex-col justify-center">
+              <h3 className="text-white text-lg mb-2" style={{ fontWeight: 500 }}>
+                Coach's Verdict
+              </h3>
+              <p className="text-white/80 text-sm mb-5 leading-relaxed">
+                {interviewReadiness >= 80 
+                  ? "Outstanding performance! You combined strong professional content with confident delivery. You are highly ready for this interview."
+                  : interviewReadiness >= 60
+                  ? "Good effort. Your content is solid, but you have clear opportunities to enhance your fluency and delivery under pressure."
+                  : "Keep practicing! Structuring your responses better will greatly improve your persuasiveness in the actual interview."}
+              </p>
+              
+              {topStrengths.length > 0 && (
+                <div className="space-y-3">
+                  <h4 className="text-[11px] uppercase tracking-wider text-white/50" style={{ fontWeight: 600 }}>Top Strengths</h4>
+                  {topStrengths.map((str, i) => (
+                    <div key={i} className="flex items-start gap-3">
+                      <span className="text-lg leading-none mt-0.5">✨</span>
+                      <p className="text-sm text-white/70">
+                        <strong className="text-white">{str.title}:</strong>{" "}
+                        {str.desc}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+
+        {!isInterview && sessionHighlight && (
           <motion.div
             className="bg-gradient-to-r from-[#f0fdf4] to-[#ecfdf5] border border-[#bbf7d0] rounded-2xl p-5 mb-6 flex items-start gap-3"
             initial={{ opacity: 0, y: 12 }}
@@ -606,7 +706,7 @@ export function SessionReport({
             {problemWords.length > 0 && (
               <div className="mb-5">
                 <h3 className="text-sm text-[#0f172b] mb-3" style={{ fontWeight: 600 }}>
-                  Words to Practice
+                  Focus Words
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {problemWords.map((pw) => {
@@ -622,9 +722,8 @@ export function SessionReport({
                         transition={{ duration: 0.3 }}
                       >
                         <span style={{ fontWeight: 600 }}>{pw.word}</span>
-                        <span className="opacity-60" style={{ fontWeight: 500 }}>{pw.avgScore}%</span>
                         {pw.count > 1 && (
-                          <span className="text-[9px] opacity-50">×{pw.count}</span>
+                          <span className="text-[10px] opacity-70">×{pw.count}</span>
                         )}
                       </motion.span>
                     );
@@ -685,7 +784,7 @@ export function SessionReport({
               {userPlan === "free" ? (
                 <>
                   <Download className="w-5 h-5" />
-                  Descargar Gratis (PDF)
+                  Download Report (PDF)
                   <Sparkles className="w-4 h-4 ml-1" />
                 </>
               ) : (

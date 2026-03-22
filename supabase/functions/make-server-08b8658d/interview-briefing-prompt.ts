@@ -238,11 +238,11 @@ KEY PHRASES (2-3 per question):
 - Tooltips in ${tooltipLang}, max 12 words, explain the STRATEGY not the meaning
 
 APPROACH (per question):
-- Name the framework in the `framework.name` field (e.g. "Career Timeline", "STAR Method", "Problem-Solution", "Direct Pitch")
-- `framework.description`: 1-2 sentences explaining WHAT the framework is and WHY it works for this question
-- `approach`: 1-2 sentences telling the candidate WHAT to lead with and how to structure the answer
-- `suggestedOpener`: The FIRST sentence the candidate should say — write it ready-to-speak, first person
-  ⚠️ CRITICAL: The `suggestedOpener` must NEVER mention the framework name (e.g. do NOT write "Use the STAR method" or "Following the Problem-Solution framework"). It must be a natural, ready-to-say opening line like "In my previous role at [company], I led a project that..."
+- Name the framework in the 'framework.name' field (e.g. "Career Timeline", "STAR Method", "Problem-Solution", "Direct Pitch")
+- 'framework.description': 1-2 sentences explaining WHAT the framework is and WHY it works for this question
+- 'approach': 1-2 sentences telling the candidate WHAT to lead with and how to structure the answer
+- 'suggestedOpener': The FIRST sentence the candidate should say — write it ready-to-speak, first person
+  ⚠️ CRITICAL: The 'suggestedOpener' must NEVER mention the framework name (e.g. do NOT write "Use the STAR method" or "Following the Problem-Solution framework"). It must be a natural, ready-to-say opening line like "In my previous role at [company], I led a project that..."
 
 PIVOT (per question):
 - Start with "If they..." — anticipate the follow-up
