@@ -334,6 +334,9 @@ export function PracticeSessionPage({
         const token = await getAuthToken();
         if (!token) throw new Error("No auth token available");
 
+        const iController = new AbortController();
+        const iTimeout = setTimeout(() => iController.abort(), 40_000);
+
         const res = await fetch(briefingUrl, {
           method: "POST",
           headers: {
@@ -347,14 +350,18 @@ export function PracticeSessionPage({
             guidedFields: allFields,
             locale: _detectedLocale,
           }),
+          signal: iController.signal,
         });
 
         if (!res.ok) {
+          clearTimeout(iTimeout);
           const errBody = await res.text();
           throw new Error(`Server ${res.status}: ${errBody.slice(0, 200)}`);
         }
 
         const data = await res.json();
+        clearTimeout(iTimeout); // Safely clear only after FULL body is parsed
+
         const questions = data.anticipatedQuestions || [];
         if (questions.length === 0) {
           throw new Error("No anticipated questions generated");
@@ -381,12 +388,23 @@ export function PracticeSessionPage({
     // ━━━ SALES / DEFAULT PATH: Existing script + toolkit parallel calls ━━━
     const serverUrl = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/generate-script`;
 
+    let token = "";
+    try {
+      token = await getAuthToken();
+    } catch (e: any) {
+      setScriptGenError(e.message);
+      setScriptGenStatus("error");
+      return;
+    }
+
+    const sController = new AbortController();
+    const sTimeout = setTimeout(() => sController.abort(), 40_000);
 
     fetch(serverUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${await getAuthToken()}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
         scenario,
@@ -395,15 +413,18 @@ export function PracticeSessionPage({
         guidedFields: allFields,
         locale: _detectedLocale,
       }),
+      signal: sController.signal,
     })
       .then(async (res) => {
         if (!res.ok) {
+          clearTimeout(sTimeout);
           const errBody = await res.text();
           throw new Error(`Server ${res.status}: ${errBody.slice(0, 200)}`);
         }
         return res.json();
       })
       .then((data) => {
+        clearTimeout(sTimeout);
         if (data.sections && Array.isArray(data.sections) && data.sections.length > 0) {
           if (data._debug) {
           }
@@ -415,6 +436,7 @@ export function PracticeSessionPage({
         }
       })
       .catch((err) => {
+        clearTimeout(sTimeout);
         console.error("[GenerateScript] ❌ Failed:", err.message);
         setScriptGenError(err.message);
         setScriptGenStatus("error");
@@ -439,21 +461,29 @@ export function PracticeSessionPage({
 
     // ── Fire preparation toolkit generation in parallel (non-blocking) ──
     const toolkitUrl = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/generate-preparation-toolkit`;
-    fetch(toolkitUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${await getAuthToken()}`,
-      },
-      body: JSON.stringify({
-        scenario,
-        interlocutor,
-        scenarioType,
-        guidedFields: allFields,
-        locale: _detectedLocale,
-      }),
-    })
-      .then(async (res) => {
+    
+    getAuthToken()
+      .then((token) => {
+        const tController = new AbortController();
+        const tTimeout = setTimeout(() => tController.abort(), 40_000);
+
+        fetch(toolkitUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            scenario,
+            interlocutor,
+            scenarioType,
+            guidedFields: allFields,
+            locale: _detectedLocale,
+          }),
+          signal: tController.signal,
+        })
+          .then(async (res) => {
+            clearTimeout(tTimeout);
         if (!res.ok) {
           const errBody = await res.text();
           throw new Error(`Toolkit server ${res.status}: ${errBody.slice(0, 200)}`);
@@ -469,7 +499,13 @@ export function PracticeSessionPage({
         setPreparationToolkit(toolkit);
         toolkitCache.set(sKey, toolkit);
       })
-      .catch((err) => {
+          .catch((err) => {
+            clearTimeout(tTimeout);
+            console.error("[PreparationToolkit] ❌ Failed:", err.message);
+          });
+      })
+      .catch((authErr) => {
+        console.error("[PreparationToolkit] ❌ Auth error:", authErr.message);
       });
   }, [scenario, interlocutor, scenarioType, guidedFields, extraContext, sKey]);
 
@@ -478,29 +514,41 @@ export function PracticeSessionPage({
     // In dev preview mode for generating-script, don't auto-transition (let user see the animation)
     if (isDevPreview && devInitialStep === "generating-script") return;
     const contentReady = generatedScript || interviewBriefing;
-    if (step === "generating-script" && animationDone && scriptGenStatus === "ready" && contentReady) {
+    if (step === "generating-script" && scriptGenStatus === "ready" && contentReady) {
+      console.log("[Transition Triggered] Bypassing loader animation! Moving directly to pre-briefing.");
       setStep("pre-briefing");
     }
-  }, [step, animationDone, scriptGenStatus, generatedScript, interviewBriefing, isDevPreview, devInitialStep]);
+  }, [step, scriptGenStatus, generatedScript, interviewBriefing, isDevPreview, devInitialStep]);
 
-  /* ── Feedback analysis: call /analyze-feedback when entering "analyzing" step ── */
+  /* ── Feedback analysis: call /analyze-feedback when entering "analyzing" step ──
+   * Can be called early (when conversation ends) to pre-warm while the user is
+   * still on the practice screen. Guarded by feedbackStatus to prevent double calls. */
   const fireFeedbackAnalysis = useCallback(async () => {
     if (!sessionId) return;
+    // Guard: don't fire a second time if already loading/ready
+    if (feedbackStatus === "loading" || feedbackStatus === "ready") return;
     setFeedbackStatus("loading");
     setRealFeedback(null);
-    setFeedbackAnimDone(false);
 
     const serverUrl = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/analyze-feedback`;
 
+    let token = "";
+    try {
+      token = await getAuthToken();
+    } catch (e: any) {
+      setFeedbackStatus("error");
+      return;
+    }
+
     // Safety timeout: abort after 35s to prevent infinite hanging
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 35_000);
+    const timeoutId = setTimeout(() => controller.abort(), 40_000);
 
     fetch(serverUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${await getAuthToken()}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
         sessionId,
@@ -542,7 +590,7 @@ export function PracticeSessionPage({
         setFeedbackStatus("error");
         // Don't block the flow — user can still see mock feedback
       });
-  }, [sessionId, scenarioType]);
+  }, [sessionId, scenarioType, feedbackStatus]);
 
   /* ── Summary generation: call /generate-summary for session feedback ── */
   const fireSummaryGeneration = useCallback(async () => {
@@ -552,19 +600,32 @@ export function PracticeSessionPage({
 
     const serverUrl = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/generate-summary`;
 
+    let token = "";
+    try {
+      token = await getAuthToken();
+    } catch (e: any) {
+      setSummaryStatus("error");
+      return;
+    }
+
+    const sController = new AbortController();
+    const sTimeout = setTimeout(() => sController.abort(), 40_000);
+
     fetch(serverUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${await getAuthToken()}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
         sessionId,
         scenarioType: scenarioType || "interview",
         locale: _detectedLocale,
       }),
+      signal: sController.signal,
     })
       .then((res) => {
+        clearTimeout(sTimeout);
         if (!res.ok) return res.text().then((t) => { throw new Error(`Summary ${res.status}: ${t.slice(0, 200)}`); });
         return res.json();
       })
@@ -582,6 +643,7 @@ export function PracticeSessionPage({
         if (sessionId) summaryCache.set(sessionId, sum);
       })
       .catch((err) => {
+        clearTimeout(sTimeout);
         console.error("[GenerateSummary] ❌ Failed:", err.message);
         setSummaryStatus("error");
         // Non-blocking — report renders without summary
@@ -596,18 +658,31 @@ export function PracticeSessionPage({
 
     const serverUrl = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/generate-improved-script`;
 
+    let token = "";
+    try {
+      token = await getAuthToken();
+    } catch (e: any) {
+      setImprovedScriptStatus("error");
+      return;
+    }
+
+    const sController = new AbortController();
+    const sTimeout = setTimeout(() => sController.abort(), 40_000);
+
     fetch(serverUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${await getAuthToken()}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
         sessionId,
         locale: _detectedLocale,
       }),
+      signal: sController.signal,
     })
       .then((res) => {
+        clearTimeout(sTimeout);
         if (!res.ok) return res.text().then((t) => { throw new Error(`Script ${res.status}: ${t.slice(0, 200)}`); });
         return res.json();
       })
@@ -621,6 +696,7 @@ export function PracticeSessionPage({
         }
       })
       .catch((err) => {
+        clearTimeout(sTimeout);
         console.error("[GenerateImprovedScript] ❌ Failed:", err.message);
         setImprovedScriptStatus("error");
       });
@@ -713,16 +789,13 @@ export function PracticeSessionPage({
 
   /* ── Auto-transition for feedback: when BOTH animation AND API are done ── */
   useEffect(() => {
-    if (step === "analyzing" && feedbackAnimDone && (feedbackStatus === "ready" || feedbackStatus === "error")) {
+    if (step !== "analyzing" || !feedbackAnimDone) return;
+    if (feedbackStatus === "ready" || feedbackStatus === "error") {
       setStep("conversation-feedback");
-    }
-    // Safety escape: if animation is done but feedback is still loading after 5s, force error status
-    if (step === "analyzing" && feedbackAnimDone && feedbackStatus === "loading") {
-      const escapeTimer = setTimeout(() => {
-        console.warn("[AnalyzeFeedback] ⚠️ Skip pressed but API still loading — forcing error status");
-        setFeedbackStatus("error");
-      }, 5000);
-      return () => clearTimeout(escapeTimer);
+    } else if (feedbackStatus === "loading") {
+      // User pressed Skip while API was still loading — abort and move on immediately
+      console.warn("[AnalyzeFeedback] ⚠️ Skip pressed while API loading — forcing transition");
+      setFeedbackStatus("error");
     }
   }, [step, feedbackAnimDone, feedbackStatus]);
 
@@ -957,11 +1030,11 @@ export function PracticeSessionPage({
             )}
             {step === "generating-script" && (
               <>
-                {/* Show animation while loading OR while waiting for animation to finish */}
+                {/* Animated loader — waits for API before transitioning */}
                 {scriptGenStatus !== "error" && (
                   <AnalyzingScreen
                     variant="generating-script"
-                    canComplete={scriptGenStatus === "ready" && !!(generatedScript || interviewBriefing)}
+                    canComplete={scriptGenStatus === "ready"}
                     onComplete={() => setAnimationDone(true)}
                   />
                 )}
@@ -1010,6 +1083,7 @@ export function PracticeSessionPage({
                 )}
               </>
             )}
+
             {step === "pre-briefing" && interviewBriefing && scenarioType === "interview" && (
               <InterviewBriefingScreen
                 interlocutor={interlocutor}
@@ -1063,12 +1137,19 @@ export function PracticeSessionPage({
                 interlocutor={interlocutor}
                 sessionId={sessionId}
                 scenarioType={scenarioType}
+                onConversationComplete={() => {
+                  // Pre-warm: start feedback + improved script analysis while user
+                  // is still reading the last AI message — before they click "Analyze".
+                  fireFeedbackAnalysis();
+                  fireImprovedScriptGeneration();
+                }}
                 onViewFeedback={async (pronData) => {
                   setSessionPronData(pronData);
                   if (sessionId && pronData.length > 0) pronDataCache.set(sessionId, pronData);
+                  // fireFeedbackAnalysis() and fireImprovedScriptGeneration() were already
+                  // called in onConversationComplete when the session ended. The guard in
+                  // fireFeedbackAnalysis prevents double calls. Just transition the step.
                   setStep("analyzing");
-                  fireFeedbackAnalysis();
-                  fireImprovedScriptGeneration(); // Fire in parallel!
                   // Save pronunciation data to KV in background (non-blocking)
                   if (pronData.length > 0 && sessionId) {
                     const saveUrl = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/save-pronunciation`;

@@ -105,11 +105,50 @@ export function getSupabaseClient(): SupabaseClient {
 }
 
 export async function getAuthToken(): Promise<string> {
-  const { data: { session } } = await getSupabaseClient().auth.getSession();
-  if (!session?.access_token) {
-    throw new Error("getAuthToken: no active user session. User must be signed in.");
+  const TIMEOUT_MS = 8_000;
+  const client = getSupabaseClient();
+
+  /** Race a promise against a timeout, resolving to null on timeout instead of throwing */
+  function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
+    return Promise.race([
+      promise,
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), ms)),
+    ]);
   }
-  return session.access_token;
+
+  // ── Attempt 1: normal getSession() ──
+  const sessionResult = await withTimeout(client.auth.getSession(), TIMEOUT_MS);
+
+  if (sessionResult?.data?.session?.access_token) {
+    return sessionResult.data.session.access_token;
+  }
+
+  // ── Attempt 2: session timed out or missing — try a forced refresh ──
+  // This unsticks the internal Supabase auth state machine when a refresh
+  // token operation is deadlocked.
+  console.warn("[getAuthToken] ⚠️ getSession() timed out or had no token. Attempting refreshSession()...");
+  const refreshResult = await withTimeout(client.auth.refreshSession(), TIMEOUT_MS);
+
+  if (refreshResult?.data?.session?.access_token) {
+    console.log("[getAuthToken] ✅ refreshSession() succeeded — session recovered.");
+    return refreshResult.data.session.access_token;
+  }
+
+  // ── Attempt 3: both failed — clear stale auth state so the user gets a clean sign-in ──
+  // This prevents a permanent broken-auth loop across page reloads.
+  console.error("[getAuthToken] ❌ Both getSession() and refreshSession() failed. Clearing stale auth state.");
+  try {
+    // Purge Supabase auth keys from localStorage to break the deadlock
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith("sb-") && key.endsWith("-auth-token")) {
+        localStorage.removeItem(key);
+      }
+    });
+  } catch (_) {
+    // localStorage may be unavailable in some environments — ignore
+  }
+
+  throw new Error("getAuthToken: unable to obtain a valid session. Please sign in again.");
 }
 
 

@@ -222,9 +222,7 @@ ANTICIPATED QUESTIONS (generate exactly 5):
 - If the user provided experience, weave their real details into the approach and key phrases
 - Each question card should be scannable in 10 seconds
 
-KEY PHRASES (generate EXACTLY 4 per question):
-- The FIRST 2 phrases MUST be hyper-relevant, using specific data/skills from the user's CV and directly addressing the Job Description.
-- The NEXT 2 phrases should be broader, strategic fallback options.
+KEY PHRASES (2-3 per question):
 - Must be in FIRST PERSON — these are lines the candidate will say
 - Must be boardroom English, not textbook English
 - Color coding:
@@ -272,7 +270,7 @@ ${scenario ? `\nScenario context: ${scenario}` : ""}
 Remember:
 - Return ONLY valid JSON. No markdown fences.
 - Exactly 5 anticipated questions, ordered by conversation flow
-- EXACTLY 4 key phrases per question, in FIRST PERSON
+- 2-3 key phrases per question, in FIRST PERSON
 - Each approach: max 2 sentences, name the framework
 - Each pivot: starts with "If they...", max 1-2 sentences
 - 2-3 questions to ask, with strategic rationale

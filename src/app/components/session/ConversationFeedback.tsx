@@ -428,13 +428,19 @@ function ConversationFeedback({
               ? "Dual-axis evaluation: how you sounded and how well you answered."
               : `Your ${scenarioLabel} practice analysis is ready. Review your performance below.`}
           </p>
-          {isRealData && (
+          {isRealData ? (
             <span
               className="inline-flex items-center gap-1.5 mt-3 text-[10px] bg-[#50C878]/15 text-[#16a34a] px-3 py-1 rounded-full"
               style={{ fontWeight: 600 }}
             >
-              <Sparkles className="w-3 h-3" /> AI-powered
-              analysis
+              <Sparkles className="w-3 h-3" /> AI-powered analysis
+            </span>
+          ) : (
+            <span
+              className="inline-flex items-center gap-1.5 mt-3 text-[10px] bg-[#fef3c7] text-[#92400e] px-3 py-1 rounded-full"
+              style={{ fontWeight: 600 }}
+            >
+              ⚠️ AI analysis unavailable — showing sample feedback
             </span>
           )}
         </motion.div>
@@ -477,6 +483,26 @@ function ConversationFeedback({
               </span>{" "}
               (60%)
             </p>
+          </motion.div>
+        )}
+
+        {/* ═══ INTERVIEW FALLBACK: shown when AI analysis failed ═══ */}
+        {isInterview && !isRealData && (
+          <motion.div
+            className="bg-[#fef3c7] border border-[#fde68a] rounded-2xl px-5 py-4 mb-6 flex items-start gap-3"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+          >
+            <span className="text-xl mt-0.5">⏱️</span>
+            <div>
+              <p className="text-sm text-[#92400e]" style={{ fontWeight: 600 }}>
+                AI analysis took too long
+              </p>
+              <p className="text-xs text-[#a16207] mt-0.5">
+                The detailed scores couldn't be generated this time. Below you'll see example feedback to guide your next practice. Try generating the full report — it may still be available.
+              </p>
+            </div>
           </motion.div>
         )}
 

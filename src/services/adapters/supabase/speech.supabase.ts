@@ -19,6 +19,7 @@ import type {
 } from "@/services/types";
 import { SpeechError } from "@/services/errors";
 import { projectId, publicAnonKey } from "../../../../utils/supabase/info";
+import { getAuthToken } from "@/services/supabase";
 
 const BASE_URL = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d`;
 
@@ -268,10 +269,18 @@ export class SupabaseSpeechService implements ISpeechService {
                 `%c[SupabaseSpeech] 📤 Sending ${wavBlob.size} bytes (${wavBlob.type}) to Azure Pronunciation Assessment | ref="${referenceText.slice(0, 60)}..."`, 'color: #f59e0b; font-weight: bold'
             );
 
+            let authHeader: string;
+            try {
+                authHeader = `Bearer ${await getAuthToken()}`;
+            } catch {
+                authHeader = `Bearer ${publicAnonKey}`;
+            }
+
             const res = await fetch(`${BASE_URL}/pronunciation-assess`, {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${publicAnonKey}`,
+                    Authorization: authHeader,
+                    apikey: publicAnonKey,
                 },
                 body: formData,
             });

@@ -992,7 +992,7 @@ app.post("/make-server-08b8658d/generate-interview-briefing", async (c) => {
         "Authorization": `Bearer ${openaiKey}`,
       },
       body: JSON.stringify({
-        model: "gpt-4o",
+        model: "gpt-4o-mini",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userMessage },

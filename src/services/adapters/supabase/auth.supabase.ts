@@ -24,7 +24,7 @@
 import type { IAuthService } from "../../interfaces/auth";
 import type { User, AuthProvider } from "../../types";
 import { AuthError } from "../../errors";
-import { getSupabaseClient, type ProfileRow } from "../../supabase";
+import { getSupabaseClient, getAuthToken, type ProfileRow } from "../../supabase";
 import type { AuthUser } from "@supabase/supabase-js";
 import { projectId, publicAnonKey } from "../../../../utils/supabase/info";
 
@@ -93,10 +93,8 @@ export class SupabaseAuthService implements IAuthService {
           console.log(`[inFluentia Auth] User loaded: ${this.currentUser.displayName} (${this.currentUser.plan})`);
 
           // Fire-and-forget: ensure server-side profile exists too
-          // Pass the access_token directly from the callback to avoid race conditions
-          // with a secondary getSession() call.
-          if (event === "SIGNED_IN" && session.access_token) {
-            this.ensureServerProfile(session.access_token).catch((err) =>
+          if (event === "SIGNED_IN") {
+            this.ensureServerProfile().catch((err) =>
               console.warn("[inFluentia Auth] ensure-profile server call failed (non-blocking):", err)
             );
           }
@@ -348,9 +346,11 @@ export class SupabaseAuthService implements IAuthService {
    * on the server side, which might not happen immediately due to
    * triggers or other mechanisms.
    */
-  private async ensureServerProfile(token: string): Promise<void> {
-    console.warn("🚨 [DEBUG TOKEN] Tipo:", typeof token, "Valor (primeros 50 chars):", token.substring(0, 50));
-
+  private async ensureServerProfile(): Promise<void> {
+    const token = await getAuthToken();
+    if (!token) {
+      throw new Error("ensureServerProfile: no auth token available");
+    }
     const serverUrl = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/auth/ensure-profile`;
     const response = await fetch(serverUrl, {
       method: "POST",

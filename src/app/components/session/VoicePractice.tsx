@@ -49,12 +49,15 @@ function VoicePractice({
   sessionId,
   scenarioType,
   onViewFeedback,
+  onConversationComplete,
   onEnd,
 }: {
   interlocutor: string;
   sessionId: string;
   scenarioType?: ScenarioType;
   onViewFeedback: (pronData: TurnPronunciationData[]) => void;
+  /** Fires as soon as the conversation ends — use to pre-warm feedback analysis */
+  onConversationComplete?: () => void;
   onEnd: () => void;
 }) {
   /* Chat state */
@@ -501,6 +504,9 @@ function VoicePractice({
 
       if (turnResult.isComplete) {
         setIsConversationComplete(true);
+        // Pre-warm feedback analysis in background — gives Gemini a ~15-30s head
+        // start while the user reads the last AI message and clicks "Analyze".
+        onConversationComplete?.();
       }
     } catch (err) {
       setIsProcessing(false);
