@@ -1,21 +1,22 @@
 import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { LandingPage } from "./components/LandingPage";
-/* ── Stale-chunk recovery for React.lazy after Vercel deploys ── */
+/* ── Stale-chunk recovery for React.lazy after Vercel deploys ──
+   Retries the import up to 3 times WITHOUT reloading the page,
+   preserving all in-memory session state. If all retries fail,
+   the error bubbles to ErrorBoundary where the user can manually reload. */
 function lazyRetry(factory: () => Promise<any>) {
-  return lazy(() =>
-    factory().catch(() => {
-      // Chunk hash changed after deploy — force full page reload (once)
-      const reloaded = sessionStorage.getItem("chunk_reload");
-      if (!reloaded) {
-        sessionStorage.setItem("chunk_reload", "1");
-        window.location.reload();
-        return new Promise(() => {}); // never resolves — reload takes over
+  return lazy(async () => {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        return await factory();
+      } catch {
+        if (attempt < 2) await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
       }
-      sessionStorage.removeItem("chunk_reload");
-      return factory(); // final attempt after reload
-    })
-  );
+    }
+    // Final attempt — let error propagate to ErrorBoundary
+    return factory();
+  });
 }
 const DesignSystemPage = lazyRetry(() => import("./components/DesignSystemPage").then(m => ({ default: m.DesignSystemPage })));
 const PracticeSessionPage = lazyRetry(() => import("./components/PracticeSessionPage").then(m => ({ default: m.PracticeSessionPage })));
