@@ -158,7 +158,7 @@ export function PhrasesLayer({ cardId, phrases }: PhrasesLayerProps) {
                 const isDone = state.step === "done";
                 const hasListened = state.step !== "idle";
                 /* Disable interaction while another phrase is recording or processing */
-                const otherRecording = (recordingIdx !== null && recordingIdx !== i) || phraseStates.some((s: PhraseState, sIdx: number) => sIdx !== i && s.step === "processing");
+                const otherRecording = (recordingIdx !== null && recordingIdx !== i);
 
                 return (
                     <motion.div
