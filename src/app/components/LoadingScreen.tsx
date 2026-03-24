@@ -22,7 +22,7 @@ export function LoadingScreen({ scenario }: { scenario: string }) {
 
   return (
     <div
-      className="w-full h-full bg-[#0f172b] flex flex-col items-center justify-center px-6"
+      className="w-full min-h-screen bg-[#0f172b] flex flex-col items-center justify-center px-6"
       style={{ fontFamily: "'Inter', sans-serif" }}
     >
       <motion.div
