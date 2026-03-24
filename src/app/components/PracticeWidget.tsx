@@ -301,9 +301,7 @@ function PracticeSetupModal({
                           )}
                           {sm.continueGoogle}
                         </button>
-                        <p className="text-center text-sm text-[#4b5563] mt-3">
-                          {sm.trustLine}
-                        </p>
+
                       </div>
                   ) : (
                       <div className="flex flex-col gap-4">
