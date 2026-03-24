@@ -39,8 +39,9 @@ import type { LandingLang } from "./landing-i18n";
 import { LANDING_COPIES } from "./landing-i18n";
 import { CreditUpsellModal, getCreditsLabel } from "./CreditUpsellModal";
 import { projectId, publicAnonKey } from "../../../utils/supabase/info";
-import { VocabTracker } from "./VocabTracker";
 import { SpacedRepetitionCard } from "./SpacedRepetitionCard";
+import { LessonModal } from "./LessonModal";
+import { getRecommendedLessons, isLessonComplete } from "../../services/microLessons";
 
 /* ─── Types ─── */
 interface DashboardPageProps {
@@ -56,6 +57,7 @@ interface DashboardPageProps {
     profile: import("../../services/types").OnboardingProfile
   ) => void;
   lang?: LandingLang;
+  onNavigateToLibrary?: () => void;
 }
 
 /* ─── Persisted session shape (from POST /sessions) ─── */
@@ -266,6 +268,31 @@ function computeFocusArea(
   return { pillar: weakest.skill, score: weakest.score };
 }
 
+/** Get the 2 weakest pillars with actionable tips for Focus Areas */
+const PILLAR_TIPS: Record<string, string> = {
+  Vocabulary: "Incorporate industry-specific terms and power verbs into your responses.",
+  Grammar: "Focus on complex sentence structures and conditional tenses.",
+  Fluency: "Practice speaking without pausing — try 30-second uninterrupted responses.",
+  Pronunciation: "Practice key phrases aloud before sessions, focusing on stress patterns.",
+  "Professional Tone": "Use hedging language and diplomatic phrasing in your arguments.",
+  Persuasion: "Structure arguments with problem-solution framing and data points.",
+};
+
+function computeFocusAreas(
+  radarData: typeof DEFAULT_RADAR
+): Array<{ pillar: string; score: number; tip: string }> {
+  const withScores = radarData.filter((d) => d.score > 0);
+  if (withScores.length === 0) return [];
+  return [...withScores]
+    .sort((a, b) => a.score - b.score)
+    .slice(0, 2)
+    .map((d) => ({
+      pillar: d.skill,
+      score: d.score,
+      tip: PILLAR_TIPS[d.skill] || "Keep practicing to improve this area.",
+    }));
+}
+
 /** Get the latest before/after example from sessions */
 function getLatestBeforeAfter(
   sessions: PersistedSession[]
@@ -445,6 +472,7 @@ export function DashboardPage({
   onNavigateToAccount,
   onStartNewPractice,
   lang = "es",
+  onNavigateToLibrary,
 }: DashboardPageProps) {
   const avatarInitials = userName
     ? userName
@@ -629,6 +657,11 @@ export function DashboardPage({
   const [upsellOpen, setUpsellOpen] = useState(false);
   const [pendingScenario, setPendingScenario] = useState<string | null>(null);
 
+  /* ─── Lesson Modal ─── */
+  const [lessonModalOpen, setLessonModalOpen] = useState(false);
+  const [lessonModalIndex, setLessonModalIndex] = useState(0);
+  const recommendedLessons = useMemo(() => getRecommendedLessons(radarData), [radarData]);
+
   const handleStartSession = async (scenario: string, scenarioType?: string) => {
     // DEV MODE: bypass credit/session gate — always allow
     onStartNewPractice?.(scenario, scenarioType);
@@ -673,6 +706,15 @@ export function DashboardPage({
               style={{ fontWeight: 500 }}
             >
               {dc.history}
+            </button>
+
+            <button
+              onClick={() => onNavigateToLibrary?.()}
+              className="text-[#45556c] hover:text-[#0f172b] transition-colors text-sm hidden sm:flex items-center gap-1.5"
+              style={{ fontWeight: 500 }}
+            >
+              <BookOpen className="w-4 h-4" />
+              Library
             </button>
 
             {credits !== null && (
@@ -746,13 +788,349 @@ export function DashboardPage({
           </div>
         </div>
 
-        {/* ─── Professional Proficiency Hero Card ─── */}
-        <motion.div
-          className="bg-gradient-to-br from-[#0f172b] to-[#1e293b] rounded-2xl shadow-lg p-5 md:p-6 mb-6 relative overflow-hidden"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05, duration: 0.5 }}
-        >
+        {/* ═══════════════════════════════════════════════════════════
+            SECTION 1: DAILY PRESCRIPTION (Action-First Hero)
+            ═══════════════════════════════════════════════════════════ */}
+        <div className="grid md:grid-cols-2 gap-6 mb-8">
+          {/* ── Left: Spaced Repetition Review ── */}
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-2">
+              <Zap className="w-5 h-5 text-[#6366f1]" />
+              <h2 className="text-lg text-[#0f172b]" style={{ fontWeight: 700 }}>
+                Your Daily Practice
+              </h2>
+            </div>
+            <SpacedRepetitionCard />
+          </div>
+
+          {/* ── Right: Recommended Lessons (AI Coach) ── */}
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-2">
+              <Target className="w-5 h-5 text-[#f59e0b]" />
+              <h2 className="text-lg text-[#0f172b]" style={{ fontWeight: 700 }}>
+                Coach's Recommendation
+              </h2>
+            </div>
+            <motion.div
+              className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-5 flex flex-col flex-1"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Target className="w-4 h-4 text-[#0f172b]" />
+                  <h3
+                    className="text-sm text-[#0f172b]"
+                    style={{ fontWeight: 600 }}
+                  >
+                    {dc.recommended.title}
+                  </h3>
+                </div>
+                <span
+                  className="bg-[#fef3c7] text-[#92400e] text-[10px] px-2.5 py-1 rounded-full"
+                  style={{ fontWeight: 600 }}
+                >
+                  {dc.recommended.aiBadge}
+                </span>
+              </div>
+
+              <p className="text-xs text-[#45556c] mb-4 leading-relaxed">
+                {focusArea
+                  ? `Based on your sessions, strengthen these skills to boost your ${focusArea.pillar.toLowerCase()} score.`
+                  : hasPracticed
+                    ? "Here are lessons tailored to your communication profile."
+                    : "Start with these foundational skills for executive communication."}
+              </p>
+
+              {/* Lesson cards */}
+              <div className="space-y-2 mb-4 flex-1">
+                {recommendedLessons.slice(0, 3).map((lesson, i) => {
+                  const pillarColors: Record<string, string> = {
+                    Vocabulary: "#6366f1",
+                    Grammar: "#0ea5e9",
+                    Fluency: "#22c55e",
+                    Pronunciation: "#f59e0b",
+                    "Professional Tone": "#ec4899",
+                    Persuasion: "#8b5cf6",
+                  };
+                  const lColor = pillarColors[lesson.pillar] || "#6366f1";
+                  return (
+                    <motion.button
+                      key={lesson.id}
+                      onClick={() => {
+                        const fullIndex = recommendedLessons.indexOf(lesson);
+                        setLessonModalIndex(fullIndex >= 0 ? fullIndex : i);
+                        setLessonModalOpen(true);
+                      }}
+                      className={`w-full bg-gradient-to-br from-[#f8fafc] to-[#eef2ff] rounded-xl border p-4 flex items-start gap-3 hover:shadow-md transition-all text-left cursor-pointer group ${isLessonComplete(lesson.id) ? "border-[#bbf7d0]" : "border-[#e2e8f0]"}`}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.15 + i * 0.05 }}
+                    >
+                      <span className="text-xl shrink-0 mt-0.5">{lesson.icon}</span>
+                      <div className="min-w-0 flex-1">
+                        <p
+                          className="text-sm text-[#0f172b] mb-0.5 group-hover:text-[#6366f1] transition-colors"
+                          style={{ fontWeight: 500 }}
+                        >
+                          {lesson.title}
+                        </p>
+                        <p className="text-[11px] text-[#62748e] leading-relaxed line-clamp-1">
+                          {lesson.subtitle}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1.5">
+                          <span
+                            className="text-[10px] px-2 py-0.5 rounded-full"
+                            style={{
+                              fontWeight: 600,
+                              backgroundColor: `${lColor}12`,
+                              color: lColor,
+                            }}
+                          >
+                            {lesson.pillar}
+                          </span>
+                          <span className="flex items-center gap-1 text-[10px] text-[#94a3b8]">
+                            <Clock className="w-3 h-3" />
+                            {lesson.duration}
+                          </span>
+                          {isLessonComplete(lesson.id) && (
+                            <span className="flex items-center gap-1 text-[10px] text-[#22c55e]" style={{ fontWeight: 600 }}>
+                              ✓ Done
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-[#cbd5e1] group-hover:text-[#6366f1] shrink-0 mt-2 transition-colors" />
+                    </motion.button>
+                  );
+                })}
+              </div>
+
+              {/* See all + Start session */}
+              {recommendedLessons.length > 3 && (
+                <button
+                  onClick={() => {
+                    setLessonModalIndex(0);
+                    setLessonModalOpen(true);
+                  }}
+                  className="text-xs text-[#6366f1] hover:text-[#4f46e5] transition-colors mb-3 cursor-pointer text-center"
+                  style={{ fontWeight: 500 }}
+                >
+                  See all {recommendedLessons.length} recommended lessons →
+                </button>
+              )}
+
+            </motion.div>
+          </div>
+        </div>
+
+
+
+        {/* ═══════════════════════════════════════════════════════════
+            SECTION 3: QUICK START + RECENT SESSIONS
+            ═══════════════════════════════════════════════════════════ */}
+        <div className="grid lg:grid-cols-2 gap-6 mb-8">
+          {/* Quick start cards */}
+          <motion.div
+            className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-5"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <h3
+              className="text-sm text-[#0f172b] mb-4"
+              style={{ fontWeight: 600 }}
+            >
+              {dc.quickStart.title}
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {(
+                [
+                  {
+                    id: "interview",
+                    label: dc.quickStart.interviewLabel,
+                    description: dc.quickStart.interviewDesc,
+                    icon: Mic,
+                    disabled: false,
+                  },
+                  {
+                    id: "sales",
+                    label: dc.quickStart.salesLabel,
+                    description: dc.quickStart.salesDesc,
+                    icon: Target,
+                    disabled: true,
+                  },
+                ] as const
+              ).map((card) => {
+                const Icon = card.icon;
+                return (
+                  <motion.button
+                    key={card.id}
+                    onClick={() => !card.disabled && handleStartSession(card.label, card.id)}
+                    className={`group/card relative rounded-xl p-5 text-left transition-all duration-300 ${
+                      card.disabled
+                        ? "bg-white border-2 border-gray-100 opacity-60 cursor-not-allowed"
+                        : "bg-[#f8fafc] hover:bg-[#0f172b] border-2 border-[#e2e8f0] hover:border-[#0f172b] cursor-pointer"
+                    }`}
+                    whileHover={card.disabled ? undefined : { scale: 1.02, y: -2 }}
+                    whileTap={card.disabled ? undefined : { scale: 0.98 }}
+                  >
+                    <div className={`w-9 h-9 rounded-full flex items-center justify-center mb-3 transition-colors duration-300 ${
+                      card.disabled
+                        ? "bg-gray-100"
+                        : "bg-[#0f172b] group-hover/card:bg-white"
+                    }`}>
+                      <Icon
+                        className={`w-4 h-4 transition-colors duration-300 ${
+                          card.disabled
+                            ? "text-gray-400"
+                            : "text-white group-hover/card:text-[#0f172b]"
+                        }`}
+                        strokeWidth={1.5}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between mb-1">
+                      <p
+                        className={`text-sm transition-colors duration-300 ${
+                          card.disabled
+                            ? "text-gray-500"
+                            : "text-[#0f172b] group-hover/card:text-white"
+                        }`}
+                        style={{ fontWeight: 600 }}
+                      >
+                        {card.label}
+                      </p>
+                      {card.disabled && (
+                        <span className="text-[10px] uppercase font-bold tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
+                          Próximamente
+                        </span>
+                      )}
+                    </div>
+                    <p className={`text-xs leading-relaxed transition-colors duration-300 pr-8 ${
+                      card.disabled
+                        ? "text-gray-400"
+                        : "text-[#62748e] group-hover/card:text-white/70"
+                    }`}>
+                      {card.description}
+                    </p>
+                    {!card.disabled && (
+                      <div className="absolute top-4 right-4 w-7 h-7 rounded-full bg-transparent group-hover/card:bg-white/15 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-all duration-300">
+                        <ArrowRight className="w-3.5 h-3.5 text-white" />
+                      </div>
+                    )}
+                  </motion.button>
+                );
+              })}
+            </div>
+          </motion.div>
+
+          {/* ── Recent Sessions ── */}
+          <motion.div
+            className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-5 flex flex-col"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <BookOpen className="w-4 h-4 text-[#0f172b]" />
+                <h3
+                  className="text-sm text-[#0f172b]"
+                  style={{ fontWeight: 600 }}
+                >
+                  {dc.recentSessions.title}
+                </h3>
+              </div>
+              {allRecent.length > 0 && (
+                <button
+                  onClick={() => onNavigateToHistory?.()}
+                  className="text-xs text-[#6366f1] hover:text-[#4f46e5] transition-colors flex items-center gap-0.5"
+                  style={{ fontWeight: 500 }}
+                >
+                  {dc.recentSessions.viewAll}
+                  <ChevronRight className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+
+            {allRecent.length === 0 ? (
+              <div className="flex-1 flex flex-col items-center justify-center py-8 text-center">
+                <BookOpen className="w-8 h-8 text-[#cbd5e1] mb-2" />
+                <p className="text-sm text-[#62748e]">
+                  {dc.recentSessions.empty}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2 flex-1">
+                {allRecent.slice(0, 4).map((practice, i) => (
+                  <motion.div
+                    key={`session-${i}`}
+                    className="rounded-xl px-4 py-3 border border-[#e2e8f0] hover:border-[#c4b5fd] transition-all cursor-pointer group"
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.28 + i * 0.05, duration: 0.3 }}
+                    onClick={() => onNavigateToHistory?.()}
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <p
+                        className="text-sm text-[#0f172b] truncate flex-1 mr-2"
+                        style={{ fontWeight: 500 }}
+                      >
+                        {practice.title}
+                      </p>
+                      <ChevronRight className="w-3.5 h-3.5 text-[#cbd5e1] group-hover:text-[#6366f1] transition-colors shrink-0" />
+                    </div>
+                    <div className="flex items-center gap-2.5 flex-wrap">
+                      <span className="flex items-center gap-1 text-[10px] text-[#62748e]">
+                        <Calendar className="w-3 h-3" />
+                        {practice.date}
+                      </span>
+                      <span className="flex items-center gap-1 text-[10px] text-[#62748e]">
+                        <Clock className="w-3 h-3" />
+                        {practice.duration}
+                      </span>
+                      <span
+                        className="bg-[#f1f5f9] text-[#62748e] text-[10px] px-2 py-0.5 rounded-full"
+                        style={{ fontWeight: 500 }}
+                      >
+                        {practice.tag}
+                      </span>
+                      {(practice as EnrichedHistoryItem).hasInterviewBriefing && (
+                        <span
+                          className="bg-[#6366f1]/10 text-[#6366f1] text-[10px] px-2 py-0.5 rounded-full flex items-center gap-0.5"
+                          style={{ fontWeight: 600 }}
+                        >
+                          <MessageCircleQuestion className="w-2.5 h-2.5" />
+                          Briefing
+                        </span>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </motion.div>
+        </div>
+
+        {/* ═══════════════════════════════════════════════════════════
+            SECTION 4: YOUR PROGRESS HISTORY (Analytics — bottom)
+            ═══════════════════════════════════════════════════════════ */}
+        <div className="border-t border-[#e2e8f0] pt-8 mt-4">
+          <div className="flex items-center gap-2 mb-6">
+            <BarChart3 className="w-5 h-5 text-[#6366f1]" />
+            <h2 className="text-lg text-[#0f172b]" style={{ fontWeight: 700 }}>
+              Your Progress History
+            </h2>
+          </div>
+
+          {/* ─── Professional Proficiency Hero Card ─── */}
+          <motion.div
+            className="bg-gradient-to-br from-[#0f172b] to-[#1e293b] rounded-2xl shadow-lg p-5 md:p-6 mb-6 relative overflow-hidden"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05, duration: 0.5 }}
+          >
           {/* Subtle decorative orbs */}
           <div className="absolute -top-10 -right-10 w-40 h-40 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -878,12 +1256,78 @@ export function DashboardPage({
                     ))}
                 </div>
               )}
+
+              {/* ── Narrative Progress ── */}
+              {proficiencyScore > 0 && (
+                <motion.div
+                  className="mt-4 bg-white/5 border border-white/10 rounded-xl px-4 py-3"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.9 }}
+                >
+                  <p className="text-sm text-white/80 leading-relaxed">
+                    {proficiencyDelta > 0 && biggestImprovement
+                      ? `You've improved +${proficiencyDelta} points since your last session, with your strongest gain in ${biggestImprovement.pillar}.`
+                      : proficiencyDelta < 0
+                        ? `Your score dipped ${proficiencyDelta} points — that's normal. Focus on your areas below to bounce back.`
+                        : persistedSessions.length === 1
+                          ? "Great start! Complete more sessions to track your progress over time."
+                          : "You're holding steady. Push yourself with a new scenario to unlock growth."}
+                  </p>
+                </motion.div>
+              )}
+
+              {/* ── Focus Areas ── */}
+              {(() => {
+                const areas = computeFocusAreas(radarData);
+                if (areas.length === 0) return null;
+                return (
+                  <motion.div
+                    className="mt-4 space-y-2"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1 }}
+                  >
+                    <p className="text-[10px] uppercase tracking-wider text-white/40 mb-2" style={{ fontWeight: 600 }}>
+                      Focus Areas
+                    </p>
+                    {areas.map((area) => (
+                      <div
+                        key={area.pillar}
+                        className="flex items-start gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-3"
+                      >
+                        <Target className="w-4 h-4 text-[#f59e0b] shrink-0 mt-0.5" />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <span className="text-sm text-white" style={{ fontWeight: 500 }}>
+                              {area.pillar}
+                            </span>
+                            <span
+                              className="text-[10px] px-2 py-0.5 rounded-full"
+                              style={{
+                                fontWeight: 600,
+                                backgroundColor: area.score >= 60 ? "rgba(245,158,11,0.2)" : "rgba(239,68,68,0.2)",
+                                color: area.score >= 60 ? "#fbbf24" : "#f87171",
+                              }}
+                            >
+                              {area.score}%
+                            </span>
+                          </div>
+                          <p className="text-xs text-white/50 leading-relaxed">
+                            {area.tip}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </motion.div>
+                );
+              })()}
             </div>
           </div>
         </motion.div>
 
         {/* ─── Compact stat pills ─── */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <div className="grid grid-cols-3 gap-3 mb-6">
           {/* Sessions */}
           <motion.div
             className="bg-indigo-50 rounded-2xl border border-white/60 p-4 md:p-5"
@@ -925,29 +1369,6 @@ export function DashboardPage({
               {biggestImprovement
                 ? biggestImprovement.pillar
                 : dc.stats.biggestGain}
-            </p>
-          </motion.div>
-
-          {/* Focus Area */}
-          <motion.div
-            className={`rounded-2xl border border-white/60 p-4 md:p-5 ${focusArea ? "bg-amber-50" : "bg-slate-50"
-              }`}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.12, duration: 0.4 }}
-          >
-            <Target
-              className="w-5 h-5 mb-2"
-              style={{ color: focusArea ? "#f59e0b" : "#94a3b8" }}
-            />
-            <p
-              className="text-lg md:text-xl text-[#0f172b] mb-0.5 truncate"
-              style={{ fontWeight: 600 }}
-            >
-              {focusArea ? `${focusArea.score}%` : "—"}
-            </p>
-            <p className="text-xs text-[#62748e] truncate">
-              {focusArea ? focusArea.pillar : dc.stats.focusArea}
             </p>
           </motion.div>
 
@@ -1208,100 +1629,6 @@ export function DashboardPage({
                 </div>
               )}
             </motion.div>
-
-            {/* Quick start cards */}
-            <motion.div
-              className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-5"
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <h3
-                className="text-sm text-[#0f172b] mb-4"
-                style={{ fontWeight: 600 }}
-              >
-                {dc.quickStart.title}
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {(
-                  [
-                    {
-                      id: "interview",
-                      label: dc.quickStart.interviewLabel,
-                      description: dc.quickStart.interviewDesc,
-                      icon: Mic,
-                      disabled: false,
-                    },
-                    {
-                      id: "sales",
-                      label: dc.quickStart.salesLabel,
-                      description: dc.quickStart.salesDesc,
-                      icon: Target,
-                      disabled: true,
-                    },
-                  ] as const
-                ).map((card) => {
-                  const Icon = card.icon;
-                  return (
-                    <motion.button
-                      key={card.id}
-                      onClick={() => !card.disabled && handleStartSession(card.label, card.id)}
-                      className={`group/card relative rounded-xl p-5 text-left transition-all duration-300 ${
-                        card.disabled
-                          ? "bg-white border-2 border-gray-100 opacity-60 cursor-not-allowed"
-                          : "bg-[#f8fafc] hover:bg-[#0f172b] border-2 border-[#e2e8f0] hover:border-[#0f172b] cursor-pointer"
-                      }`}
-                      whileHover={card.disabled ? undefined : { scale: 1.02, y: -2 }}
-                      whileTap={card.disabled ? undefined : { scale: 0.98 }}
-                    >
-                      <div className={`w-9 h-9 rounded-full flex items-center justify-center mb-3 transition-colors duration-300 ${
-                        card.disabled
-                          ? "bg-gray-100"
-                          : "bg-[#0f172b] group-hover/card:bg-white"
-                      }`}>
-                        <Icon
-                          className={`w-4 h-4 transition-colors duration-300 ${
-                            card.disabled
-                              ? "text-gray-400"
-                              : "text-white group-hover/card:text-[#0f172b]"
-                          }`}
-                          strokeWidth={1.5}
-                        />
-                      </div>
-                      <div className="flex items-center justify-between mb-1">
-                        <p
-                          className={`text-sm transition-colors duration-300 ${
-                            card.disabled
-                              ? "text-gray-500"
-                              : "text-[#0f172b] group-hover/card:text-white"
-                          }`}
-                          style={{ fontWeight: 600 }}
-                        >
-                          {card.label}
-                        </p>
-                        {card.disabled && (
-                          <span className="text-[10px] uppercase font-bold tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
-                            Próximamente
-                          </span>
-                        )}
-                      </div>
-                      <p className={`text-xs leading-relaxed transition-colors duration-300 pr-8 ${
-                        card.disabled
-                          ? "text-gray-400"
-                          : "text-[#62748e] group-hover/card:text-white/70"
-                      }`}>
-                        {card.description}
-                      </p>
-                      {!card.disabled && (
-                        <div className="absolute top-4 right-4 w-7 h-7 rounded-full bg-transparent group-hover/card:bg-white/15 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-all duration-300">
-                          <ArrowRight className="w-3.5 h-3.5 text-white" />
-                        </div>
-                      )}
-                    </motion.button>
-                  );
-                })}
-              </div>
-            </motion.div>
           </div>
         </div>
 
@@ -1460,202 +1787,20 @@ export function DashboardPage({
           );
         })()}
 
-        {/* ─── Spaced Repetition Review ─── */}
-        <div className="mb-6">
-          <SpacedRepetitionCard />
-        </div>
 
-        {/* ─── Pronunciation Vocabulary Tracker ─── */}
-        <div className="mb-6">
-          <VocabTracker />
-        </div>
-
-        {/* ─── Bottom grid: Recent Sessions + Recommended Next ─── */}
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* ── Recent Sessions ── */}
-          <motion.div
-            className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-5 flex flex-col"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25 }}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-[#0f172b]" />
-                <h3
-                  className="text-sm text-[#0f172b]"
-                  style={{ fontWeight: 600 }}
-                >
-                  {dc.recentSessions.title}
-                </h3>
-              </div>
-              {allRecent.length > 0 && (
-                <button
-                  onClick={() => onNavigateToHistory?.()}
-                  className="text-xs text-[#6366f1] hover:text-[#4f46e5] transition-colors flex items-center gap-0.5"
-                  style={{ fontWeight: 500 }}
-                >
-                  {dc.recentSessions.viewAll}
-                  <ChevronRight className="w-3 h-3" />
-                </button>
-              )}
-            </div>
-
-            {allRecent.length === 0 ? (
-              <div className="flex-1 flex flex-col items-center justify-center py-8 text-center">
-                <BookOpen className="w-8 h-8 text-[#cbd5e1] mb-2" />
-                <p className="text-sm text-[#62748e]">
-                  {dc.recentSessions.empty}
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-2 flex-1">
-                {allRecent.slice(0, 4).map((practice, i) => (
-                  <motion.div
-                    key={`session-${i}`}
-                    className="rounded-xl px-4 py-3 border border-[#e2e8f0] hover:border-[#c4b5fd] transition-all cursor-pointer group"
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.28 + i * 0.05, duration: 0.3 }}
-                    onClick={() => onNavigateToHistory?.()}
-                  >
-                    <div className="flex items-center justify-between mb-1.5">
-                      <p
-                        className="text-sm text-[#0f172b] truncate flex-1 mr-2"
-                        style={{ fontWeight: 500 }}
-                      >
-                        {practice.title}
-                      </p>
-                      <ChevronRight className="w-3.5 h-3.5 text-[#cbd5e1] group-hover:text-[#6366f1] transition-colors shrink-0" />
-                    </div>
-                    <div className="flex items-center gap-2.5 flex-wrap">
-                      <span className="flex items-center gap-1 text-[10px] text-[#62748e]">
-                        <Calendar className="w-3 h-3" />
-                        {practice.date}
-                      </span>
-                      <span className="flex items-center gap-1 text-[10px] text-[#62748e]">
-                        <Clock className="w-3 h-3" />
-                        {practice.duration}
-                      </span>
-                      <span
-                        className="bg-[#f1f5f9] text-[#62748e] text-[10px] px-2 py-0.5 rounded-full"
-                        style={{ fontWeight: 500 }}
-                      >
-                        {practice.tag}
-                      </span>
-                      {(practice as EnrichedHistoryItem).hasInterviewBriefing && (
-                        <span
-                          className="bg-[#6366f1]/10 text-[#6366f1] text-[10px] px-2 py-0.5 rounded-full flex items-center gap-0.5"
-                          style={{ fontWeight: 600 }}
-                        >
-                          <MessageCircleQuestion className="w-2.5 h-2.5" />
-                          Briefing
-                        </span>
-                      )}
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            )}
-          </motion.div>
-
-          {/* ── Recommended Next ── */}
-          <motion.div
-            className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-5 flex flex-col"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Target className="w-4 h-4 text-[#0f172b]" />
-                <h3
-                  className="text-sm text-[#0f172b]"
-                  style={{ fontWeight: 600 }}
-                >
-                  {dc.recommended.title}
-                </h3>
-              </div>
-              <span
-                className="bg-[#fef3c7] text-[#92400e] text-[10px] px-2.5 py-1 rounded-full"
-                style={{ fontWeight: 600 }}
-              >
-                {dc.recommended.aiBadge}
-              </span>
-            </div>
-
-            <p className="text-xs text-[#45556c] mb-4 flex-1 leading-relaxed">
-              {focusArea
-                ? dc.recommended.descFocus
-                  .replace("{pillar}", focusArea.pillar)
-                  .replace("{score}", String(focusArea.score))
-                : hasPracticed
-                  ? dc.recommended.descPracticed
-                  : dc.recommended.descNew}
-            </p>
-
-            <div className="bg-gradient-to-br from-[#f8fafc] to-[#eef2ff] rounded-xl border border-[#e2e8f0] p-4 mb-4">
-              <div className="flex items-start justify-between mb-2">
-                <p
-                  className="text-[15px] text-[#0f172b]"
-                  style={{ fontWeight: 500 }}
-                >
-                  {hasPracticed || hasRealData
-                    ? dc.recommended.scenarioInterview
-                    : dc.recommended.scenarioSales}
-                </p>
-                {focusArea && (
-                  <div
-                    className="flex items-center gap-1 text-[10px] text-[#f59e0b]"
-                    style={{ fontWeight: 600 }}
-                  >
-                    <Target className="w-3 h-3" />
-                    {focusArea.pillar}
-                  </div>
-                )}
-              </div>
-              <p className="text-xs text-[#62748e] leading-relaxed mb-3">
-                {hasPracticed || hasRealData
-                  ? dc.recommended.scenarioInterviewDesc
-                  : dc.recommended.scenarioSalesDesc}
-              </p>
-              <div className="flex items-center gap-2 flex-wrap">
-                <span
-                  className="text-[10px] bg-[#eef2ff] text-[#6366f1] rounded-full px-2.5 py-0.5"
-                  style={{ fontWeight: 600 }}
-                >
-                  {hasPracticed || hasRealData ? dc.recommended.tagInterview : dc.recommended.tagSales}
-                </span>
-                <span
-                  className="text-[10px] bg-[#f1f5f9] text-[#45556c] rounded-full px-2.5 py-0.5"
-                  style={{ fontWeight: 500 }}
-                >
-                  {dc.recommended.duration}
-                </span>
-              </div>
-            </div>
-
-            <button
-              onClick={() =>
-                handleStartSession(
-                  hasPracticed || hasRealData
-                    ? dc.recommended.scenarioInterview
-                    : dc.recommended.scenarioSales,
-                  hasPracticed || hasRealData ? "interview" : "sales"
-                )
-              }
-              className="w-full bg-[#0f172b] text-white py-3 rounded-full flex items-center justify-center gap-2 hover:bg-[#1d293d] transition-colors shadow-sm cursor-pointer"
-            >
-              <PlayCircle className="w-4 h-4" />
-              <span className="text-sm" style={{ fontWeight: 500 }}>
-                {dc.recommended.startSession}
-              </span>
-            </button>
-          </motion.div>
-        </div>
+        </div>{/* end Progress History section */}
       </main>
 
       <MiniFooter />
+
+      {lessonModalOpen && (
+        <LessonModal
+          lessons={recommendedLessons}
+          currentIndex={lessonModalIndex}
+          onClose={() => setLessonModalOpen(false)}
+          onNavigate={(i) => setLessonModalIndex(i)}
+        />
+      )}
 
       <CreditUpsellModal
         open={upsellOpen}

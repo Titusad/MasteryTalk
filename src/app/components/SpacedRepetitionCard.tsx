@@ -117,11 +117,18 @@ export function SpacedRepetitionCard() {
 
     /* ── Don't render if no active phrases ── */
     if (loading) {
-        return null; // Don't show skeleton to avoid layout shift
-    }
-
-    if (activeCount === 0 && !justCompleted) {
-        return null; // No SR phrases at all
+        return (
+            <motion.div
+                className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-5 flex items-center justify-center h-[200px]"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+            >
+                <div className="flex flex-col items-center gap-2">
+                    <Loader2 className="w-6 h-6 text-[#cbd5e1] animate-spin" />
+                    <p className="text-xs text-[#94a3b8]">Loading reviews...</p>
+                </div>
+            </motion.div>
+        );
     }
 
     /* ── Just completed state ── */

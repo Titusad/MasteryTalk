@@ -7,6 +7,7 @@ const PracticeSessionPage = lazy(() => import("./components/PracticeSessionPage"
 const DashboardPage = lazy(() => import("./components/DashboardPage").then(m => ({ default: m.DashboardPage })));
 const PracticeHistoryPage = lazy(() => import("./components/PracticeHistoryPage").then(m => ({ default: m.PracticeHistoryPage })));
 const AccountPage = lazy(() => import("./components/AccountPage").then(m => ({ default: m.AccountPage })));
+const LibraryPage = lazy(() => import("./components/LibraryPage").then(m => ({ default: m.LibraryPage })));
 import { LoadingScreen } from "./components/LoadingScreen";
 import { LanguageTransitionModal } from "./components/LanguageTransitionModal";
 import { authService } from "../services";
@@ -30,7 +31,8 @@ type Page =
   | "practice-session"
   | "dashboard"
   | "practice-history"
-  | "account";
+  | "account"
+  | "library";
 
 /* ─── Shared flow state ─── */
 interface FlowState {
@@ -381,6 +383,7 @@ export default function App() {
       } else if (hash === "#practice-session") setPage("practice-session");
       else if (hash === "#practice-history") setPage("practice-history");
       else if (hash === "#account") setPage("account");
+      else if (hash === "#library") setPage("library");
       else setPage("landing");
     };
     window.addEventListener("hashchange", handleHash);
@@ -495,6 +498,11 @@ export default function App() {
     window.location.hash = "#dashboard";
   };
 
+  const handleNavigateToLibrary = () => {
+    setPage("library");
+    window.location.hash = "#library";
+  };
+
   if (isInitializing) {
     return (
       <div className="w-full min-h-screen flex items-center justify-center bg-[#f8fafc]">
@@ -568,6 +576,12 @@ export default function App() {
               userProfile={userProfile}
               onProfileUpdate={handleProfileUpdate}
               lang={landingLang}
+              onNavigateToLibrary={handleNavigateToLibrary}
+            />
+          )}
+          {page === "library" && (
+            <LibraryPage
+              onBack={handleBackToDashboard}
             />
           )}
           {page === "practice-history" && (
