@@ -595,10 +595,30 @@ export default function App() {
               onBack={handleBackToDashboard}
             />
           )}
-          {page === "admin" && authUser && ADMIN_EMAILS.includes(authUser.email?.toLowerCase() || "") && (
-            <AdminDashboardPage
-              onBack={handleBackToDashboard}
-            />
+          {page === "admin" && (
+            authUser && ADMIN_EMAILS.includes(authUser.email?.toLowerCase() || "") ? (
+              <AdminDashboardPage
+                onBack={handleBackToDashboard}
+              />
+            ) : (
+              <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" as const, alignItems: "center", justifyContent: "center", background: "#0f172a", color: "#e2e8f0", fontFamily: "'Inter', sans-serif", gap: 16 }}>
+                {!authUser ? (
+                  <>
+                    <div style={{ width: 32, height: 32, border: "3px solid #334155", borderTopColor: "#6366f1", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+                    <p style={{ color: "#94a3b8" }}>Authenticating...</p>
+                  </>
+                ) : (
+                  <>
+                    <p style={{ fontSize: 48 }}>🔒</p>
+                    <p style={{ fontSize: 18, fontWeight: 600 }}>Access Denied</p>
+                    <p style={{ color: "#64748b", fontSize: 14 }}>{authUser.email} is not an admin</p>
+                    <button onClick={handleBackToDashboard} style={{ marginTop: 12, padding: "8px 20px", background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", borderRadius: 8, color: "#818cf8", cursor: "pointer", fontSize: 14 }}>
+                      ← Back to Dashboard
+                    </button>
+                  </>
+                )}
+              </div>
+            )
           )}
           {page === "practice-history" && (
             <PracticeHistoryPage
