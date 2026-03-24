@@ -28,6 +28,7 @@ import { ConversationFeedback, type RealFeedbackData, type RepeatInfo } from "./
 import { CreditUpsellModal } from "./CreditUpsellModal";
 import { useUsageGating } from "../hooks/useUsageGating";
 import type { PaywallReason } from "../hooks/useUsageGating";
+import { createSRPhrase, flagPhrasesForReview } from "../utils/spacedRepetition";
 import type { InterviewBriefingData, OnboardingProfile } from "../../services/types";
 import {
   scenarioKey,
@@ -805,6 +806,38 @@ export function PracticeSessionPage({
       }
     }
   }, [step, sessionId, feedbackStatus, summaryStatus, saveSessionToBackend]);
+
+  /* ── Seed "Phrases to Review" from feedback beforeAfter (first session bootstrap) ──
+     When AI feedback is ready, extract professional versions as SR phrases
+     so the Dashboard's SpacedRepetitionCard has initial content to show. */
+  const srSeededRef = useRef(false);
+  useEffect(() => {
+    if (feedbackStatus !== "ready" || !realFeedback || srSeededRef.current) return;
+    srSeededRef.current = true;
+
+    const beforeAfter = realFeedback.beforeAfter || [];
+    if (beforeAfter.length === 0) return;
+
+    const srPhrases = beforeAfter.slice(0, 5).map((ba, i) => {
+      // Extract a focus word (first word > 4 chars from the professional version)
+      const words = ba.professionalVersion.split(/\s+/);
+      const focusWord = words.find(w => w.replace(/[^a-zA-Z]/g, "").length > 4) || words[0] || "";
+      return createSRPhrase(
+        `feedback-${sessionId}-${i}`,
+        ba.professionalVersion,
+        focusWord.replace(/[^a-zA-Z'-]/g, ""),
+        "", // no IPA from feedback
+        0,  // no initial score
+        0,  // no attempts yet
+        scenarioType || "interview",
+        scenario || "Practice Session"
+      );
+    });
+
+    flagPhrasesForReview(srPhrases).catch(err =>
+      console.warn("[SR Seed] Failed to seed phrases from feedback:", err)
+    );
+  }, [feedbackStatus, realFeedback, sessionId, scenarioType, scenario]);
 
   /* ── Auto-transition for feedback: when BOTH animation AND API are done ── */
   useEffect(() => {
