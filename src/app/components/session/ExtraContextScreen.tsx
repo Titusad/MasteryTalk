@@ -402,7 +402,7 @@ function ExtraContextScreen({
                                             className="mt-0.5 w-4 h-4 rounded border-[#d1d5db] text-[#6366f1] focus:ring-[#6366f1] accent-[#6366f1] cursor-pointer"
                                         />
                                         <span className="text-xs text-[#45556c] leading-relaxed group-hover:text-[#0f172b] transition-colors">
-                                            Autorizo a inFluentia a compartir mi perfil profesional de forma anónima con empresas aliadas.
+                                            I authorize receiving job offers based on my professional profile.
                                         </span>
                                     </label>
                                 </div>
