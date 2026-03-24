@@ -1054,13 +1054,13 @@ app.post("/make-server-08b8658d/generate-interview-briefing", async (c) => {
 /* ── ElevenLabs voice mapping ── */
 const ELEVENLABS_VOICES: Record<string, { voiceId: string; stability: number; similarity: number; style: number }> = {
   coach: {
-    voiceId: "EXAVITQu4vr4xnSDxMaL", // "Sarah" — warm, professional female
+    voiceId: "Nhs7eitvQWFTQBsf0yiT", // "Sarah" — warm, professional female
     stability: 0.35,      // lower = more expressive/dynamic
     similarity: 0.80,
     style: 0.45,           // higher = more stylistic variation
   },
   user_line: {
-    voiceId: "EXAVITQu4vr4xnSDxMaL", // Same voice for consistency
+    voiceId: "Nhs7eitvQWFTQBsf0yiT", // Same voice for consistency
     stability: 0.40,
     similarity: 0.85,
     style: 0.35,
