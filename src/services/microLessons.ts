@@ -731,7 +731,7 @@ export function getRecommendedLessons(
   return getLessonsForPillars(weakest);
 }
 
-/* ═══ Completion tracking (localStorage) ═══ */
+/* ═══ Completion tracking (localStorage cache + backend sync) ═══ */
 const COMPLETED_KEY = "influentia_completed_lessons";
 
 function getCompletedSet(): Set<string> {
@@ -748,13 +748,84 @@ export function isLessonComplete(id: string): boolean {
 }
 
 export function markLessonComplete(id: string): void {
+  // 1. Immediate localStorage write (fast, offline-safe)
   const set = getCompletedSet();
+  if (set.has(id)) return; // already done
   set.add(id);
   try {
     localStorage.setItem(COMPLETED_KEY, JSON.stringify([...set]));
   } catch { /* ignore */ }
+
+  // 2. Fire-and-forget backend sync
+  _syncToBackend(id).catch(() => { /* silent */ });
 }
 
 export function getCompletedLessonIds(): string[] {
   return [...getCompletedSet()];
+}
+
+/** Sync a single lesson completion to the backend */
+async function _syncToBackend(lessonId: string): Promise<void> {
+  try {
+    const { projectId, publicAnonKey } = await import("../../utils/supabase/info");
+    let token = publicAnonKey;
+    try {
+      const { getSupabaseClient } = await import("./supabase");
+      const supabase = getSupabaseClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token) token = session.access_token;
+    } catch { /* use anon key */ }
+
+    await fetch(
+      `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/lesson-progress`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ lessonId }),
+      }
+    );
+  } catch { /* silent — localStorage is the source of truth for now */ }
+}
+
+/**
+ * Fetch completed lessons from backend and merge into localStorage.
+ * Call this once on Dashboard/Library mount for cross-device sync.
+ */
+export async function syncLessonProgress(): Promise<void> {
+  try {
+    const { projectId, publicAnonKey } = await import("../../utils/supabase/info");
+    let token = publicAnonKey;
+    try {
+      const { getSupabaseClient } = await import("./supabase");
+      const supabase = getSupabaseClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token) token = session.access_token;
+    } catch { /* use anon key */ }
+
+    const res = await fetch(
+      `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/lesson-progress`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    if (!res.ok) return;
+    const data = await res.json();
+    const backendIds: string[] = data.completedLessons || [];
+
+    // Merge: backend ∪ localStorage
+    const local = getCompletedSet();
+    let changed = false;
+    for (const id of backendIds) {
+      if (!local.has(id)) {
+        local.add(id);
+        changed = true;
+      }
+    }
+    if (changed) {
+      localStorage.setItem(COMPLETED_KEY, JSON.stringify([...local]));
+    }
+  } catch { /* silent */ }
 }

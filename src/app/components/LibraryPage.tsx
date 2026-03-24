@@ -7,7 +7,7 @@
  * ══════════════════════════════════════════════════════════════
  */
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   BookOpen,
   Clock,
@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { motion } from "motion/react";
 import { BrandLogo, MiniFooter } from "./shared";
-import { MICRO_LESSONS, isLessonComplete } from "../../services/microLessons";
+import { MICRO_LESSONS, isLessonComplete, syncLessonProgress } from "../../services/microLessons";
 import type { MicroLesson } from "../../services/microLessons";
 import { LessonModal } from "./LessonModal";
 
@@ -46,6 +46,9 @@ export function LibraryPage({ onBack }: LibraryPageProps) {
   const [lessonModalIndex, setLessonModalIndex] = useState(0);
   const [modalLessons, setModalLessons] = useState<MicroLesson[]>([]);
   const [, setCompletionTick] = useState(0); // force re-render on completion
+
+  // Sync lesson progress from backend on mount
+  useEffect(() => { syncLessonProgress().then(() => setCompletionTick((t) => t + 1)).catch(() => {}); }, []);
 
   /* Filter lessons */
   const filteredLessons = useMemo(() => {

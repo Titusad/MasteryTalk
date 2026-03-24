@@ -36,6 +36,8 @@ import { SupabaseFeedbackService } from "./adapters/supabase/feedback.supabase";
 /* ── Import interfaces for typed exports ── */
 import type { IAuthService } from "./interfaces/auth";
 
+import { SupabaseSpacedRepetitionService } from "./adapters/supabase/spaced-repetition.supabase";
+
 /* ══════════════════════════════════════════════════════════════
    Auto-detect: Supabase auth if configured, mock otherwise.
 
@@ -63,7 +65,9 @@ export const feedbackService = useSupabase ? new SupabaseFeedbackService() : new
 export const speechService = new MockSpeechService();
 export const userService = new MockUserService();
 export const paymentService = new MockPaymentService();
-export const spacedRepetitionService = new MockSpacedRepetitionService();
+export const spacedRepetitionService = useSupabase
+  ? new SupabaseSpacedRepetitionService()
+  : new MockSpacedRepetitionService();
 
 /* ══════════════════════════════════════════════════════════════
    REAL Supabase services — used by VoicePractice for:

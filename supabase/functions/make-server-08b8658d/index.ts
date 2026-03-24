@@ -1255,6 +1255,67 @@ ${transcript}`;
 
     console.log(`[AnalyzeFeedback] ✅ Generated: ${strengths.length} strengths, ${opportunities.length} opportunities, ${beforeAfter.length} before/after | proficiency=${professionalProficiency}${contentScores ? ` | contentScores=${JSON.stringify(contentScores)} | readiness=${interviewReadinessScore}` : ''}`);
 
+    // ── Persist pillarScores to user profile & session record ──
+    try {
+      const user = await getAuthUser(c.req.header("Authorization"));
+      const userId = user?.id || "anon";
+
+      // 1. Update profile stats with latest pillarScores
+      if (pillarScores && Object.keys(pillarScores).length > 0) {
+        const profileRaw = await kv.get(`profile:${userId}`);
+        const profile = profileRaw
+          ? (typeof profileRaw === "string" ? JSON.parse(profileRaw) : profileRaw)
+          : { id: userId, stats: {} };
+        const prevStats = profile.stats || {};
+
+        // Weighted merge: 70% new + 30% previous (if exists) for smoother progression
+        const mergedScores: Record<string, number> = {};
+        for (const [key, val] of Object.entries(pillarScores as Record<string, number>)) {
+          const prev = prevStats.pillarScores?.[key];
+          mergedScores[key] = prev != null
+            ? Math.round(0.7 * val + 0.3 * prev)
+            : val;
+        }
+
+        profile.stats = {
+          ...prevStats,
+          pillarScores: mergedScores,
+          professionalProficiency: professionalProficiency ?? prevStats.professionalProficiency,
+          lastFeedbackAt: new Date().toISOString(),
+        };
+        await kv.set(`profile:${userId}`, JSON.stringify(profile));
+        console.log(`[AnalyzeFeedback] 📊 Persisted pillarScores to profile:${userId}`);
+      }
+
+      // 2. Save feedback to the stored session record (so Dashboard history can read it)
+      const indexRaw = await kv.get(`session_index:${userId}`);
+      const sessionIndex: string[] = indexRaw
+        ? (typeof indexRaw === "string" ? JSON.parse(indexRaw) : indexRaw)
+        : [];
+      // Find the most recent session to attach feedback to
+      if (sessionIndex.length > 0) {
+        const latestKey = `session:${userId}:${sessionIndex[0]}`;
+        const sessRaw = await kv.get(latestKey);
+        if (sessRaw) {
+          const sessRecord = typeof sessRaw === "string" ? JSON.parse(sessRaw) : sessRaw;
+          sessRecord.feedback = {
+            strengths,
+            opportunities,
+            beforeAfter,
+            pillarScores,
+            professionalProficiency,
+            ...(contentScores && { contentScores }),
+            ...(interviewReadinessScore !== null && { interviewReadinessScore }),
+          };
+          await kv.set(latestKey, JSON.stringify(sessRecord));
+          console.log(`[AnalyzeFeedback] 💾 Saved feedback to session ${sessionIndex[0]}`);
+        }
+      }
+    } catch (persistErr) {
+      // Non-blocking: feedback still returned even if persistence fails
+      console.log(`[AnalyzeFeedback] ⚠️ Failed to persist scores: ${persistErr}`);
+    }
+
     return c.json({
       strengths,
       opportunities,
@@ -1980,6 +2041,224 @@ Format as a clean, readable paragraph (not bullet points). Keep it under 300 wor
   } catch (err) {
     console.log("[ProcessCV Error]", err);
     return c.json({ error: `Failed to process CV: ${err}` }, 500);
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// SR CARDS — Spaced Repetition CRUD
+// KV key: sr_cards:{userId} → JSON array of card objects
+// ═══════════════════════════════════════════════════════════════
+
+const SR_INTERVALS = [
+  { step: 1, days: 1, label: "24h" },
+  { step: 2, days: 3, label: "3 days" },
+  { step: 3, days: 7, label: "1 week" },
+  { step: 4, days: 14, label: "2 weeks" },
+];
+const MIN_PASSING_SCORE = 80;
+const MAX_DAILY_CARDS = 5;
+
+async function getSRCards(userId: string): Promise<any[]> {
+  const raw = await kv.get(`sr_cards:${userId}`);
+  if (!raw) return [];
+  return typeof raw === "string" ? JSON.parse(raw) : (Array.isArray(raw) ? raw : []);
+}
+
+async function saveSRCards(userId: string, cards: any[]): Promise<void> {
+  await kv.set(`sr_cards:${userId}`, JSON.stringify(cards));
+}
+
+// GET /sr-cards — List all SR cards for the authenticated user
+app.get("/make-server-08b8658d/sr-cards", async (c) => {
+  try {
+    const user = await getAuthUser(c.req.header("Authorization"));
+    const userId = user?.id || "anon";
+    const cards = await getSRCards(userId);
+    return c.json({ cards });
+  } catch (err) {
+    console.log("[SR Cards GET Error]", err);
+    return c.json({ error: `Failed to get SR cards: ${err}` }, 500);
+  }
+});
+
+// GET /sr-cards/today — Get today's review cards
+app.get("/make-server-08b8658d/sr-cards/today", async (c) => {
+  try {
+    const user = await getAuthUser(c.req.header("Authorization"));
+    const userId = user?.id || "anon";
+    const cards = await getSRCards(userId);
+    const now = Date.now();
+    const dueCards = cards
+      .filter((card: any) => !card.nextReviewAt || new Date(card.nextReviewAt).getTime() <= now)
+      .sort((a: any, b: any) => (a.lastScore || 0) - (b.lastScore || 0))
+      .slice(0, MAX_DAILY_CARDS);
+    return c.json({ cards: dueCards });
+  } catch (err) {
+    console.log("[SR Cards Today Error]", err);
+    return c.json({ error: `Failed to get today's SR cards: ${err}` }, 500);
+  }
+});
+
+// POST /sr-cards — Add new SR cards (from session or arena)
+app.post("/make-server-08b8658d/sr-cards", async (c) => {
+  try {
+    const user = await getAuthUser(c.req.header("Authorization"));
+    const userId = user?.id || "anon";
+    const body = await c.req.json();
+    const newCards: any[] = body.cards || [];
+
+    if (newCards.length === 0) {
+      return c.json({ error: "No cards provided" }, 400);
+    }
+
+    const existing = await getSRCards(userId);
+    const existingPhrases = new Set(existing.map((c: any) => c.phrase?.toLowerCase()));
+
+    const added: any[] = [];
+    for (const card of newCards) {
+      if (existingPhrases.has(card.phrase?.toLowerCase())) continue; // dedup
+      const srCard = {
+        id: `sr_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        phrase: card.phrase || "",
+        word: card.word || card.phrase?.split(" ").slice(0, 3).join(" ") || "",
+        phonetic: card.phonetic || "",
+        lastScore: 0,
+        intervalStep: 1,
+        nextReviewAt: new Date().toISOString(),
+        origin: card.origin || "Session",
+        createdAt: new Date().toISOString(),
+      };
+      existing.push(srCard);
+      added.push(srCard);
+    }
+
+    await saveSRCards(userId, existing);
+    console.log(`[SR Cards] Added ${added.length} cards for user ${userId} (total: ${existing.length})`);
+    return c.json({ status: "added", cards: added, total: existing.length });
+  } catch (err) {
+    console.log("[SR Cards POST Error]", err);
+    return c.json({ error: `Failed to add SR cards: ${err}` }, 500);
+  }
+});
+
+// POST /sr-cards/attempt — Submit a pronunciation attempt for a card
+app.post("/make-server-08b8658d/sr-cards/attempt", async (c) => {
+  try {
+    const user = await getAuthUser(c.req.header("Authorization"));
+    const userId = user?.id || "anon";
+    const { cardId, score } = await c.req.json();
+
+    if (!cardId || typeof score !== "number") {
+      return c.json({ error: "Missing cardId or score" }, 400);
+    }
+
+    const cards = await getSRCards(userId);
+    const card = cards.find((c: any) => c.id === cardId);
+    if (!card) {
+      return c.json({ error: `Card ${cardId} not found` }, 404);
+    }
+
+    const passed = score >= MIN_PASSING_SCORE;
+    card.lastScore = Math.max(card.lastScore || 0, score);
+
+    if (passed) {
+      card.intervalStep = Math.min((card.intervalStep || 1) + 1, SR_INTERVALS.length);
+    }
+
+    // Calculate next review date
+    const interval = SR_INTERVALS.find((iv: any) => iv.step === card.intervalStep) || SR_INTERVALS[0];
+    const nextDate = new Date();
+    nextDate.setDate(nextDate.getDate() + interval.days);
+    card.nextReviewAt = nextDate.toISOString();
+
+    await saveSRCards(userId, cards);
+
+    const nextInterval = passed
+      ? (SR_INTERVALS.find((iv: any) => iv.step === card.intervalStep)?.label || "mastered")
+      : interval.label;
+
+    console.log(`[SR Cards] Attempt on ${cardId}: score=${score} passed=${passed} next=${nextInterval}`);
+    return c.json({ cardId, score, passed, nextInterval });
+  } catch (err) {
+    console.log("[SR Cards Attempt Error]", err);
+    return c.json({ error: `Failed to submit attempt: ${err}` }, 500);
+  }
+});
+
+// DELETE /sr-cards/:id — Remove a mastered/dismissed card
+app.delete("/make-server-08b8658d/sr-cards/:id", async (c) => {
+  try {
+    const user = await getAuthUser(c.req.header("Authorization"));
+    const userId = user?.id || "anon";
+    const cardId = c.req.param("id");
+
+    const cards = await getSRCards(userId);
+    const filtered = cards.filter((c: any) => c.id !== cardId);
+
+    if (filtered.length === cards.length) {
+      return c.json({ error: `Card ${cardId} not found` }, 404);
+    }
+
+    await saveSRCards(userId, filtered);
+    console.log(`[SR Cards] Deleted ${cardId} for user ${userId} (remaining: ${filtered.length})`);
+    return c.json({ status: "deleted", remaining: filtered.length });
+  } catch (err) {
+    console.log("[SR Cards DELETE Error]", err);
+    return c.json({ error: `Failed to delete SR card: ${err}` }, 500);
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// LESSON PROGRESS — Track completed micro-lessons
+// Stored in profile.stats.completedLessons (array of lesson IDs)
+// ═══════════════════════════════════════════════════════════════
+
+// GET /lesson-progress — Get completed lesson IDs
+app.get("/make-server-08b8658d/lesson-progress", async (c) => {
+  try {
+    const user = await getAuthUser(c.req.header("Authorization"));
+    const userId = user?.id || "anon";
+    const raw = await kv.get(`profile:${userId}`);
+    const profile = raw ? (typeof raw === "string" ? JSON.parse(raw) : raw) : {};
+    const completed = profile?.stats?.completedLessons || [];
+    return c.json({ completedLessons: completed });
+  } catch (err) {
+    console.log("[Lesson Progress GET Error]", err);
+    return c.json({ error: `Failed to get lesson progress: ${err}` }, 500);
+  }
+});
+
+// POST /lesson-progress — Mark a lesson as completed
+app.post("/make-server-08b8658d/lesson-progress", async (c) => {
+  try {
+    const user = await getAuthUser(c.req.header("Authorization"));
+    const userId = user?.id || "anon";
+    const { lessonId } = await c.req.json();
+
+    if (!lessonId) {
+      return c.json({ error: "Missing lessonId" }, 400);
+    }
+
+    const raw = await kv.get(`profile:${userId}`);
+    const profile = raw
+      ? (typeof raw === "string" ? JSON.parse(raw) : raw)
+      : { id: userId, stats: {} };
+
+    const stats = profile.stats || {};
+    const completed: string[] = stats.completedLessons || [];
+
+    if (!completed.includes(lessonId)) {
+      completed.push(lessonId);
+      stats.completedLessons = completed;
+      profile.stats = stats;
+      await kv.set(`profile:${userId}`, JSON.stringify(profile));
+      console.log(`[Lesson Progress] ✅ Marked ${lessonId} complete for user ${userId} (total: ${completed.length})`);
+    }
+
+    return c.json({ status: "ok", completedLessons: completed });
+  } catch (err) {
+    console.log("[Lesson Progress POST Error]", err);
+    return c.json({ error: `Failed to mark lesson complete: ${err}` }, 500);
   }
 });
 

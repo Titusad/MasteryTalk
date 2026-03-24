@@ -41,7 +41,7 @@ import { CreditUpsellModal, getCreditsLabel } from "./CreditUpsellModal";
 import { projectId, publicAnonKey } from "../../../utils/supabase/info";
 import { SpacedRepetitionCard } from "./SpacedRepetitionCard";
 import { LessonModal } from "./LessonModal";
-import { getRecommendedLessons, isLessonComplete } from "../../services/microLessons";
+import { getRecommendedLessons, isLessonComplete, syncLessonProgress } from "../../services/microLessons";
 
 /* ─── Types ─── */
 interface DashboardPageProps {
@@ -528,6 +528,7 @@ export function DashboardPage({
 
   useEffect(() => {
     fetchRealSessions();
+    syncLessonProgress().catch(() => { }); // cross-device sync
     userService
       .getPracticeHistory("mock-uid")
       .then((history) => setRecentPractices(history.slice(0, 4)))
