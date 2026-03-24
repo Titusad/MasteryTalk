@@ -2300,10 +2300,10 @@ async function requireAdmin(c: any, next: any) {
   }
 }
 
-app.use("/admin/*", requireAdmin);
+app.use("/make-server-08b8658d/admin/*", requireAdmin);
 
 /** GET /admin/users — List all user profiles with stats */
-app.get("/admin/users", async (c: any) => {
+app.get("/make-server-08b8658d/admin/users", async (c: any) => {
   try {
     const adminSupabase = createClient(
       Deno.env.get("SUPABASE_URL"),
@@ -2358,7 +2358,7 @@ app.get("/admin/users", async (c: any) => {
 });
 
 /** GET /admin/users/:id — Full user detail with sessions & SR cards */
-app.get("/admin/users/:id", async (c: any) => {
+app.get("/make-server-08b8658d/admin/users/:id", async (c: any) => {
   try {
     const userId = c.req.param("id");
     const profileRaw = await kv.get(`profile:${userId}`);
@@ -2415,7 +2415,7 @@ app.get("/admin/users/:id", async (c: any) => {
 });
 
 /** GET /admin/kpis — Platform-wide aggregated metrics */
-app.get("/admin/kpis", async (c: any) => {
+app.get("/make-server-08b8658d/admin/kpis", async (c: any) => {
   try {
     const adminSupabase = createClient(
       Deno.env.get("SUPABASE_URL"),
