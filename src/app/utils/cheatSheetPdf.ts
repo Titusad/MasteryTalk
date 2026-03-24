@@ -97,8 +97,20 @@ export async function downloadSessionReportPdf(opts: {
 }): Promise<void> {
     const { briefing, interlocutor = "", scenario, scenarioType, feedback, summary, sessionDuration, userDrafts, pronunciationData, improvedScript, cvMatchData } = opts;
 
-    const jsPDFModule = await import("jspdf");
-    const jsPDF = jsPDFModule.default;
+    let jsPDF: any;
+    try {
+        const jsPDFModule = await import("jspdf");
+        jsPDF = jsPDFModule.default;
+    } catch {
+        // Chunk may be stale after a deploy — retry with cache-bust
+        try {
+            const jsPDFModule = await import(/* @vite-ignore */ `jspdf?t=${Date.now()}`);
+            jsPDF = jsPDFModule.default;
+        } catch {
+            alert("PDF module failed to load. Please reload the page and try again.");
+            return;
+        }
+    }
     const doc = new jsPDF({
         orientation: "portrait",
         unit: "mm",
