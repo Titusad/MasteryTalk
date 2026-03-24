@@ -57,7 +57,7 @@ interface DevPreviewState {
 
 export default function App() {
   /* ─── Admin email whitelist ─── */
-  const ADMIN_EMAILS = ["mujicadavid@gmail.com", "tituscloud.enterprise@gmail.com"];
+  const ADMIN_EMAILS = ["davecastrillon@gmail.com", "yuliandc21@gmail.com"];
 
   /* ─── DEV MODE: sessionStorage keys for OAuth redirect recovery ─── */
   const OAUTH_PENDING_KEY = "influentia_oauth_pending";
