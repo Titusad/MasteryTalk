@@ -11,12 +11,24 @@ import { projectId, publicAnonKey } from "../../../../utils/supabase/info";
 
 const BASE_URL = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d`;
 
+async function getToken(): Promise<string> {
+  try {
+    const { getSupabaseClient } = await import("../../supabase");
+    const supabase = getSupabaseClient();
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token || publicAnonKey;
+  } catch {
+    return publicAnonKey;
+  }
+}
+
 async function serverFetch(path: string, body: Record<string, unknown>) {
+  const token = await getToken();
   const res = await fetch(`${BASE_URL}${path}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${publicAnonKey}`,
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(body),
   });
@@ -29,9 +41,7 @@ async function serverFetch(path: string, body: Record<string, unknown>) {
 }
 
 /**
- * SupabaseFeedbackService — Invoca Edge Functions reales
- * 
- * Por ahora delega en el MockService los métodos no implementados en backend.
+ * SupabaseFeedbackService — Real Edge Function feedback analysis
  */
 export class SupabaseFeedbackService implements IFeedbackService {
   private mockSvc = new MockFeedbackService();
@@ -46,7 +56,7 @@ export class SupabaseFeedbackService implements IFeedbackService {
       return {
         strengths: data.strengths || [],
         opportunities: data.opportunities || [],
-        duration: "10 mins", // Esto debería venir de los metadatos de la sesión
+        duration: "10 mins",
         scenarioType: "Interview",
         
         // Extended AI fields
@@ -64,16 +74,36 @@ export class SupabaseFeedbackService implements IFeedbackService {
     }
   }
 
-  // Delegación temporal a MOCK para las partes de la Fase 3 pendientes de backend
   async generateImprovedScript(sessionId: string): Promise<ImprovedScriptResult> {
+    // The improved script is based on the beforeAfter data from feedback analysis.
+    // For the MVP, we still use mock data because generating a full improved script
+    // requires a separate GPT call with the original pre-briefing script context.
+    // TODO: Create a dedicated /generate-improved-script endpoint in Phase 2.
     return this.mockSvc.generateImprovedScript(sessionId);
   }
 
   async getCompletedSummary(sessionId: string): Promise<CompletedPhraseSummary[]> {
+    // Completed phrase summaries are for shadowing sessions — not yet backend-powered
     return this.mockSvc.getCompletedSummary(sessionId);
   }
 
   async generateResultsSummary(sessionId: string): Promise<ResultsSummary> {
-    return this.mockSvc.generateResultsSummary(sessionId);
+    try {
+      console.log(`[SupabaseFeedback] Requesting session summary for: ${sessionId}`);
+      const data = await serverFetch("/generate-summary", {
+        sessionId,
+      });
+
+      return {
+        totalPhrases: data.totalPhrases || 0,
+        totalTime: data.totalTime || "—",
+        overallSentiment: data.overallSentiment || "Great session!",
+        pronunciationNotes: data.pronunciationNotes || [],
+        improvementAreas: data.improvementAreas || [],
+      };
+    } catch (err) {
+      console.warn("[SupabaseFeedback] generateResultsSummary failed, using mock:", err);
+      return this.mockSvc.generateResultsSummary(sessionId);
+    }
   }
 }

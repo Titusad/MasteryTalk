@@ -37,6 +37,7 @@ import { SupabaseFeedbackService } from "./adapters/supabase/feedback.supabase";
 import type { IAuthService } from "./interfaces/auth";
 
 import { SupabaseSpacedRepetitionService } from "./adapters/supabase/spaced-repetition.supabase";
+import { SupabaseUserService } from "./adapters/supabase/user.supabase";
 
 /* ══════════════════════════════════════════════════════════════
    Auto-detect: Supabase auth if configured, mock otherwise.
@@ -63,7 +64,9 @@ export const authService: IAuthService = useSupabase && !FORCE_MOCK_AUTH
 export const conversationService = new MockConversationService();
 export const feedbackService = useSupabase ? new SupabaseFeedbackService() : new MockFeedbackService();
 export const speechService = new MockSpeechService();
-export const userService = new MockUserService();
+export const userService = useSupabase
+  ? new SupabaseUserService()
+  : new MockUserService();
 export const paymentService = new MockPaymentService();
 export const spacedRepetitionService = useSupabase
   ? new SupabaseSpacedRepetitionService()

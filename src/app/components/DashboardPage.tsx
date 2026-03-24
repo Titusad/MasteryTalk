@@ -33,12 +33,12 @@ import {
 } from "recharts";
 import { BrandLogo, PastelBlobs, MiniFooter } from "./shared";
 import { authService, userService, paymentService } from "../../services";
-import { getSupabaseClient } from "../../services/supabase";
 import type { PracticeHistoryItem } from "../../services/types";
 import type { LandingLang } from "./landing-i18n";
 import { LANDING_COPIES } from "./landing-i18n";
 import { CreditUpsellModal, getCreditsLabel } from "./CreditUpsellModal";
-import { projectId, publicAnonKey } from "../../../utils/supabase/info";
+import { fetchSessions } from "../../services/adapters/supabase/dashboard.supabase";
+import type { PersistedSession } from "../../services/adapters/supabase/dashboard.supabase";
 import { SpacedRepetitionCard } from "./SpacedRepetitionCard";
 import { LessonModal } from "./LessonModal";
 import { getRecommendedLessons, isLessonComplete, syncLessonProgress } from "../../services/microLessons";
@@ -60,47 +60,7 @@ interface DashboardPageProps {
   onNavigateToLibrary?: () => void;
 }
 
-/* ─── Persisted session shape (from POST /sessions) ─── */
-interface PersistedSession {
-  id: string;
-  scenario: string;
-  interlocutor: string;
-  scenarioType: string;
-  duration: string;
-  created_at: string;
-  feedback?: {
-    strengths?: Array<{ title: string; desc: string }>;
-    opportunities?: Array<{
-      title: string;
-      tag?: string;
-      desc: string;
-    }>;
-    beforeAfter?: Array<{
-      userOriginal: string;
-      professionalVersion: string;
-      technique: string;
-    }>;
-    pillarScores?: Record<string, number> | null;
-    professionalProficiency?: number | null;
-  } | null;
-  summary?: {
-    overallSentiment?: string;
-    nextSteps?: Array<{ title: string; desc: string; pillar: string }>;
-    sessionHighlight?: string;
-    pillarScores?: Record<string, number> | null;
-    professionalProficiency?: number | null;
-    cefrApprox?: string | null;
-  } | null;
-  /** Interview briefing data (persisted for dashboard cross-reference) */
-  interviewBriefing?: {
-    anticipatedQuestions?: Array<{
-      id: number;
-      question: string;
-      approach: string;
-    }>;
-    questionsToAsk?: Array<{ question: string }>;
-  } | null;
-}
+/* ─── Persisted session type imported from dashboard.supabase.ts ─── */
 
 /* ─── Constants ─── */
 const PILLAR_NAMES = [
@@ -496,34 +456,15 @@ export function DashboardPage({
 
   /* ─── Fetch real sessions from backend ─── */
   const fetchRealSessions = useCallback(async () => {
-    const serverUrl = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/sessions`;
-    
-    const supabase = getSupabaseClient();
-    const { data: { session } } = await supabase.auth.getSession();
-    const token = session?.access_token || publicAnonKey;
-
-    fetch(serverUrl, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(async (res) => {
-        if (!res.ok) throw new Error(`${res.status}`);
-        return res.json();
-      })
-      .then((data) => {
-        const sessions: PersistedSession[] = data.sessions || [];
-        console.log(
-          `[Dashboard] Loaded ${sessions.length} real sessions from backend`
-        );
-        setPersistedSessions(sessions);
-        setSessionsLoaded(true);
-      })
-      .catch((err) => {
-        console.warn(
-          "[Dashboard] Failed to load real sessions, using mock:",
-          err.message
-        );
-        setSessionsLoaded(true);
-      });
+    try {
+      const sessions = await fetchSessions();
+      console.log(`[Dashboard] Loaded ${sessions.length} real sessions from backend`);
+      setPersistedSessions(sessions);
+      setSessionsLoaded(true);
+    } catch (err) {
+      console.warn("[Dashboard] Failed to load real sessions:", err);
+      setSessionsLoaded(true);
+    }
   }, []);
 
   useEffect(() => {
