@@ -1,14 +1,29 @@
 import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { LandingPage } from "./components/LandingPage";
-/* Route-based code splitting — heavy pages loaded on demand */
-const DesignSystemPage = lazy(() => import("./components/DesignSystemPage").then(m => ({ default: m.DesignSystemPage })));
-const PracticeSessionPage = lazy(() => import("./components/PracticeSessionPage").then(m => ({ default: m.PracticeSessionPage })));
-const DashboardPage = lazy(() => import("./components/DashboardPage").then(m => ({ default: m.DashboardPage })));
-const PracticeHistoryPage = lazy(() => import("./components/PracticeHistoryPage").then(m => ({ default: m.PracticeHistoryPage })));
-const AccountPage = lazy(() => import("./components/AccountPage").then(m => ({ default: m.AccountPage })));
-const LibraryPage = lazy(() => import("./components/LibraryPage").then(m => ({ default: m.LibraryPage })));
-const AdminDashboardPage = lazy(() => import("./components/AdminDashboardPage").then(m => ({ default: m.AdminDashboardPage })));
+/* ── Stale-chunk recovery for React.lazy after Vercel deploys ── */
+function lazyRetry(factory: () => Promise<any>) {
+  return lazy(() =>
+    factory().catch(() => {
+      // Chunk hash changed after deploy — force full page reload (once)
+      const reloaded = sessionStorage.getItem("chunk_reload");
+      if (!reloaded) {
+        sessionStorage.setItem("chunk_reload", "1");
+        window.location.reload();
+        return new Promise(() => {}); // never resolves — reload takes over
+      }
+      sessionStorage.removeItem("chunk_reload");
+      return factory(); // final attempt after reload
+    })
+  );
+}
+const DesignSystemPage = lazyRetry(() => import("./components/DesignSystemPage").then(m => ({ default: m.DesignSystemPage })));
+const PracticeSessionPage = lazyRetry(() => import("./components/PracticeSessionPage").then(m => ({ default: m.PracticeSessionPage })));
+const DashboardPage = lazyRetry(() => import("./components/DashboardPage").then(m => ({ default: m.DashboardPage })));
+const PracticeHistoryPage = lazyRetry(() => import("./components/PracticeHistoryPage").then(m => ({ default: m.PracticeHistoryPage })));
+const AccountPage = lazyRetry(() => import("./components/AccountPage").then(m => ({ default: m.AccountPage })));
+const LibraryPage = lazyRetry(() => import("./components/LibraryPage").then(m => ({ default: m.LibraryPage })));
+const AdminDashboardPage = lazyRetry(() => import("./components/AdminDashboardPage").then(m => ({ default: m.AdminDashboardPage })));
 import { LoadingScreen } from "./components/LoadingScreen";
 import { LanguageTransitionModal } from "./components/LanguageTransitionModal";
 import { authService } from "../services";
