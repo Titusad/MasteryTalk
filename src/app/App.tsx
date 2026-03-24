@@ -68,6 +68,7 @@ export default function App() {
     // Clear stale app-level hashes (but preserve Supabase #access_token fragments)
     const hash = window.location.hash;
     if (hash === "#design-system") return "design-system"; // keep design-system shortcut
+    if (hash === "#admin") return "admin"; // admin dashboard direct access
     if (["#dashboard", "#practice-session", "#practice-history"].includes(hash)) {
       window.location.hash = "";
     }
@@ -338,6 +339,9 @@ export default function App() {
           if (!window.location.hash || window.location.hash === "#" || window.location.hash === "#/") {
             setPage("dashboard");
             window.location.hash = "#dashboard";
+          } else if (window.location.hash === "#admin") {
+            // Admin direct access — page already set to admin, just ensure it stays
+            setPage("admin");
           }
         }
 
