@@ -1044,17 +1044,32 @@ app.post("/make-server-08b8658d/generate-interview-briefing", async (c) => {
 });
 
 // ═══════════════════════════════════════════════════════════════
-// TTS — Text-to-Speech via OpenAI gpt-4o-mini-tts
-// Accepts { text, role } where role controls voice & style instructions:
-//   "coach"     → engaged, energetic professional coach (coral voice)
-//   "user_line" → dynamic, confident executive delivery (coral voice)
-// Returns audio/mpeg stream
+// TTS — Text-to-Speech via ElevenLabs (streaming) with OpenAI fallback
+// Accepts { text, role } where role controls voice & style:
+//   "coach"     → engaged, energetic professional coach
+//   "user_line" → dynamic, confident executive delivery
+// Returns audio/mpeg stream (chunked transfer for low latency)
 // ══════════════════════════════════════════════════════════════
 
-/* OpenAI TTS voice profiles per role */
-const TTS_MODEL = "gpt-4o-mini-tts";
+/* ── ElevenLabs voice mapping ── */
+const ELEVENLABS_VOICES: Record<string, { voiceId: string; stability: number; similarity: number; style: number }> = {
+  coach: {
+    voiceId: "EXAVITQu4vr4xnSDxMaL", // "Sarah" — warm, professional female
+    stability: 0.35,      // lower = more expressive/dynamic
+    similarity: 0.80,
+    style: 0.45,           // higher = more stylistic variation
+  },
+  user_line: {
+    voiceId: "EXAVITQu4vr4xnSDxMaL", // Same voice for consistency
+    stability: 0.40,
+    similarity: 0.85,
+    style: 0.35,
+  },
+};
 
-const VOICE_PROFILES: Record<string, { voice: string; instructions: string }> = {
+/* ── OpenAI TTS fallback profiles ── */
+const TTS_MODEL = "gpt-4o-mini-tts";
+const OPENAI_VOICE_PROFILES: Record<string, { voice: string; instructions: string }> = {
   coach: {
     voice: "coral",
     instructions: "You are an enthusiastic and engaging executive English coach. Speak at a brisk, natural conversational pace — the way a sharp, energetic colleague would talk over coffee. Be warm and encouraging with genuine energy in your voice. Vary your intonation naturally: emphasize key words, use rising tones for questions, and let your voice convey real interest and excitement. Do NOT speak slowly or monotonically. Avoid long pauses. Sound like someone who genuinely loves helping people succeed — lively, articulate, and approachable.",
@@ -1072,15 +1087,67 @@ app.post("/make-server-08b8658d/tts", async (c) => {
       return c.json({ error: "Missing 'text' field for TTS" }, 400);
     }
 
-    const openaiKey = Deno.env.get("OPENAI_API_KEY");
-    if (!openaiKey) {
-      return c.json({ error: "OPENAI_API_KEY not configured on server" }, 500);
+    const effectiveRole = role === "user_line" ? "user_line" : "coach";
+    const elevenLabsKey = Deno.env.get("ELEVENLABS_API_KEY");
+
+    // ━━━ PRIMARY: ElevenLabs Streaming ━━━
+    if (elevenLabsKey) {
+      const profile = ELEVENLABS_VOICES[effectiveRole];
+      console.log(`[TTS ElevenLabs] voice=${profile.voiceId}, role=${effectiveRole}, chars=${text.length}`);
+
+      try {
+        const elRes = await fetch(
+          `https://api.elevenlabs.io/v1/text-to-speech/${profile.voiceId}/stream`,
+          {
+            method: "POST",
+            headers: {
+              "xi-api-key": elevenLabsKey,
+              "Content-Type": "application/json",
+              "Accept": "audio/mpeg",
+            },
+            body: JSON.stringify({
+              text,
+              model_id: "eleven_multilingual_v2",
+              voice_settings: {
+                stability: profile.stability,
+                similarity_boost: profile.similarity,
+                style: profile.style,
+                use_speaker_boost: true,
+              },
+            }),
+          },
+        );
+
+        if (elRes.ok && elRes.body) {
+          console.log(`[TTS ElevenLabs] ✅ Streaming started — role=${effectiveRole}`);
+          // Stream audio directly to client — no buffering for lowest latency
+          return new Response(elRes.body, {
+            status: 200,
+            headers: {
+              "Content-Type": "audio/mpeg",
+              "Transfer-Encoding": "chunked",
+              "Access-Control-Allow-Origin": "*",
+              "Cache-Control": "public, max-age=3600",
+            },
+          });
+        }
+
+        // ElevenLabs error — log and fall through to OpenAI
+        const errBody = await elRes.text();
+        console.warn(`[TTS ElevenLabs] ⚠️ Error ${elRes.status}: ${errBody.slice(0, 200)} — falling back to OpenAI`);
+      } catch (elErr) {
+        console.warn(`[TTS ElevenLabs] ⚠️ Fetch error: ${elErr} — falling back to OpenAI`);
+      }
     }
 
-    const effectiveRole = role === "user_line" ? "user_line" : "coach";
-    const profile = VOICE_PROFILES[effectiveRole];
+    // ━━━ FALLBACK: OpenAI gpt-4o-mini-tts ━━━
+    const openaiKey = Deno.env.get("OPENAI_API_KEY");
+    if (!openaiKey) {
+      return c.json({ error: "No TTS provider configured (ELEVENLABS_API_KEY and OPENAI_API_KEY both missing)" }, 500);
+    }
 
-    console.log(`[TTS OpenAI] model=${TTS_MODEL}, voice=${profile.voice}, role=${effectiveRole}, chars=${text.length}`);
+    const oaiProfile = OPENAI_VOICE_PROFILES[effectiveRole];
+    console.log(`[TTS OpenAI Fallback] model=${TTS_MODEL}, voice=${oaiProfile.voice}, role=${effectiveRole}, chars=${text.length}`);
 
     const ttsResponse = await fetch(
       "https://api.openai.com/v1/audio/speech",
@@ -1092,9 +1159,9 @@ app.post("/make-server-08b8658d/tts", async (c) => {
         },
         body: JSON.stringify({
           model: TTS_MODEL,
-          voice: profile.voice,
+          voice: oaiProfile.voice,
           input: text,
-          instructions: profile.instructions,
+          instructions: oaiProfile.instructions,
           response_format: "mp3",
         }),
       },
@@ -1102,14 +1169,12 @@ app.post("/make-server-08b8658d/tts", async (c) => {
 
     if (!ttsResponse.ok) {
       const errBody = await ttsResponse.text();
-      console.log(`[TTS OpenAI] Error ${ttsResponse.status}: ${errBody}`);
+      console.log(`[TTS OpenAI Fallback] Error ${ttsResponse.status}: ${errBody}`);
       return c.json({ error: `OpenAI TTS failed (${ttsResponse.status}): ${errBody}` }, 502);
     }
 
-    // Buffer the full audio before responding to avoid "connection closed before message completed"
-    // when the client disconnects mid-stream (e.g. user navigates away during TTS playback)
     const audioBuffer = await ttsResponse.arrayBuffer();
-    console.log(`[TTS OpenAI] ✅ Audio generated — voice=${profile.voice}, role=${effectiveRole}, size=${audioBuffer.byteLength} bytes`);
+    console.log(`[TTS OpenAI Fallback] ✅ Audio generated — voice=${oaiProfile.voice}, size=${audioBuffer.byteLength} bytes`);
 
     return new Response(audioBuffer, {
       status: 200,
@@ -1121,7 +1186,7 @@ app.post("/make-server-08b8658d/tts", async (c) => {
       },
     });
   } catch (err) {
-    console.log("[TTS OpenAI Error]", err);
+    console.log("[TTS Error]", err);
     return c.json({ error: `TTS failed: ${err}` }, 500);
   }
 });
