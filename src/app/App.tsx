@@ -8,6 +8,7 @@ const DashboardPage = lazy(() => import("./components/DashboardPage").then(m => 
 const PracticeHistoryPage = lazy(() => import("./components/PracticeHistoryPage").then(m => ({ default: m.PracticeHistoryPage })));
 const AccountPage = lazy(() => import("./components/AccountPage").then(m => ({ default: m.AccountPage })));
 const LibraryPage = lazy(() => import("./components/LibraryPage").then(m => ({ default: m.LibraryPage })));
+const AdminDashboardPage = lazy(() => import("./components/AdminDashboardPage").then(m => ({ default: m.AdminDashboardPage })));
 import { LoadingScreen } from "./components/LoadingScreen";
 import { LanguageTransitionModal } from "./components/LanguageTransitionModal";
 import { authService } from "../services";
@@ -32,7 +33,8 @@ type Page =
   | "dashboard"
   | "practice-history"
   | "account"
-  | "library";
+  | "library"
+  | "admin";
 
 /* ─── Shared flow state ─── */
 interface FlowState {
@@ -54,6 +56,9 @@ interface DevPreviewState {
 }
 
 export default function App() {
+  /* ─── Admin email whitelist ─── */
+  const ADMIN_EMAILS = ["mujicadavid@gmail.com", "tituscloud.enterprise@gmail.com"];
+
   /* ─── DEV MODE: sessionStorage keys for OAuth redirect recovery ─── */
   const OAUTH_PENDING_KEY = "influentia_oauth_pending";
   const PENDING_SETUP_KEY = "influentia_pending_setup";
@@ -384,6 +389,7 @@ export default function App() {
       else if (hash === "#practice-history") setPage("practice-history");
       else if (hash === "#account") setPage("account");
       else if (hash === "#library") setPage("library");
+      else if (hash === "#admin") setPage("admin");
       else setPage("landing");
     };
     window.addEventListener("hashchange", handleHash);
@@ -503,6 +509,11 @@ export default function App() {
     window.location.hash = "#library";
   };
 
+  const handleNavigateToAdmin = () => {
+    setPage("admin");
+    window.location.hash = "#admin";
+  };
+
   if (isInitializing) {
     return (
       <div className="w-full min-h-screen flex items-center justify-center bg-[#f8fafc]">
@@ -581,6 +592,11 @@ export default function App() {
           )}
           {page === "library" && (
             <LibraryPage
+              onBack={handleBackToDashboard}
+            />
+          )}
+          {page === "admin" && authUser && ADMIN_EMAILS.includes(authUser.email?.toLowerCase() || "") && (
+            <AdminDashboardPage
               onBack={handleBackToDashboard}
             />
           )}

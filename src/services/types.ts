@@ -508,6 +508,8 @@ export interface OnboardingProfile {
   cvSummary?: string;
   /** Original CV filename for display */
   cvFileName?: string;
+  /** Whether user consented to share anonymized professional profile */
+  cvConsentGiven?: boolean;
 }
 
 /* ── Before/After Comparison (Briefing Room) ── */

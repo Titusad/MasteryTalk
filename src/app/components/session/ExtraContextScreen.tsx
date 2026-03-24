@@ -386,6 +386,25 @@ function ExtraContextScreen({
                                     <div className="bg-white border border-[#e2e8f0] rounded-lg p-3 max-h-[120px] overflow-y-auto">
                                         <p className="text-xs text-[#314158] leading-relaxed">{cvSummary.slice(0, 500)}{cvSummary.length > 500 ? "..." : ""}</p>
                                     </div>
+                                    {/* CV Consent Checkbox */}
+                                    <label className="flex items-start gap-2.5 mt-4 cursor-pointer group">
+                                        <input
+                                            type="checkbox"
+                                            checked={userProfile?.cvConsentGiven || false}
+                                            onChange={(e) => {
+                                                if (onProfileUpdate) {
+                                                    onProfileUpdate({
+                                                        ...(userProfile || { industry: "", position: "", seniority: "" }),
+                                                        cvConsentGiven: e.target.checked,
+                                                    });
+                                                }
+                                            }}
+                                            className="mt-0.5 w-4 h-4 rounded border-[#d1d5db] text-[#6366f1] focus:ring-[#6366f1] accent-[#6366f1] cursor-pointer"
+                                        />
+                                        <span className="text-xs text-[#45556c] leading-relaxed group-hover:text-[#0f172b] transition-colors">
+                                            Autorizo a inFluentia a compartir mi perfil profesional de forma anónima con empresas aliadas.
+                                        </span>
+                                    </label>
                                 </div>
                             )}
 

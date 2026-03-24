@@ -2262,6 +2262,257 @@ app.post("/make-server-08b8658d/lesson-progress", async (c) => {
   }
 });
 
+/* ══════════════════════════════════════════════════════════════
+   ADMIN ENDPOINTS — Internal dashboard for inFluentia team
+   Protected by email whitelist (ADMIN_EMAILS env var)
+   ══════════════════════════════════════════════════════════════ */
+
+const ADMIN_EMAILS_RAW = Deno.env.get("ADMIN_EMAILS") || "";
+const ADMIN_EMAILS = ADMIN_EMAILS_RAW
+  ? ADMIN_EMAILS_RAW.split(",").map((e: string) => e.trim().toLowerCase())
+  : [];
+
+/** Middleware: require admin email */
+async function requireAdmin(c: any, next: any) {
+  try {
+    const authHeader = c.req.header("authorization") || "";
+    const token = authHeader.replace(/^Bearer\s+/i, "");
+    if (!token) return c.json({ error: "Unauthorized" }, 401);
+
+    const adminSupabase = createClient(
+      Deno.env.get("SUPABASE_URL"),
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),
+    );
+    const { data: { user }, error } = await adminSupabase.auth.getUser(token);
+    if (error || !user?.email) return c.json({ error: "Unauthorized" }, 401);
+
+    const email = user.email.toLowerCase();
+    if (!ADMIN_EMAILS.includes(email)) {
+      console.log(`[Admin] Access denied for ${email}`);
+      return c.json({ error: "Forbidden — not an admin" }, 403);
+    }
+
+    c.set("adminEmail", email);
+    await next();
+  } catch (err: any) {
+    console.log("[Admin] Auth error:", err);
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+}
+
+app.use("/admin/*", requireAdmin);
+
+/** GET /admin/users — List all user profiles with stats */
+app.get("/admin/users", async (c: any) => {
+  try {
+    const adminSupabase = createClient(
+      Deno.env.get("SUPABASE_URL"),
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),
+    );
+
+    const { data: profileRows, error } = await adminSupabase
+      .from("kv_store_4e8a5b39")
+      .select("key, value")
+      .like("key", "profile:%");
+    if (error) throw error;
+
+    const { data: { users: authUsers } } = await adminSupabase.auth.admin.listUsers();
+    const authMap = new Map();
+    for (const u of authUsers || []) {
+      authMap.set(u.id, {
+        email: u.email || "",
+        name: u.user_metadata?.full_name || u.user_metadata?.name || u.email?.split("@")[0] || "",
+        created_at: u.created_at || "",
+        last_sign_in_at: u.last_sign_in_at || "",
+      });
+    }
+
+    const users = (profileRows || []).map((row: any) => {
+      const userId = row.key.replace("profile:", "");
+      const profile = typeof row.value === "string" ? JSON.parse(row.value) : row.value;
+      const stats = profile.stats || {};
+      const auth = authMap.get(userId);
+      return {
+        id: userId,
+        email: auth?.email || profile.email || "",
+        displayName: auth?.name || profile.display_name || userId.slice(0, 8),
+        createdAt: auth?.created_at || profile.created_at || "",
+        lastSignIn: auth?.last_sign_in_at || "",
+        sessionsCount: stats.sessions_count || 0,
+        pillarScores: stats.pillarScores || null,
+        professionalProficiency: stats.professionalProficiency || null,
+        completedLessons: (stats.completedLessons || []).length,
+        cvSummary: profile.cvSummary ? profile.cvSummary.slice(0, 200) + "..." : null,
+        cvFileName: profile.cvFileName || null,
+        cvConsentGiven: profile.cvConsentGiven || false,
+        lastFeedbackAt: stats.lastFeedbackAt || null,
+      };
+    });
+
+    users.sort((a: any, b: any) => b.sessionsCount - a.sessionsCount);
+    return c.json({ users, total: users.length });
+  } catch (err: any) {
+    console.log("[Admin /users error]", err);
+    return c.json({ error: `Failed to list users: ${err}` }, 500);
+  }
+});
+
+/** GET /admin/users/:id — Full user detail with sessions & SR cards */
+app.get("/admin/users/:id", async (c: any) => {
+  try {
+    const userId = c.req.param("id");
+    const profileRaw = await kv.get(`profile:${userId}`);
+    const profile = profileRaw
+      ? (typeof profileRaw === "string" ? JSON.parse(profileRaw) : profileRaw)
+      : null;
+    if (!profile) return c.json({ error: "User not found" }, 404);
+
+    const sessions = await kv.getByPrefix(`session:${userId}:`);
+    const parsedSessions = sessions.map((s: any) =>
+      typeof s === "string" ? JSON.parse(s) : s
+    );
+
+    const srCards = await kv.getByPrefix(`sr:${userId}:`);
+    const parsedCards = srCards.map((card: any) =>
+      typeof card === "string" ? JSON.parse(card) : card
+    );
+
+    const adminSupabase = createClient(
+      Deno.env.get("SUPABASE_URL"),
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),
+    );
+    let authInfo: any = null;
+    try {
+      const { data: { user } } = await adminSupabase.auth.admin.getUserById(userId);
+      authInfo = {
+        email: user?.email || "",
+        displayName: user?.user_metadata?.full_name || user?.user_metadata?.name || "",
+        photoURL: user?.user_metadata?.avatar_url || "",
+        createdAt: user?.created_at || "",
+        lastSignIn: user?.last_sign_in_at || "",
+      };
+    } catch { /* user may not exist in auth */ }
+
+    return c.json({
+      user: {
+        id: userId,
+        ...authInfo,
+        stats: profile.stats || {},
+        cvSummary: profile.cvSummary || null,
+        cvFileName: profile.cvFileName || null,
+        cvConsentGiven: profile.cvConsentGiven || false,
+        plan: profile.plan || "free",
+      },
+      sessions: parsedSessions.sort((a: any, b: any) =>
+        new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+      ),
+      srCards: parsedCards,
+    });
+  } catch (err: any) {
+    console.log("[Admin /users/:id error]", err);
+    return c.json({ error: `Failed to get user: ${err}` }, 500);
+  }
+});
+
+/** GET /admin/kpis — Platform-wide aggregated metrics */
+app.get("/admin/kpis", async (c: any) => {
+  try {
+    const adminSupabase = createClient(
+      Deno.env.get("SUPABASE_URL"),
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),
+    );
+
+    const { data: profileRows } = await adminSupabase
+      .from("kv_store_4e8a5b39")
+      .select("key, value")
+      .like("key", "profile:%");
+
+    const { data: sessionRows } = await adminSupabase
+      .from("kv_store_4e8a5b39")
+      .select("key, value")
+      .like("key", "session:%");
+
+    const { data: { users: authUsers } } = await adminSupabase.auth.admin.listUsers();
+
+    const profiles = (profileRows || []).map((r: any) =>
+      typeof r.value === "string" ? JSON.parse(r.value) : r.value
+    );
+    const sessions = (sessionRows || []).map((r: any) => {
+      const val = typeof r.value === "string" ? JSON.parse(r.value) : r.value;
+      return { ...val, _key: r.key };
+    });
+
+    const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    const totalUsers = (authUsers || []).length;
+    const totalSessions = sessions.length;
+
+    const recentSessions = sessions.filter((s: any) =>
+      s.created_at && new Date(s.created_at) > sevenDaysAgo
+    );
+    const activeUserIds = new Set(
+      recentSessions.map((s: any) => s._key?.split(":")[1] || "").filter(Boolean)
+    );
+
+    const proficiencies = profiles
+      .map((p: any) => p.stats?.professionalProficiency)
+      .filter((p: any) => typeof p === "number");
+    const avgProficiency = proficiencies.length
+      ? Math.round(proficiencies.reduce((a: number, b: number) => a + b, 0) / proficiencies.length)
+      : 0;
+
+    const cvUploads = profiles.filter((p: any) => p.cvSummary).length;
+    const cvConsented = profiles.filter((p: any) => p.cvConsentGiven).length;
+
+    // Sessions per day (last 14 days)
+    const dailySessions: Record<string, number> = {};
+    for (let i = 0; i < 14; i++) {
+      const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+      dailySessions[d.toISOString().slice(0, 10)] = 0;
+    }
+    for (const s of sessions) {
+      if (s.created_at) {
+        const day = new Date(s.created_at).toISOString().slice(0, 10);
+        if (dailySessions[day] !== undefined) dailySessions[day]++;
+      }
+    }
+
+    // Avg pillar scores
+    const pillarAgg: Record<string, { sum: number; count: number }> = {};
+    for (const p of profiles) {
+      const scores = p.stats?.pillarScores;
+      if (scores) {
+        for (const [pillar, score] of Object.entries(scores)) {
+          if (!pillarAgg[pillar]) pillarAgg[pillar] = { sum: 0, count: 0 };
+          pillarAgg[pillar].sum += score as number;
+          pillarAgg[pillar].count++;
+        }
+      }
+    }
+    const avgPillarScores: Record<string, number> = {};
+    for (const [pillar, agg] of Object.entries(pillarAgg)) {
+      avgPillarScores[pillar] = Math.round(agg.sum / agg.count);
+    }
+
+    return c.json({
+      totalUsers,
+      totalSessions,
+      activeUsers7d: activeUserIds.size,
+      avgProficiency,
+      cvUploads,
+      cvConsented,
+      avgPillarScores,
+      sessionsPerDay: Object.entries(dailySessions)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([date, count]) => ({ date, count })),
+    });
+  } catch (err: any) {
+    console.log("[Admin /kpis error]", err);
+    return c.json({ error: `Failed to compute KPIs: ${err}` }, 500);
+  }
+});
+
 Deno.serve({
   onError(err) {
     const msg = String(err);
