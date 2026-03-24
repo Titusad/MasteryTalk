@@ -129,26 +129,8 @@ export function PracticeHistoryPage({
     loadHistory();
   }, []);
 
-  /* ─── Computed practices list (inject the latest session if available) ─── */
-  const realHistoryItems = persistedSessions.map(toPracticeHistoryItem);
-  const practices: EnrichedHistoryItem[] = firstPracticeScenario
-    ? [
-      {
-        title: firstPracticeScenario,
-        date: "Today",
-        duration: "8 min",
-        tag: firstPracticeInterlocutor || "Client",
-        beforeAfterHighlight: {
-          userOriginal:
-            "The main differentiator is that we offer bilingual support and integrations with local payment processors.",
-          professionalVersion:
-            "We’ve built a purpose-designed solution for the LATAM mid-market, with native bilingual capabilities and seamless integration into the local payment ecosystem.",
-          technique: "Value elevation",
-        },
-      },
-      ...realHistoryItems,
-    ]
-    : realHistoryItems;
+  /* Computed practices list (real sessions only) */
+  const practices: EnrichedHistoryItem[] = persistedSessions.map(toPracticeHistoryItem);
 
   /* ─── Stats summary ─── */
   const totalSessions = practices.length;
@@ -288,7 +270,7 @@ export function PracticeHistoryPage({
                             >
                               {practice.title}
                             </h4>
-                            {i === 0 && firstPracticeScenario && (
+                            {i === 0 && (
                               <span
                                 className="shrink-0 text-[10px] px-2 py-0.5 rounded-full bg-[#f0fdf4] text-[#16a34a] border border-[#bbf7d0]"
                                 style={{ fontWeight: 600 }}
