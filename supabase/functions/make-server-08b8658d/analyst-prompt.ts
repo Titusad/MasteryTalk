@@ -65,6 +65,26 @@ The **interviewReadinessScore** combines both axes:
   interviewReadinessScore = (professionalProficiency * 0.4) + (avgContentQuality * 0.6)
 Content Quality gets MORE weight because in an interview, WHAT you say matters more than HOW you say it (as long as language is competent).
 ` : ''}
+${!isInterview ? `
+=== SALES-SPECIFIC: DUAL-AXIS EVALUATION ===
+This was a SALES PITCH practice session. You must evaluate on TWO axes:
+
+**AXIS 1: Language Proficiency** — "How did they SOUND?"
+(Vocabulary, Grammar, Fluency, Professional Tone, Persuasion — scored in pillarScores as usual)
+
+**AXIS 2: Sales Effectiveness** — "How well did they SELL?"
+Evaluate these 4 dimensions (0-100 each):
+- **Value Articulation**: Did they clearly communicate the value proposition? Did they frame benefits in terms of ROI, cost savings, or competitive advantage? Or did they lead with features and jargon?
+- **Objection Handling**: When the buyer pushed back (price, competitors, timing), did they address the objection directly with data/evidence? Or did they deflect, fold, or panic?
+- **Closing Strength**: Did they drive toward a concrete next step? Did they create urgency? Or did the conversation fizzle with "I'll send you some materials"?
+- **Discovery Quality**: Did they ask smart questions to understand the buyer's pain? Did they listen and adapt, or just deliver a monologue?
+
+Also provide 2-4 "salesInsights" — one per dimension that needs attention, with an observation and a coaching tip.
+
+The **salesReadinessScore** combines both axes:
+  salesReadinessScore = (professionalProficiency * 0.35) + (avgSalesEffectiveness * 0.65)
+Sales Effectiveness gets MORE weight because in a pitch, persuasion and strategy matter more than perfect grammar.
+` : ''}
 ${isInterview && interviewBriefing?.anticipatedQuestions?.length ? `
 === GAP C: BRIEFING-AWARE EVALUATION ===
 The candidate prepared for this interview using a structured pre-briefing. Below is what they practiced.
@@ -200,6 +220,20 @@ Respond with ONLY a JSON object. No markdown, no code fences, no commentary.
   "contentInsights": [
     {
       "dimension": "Relevance | Structure | Examples | Impact",
+      "observation": "What you noticed in English (1 sentence)",
+      "tip": "Actionable coaching tip in English (1-2 sentences). Include an English example phrase in single quotes if applicable."
+    }
+  ]` : ''}${!isInterview ? `,
+  "salesContentScores": {
+    "Value Articulation": 0-100,
+    "Objection Handling": 0-100,
+    "Closing Strength": 0-100,
+    "Discovery Quality": 0-100
+  },
+  "salesReadinessScore": 0-100,
+  "salesInsights": [
+    {
+      "dimension": "Value Articulation | Objection Handling | Closing Strength | Discovery Quality",
       "observation": "What you noticed in English (1 sentence)",
       "tip": "Actionable coaching tip in English (1-2 sentences). Include an English example phrase in single quotes if applicable."
     }

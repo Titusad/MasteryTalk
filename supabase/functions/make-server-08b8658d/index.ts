@@ -265,6 +265,24 @@ app.put("/make-server-08b8658d/profile", async (c) => {
 });
 
 // ═══════════════════════════════════════════════════════════════
+// Interlocutor display names (human-readable labels for UI)
+// ═══════════════════════════════════════════════════════════════
+const INTERLOCUTOR_DISPLAY: Record<string, string> = {
+  recruiter: "Recruiter",
+  sme: "SME Expert",
+  hiring_manager: "Hiring Manager",
+  hr: "HR",
+  gatekeeper: "Gatekeeper",
+  technical_buyer: "Technical Buyer",
+  champion: "Champion",
+  decision_maker: "Decision Maker",
+};
+function displayLabel(interlocutor: string | null | undefined): string {
+  if (!interlocutor) return "AI";
+  return INTERLOCUTOR_DISPLAY[interlocutor] || interlocutor.charAt(0).toUpperCase() + interlocutor.slice(1).replace(/_/g, " ");
+}
+
+// ═══════════════════════════════════════════════════════════════
 // POST /sessions — Save a practice session
 // ═══════════════════════════════════════════════════════════════
 app.post("/make-server-08b8658d/sessions", async (c) => {
@@ -455,7 +473,7 @@ app.post("/make-server-08b8658d/prepare-session", async (c) => {
 
     const firstMessage = {
       role: "ai" as const,
-      label: interlocutor ? interlocutor.charAt(0).toUpperCase() + interlocutor.slice(1) : "Interviewer",
+      label: displayLabel(interlocutor),
       time: new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false }),
       text: firstAiText,
     };
@@ -514,7 +532,7 @@ app.post("/make-server-08b8658d/process-turn", async (c) => {
 
     if (session.isComplete) {
       return c.json({
-        aiMessage: { role: "ai", label: session.interlocutor || "AI", time: new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false }), text: "This conversation has concluded. Thank you for your time." },
+        aiMessage: { role: "ai", label: displayLabel(session.interlocutor), time: new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false }), text: "This conversation has concluded. Thank you for your time." },
         isComplete: true,
       });
     }
@@ -624,7 +642,7 @@ The user is performing well. Push them to their ceiling. Be more skeptical, dire
 
     const aiMessage = {
       role: "ai" as const,
-      label: session.interlocutor ? session.interlocutor.charAt(0).toUpperCase() + session.interlocutor.slice(1) : "AI",
+      label: displayLabel(session.interlocutor),
       time: new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false }),
       text: aiText,
     };
