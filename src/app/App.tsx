@@ -36,6 +36,7 @@ import type { LandingLang } from "./components/landing-i18n";
 import { CreditUpsellModal } from "./components/CreditUpsellModal";
 import { useUsageGating } from "./hooks/useUsageGating";
 import type { MarketFocus } from "../services/prompts";
+import { projectId } from "../../utils/supabase/info";
 import { DevPreviewMenu, getDevMockData } from "./components/DevPreviewMenu";
 import type { Step } from "./components/shared/session-types";
 import type { RealFeedbackData } from "./components/session/ConversationFeedback";
@@ -489,6 +490,30 @@ export default function App() {
     try {
       localStorage.setItem("influentia_profile", JSON.stringify(profile));
     } catch { /* ignore */ }
+
+    // Sync CV-related fields to backend KV store (fire-and-forget)
+    const kvFields: Record<string, unknown> = {};
+    if ("cvConsentGiven" in profile) kvFields.cvConsentGiven = profile.cvConsentGiven;
+    if ("cvSummary" in profile) kvFields.cvSummary = profile.cvSummary;
+    if ("cvFileName" in profile) kvFields.cvFileName = profile.cvFileName;
+
+    if (Object.keys(kvFields).length > 0) {
+      import("../services/supabase").then(({ getAuthToken }) => {
+        getAuthToken().then((token) => {
+          fetch(
+            `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/profile`,
+            {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify(kvFields),
+            }
+          ).catch(() => { /* silent — admin data sync only */ });
+        }).catch(() => { /* no auth token — skip sync */ });
+      });
+    }
   };
 
   const handlePracticeFinish = () => {

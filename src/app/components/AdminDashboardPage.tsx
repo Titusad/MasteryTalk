@@ -165,13 +165,19 @@ export function AdminDashboardPage({ onBack }: AdminDashboardPageProps) {
 
   useEffect(() => { loadData(); }, [loadData]);
 
+  const [detailLoading, setDetailLoading] = useState<string | null>(null);
+
   const handleViewUser = async (userId: string) => {
+    setDetailLoading(userId);
     try {
       const detail = await adminFetch(`/admin/users/${userId}`);
       setSelectedUser(detail);
       setView("detail");
     } catch (err: any) {
       console.error("Failed to load user detail:", err);
+      alert(`Failed to load user details: ${err.message || err}`);
+    } finally {
+      setDetailLoading(null);
     }
   };
 
@@ -439,8 +445,20 @@ export function AdminDashboardPage({ onBack }: AdminDashboardPageProps) {
                         : <XCircle size={14} color="#ef4444" />}
                     </td>
                     <td style={{ ...styles.td, textAlign: "center" }}>
-                      <button onClick={() => handleViewUser(u.id)} style={styles.viewBtn}>
-                        <Eye size={14} /> View
+                      <button
+                        onClick={() => handleViewUser(u.id)}
+                        disabled={detailLoading === u.id}
+                        style={{
+                          ...styles.viewBtn,
+                          opacity: detailLoading === u.id ? 0.6 : 1,
+                        }}
+                      >
+                        {detailLoading === u.id ? (
+                          <span style={{ display: "inline-block", width: 14, height: 14, border: "2px solid #818cf8", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.6s linear infinite" }} />
+                        ) : (
+                          <Eye size={14} />
+                        )}
+                        {detailLoading === u.id ? "Loading..." : "View"}
                       </button>
                     </td>
                   </tr>
