@@ -59,6 +59,8 @@ interface FlowState {
   interlocutor: string;
   scenarioType?: ScenarioType;
   guidedFields?: Record<string, string>;
+  progressionLevelId?: string;
+  progressionPathId?: "interview" | "sales";
 }
 
 /* ─── Dev Preview state ─── */
@@ -536,17 +538,17 @@ export default function App() {
     window.location.hash = "";
   };
 
-  const handleStartNewPractice = (scenario: string, scenarioType?: string) => {
+  const handleStartNewPractice = (scenario: string, scenarioType?: string, levelId?: string, interlocutor?: string) => {
     // DEV MODE: bypass usage gating — always allow
     if (scenarioType === "interview" || scenarioType === "sales") {
       // Dashboard → direct to practice-session (skip widget)
-      // No guidedFields: PracticeSessionPage will show role field in ExtraContext
-      const defaultInterlocutor = scenarioType === "interview" ? "recruiter" : "decision_maker";
+      const defaultInterlocutor = interlocutor || (scenarioType === "interview" ? "recruiter" : "decision_maker");
       setFlowState({
         scenario,
         interlocutor: defaultInterlocutor,
         scenarioType: scenarioType as ScenarioType,
-        // No guidedFields — signals "from Dashboard" flow
+        progressionLevelId: levelId,
+        progressionPathId: levelId ? (scenarioType as "interview" | "sales") : undefined,
       });
       setPage("practice-session");
       window.location.hash = "#practice-session";
@@ -610,6 +612,8 @@ export default function App() {
               interlocutor={flowState.interlocutor || "recruiter"}
               scenarioType={flowState.scenarioType || "interview"}
               guidedFields={flowState.guidedFields}
+              progressionLevelId={flowState.progressionLevelId}
+              progressionPathId={flowState.progressionPathId}
               marketFocus={marketFocus}
               onFinish={handlePracticeFinish}
               onNewPractice={handleNewPractice}

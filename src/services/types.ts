@@ -523,3 +523,43 @@ export interface BeforeAfterComparison {
   professionalVersion: string;
   technique: string;
 }
+
+/* ── Scenario Progression Tree ── */
+
+export type LevelStatus = "locked" | "unlocked" | "study" | "completed";
+
+export interface LevelState {
+  status: LevelStatus;
+  bestScore?: number;
+  attempts?: number;
+  remedialCompleted?: boolean;
+}
+
+export interface ProgressionState {
+  activeGoal: ScenarioType;
+  interview: Record<string, LevelState>;
+  sales: Record<string, LevelState>;
+}
+
+export interface RemedialLesson {
+  id: string;
+  title: string;
+  pillar: string;
+  content: string;
+  example: { wrong: string; correct: string };
+}
+
+export interface RemedialShadowingPhrase {
+  id: string;
+  phrase: string;
+  focus: string;
+}
+
+export interface RemedialContent {
+  generatedAt: string;
+  weakPillars: string[];
+  lessons: RemedialLesson[];
+  shadowingPhrases: RemedialShadowingPhrase[];
+  completedAt: string | null;
+  shadowingScore: number | null;
+}

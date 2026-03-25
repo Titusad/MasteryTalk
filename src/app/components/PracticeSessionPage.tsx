@@ -5,6 +5,9 @@ import { BrandLogo, AnalyzingScreen } from "./shared";
 import { realConversationService } from "../../services";
 import { toServiceError } from "../../services/errors";
 import type { ServiceError } from "../../services/errors";
+import type { RemedialContent } from "../../services/types";
+import { RemedialView } from "./progression/RemedialView";
+import { getLevelDefinition } from "./progression/progression-paths";
 import { ServiceErrorBanner } from "./shared/ServiceErrorBanner";
 import { getBeforeAfterForScenario, getStrengthsForScenario } from "../../services/scenario-data";
 import { useMediaRecorder } from "../hooks/useMediaRecorder";
@@ -64,6 +67,8 @@ interface PracticeSessionPageProps {
   interlocutor: string;
   scenarioType?: ScenarioType;
   guidedFields?: Record<string, string>;
+  progressionLevelId?: string;
+  progressionPathId?: "interview" | "sales";
   marketFocus?: string | null;
   onFinish: () => void;
   onNewPractice?: () => void;
@@ -117,6 +122,8 @@ export function PracticeSessionPage({
   interlocutor,
   scenarioType,
   guidedFields,
+  progressionLevelId,
+  progressionPathId,
   onFinish,
   onNewPractice,
   userPlan,
@@ -322,6 +329,9 @@ export function PracticeSessionPage({
 
   /** User drafts from "Your Response" tab — persisted for PDF generation */
   const [userDrafts, setUserDrafts] = useState<Record<number, string>>({});
+
+  /* Remedial content from progression complete-level API */
+  const [remedialContent, setRemedialContent] = useState<RemedialContent | null>(null);
 
   /* AI-generated preparation toolkit (power phrases, power questions, cultural tips) */
   const [preparationToolkit, setPreparationToolkit] = useState<{
@@ -1282,8 +1292,44 @@ export function PracticeSessionPage({
               <ConversationFeedback
                 scenarioType={scenarioType}
                 onGenerateReport={() => {
-                  fireSummaryGeneration();
-                  setStep("session-recap");
+                  // If progression level, go to remedial first
+                  if (progressionLevelId && progressionPathId) {
+                    // Call complete-level to record score + generate remedial
+                    const score = realFeedback?.professionalProficiency ?? 50;
+                    const pillarScores = realFeedback?.pillarScores ?? null;
+                    getAuthToken().then((token) => {
+                      fetch(
+                        `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/progression/complete-level`,
+                        {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`,
+                          },
+                          body: JSON.stringify({
+                            pathId: progressionPathId,
+                            levelId: progressionLevelId,
+                            score,
+                            pillarScores,
+                          }),
+                        },
+                      )
+                        .then((res) => res.json())
+                        .then((data) => {
+                          if (data.remedial) {
+                            setRemedialContent(data.remedial);
+                          }
+                          setStep("remedial");
+                        })
+                        .catch((err) => {
+                          console.error("[Progression] complete-level failed:", err);
+                          setStep("remedial");
+                        });
+                    });
+                  } else {
+                    fireSummaryGeneration();
+                    setStep("session-recap");
+                  }
                 }}
                 onPracticeAgain={handlePracticeAgain}
                 repeatInfo={repeatInfo}
@@ -1292,6 +1338,55 @@ export function PracticeSessionPage({
                 realFeedback={realFeedback}
                 pronunciationData={sessionPronData}
                 sessionId={sessionId}
+              />
+            )}
+            {step === "remedial" && progressionLevelId && progressionPathId && (
+              <RemedialView
+                remedial={remedialContent || {
+                  generatedAt: new Date().toISOString(),
+                  weakPillars: ["Fluency"],
+                  lessons: [{
+                    id: "loading",
+                    title: "Loading...",
+                    pillar: "General",
+                    content: "Your personalized lessons are being prepared.",
+                    example: { wrong: "...", correct: "..." },
+                  }],
+                  shadowingPhrases: [{
+                    id: "loading",
+                    phrase: "Loading your practice phrases...",
+                    focus: "General",
+                  }],
+                  completedAt: null,
+                  shadowingScore: null,
+                }}
+                levelTitle={getLevelDefinition(progressionPathId, progressionLevelId)?.title || "Practice"}
+                onComplete={(shadowingScore) => {
+                  // Call complete-remedial
+                  getAuthToken().then((token) => {
+                    fetch(
+                      `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/progression/complete-remedial`,
+                      {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                          Authorization: `Bearer ${token}`,
+                        },
+                        body: JSON.stringify({
+                          pathId: progressionPathId,
+                          levelId: progressionLevelId,
+                          shadowingScore,
+                        }),
+                      },
+                    )
+                      .then((r) => r.json())
+                      .then(() => onFinish())
+                      .catch(() => onFinish());
+                  });
+                }}
+                onRetry={() => {
+                  setStep("remedial");
+                }}
               />
             )}
             {step === "session-recap" && (

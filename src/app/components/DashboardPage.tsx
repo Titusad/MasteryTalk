@@ -42,6 +42,7 @@ import type { PersistedSession } from "../../services/adapters/supabase/dashboar
 import { SpacedRepetitionCard } from "./SpacedRepetitionCard";
 import { LessonModal } from "./LessonModal";
 import { getRecommendedLessons, isLessonComplete, syncLessonProgress } from "../../services/microLessons";
+import { ProgressionTree } from "./progression/ProgressionTree";
 
 /* ─── Types ─── */
 interface DashboardPageProps {
@@ -51,7 +52,7 @@ interface DashboardPageProps {
   onLogout?: () => void;
   onNavigateToHistory?: () => void;
   onNavigateToAccount?: () => void;
-  onStartNewPractice?: (scenario: string, scenarioType?: string) => void;
+  onStartNewPractice?: (scenario: string, scenarioType?: string, levelId?: string, interlocutor?: string) => void;
   userProfile?: import("../../services/types").OnboardingProfile | null;
   onProfileUpdate?: (
     profile: import("../../services/types").OnboardingProfile
@@ -615,9 +616,9 @@ export function DashboardPage({
   const [lessonModalIndex, setLessonModalIndex] = useState(0);
   const recommendedLessons = useMemo(() => getRecommendedLessons(radarData), [radarData]);
 
-  const handleStartSession = async (scenario: string, scenarioType?: string) => {
+  const handleStartSession = async (scenario: string, scenarioType?: string, levelId?: string, interlocutor?: string) => {
     // DEV MODE: bypass credit/session gate — always allow
-    onStartNewPractice?.(scenario, scenarioType);
+    onStartNewPractice?.(scenario, scenarioType, levelId, interlocutor);
   };
 
   const handlePurchaseComplete = (
@@ -881,102 +882,22 @@ export function DashboardPage({
 
 
         {/* ═══════════════════════════════════════════════════════════
-            SECTION 3: QUICK START + RECENT SESSIONS
+            SECTION 3: PROGRESSION TREE + RECENT SESSIONS
             ═══════════════════════════════════════════════════════════ */}
         <div className="grid lg:grid-cols-2 gap-6 mb-8">
-          {/* Quick start cards */}
-          <motion.div
-            className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-5"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <h3
-              className="text-sm text-[#0f172b] mb-4"
-              style={{ fontWeight: 600 }}
-            >
-              {dc.quickStart.title}
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {(
-                [
-                  {
-                    id: "interview",
-                    label: dc.quickStart.interviewLabel,
-                    description: dc.quickStart.interviewDesc,
-                    icon: Mic,
-                    disabled: false,
-                  },
-                  {
-                    id: "sales",
-                    label: dc.quickStart.salesLabel,
-                    description: dc.quickStart.salesDesc,
-                    icon: Target,
-                    disabled: false,
-                  },
-                ] as const
-              ).map((card) => {
-                const Icon = card.icon;
-                return (
-                  <motion.button
-                    key={card.id}
-                    onClick={() => !card.disabled && handleStartSession(card.label, card.id)}
-                    className={`group/card relative rounded-xl p-5 text-left transition-all duration-300 ${
-                      card.disabled
-                        ? "bg-white border-2 border-gray-100 opacity-60 cursor-not-allowed"
-                        : "bg-[#f8fafc] hover:bg-[#0f172b] border-2 border-[#e2e8f0] hover:border-[#0f172b] cursor-pointer"
-                    }`}
-                    whileHover={card.disabled ? undefined : { scale: 1.02, y: -2 }}
-                    whileTap={card.disabled ? undefined : { scale: 0.98 }}
-                  >
-                    <div className={`w-9 h-9 rounded-full flex items-center justify-center mb-3 transition-colors duration-300 ${
-                      card.disabled
-                        ? "bg-gray-100"
-                        : "bg-[#0f172b] group-hover/card:bg-white"
-                    }`}>
-                      <Icon
-                        className={`w-4 h-4 transition-colors duration-300 ${
-                          card.disabled
-                            ? "text-gray-400"
-                            : "text-white group-hover/card:text-[#0f172b]"
-                        }`}
-                        strokeWidth={1.5}
-                      />
-                    </div>
-                    <div className="flex items-center justify-between mb-1">
-                      <p
-                        className={`text-sm transition-colors duration-300 ${
-                          card.disabled
-                            ? "text-gray-500"
-                            : "text-[#0f172b] group-hover/card:text-white"
-                        }`}
-                        style={{ fontWeight: 600 }}
-                      >
-                        {card.label}
-                      </p>
-                      {card.disabled && (
-                        <span className="text-[10px] uppercase font-bold tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
-                          Coming Soon
-                        </span>
-                      )}
-                    </div>
-                    <p className={`text-xs leading-relaxed transition-colors duration-300 pr-8 ${
-                      card.disabled
-                        ? "text-gray-400"
-                        : "text-[#62748e] group-hover/card:text-white/70"
-                    }`}>
-                      {card.description}
-                    </p>
-                    {!card.disabled && (
-                      <div className="absolute top-4 right-4 w-7 h-7 rounded-full bg-transparent group-hover/card:bg-white/15 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-all duration-300">
-                        <ArrowRight className="w-3.5 h-3.5 text-white" />
-                      </div>
-                    )}
-                  </motion.button>
-                );
-              })}
-            </div>
-          </motion.div>
+          {/* Progression Tree (replaces Quick Start) */}
+          <ProgressionTree
+            onStartLevel={(scenario, scenarioType, levelId, interlocutor) => {
+              handleStartSession(scenario, scenarioType, levelId, interlocutor);
+            }}
+            onContinueStudy={(pathId, levelId) => {
+              handleStartSession(
+                pathId === "interview" ? "Interview Practice" : "Sales Practice",
+                pathId,
+                levelId,
+              );
+            }}
+          />
 
           {/* ── Recent Sessions ── */}
           <motion.div

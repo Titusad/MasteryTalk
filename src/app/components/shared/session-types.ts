@@ -10,4 +10,5 @@ export type Step =
   | "practice"
   | "analyzing"
   | "conversation-feedback"
+  | "remedial"
   | "session-recap";

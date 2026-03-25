@@ -2611,6 +2611,293 @@ app.get("/make-server-08b8658d/admin/kpis", async (c: any) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════════
+// Progression Tree — GET /progression
+// Fetch user's progression state from KV
+// ═══════════════════════════════════════════════════════════════
+app.get("/make-server-08b8658d/progression", async (c) => {
+  try {
+    const user = await getAuthUser(c.req.header("Authorization"));
+    if (!user) return c.json({ error: "Unauthorized" }, 401);
+
+    const raw = await kv.get(`progression:${user.id}`);
+    if (!raw) {
+      // Return default state — Level 1 unlocked in both paths
+      const defaultState = {
+        activeGoal: "interview",
+        interview: {
+          "int-1": { status: "unlocked" },
+          "int-2": { status: "locked" },
+          "int-3": { status: "locked" },
+          "int-4": { status: "locked" },
+        },
+        sales: {
+          "sal-1": { status: "unlocked" },
+          "sal-2": { status: "locked" },
+          "sal-3": { status: "locked" },
+          "sal-4": { status: "locked" },
+        },
+      };
+      return c.json(defaultState);
+    }
+
+    // KV stores JSON as string
+    const state = typeof raw === "string" ? JSON.parse(raw) : raw;
+    return c.json(state);
+  } catch (err) {
+    console.log("[Progression GET] Error:", err);
+    return c.json({ error: `Failed to fetch progression: ${err}` }, 500);
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// Progression Tree — POST /progression/complete-level
+// Record level score + generate AI remedial content via GPT-4o-mini
+// ═══════════════════════════════════════════════════════════════
+app.post("/make-server-08b8658d/progression/complete-level", async (c) => {
+  try {
+    const user = await getAuthUser(c.req.header("Authorization"));
+    if (!user) return c.json({ error: "Unauthorized" }, 401);
+
+    const { pathId, levelId, score, pillarScores, transcript } = await c.req.json();
+    if (!pathId || !levelId) {
+      return c.json({ error: "Missing pathId or levelId" }, 400);
+    }
+
+    const numScore = typeof score === "number" ? Math.round(score) : 0;
+
+    // 1. Update progression state
+    const progRaw = await kv.get(`progression:${user.id}`);
+    const state = progRaw
+      ? (typeof progRaw === "string" ? JSON.parse(progRaw) : progRaw)
+      : {
+          activeGoal: pathId,
+          interview: {
+            "int-1": { status: "unlocked" }, "int-2": { status: "locked" },
+            "int-3": { status: "locked" }, "int-4": { status: "locked" },
+          },
+          sales: {
+            "sal-1": { status: "unlocked" }, "sal-2": { status: "locked" },
+            "sal-3": { status: "locked" }, "sal-4": { status: "locked" },
+          },
+        };
+
+    const pathState = state[pathId] || {};
+    const current = pathState[levelId] || { status: "unlocked" };
+    const attempts = (current.attempts || 0) + 1;
+    const bestScore = Math.max(current.bestScore || 0, numScore);
+
+    pathState[levelId] = {
+      ...current,
+      status: "study" as const,
+      bestScore,
+      attempts,
+      remedialCompleted: false,
+    };
+    state[pathId] = pathState;
+    state.activeGoal = pathId;
+    await kv.set(`progression:${user.id}`, JSON.stringify(state));
+
+    // 2. Generate or return cached remedial content
+    const remedialKey = `remedial:${user.id}:${levelId}`;
+    const existingRemedial = await kv.get(remedialKey);
+
+    if (existingRemedial) {
+      const cached = typeof existingRemedial === "string" ? JSON.parse(existingRemedial) : existingRemedial;
+      console.log(`[Progression] Returning cached remedial for ${levelId}`);
+      return c.json({ state, remedial: cached });
+    }
+
+    // 3. Generate remedial via GPT-4o-mini
+    const weakPillars: string[] = [];
+    if (pillarScores && typeof pillarScores === "object") {
+      const entries = Object.entries(pillarScores as Record<string, number>)
+        .filter(([, v]) => typeof v === "number")
+        .sort((a, b) => (a[1] as number) - (b[1] as number));
+      // Take bottom 2 pillars (weakest areas)
+      for (const [pillar] of entries.slice(0, 2)) {
+        weakPillars.push(pillar);
+      }
+    }
+    if (weakPillars.length === 0) weakPillars.push("Fluency", "Grammar");
+
+    const levelTitles: Record<string, string> = {
+      "int-1": "Phone Screen", "int-2": "Behavioral Round",
+      "int-3": "Technical Discussion", "int-4": "Salary Negotiation",
+      "sal-1": "Discovery Call", "sal-2": "Product Demo",
+      "sal-3": "Objection Handling", "sal-4": "Close the Deal",
+    };
+    const levelTitle = levelTitles[levelId] || levelId;
+
+    const remedialPrompt = `You are a professional English communication coach. A user just completed a "${levelTitle}" practice session and scored ${numScore}% overall.
+
+Their weakest communication pillars are: ${weakPillars.join(", ")}.
+${transcript ? `\nBrief transcript excerpt: "${transcript.slice(0, 500)}"` : ""}
+
+Generate personalized remedial content in JSON format:
+{
+  "lessons": [
+    {
+      "id": "lesson-1",
+      "title": "Short lesson title (4-6 words)",
+      "pillar": "Which pillar this addresses",
+      "content": "2-3 sentences explaining the specific issue observed and how to fix it. Reference their actual performance.",
+      "example": {
+        "wrong": "Example of what the user said or would say incorrectly",
+        "correct": "The improved professional version"
+      }
+    }
+  ],
+  "shadowingPhrases": [
+    {
+      "id": "shd-1",
+      "phrase": "A professional English phrase (8-15 words) targeting the weak pillar",
+      "focus": "Which pillar this targets"
+    }
+  ]
+}
+
+Generate exactly 2-3 lessons and 3-5 shadowing phrases. Make them specific to a ${pathId === "interview" ? "job interview" : "B2B sales"} context.
+All content must be in English.`;
+
+    let remedialData;
+    try {
+      const openaiKey = Deno.env.get("OPENAI_API_KEY");
+      if (!openaiKey) throw new Error("OPENAI_API_KEY not configured");
+
+      const res = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${openaiKey}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [{ role: "user", content: remedialPrompt }],
+          temperature: 0.7,
+          max_tokens: 1200,
+          response_format: { type: "json_object" },
+        }),
+      });
+
+      if (!res.ok) {
+        const errBody = await res.text();
+        throw new Error(`GPT-4o-mini ${res.status}: ${errBody.slice(0, 200)}`);
+      }
+
+      const aiData = await res.json();
+      const content = aiData.choices?.[0]?.message?.content || "{}";
+      const parsed = JSON.parse(content);
+
+      remedialData = {
+        generatedAt: new Date().toISOString(),
+        weakPillars,
+        lessons: parsed.lessons || [],
+        shadowingPhrases: parsed.shadowingPhrases || [],
+        completedAt: null,
+        shadowingScore: null,
+      };
+    } catch (aiErr) {
+      console.log("[Progression] GPT-4o-mini remedial generation failed:", aiErr);
+      // Fallback: generic remedial content
+      remedialData = {
+        generatedAt: new Date().toISOString(),
+        weakPillars,
+        lessons: weakPillars.map((pillar, i) => ({
+          id: `lesson-${i + 1}`,
+          title: `Strengthen Your ${pillar}`,
+          pillar,
+          content: `Focus on improving your ${pillar.toLowerCase()} skills. Pay attention to how native speakers structure their ${pillar.toLowerCase()} in professional contexts.`,
+          example: {
+            wrong: "I think that... um... we could maybe...",
+            correct: "Based on my experience, I recommend we...",
+          },
+        })),
+        shadowingPhrases: [
+          { id: "shd-1", phrase: "In my experience leading cross-functional teams, I've found that...", focus: weakPillars[0] },
+          { id: "shd-2", phrase: "I'd like to walk you through my approach to solving this challenge.", focus: weakPillars[0] },
+          { id: "shd-3", phrase: "The key takeaway from that project was the importance of clear communication.", focus: weakPillars[1] || weakPillars[0] },
+        ],
+        completedAt: null,
+        shadowingScore: null,
+      };
+    }
+
+    await kv.set(remedialKey, JSON.stringify(remedialData));
+    console.log(`[Progression] ✅ Level ${levelId} completed (score: ${numScore}), remedial generated`);
+
+    return c.json({ state, remedial: remedialData });
+  } catch (err) {
+    console.log("[Progression complete-level] Error:", err);
+    return c.json({ error: `Failed to complete level: ${err}` }, 500);
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// Progression Tree — POST /progression/complete-remedial
+// Record shadowing score, unlock next level if ≥ 60%
+// ═══════════════════════════════════════════════════════════════
+app.post("/make-server-08b8658d/progression/complete-remedial", async (c) => {
+  try {
+    const user = await getAuthUser(c.req.header("Authorization"));
+    if (!user) return c.json({ error: "Unauthorized" }, 401);
+
+    const { pathId, levelId, shadowingScore } = await c.req.json();
+    if (!pathId || !levelId || typeof shadowingScore !== "number") {
+      return c.json({ error: "Missing pathId, levelId, or shadowingScore" }, 400);
+    }
+
+    const passed = shadowingScore >= 60;
+
+    // 1. Update remedial record
+    const remedialKey = `remedial:${user.id}:${levelId}`;
+    const remedialRaw = await kv.get(remedialKey);
+    if (remedialRaw) {
+      const remedial = typeof remedialRaw === "string" ? JSON.parse(remedialRaw) : remedialRaw;
+      remedial.shadowingScore = shadowingScore;
+      if (passed) remedial.completedAt = new Date().toISOString();
+      await kv.set(remedialKey, JSON.stringify(remedial));
+    }
+
+    // 2. Update progression state
+    const progRaw = await kv.get(`progression:${user.id}`);
+    if (!progRaw) return c.json({ error: "No progression state found" }, 404);
+
+    const state = typeof progRaw === "string" ? JSON.parse(progRaw) : progRaw;
+    const pathState = state[pathId];
+    if (!pathState) return c.json({ error: `Path ${pathId} not found` }, 404);
+
+    if (passed) {
+      // Mark current level as completed
+      pathState[levelId] = {
+        ...pathState[levelId],
+        status: "completed",
+        remedialCompleted: true,
+      };
+
+      // Unlock next level
+      const levelOrder: Record<string, string> = {
+        "int-1": "int-2", "int-2": "int-3", "int-3": "int-4",
+        "sal-1": "sal-2", "sal-2": "sal-3", "sal-3": "sal-4",
+      };
+      const nextId = levelOrder[levelId];
+      if (nextId && pathState[nextId]?.status === "locked") {
+        pathState[nextId] = { ...pathState[nextId], status: "unlocked" };
+      }
+
+      state[pathId] = pathState;
+      await kv.set(`progression:${user.id}`, JSON.stringify(state));
+      console.log(`[Progression] ✅ Remedial passed for ${levelId} (score: ${shadowingScore}). ${nextId ? `Level ${nextId} unlocked.` : "Path complete!"}`);
+    }
+
+    return c.json({ passed, state, nextLevelUnlocked: passed ? true : false });
+  } catch (err) {
+    console.log("[Progression complete-remedial] Error:", err);
+    return c.json({ error: `Failed to complete remedial: ${err}` }, 500);
+  }
+});
+
+
 Deno.serve({
   onError(err) {
     const msg = String(err);
