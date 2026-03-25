@@ -152,9 +152,20 @@ function computeRadarFromSessions(
     const backendScores =
       s.summary?.pillarScores || s.feedback?.pillarScores;
     if (backendScores && Object.keys(backendScores).length >= 4) {
+      // Pronunciation is scored by Azure Speech (not GPT), so it may be
+      // missing from pillarScores. Estimate it from the average of other
+      // pillars when absent.
+      const withPronunciation = { ...backendScores };
+      if (!withPronunciation["Pronunciation"] && withPronunciation["Pronunciation"] !== 0) {
+        const otherScores = Object.values(withPronunciation).filter((v) => typeof v === "number" && v > 0);
+        if (otherScores.length > 0) {
+          const avg = otherScores.reduce((a, b) => a + b, 0) / otherScores.length;
+          withPronunciation["Pronunciation"] = Math.round(avg * 0.9); // slight penalty since it's estimated
+        }
+      }
       return PILLAR_NAMES.map((skill) => ({
         skill,
-        score: backendScores[skill] ?? 0,
+        score: withPronunciation[skill] ?? 0,
         fullMark: 100,
       }));
     }
@@ -1376,6 +1387,8 @@ export function DashboardPage({
                     dataKey="skill"
                     tick={({ payload, x, y, textAnchor }: any) => {
                       const label = payload.value as string;
+                      const entry = radarData.find((d) => d.skill === label);
+                      const pct = entry && entry.score > 0 ? `${Math.round(entry.score)}%` : "";
                       if (label === "Professional Tone") {
                         return (
                           <text
@@ -1391,6 +1404,11 @@ export function DashboardPage({
                             <tspan x={x} dy="12">
                               Tone
                             </tspan>
+                            {pct && (
+                              <tspan x={x} dy="12" fontWeight={600} fill="#6366f1" fontSize={11}>
+                                {pct}
+                              </tspan>
+                            )}
                           </text>
                         );
                       }
@@ -1402,7 +1420,12 @@ export function DashboardPage({
                           fontSize={10}
                           fill="#62748e"
                         >
-                          {label}
+                          <tspan x={x} dy="0">{label}</tspan>
+                          {pct && (
+                            <tspan x={x} dy="13" fontWeight={600} fill="#6366f1" fontSize={11}>
+                              {pct}
+                            </tspan>
+                          )}
                         </text>
                       );
                     }}
