@@ -25,16 +25,25 @@
 
 import { projectId, publicAnonKey } from "../../../utils/supabase/info";
 
-/** Get the authenticated user's JWT token (or fall back to anon key) */
+/** Get the authenticated user's JWT token (or fall back to anon key).
+ *  Reads directly from localStorage to avoid getSession() mutex deadlock
+ *  and to prevent aggressive token-clearing side effects from getAuthToken(). */
 async function getToken(): Promise<string> {
     try {
-        const { getSupabaseClient } = await import("../../services/supabase");
-        const supabase = getSupabaseClient();
-        const { data: { session } } = await supabase.auth.getSession();
-        return session?.access_token || publicAnonKey;
-    } catch {
-        return publicAnonKey;
-    }
+        // Read Supabase auth token directly from localStorage (instant, no network)
+        const storageKey = Object.keys(localStorage).find(
+            (k) => k.startsWith("sb-") && k.endsWith("-auth-token")
+        );
+        if (storageKey) {
+            const raw = localStorage.getItem(storageKey);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                const token = parsed?.access_token || parsed?.currentSession?.access_token;
+                if (token) return token;
+            }
+        }
+    } catch { /* ignore parse errors */ }
+    return publicAnonKey;
 }
 
 /* -- Types -- */
