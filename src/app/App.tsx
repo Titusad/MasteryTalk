@@ -80,12 +80,29 @@ export default function App() {
   const PENDING_SETUP_KEY = "influentia_pending_setup";
 
   const [page, setPage] = useState<Page>(() => {
-    // DEV MODE: always start from landing.
-    // Clear stale app-level hashes (but preserve Supabase #access_token fragments)
     const hash = window.location.hash;
-    if (hash === "#design-system") return "design-system"; // keep design-system shortcut
-    if (hash === "#admin") return "admin"; // admin dashboard direct access
-    if (["#dashboard", "#practice-session", "#practice-history"].includes(hash)) {
+    if (hash === "#design-system") return "design-system";
+    if (hash === "#admin") return "admin";
+
+    // For authenticated app pages, check if there's a Supabase session
+    // in localStorage. If so, respect the hash so users stay on their
+    // current page across refreshes and lazy-load remounts.
+    const AUTH_PAGES: Record<string, Page> = {
+      "#dashboard": "dashboard",
+      "#practice-session": "practice-session",
+      "#practice-history": "practice-history",
+      "#account": "account",
+      "#library": "library",
+    };
+    if (AUTH_PAGES[hash]) {
+      // Quick check: does a Supabase session exist in localStorage?
+      const hasSession = Object.keys(localStorage).some(
+        (k) => k.startsWith("sb-") && k.endsWith("-auth-token")
+      );
+      if (hasSession) {
+        return AUTH_PAGES[hash];
+      }
+      // No session → clear hash and go to landing
       window.location.hash = "";
     }
     return "landing";
