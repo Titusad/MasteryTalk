@@ -9,6 +9,7 @@
 import { motion } from "motion/react";
 import { Check } from "lucide-react";
 import type { Step } from "./shared/session-types";
+import { useProgressionLevel } from "./shared/ProgressionContext";
 
 /* ── Phase definitions ── */
 
@@ -44,13 +45,24 @@ function getPhaseIndex(step: Step): number {
 
 interface SessionProgressBarProps {
   currentStep: Step;
+  progressionLevelTitle?: string;
 }
 
-export function SessionProgressBar({ currentStep }: SessionProgressBarProps) {
+export function SessionProgressBar({ currentStep, progressionLevelTitle }: SessionProgressBarProps) {
   const currentPhaseIdx = getPhaseIndex(currentStep);
-
+  const contextLevelTitle = useProgressionLevel();
+  const levelTitle = progressionLevelTitle || contextLevelTitle;
   return (
-    <div className="flex items-center gap-0 w-full pb-6 pt-2">
+    <div className="flex flex-col items-center gap-0 w-full pb-6 pt-2">
+      {levelTitle && (
+        <div
+          className="mb-3 px-3 py-1 rounded-full bg-[#0f172b] text-white text-[11px]"
+          style={{ fontWeight: 600, letterSpacing: "0.02em" }}
+        >
+          {levelTitle}
+        </div>
+      )}
+      <div className="flex items-center gap-0 w-full">
       {PHASES.map((phase, idx) => {
         const isCompleted = idx < currentPhaseIdx;
         const isCurrent = idx === currentPhaseIdx;
@@ -133,6 +145,7 @@ export function SessionProgressBar({ currentStep }: SessionProgressBarProps) {
           </div>
         );
       })}
+      </div>
     </div>
   );
 }

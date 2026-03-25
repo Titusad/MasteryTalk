@@ -170,7 +170,9 @@ export function LandingPage({
               ) : (
                 <>
                   <button className="text-[#4B505B] hover:text-gray-900 text-sm transition-colors" onClick={() => openAuth("login")}>{copy.nav.login}</button>
-                  <button className="bg-[#2d2d2d] text-white text-sm px-6 py-2.5 rounded-full hover:bg-[#1a1a1a] transition-colors" onClick={() => openAuth("registro")}>
+                  <button className="bg-[#2d2d2d] text-white text-sm px-6 py-2.5 rounded-full hover:bg-[#1a1a1a] transition-colors" onClick={() => {
+                    document.querySelector('#hero')?.scrollIntoView({ behavior: 'smooth' });
+                  }}>
                     {copy.nav.register}
                   </button>
                 </>
@@ -203,7 +205,7 @@ export function LandingPage({
                   </button>
                 </>
               ) : (
-                <button className="w-full bg-[#2d2d2d] text-white py-3 rounded-full mt-2" style={{ fontWeight: 500 }} onClick={() => openAuth("registro")}>{copy.nav.register}</button>
+                <button className="w-full bg-[#2d2d2d] text-white py-3 rounded-full mt-2" style={{ fontWeight: 500 }} onClick={() => { setMobileMenuOpen(false); document.querySelector('#hero')?.scrollIntoView({ behavior: 'smooth' }); }}>{copy.nav.register}</button>
               )}
             </div>
           )}
@@ -220,7 +222,7 @@ export function LandingPage({
           >
 
             {/* ═══════════════ HERO ═══════════════ */}
-            <section className="bg-[#f0f4f8] pt-20 md:pt-[126px] pb-20 md:pb-28 overflow-hidden relative">
+            <section id="hero" className="bg-[#f0f4f8] pt-20 md:pt-[126px] pb-20 md:pb-28 overflow-hidden relative">
               {/* ── Abstract pastel blobs ── */}
               <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
                 <div className="absolute -top-20 -left-24 w-[420px] h-[420px] rounded-full opacity-60" style={{ background: "#FFE9C7", filter: "blur(80px)" }} />

@@ -8,6 +8,7 @@ import type { ServiceError } from "../../services/errors";
 import type { RemedialContent } from "../../services/types";
 import { RemedialView } from "./progression/RemedialView";
 import { getLevelDefinition } from "./progression/progression-paths";
+import { ProgressionProvider } from "./shared/ProgressionContext";
 import { ServiceErrorBanner } from "./shared/ServiceErrorBanner";
 import { getBeforeAfterForScenario, getStrengthsForScenario } from "../../services/scenario-data";
 import { useMediaRecorder } from "../hooks/useMediaRecorder";
@@ -346,8 +347,14 @@ export function PracticeSessionPage({
     cvMatchCacheV2.get(sKey) ? "success" : "idle"
   );
 
+  /* Ref-based AbortController to cancel previous generation when a new one starts */
+  const briefingAbortRef = useRef<AbortController | null>(null);
+
   /* ── Script / Briefing generation: call Edge Function ── */
   const fireScriptGeneration = useCallback(async (extraData?: Record<string, string>) => {
+    // Abort any in-flight generation before starting a new one
+    briefingAbortRef.current?.abort("superseded");
+
     setScriptGenStatus("loading");
     setScriptGenError(null);
     setGeneratedScript(null);
@@ -361,12 +368,13 @@ export function PracticeSessionPage({
     if (scenarioType === "interview") {
       const briefingUrl = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/generate-interview-briefing`;
 
+      const iController = new AbortController();
+      briefingAbortRef.current = iController;
+      const iTimeout = setTimeout(() => iController.abort("timeout_40s"), 40_000);
+
       try {
         const token = await getAuthToken();
         if (!token) throw new Error("No auth token available");
-
-        const iController = new AbortController();
-        const iTimeout = setTimeout(() => iController.abort(), 40_000);
 
         const res = await fetch(briefingUrl, {
           method: "POST",
@@ -407,6 +415,12 @@ export function PracticeSessionPage({
         interviewBriefingCache.set(sKey, briefing);
         setScriptGenStatus("ready");
       } catch (err) {
+        clearTimeout(iTimeout);
+        // Silently ignore aborts — they're expected during navigation and StrictMode
+        if (err instanceof DOMException && err.name === "AbortError") {
+          console.log("[InterviewBriefing] ℹ️ Aborted (expected during navigation)");
+          return;
+        }
         const msg = err instanceof Error ? err.message : String(err);
         console.error("[InterviewBriefing] ❌ Failed:", msg);
         setScriptGenError(msg);
@@ -977,7 +991,15 @@ export function PracticeSessionPage({
     };
   }, [step]);
 
+  const progressionLevelDef = progressionLevelId && progressionPathId
+    ? getLevelDefinition(progressionPathId, progressionLevelId)
+    : null;
+  const progressionLevelTitle = progressionLevelDef
+    ? `${progressionPathId === "interview" ? "Interview" : "Sales"} - Level ${progressionLevelDef.level}: ${progressionLevelDef.title}`
+    : null;
+
   return (
+    <ProgressionProvider value={{ levelTitle: progressionLevelTitle }}>
     <div className="size-full flex flex-col" style={{ fontFamily: "'Inter', sans-serif" }}>
       {/* Persistent header: BrandLogo + user profile */}
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-[#e2e8f0] shrink-0">
@@ -1454,5 +1476,6 @@ export function PracticeSessionPage({
         creditsRemaining={usageGating.credits}
       />
     </div>
+    </ProgressionProvider>
   );
 }

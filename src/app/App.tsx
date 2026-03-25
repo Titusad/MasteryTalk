@@ -290,11 +290,14 @@ export default function App() {
 
             try {
               const setup = JSON.parse(pendingRaw);
+              const sType = setup.scenarioType || "interview";
               setFlowState({
                 scenario: setup.scenario || "",
                 interlocutor: setup.interlocutor || "recruiter",
-                scenarioType: setup.scenarioType || "interview",
+                scenarioType: sType,
                 guidedFields: setup.guidedFields,
+                progressionPathId: sType === "interview" ? "interview" : "sales",
+                progressionLevelId: sType === "interview" ? "int-1" : "sal-1",
               });
 
               // Show language modal (or skip for EN users)
@@ -462,11 +465,18 @@ export default function App() {
       return;
     }
 
+    // Map scenarioType → progression path + Level 1 (default for new users)
+    // PracticeSessionPage will upgrade to the highest unlocked level on mount
+    const pathId = data.scenarioType === "interview" ? "interview" : "sales";
+    const defaultLevelId = data.scenarioType === "interview" ? "int-1" : "sal-1";
+
     setFlowState({
       scenario: data.scenario,
       interlocutor: data.interlocutor,
       scenarioType: data.scenarioType,
       guidedFields: data.guidedFields,
+      progressionPathId: pathId,
+      progressionLevelId: defaultLevelId,
     });
 
     pendingSetupRef.current = data;

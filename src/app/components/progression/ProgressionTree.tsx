@@ -8,7 +8,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Lock, Unlock, BookOpen, CheckCircle2, ChevronRight, Trophy, Sparkles } from "lucide-react";
+import { Lock, Unlock, BookOpen, CheckCircle2, ChevronRight, Sparkles } from "lucide-react";
 import {
   PROGRESSION_PATHS,
   getDefaultProgressionState,
@@ -117,12 +117,6 @@ export function ProgressionTree({ onStartLevel, onContinueStudy }: ProgressionTr
     >
       {/* Header + Tabs */}
       <div className="px-5 pt-5 pb-0">
-        <div className="flex items-center gap-2 mb-4">
-          <Trophy className="w-5 h-5 text-[#f59e0b]" />
-          <h3 className="text-base text-[#0f172b]" style={{ fontWeight: 700 }}>
-            Your Learning Path
-          </h3>
-        </div>
 
         {/* Tab Switcher */}
         <div className="flex gap-1 p-1 bg-[#f1f5f9] rounded-xl mb-1">
