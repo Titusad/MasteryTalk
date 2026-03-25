@@ -25,6 +25,18 @@
 
 import { projectId, publicAnonKey } from "../../../utils/supabase/info";
 
+/** Get the authenticated user's JWT token (or fall back to anon key) */
+async function getToken(): Promise<string> {
+    try {
+        const { getSupabaseClient } = await import("../../services/supabase");
+        const supabase = getSupabaseClient();
+        const { data: { session } } = await supabase.auth.getSession();
+        return session?.access_token || publicAnonKey;
+    } catch {
+        return publicAnonKey;
+    }
+}
+
 /* -- Types -- */
 
 export interface SpacedRepetitionPhrase {
@@ -200,8 +212,9 @@ export function archiveStale(
 
 export async function fetchSRPhrases(): Promise<SpacedRepetitionPhrase[]> {
     try {
+        const token = await getToken();
         const res = await fetch(`${SERVER_BASE}/spaced-repetition`, {
-            headers: { Authorization: `Bearer ${publicAnonKey}` },
+            headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) {
             console.warn("[SR] Failed to fetch phrases:", res.status);
@@ -219,11 +232,12 @@ export async function saveSRPhrases(
     phrases: SpacedRepetitionPhrase[]
 ): Promise<boolean> {
     try {
+        const token = await getToken();
         const res = await fetch(`${SERVER_BASE}/spaced-repetition`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${publicAnonKey}`,
+                Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({ phrases }),
         });
