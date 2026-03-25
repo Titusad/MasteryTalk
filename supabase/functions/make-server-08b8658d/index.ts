@@ -2402,7 +2402,7 @@ async function requireAdmin(c: any, next: any) {
 
 app.use("/make-server-08b8658d/admin/*", requireAdmin);
 
-/** GET /admin/users — List all user profiles with stats */
+/** GET /admin/users — List ALL registered users (Auth) with KV profile stats */
 app.get("/make-server-08b8658d/admin/users", async (c: any) => {
   try {
     const adminSupabase = createClient(
@@ -2416,28 +2416,26 @@ app.get("/make-server-08b8658d/admin/users", async (c: any) => {
       .like("key", "profile:%");
     if (error) throw error;
 
-    const { data: { users: authUsers } } = await adminSupabase.auth.admin.listUsers();
-    const authMap = new Map();
-    for (const u of authUsers || []) {
-      authMap.set(u.id, {
-        email: u.email || "",
-        name: u.user_metadata?.full_name || u.user_metadata?.name || u.email?.split("@")[0] || "",
-        created_at: u.created_at || "",
-        last_sign_in_at: u.last_sign_in_at || "",
-      });
-    }
-
-    const users = (profileRows || []).map((row: any) => {
+    // Build a map of KV profiles keyed by userId
+    const profileMap = new Map();
+    for (const row of profileRows || []) {
       const userId = row.key.replace("profile:", "");
       const profile = typeof row.value === "string" ? JSON.parse(row.value) : row.value;
+      profileMap.set(userId, profile);
+    }
+
+    // Iterate over ALL Auth users (the complete set)
+    const { data: { users: authUsers } } = await adminSupabase.auth.admin.listUsers();
+
+    const users = (authUsers || []).map((u: any) => {
+      const profile = profileMap.get(u.id) || {};
       const stats = profile.stats || {};
-      const auth = authMap.get(userId);
       return {
-        id: userId,
-        email: auth?.email || profile.email || "",
-        displayName: auth?.name || profile.display_name || userId.slice(0, 8),
-        createdAt: auth?.created_at || profile.created_at || "",
-        lastSignIn: auth?.last_sign_in_at || "",
+        id: u.id,
+        email: u.email || "",
+        displayName: u.user_metadata?.full_name || u.user_metadata?.name || u.email?.split("@")[0] || "",
+        createdAt: u.created_at || "",
+        lastSignIn: u.last_sign_in_at || "",
         sessionsCount: stats.sessions_count || 0,
         pillarScores: stats.pillarScores || null,
         professionalProficiency: stats.professionalProficiency || null,
