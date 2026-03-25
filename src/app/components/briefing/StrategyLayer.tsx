@@ -23,9 +23,10 @@ interface StrategyLayerProps {
     suggestedOpener?: string;
     framework?: { name: string; description: string };
     pivot?: string;
+    isSales?: boolean;
 }
 
-export function StrategyLayer({ why, approach, suggestedOpener, framework, pivot }: StrategyLayerProps) {
+export function StrategyLayer({ why, approach, suggestedOpener, framework, pivot, isSales }: StrategyLayerProps) {
     const [frameworkOpen, setFrameworkOpen] = useState(false);
 
     return (
@@ -42,7 +43,7 @@ export function StrategyLayer({ why, approach, suggestedOpener, framework, pivot
                 </div>
                 <div className="flex-1 min-w-0">
                     <p className="text-[10px] text-[#6366f1] uppercase tracking-wider mb-1.5" style={{ fontWeight: 600 }}>
-                        Why they ask this
+                        {isSales ? "Why this matters" : "Why they ask this"}
                     </p>
                     <p className="text-sm text-[#314158] leading-relaxed">{why}</p>
                 </div>
@@ -58,7 +59,7 @@ export function StrategyLayer({ why, approach, suggestedOpener, framework, pivot
                     <div className="flex items-center gap-2 mb-3">
                         <MessageSquareQuote className="w-4 h-4 text-[#6366f1]" />
                         <p className="text-[10px] text-[#6366f1] uppercase tracking-wider" style={{ fontWeight: 600 }}>
-                            You could start with something like…
+                            {isSales ? "Say something like…" : "You could start with something like…"}
                         </p>
                     </div>
                     <p
@@ -103,8 +104,8 @@ export function StrategyLayer({ why, approach, suggestedOpener, framework, pivot
                         </div>
                     )}
 
-                    {/* Fallback: if no framework, show approach as subtle hint */}
-                    {!framework && suggestedOpener && approach && (
+                    {/* Fallback: if no framework, show approach as subtle hint — only if non-empty and different from opener */}
+                    {!framework && approach && approach !== suggestedOpener && (
                         <p className="mt-3 text-xs text-[#62748e] leading-relaxed">
                             {approach}
                         </p>

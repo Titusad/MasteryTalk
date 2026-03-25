@@ -329,7 +329,6 @@ export function SessionReport({
            ═══════════════════════════════════════════════ */}
         {!embedded && (
           <PageTitleBlock
-            icon={<Trophy className="w-8 h-8 text-white" />}
             title="Session Report"
             subtitle={overallSentiment ? overallSentiment : `Your complete ${scenarioLabel} practice report.`}
           >
@@ -631,7 +630,7 @@ export function SessionReport({
           >
             {/* Subtitle */}
             <p className="text-xs text-[#94a3b8] -mt-4 mb-5">
-              {pronScores.turnCount} turn{pronScores.turnCount !== 1 ? "s" : ""} analyzed by Azure Speech AI
+              {pronScores.turnCount} turn{pronScores.turnCount !== 1 ? "s" : ""} · AI pronunciation analysis
             </p>
 
             {/* Score gauges row */}

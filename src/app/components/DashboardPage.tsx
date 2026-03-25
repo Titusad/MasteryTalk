@@ -442,7 +442,7 @@ export function DashboardPage({
   onNavigateToHistory,
   onNavigateToAccount,
   onStartNewPractice,
-  lang = "es",
+  lang = "en",
   onNavigateToLibrary,
 }: DashboardPageProps) {
   const avatarInitials = userName
@@ -469,7 +469,7 @@ export function DashboardPage({
   const fetchRealSessions = useCallback(async () => {
     try {
       const sessions = await fetchSessions();
-      console.log(`[Dashboard] Loaded ${sessions.length} real sessions from backend`);
+      
       setPersistedSessions(sessions);
       setSessionsLoaded(true);
     } catch (err) {
@@ -700,13 +700,13 @@ export function DashboardPage({
                   authService.signOut().catch(() => { });
                   onLogout?.();
                 }}
-                title="Cerrar sesión"
+                title="Sign out"
               >
                 <LogOut className="w-5 h-5" />
               </button>
               <div
                 className="w-10 h-10 rounded-full bg-[#0f172b] flex items-center justify-center cursor-pointer"
-                title="Mi cuenta"
+                title="My account"
                 onClick={() => onNavigateToAccount?.()}
               >
                 <span
@@ -730,8 +730,8 @@ export function DashboardPage({
               className="text-2xl md:text-3xl text-[#0f172b]"
               style={{ fontWeight: 300 }}
             >
-              Hola{" "}
-              <span style={{ fontWeight: 500 }}>{userName && userName.trim().length > 0 ? userName.trim().split(" ")[0] : "Explorador"}</span>
+              Hello{" "}
+              <span style={{ fontWeight: 500 }}>{userName && userName.trim().length > 0 ? userName.trim().split(" ")[0] : "Explorer"}</span>
             </h2>
             <p className="text-sm text-[#62748e] mt-1">
               {hasRealData
@@ -912,7 +912,7 @@ export function DashboardPage({
                     label: dc.quickStart.salesLabel,
                     description: dc.quickStart.salesDesc,
                     icon: Target,
-                    disabled: true,
+                    disabled: false,
                   },
                 ] as const
               ).map((card) => {
@@ -956,7 +956,7 @@ export function DashboardPage({
                       </p>
                       {card.disabled && (
                         <span className="text-[10px] uppercase font-bold tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
-                          Próximamente
+                          Coming Soon
                         </span>
                       )}
                     </div>

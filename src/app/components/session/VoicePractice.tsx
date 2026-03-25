@@ -855,7 +855,8 @@ function VoicePractice({
                   <AnimatePresence>
                     {isLatestAiMsg &&
                       trySaying &&
-                      aiFullyRevealed && (
+                      aiFullyRevealed &&
+                      !isConversationComplete && (
                         <motion.div
                           key="try-saying"
                           className="mt-3 w-full bg-[#f0fdf4] border border-[#b9f8cf] rounded-xl px-4 py-3 overflow-hidden"

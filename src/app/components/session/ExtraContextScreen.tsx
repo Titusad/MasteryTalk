@@ -63,20 +63,6 @@ const EXTRA_CONTEXT_FIELDS: Record<
                 "Decision-maker is the CFO, budget cycle ends Q4",
             ],
         },
-        {
-            label: "Your deck or talking points",
-            placeholder:
-                "The main value propositions, pricing structure, case studies, or differentiators from your pitch...",
-            hint: "The AI will align the conversation with your actual material so you practice what you'll really say",
-            pasteHint:
-                "Paste your slide titles and key bullet points — no need for the full deck",
-            suggestions: [
-                "3 main slides: Problem → Solution → ROI",
-                "Key differentiator: 40% faster implementation",
-                "Case study: similar client saved $200K/year",
-                "Pricing: $15K/year, includes onboarding",
-            ],
-        },
     ],
     csuite: [],
     negotiation: [],
@@ -114,8 +100,10 @@ function ExtraContextScreen({
         return {};
     });
 
-    /* ── CV Upload state (interview only) ── */
+    /* ── PDF Upload state (interview: CV, sales: deck) ── */
     const isInterview = scenarioType === "interview";
+    const isSales = scenarioType === "sales";
+    const showUpload = isInterview || isSales;
     const [cvFile, setCvFile] = useState<File | null>(null);
 
     const initialCvSummary = (() => {
@@ -125,7 +113,7 @@ function ExtraContextScreen({
                 if (saved && JSON.parse(saved).cvSummary) return JSON.parse(saved).cvSummary;
             } catch (e) {}
         }
-        return userProfile?.cvSummary ?? "";
+        return isInterview ? (userProfile?.cvSummary ?? "") : isSales ? (userProfile?.deckSummary ?? "") : "";
     })();
     
     const initialCvFileName = (() => {
@@ -135,7 +123,7 @@ function ExtraContextScreen({
                 if (saved && JSON.parse(saved).cvFileName) return JSON.parse(saved).cvFileName;
             } catch (e) {}
         }
-        return userProfile?.cvFileName ?? "";
+        return isInterview ? (userProfile?.cvFileName ?? "") : isSales ? (userProfile?.deckFileName ?? "") : "";
     })();
 
     const [cvSummary, setCvSummary] = useState<string>(initialCvSummary);
@@ -189,6 +177,7 @@ function ExtraContextScreen({
         try {
             const formData = new FormData();
             formData.append("file", file);
+            formData.append("type", isSales ? "deck" : "cv");
 
             const url = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/process-cv`;
             const res = await fetch(url, {
@@ -207,12 +196,14 @@ function ExtraContextScreen({
             setCvSummary(summary);
             setCvStatus("done");
 
-            // Persist to profile
+            // Persist to profile — scoped per scenario
             if (onProfileUpdate && summary) {
+                const profilePatch = isInterview
+                    ? { cvSummary: summary, cvFileName: file.name }
+                    : { deckSummary: summary, deckFileName: file.name };
                 onProfileUpdate({
                     ...(userProfile || { industry: "", position: "", seniority: "" }),
-                    cvSummary: summary,
-                    cvFileName: file.name,
+                    ...profilePatch,
                 });
             }
         } catch (err: any) {
@@ -267,8 +258,8 @@ function ExtraContextScreen({
         >
             <PastelBlobs />
 
-            <main className="relative w-full max-w-[768px] mx-auto px-6 pt-12 pb-20">
-                <div className="w-full mb-12">
+            <main className="relative w-full max-w-[768px] mx-auto px-6 pt-6 pb-20">
+                <div className="w-full mb-5">
                     <SessionProgressBar currentStep="extra-context" />
                 </div>
                 <motion.div
@@ -277,27 +268,24 @@ function ExtraContextScreen({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
                 >
-                    <div className="inline-flex items-center gap-2 bg-[#eff6ff] border border-[#bfdbfe] rounded-full px-4 py-2 mb-6">
-                        <FileText className="w-4 h-4 text-[#3b82f6]" />
-                        <span className="text-sm text-[#1e40af]" style={{ fontWeight: 500 }}>
-                            Context
-                        </span>
-                    </div>
+
                     <h1
-                        className="text-3xl md:text-[40px] text-[#0f172b] mb-3"
+                        className="text-2xl md:text-[28px] text-[#0f172b] mb-2"
                         style={{ fontWeight: 300, lineHeight: 1.2 }}
                     >
                         Add context for your {label}
                     </h1>
-                    <p className="text-[#45556c] text-base md:text-lg max-w-lg mx-auto">
+                    <p className="text-[#45556c] text-sm md:text-base max-w-lg mx-auto">
                         {isInterview
                             ? "Upload your CV or paste the job description so the AI can create a realistic, personalized simulation."
-                            : "Fill in at least one field so the AI can create a realistic, personalized simulation."}
+                            : isSales
+                                ? "Upload your sales deck or paste key talking points so the AI can challenge you with realistic buyer objections."
+                                : "Fill in at least one field so the AI can create a realistic, personalized simulation."}
                     </p>
                 </motion.div>
 
-                {/* ═══ CV UPLOAD ZONE (interview only) ═══ */}
-                {isInterview && (
+                {/* ═══ PDF UPLOAD ZONE (interview: CV, sales: deck) ═══ */}
+                {showUpload && (
                     <motion.div
                         className="mb-8"
                         initial={{ opacity: 0, y: 12 }}
@@ -309,12 +297,14 @@ function ExtraContextScreen({
                             <div className="flex items-start justify-between mb-3">
                                 <label className="flex items-center gap-1.5">
                                     <span className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
-                                        Upload your CV / Resume
+                                        {isInterview ? "Upload your CV / Resume" : "Upload your Sales Deck"}
                                     </span>
                                     <span className="relative group cursor-help">
                                         <Info className="w-3.5 h-3.5 text-[#94a3b8] group-hover:text-[#0f172b] transition-colors" />
                                         <span className="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-64 rounded-xl bg-[#0f172b] text-white text-xs px-3 py-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-lg z-50" style={{ lineHeight: "1.45" }}>
-                                            Your CV is processed by GPT-4o to extract key experience. The original file is not stored — only the summary.
+                                            {isInterview
+                                                ? "Your CV is processed by AI to extract key experience. The original file is not stored — only the summary."
+                                                : "Your deck is processed by AI to extract key points. The original file is not stored — only the summary."}
                                             <span className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-[5px] border-x-transparent border-t-[5px] border-t-[#0f172b]" />
                                         </span>
                                     </span>
@@ -344,7 +334,7 @@ function ExtraContextScreen({
                                 >
                                     <Upload className={`w-8 h-8 mx-auto mb-3 ${isDragging ? "text-[#6366f1]" : "text-[#94a3b8]"}`} />
                                     <p className="text-sm text-[#0f172b]" style={{ fontWeight: 500 }}>
-                                        {isDragging ? "Drop your PDF here" : "Drag & drop your CV here"}
+                                        {isDragging ? "Drop your PDF here" : isInterview ? "Drag & drop your CV here" : "Drag & drop your deck here"}
                                     </p>
                                     <p className="text-xs text-[#62748e] mt-1">
                                         or <span className="text-[#6366f1] underline">click to browse</span> — PDF only
@@ -356,10 +346,10 @@ function ExtraContextScreen({
                                 <div className="w-full border border-[#e2e8f0] rounded-xl p-8 text-center bg-[#f8fafc]">
                                     <Loader2 className="w-8 h-8 mx-auto mb-3 text-[#6366f1] animate-spin" />
                                     <p className="text-sm text-[#0f172b]" style={{ fontWeight: 500 }}>
-                                        Processing your CV with AI...
+                                        {isInterview ? "Processing your CV with AI..." : "Processing your deck with AI..."}
                                     </p>
                                     <p className="text-xs text-[#62748e] mt-1">
-                                        Extracting key experience, skills, and career highlights
+                                        {isInterview ? "Extracting key experience, skills, and career highlights" : "Extracting value propositions, pricing, and key talking points"}
                                     </p>
                                 </div>
                             )}
@@ -369,7 +359,7 @@ function ExtraContextScreen({
                                     <div className="flex items-center justify-between mb-3">
                                         <div className="flex items-center gap-2">
                                             <CheckCircle2 className="w-4 h-4 text-[#16a34a]" />
-                                            <span className="text-sm text-[#15803d]" style={{ fontWeight: 600 }}>CV processed successfully</span>
+                                            <span className="text-sm text-[#15803d]" style={{ fontWeight: 600 }}>{isInterview ? "CV processed successfully" : "Deck processed successfully"}</span>
                                         </div>
                                         <button
                                             onClick={clearCv}
@@ -383,10 +373,11 @@ function ExtraContextScreen({
                                         <FileText className="w-3.5 h-3.5 text-[#45556c]" />
                                         <span className="text-xs text-[#45556c]" style={{ fontWeight: 500 }}>{cvFileName}</span>
                                     </div>
-                                    <div className="bg-white border border-[#e2e8f0] rounded-lg p-3 max-h-[120px] overflow-y-auto">
-                                        <p className="text-xs text-[#314158] leading-relaxed">{cvSummary.slice(0, 500)}{cvSummary.length > 500 ? "..." : ""}</p>
+                                    <div className="bg-white border border-[#e2e8f0] rounded-lg p-3 max-h-[160px] overflow-y-auto">
+                                        <p className="text-xs text-[#314158] leading-relaxed whitespace-pre-wrap">{cvSummary}</p>
                                     </div>
-                                    {/* CV Consent Checkbox */}
+                                    {/* CV Consent Checkbox (interview only) */}
+                                    {isInterview && (
                                     <label className="flex items-start gap-2.5 mt-4 cursor-pointer group">
                                         <input
                                             type="checkbox"
@@ -405,6 +396,7 @@ function ExtraContextScreen({
                                             I authorize receiving job offers based on my professional profile.
                                         </span>
                                     </label>
+                                    )}
                                 </div>
                             )}
 
@@ -431,17 +423,19 @@ function ExtraContextScreen({
                                 <>
                                     <div className="flex items-center gap-3 my-4">
                                         <div className="flex-1 h-px bg-[#e2e8f0]" />
-                                        <span className="text-xs text-[#94a3b8]" style={{ fontWeight: 500 }}>or paste your experience</span>
+                                        <span className="text-xs text-[#94a3b8]" style={{ fontWeight: 500 }}>{isInterview ? "or paste your experience" : "or paste your talking points"}</span>
                                         <div className="flex-1 h-px bg-[#e2e8f0]" />
                                     </div>
                                     <div className="flex items-center gap-1.5 mb-3 text-xs text-[#62748e]">
                                         <ClipboardPaste className="w-3 h-3 shrink-0" />
-                                        <span>Copy-paste key highlights from your CV or LinkedIn profile</span>
+                                        <span>{isInterview ? "Copy-paste key highlights from your CV or LinkedIn profile" : "Copy-paste key bullet points from your pitch deck"}</span>
                                     </div>
                                     <textarea
                                         value={manualExperience}
                                         onChange={(e) => setManualExperience(e.target.value)}
-                                        placeholder="e.g. 8 years in product management, led a team of 12 at a Series B fintech, launched 3 products with $2M+ ARR..."
+                                        placeholder={isInterview
+                                            ? "e.g. 8 years in product management, led a team of 12 at a Series B fintech, launched 3 products with $2M+ ARR..."
+                                            : "e.g. Our SaaS reduces onboarding time by 60%, pricing starts at $499/mo, 200+ enterprise customers including Stripe and Shopify..."}
                                         className="w-full h-[110px] bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-4 text-[#0f172b] placeholder:text-[#94a3b8] focus:outline-none focus:border-[#0f172b] focus:bg-white transition-all resize-none"
                                         style={{ fontSize: "14px", lineHeight: "22px" }}
                                     />
@@ -544,7 +538,7 @@ function ExtraContextScreen({
                         {cvStatus === "uploading" ? (
                             <>
                                 <Loader2 className="w-5 h-5 animate-spin" />
-                                Processing CV...
+                                {isSales ? "Processing Deck..." : "Processing CV..."}
                             </>
                         ) : (
                             <>

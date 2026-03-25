@@ -2050,6 +2050,9 @@ app.post("/make-server-08b8658d/process-cv", async (c) => {
 
     console.log(`[ProcessCV] Received file: ${file.name} (${file.size} bytes, type: ${file.type})`);
 
+    // Detect document type from form field (default: cv)
+    const docType = (formData.get("type") as string) || "cv";
+
     // Read file as base64
     const arrayBuffer = await file.arrayBuffer();
     const base64 = btoa(
@@ -2073,7 +2076,19 @@ app.post("/make-server-08b8658d/process-cv", async (c) => {
         messages: [
           {
             role: "system",
-            content: `You are a CV/resume parser. Extract the key professional information from the uploaded PDF and return a concise summary in English that includes:
+            content: docType === "deck"
+              ? `You are a sales deck content extractor. Extract ALL the actual content and data from this presentation PDF. Return the full text organized by slide or section. Include:
+- Slide titles and all bullet points verbatim
+- Statistics, metrics, and data points (revenue, growth %, customer counts, etc.)
+- Value propositions and key messaging
+- Pricing information, plans, or packages
+- Case studies, testimonials, and social proof
+- Product features and differentiators
+- Competitive comparisons
+- Call to action and next steps
+
+Do NOT summarize or interpret — extract the actual content as written in the deck. Preserve numbers, names, and specific claims. Organize by slide/section with clear headers. Be thorough — include everything.`
+              : `You are a CV/resume parser. Extract the key professional information from the uploaded PDF and return a concise summary in English that includes:
 - Current/most recent role and company
 - Years of experience
 - Key skills and technologies
@@ -2081,7 +2096,7 @@ app.post("/make-server-08b8658d/process-cv", async (c) => {
 - Education highlights
 - Industries worked in
 
-Format as a clean, readable paragraph (not bullet points). Keep it under 300 words. Focus on information relevant for job interviews.`,
+Format as a clean, readable paragraph (not bullet points). Keep it under 500 words. Focus on information relevant for job interviews.`,
           },
           {
             role: "user",
@@ -2095,13 +2110,15 @@ Format as a clean, readable paragraph (not bullet points). Keep it under 300 wor
               },
               {
                 type: "text",
-                text: "Please extract and summarize the key professional information from this CV/resume.",
+                text: docType === "deck"
+                  ? "Extract ALL the content from this sales/pitch deck. Include every slide's text, data points, and key information."
+                  : "Please extract and summarize the key professional information from this CV/resume.",
               },
             ],
           },
         ],
-        max_tokens: 800,
-        temperature: 0.3,
+        max_tokens: 2000,
+        temperature: 0.2,
       }),
     });
 

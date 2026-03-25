@@ -30,6 +30,7 @@ import {
     PageTitleBlock,
 } from "./shared";
 import type { InterviewBriefingData } from "../../services/types";
+import type { ScenarioType } from "../../services/types";
 import { BriefingCarousel } from "./briefing/BriefingCarousel";
 import { ReadinessScore } from "./briefing/ReadinessScore";
 import { SessionProgressBar } from "./SessionProgressBar";
@@ -52,6 +53,7 @@ interface InterviewBriefingScreenProps {
     onStartSimulation: (userDrafts: Record<number, string>) => void;
     onBack: () => void;
     scenario?: string;
+    scenarioType?: ScenarioType;
 }
 
 /* ── Main Screen ── */
@@ -61,6 +63,7 @@ export function InterviewBriefingScreen({
     onStartSimulation,
     onBack,
     scenario,
+    scenarioType,
 }: InterviewBriefingScreenProps) {
     /* Carousel state lifted here so ReadinessScore can access it */
     const [completedCards, setCompletedCards] = useState<Set<number>>(new Set());
@@ -104,15 +107,17 @@ export function InterviewBriefingScreen({
         >
             <PastelBlobs />
 
-            <main className="relative w-full max-w-[800px] mx-auto px-4 sm:px-6 pt-10 pb-20">
-                <div className="w-full mb-12">
+            <main className="relative w-full max-w-[800px] mx-auto px-4 sm:px-6 pt-6 pb-20">
+                <div className="w-full mb-5">
                     <SessionProgressBar currentStep="pre-briefing" />
                 </div>
                 {/* Header */}
                 <PageTitleBlock
-                    icon={<MessageCircleQuestion className="w-8 h-8 text-white" />}
-                    title="Interview Briefing"
-                    subtitle={`${briefingData.anticipatedQuestions.length} questions your ${interlocutorInfo.label} will likely ask — master each one step by step.`}
+                    title={scenarioType === "sales" ? "Sales Briefing" : "Interview Briefing"}
+                    subtitle={scenarioType === "sales"
+                        ? `${briefingData.anticipatedQuestions.length} sections in your pitch — master each one step by step.`
+                        : `${briefingData.anticipatedQuestions.length} questions your ${interlocutorInfo.label} will likely ask — master each one step by step.`
+                    }
                 />
 
                 {/* ── Carousel or Readiness Score ── */}
@@ -131,6 +136,7 @@ export function InterviewBriefingScreen({
                         activeCardIndex={activeCardIndex}
                         onNavigate={setActiveCardIndex}
                         onDraftChange={handleDraftChange}
+                        isSales={scenarioType === "sales"}
                     />
                 )}
 
@@ -157,8 +163,10 @@ export function InterviewBriefingScreen({
 
                             <p className="text-sm text-[#45556c] mb-3">
                                 {practiceUnlocked
-                                    ? "You're ready — simulate the interview with AI."
-                                    : `Complete ${MIN_CARDS_FOR_PRACTICE} questions to unlock the practice interview.`
+                                    ? scenarioType === "sales"
+                                        ? "You're ready — simulate the pitch with AI."
+                                        : "You're ready — simulate the interview with AI."
+                                    : `Complete ${MIN_CARDS_FOR_PRACTICE} ${scenarioType === "sales" ? "sections" : "questions"} to unlock the practice ${scenarioType === "sales" ? "pitch" : "interview"}.`
                                 }
                             </p>
 
@@ -173,7 +181,7 @@ export function InterviewBriefingScreen({
                                 aria-label={practiceUnlocked ? "Start practice interview" : `Complete ${MIN_CARDS_FOR_PRACTICE - completedCards.size} more questions to unlock`}
                             >
                                 <Play className="w-4 h-4" />
-                                Practice Interview
+                                {scenarioType === "sales" ? "Practice Pitch" : "Practice Interview"}
                             </button>
                         </div>
                     </motion.div>

@@ -71,6 +71,14 @@ export const MOCK_CONTENT_INSIGHTS: ContentInsight[] = [
 
 export const MOCK_INTERVIEW_READINESS_SCORE = 74;
 
+export const MOCK_LANGUAGE_INSIGHTS = [
+    { dimension: "Vocabulary", observation: "You used general terms like 'good' and 'help' instead of industry-specific language.", tip: "Replace 'good solution' with 'cost-effective, scalable solution' to sound more authoritative." },
+    { dimension: "Grammar", observation: "Inconsistent tense shifting between past and present when describing past achievements.", tip: "When narrating stories, commit to past tense: 'We delivered...' not 'We deliver...'" },
+    { dimension: "Fluency", observation: "Several noticeable pauses and filler words ('basically', 'you know') interrupted your flow.", tip: "Practice replacing fillers with a brief pause — silence sounds more confident than 'um'." },
+    { dimension: "Professional Tone", observation: "Occasional casual phrases ('yeah', 'pretty much') reduced the professional impact.", tip: "Replace 'Yeah, that's pretty much it' with 'That accurately reflects our approach.'" },
+    { dimension: "Persuasion", observation: "Claims lacked supporting data. Statements felt opinion-based rather than evidence-backed.", tip: "Add metrics: 'Our platform reduced onboarding time by 40%' beats 'We help companies a lot.'" },
+];
+
 export const MOCK_PRON_DATA: TurnPronunciationData[] = [
     {
         turnIndex: 0,
@@ -343,7 +351,9 @@ export function getDevMockData(isInterview: boolean): DevMockData {
                     interviewReadinessScore: MOCK_INTERVIEW_READINESS_SCORE,
                     contentInsights: MOCK_CONTENT_INSIGHTS,
                 }
-                : {}),
+                : {
+                    languageInsights: MOCK_LANGUAGE_INSIGHTS,
+                }),
         },
         summary: MOCK_SESSION_SUMMARY,
         pronData: MOCK_PRON_DATA,
@@ -441,6 +451,7 @@ export function DevPreviewMenu({ onNavigate }: DevPreviewMenuProps) {
                     contentScores: mockData.feedback.contentScores,
                     interviewReadinessScore: mockData.feedback.interviewReadinessScore,
                     contentInsights: mockData.feedback.contentInsights,
+                    languageInsights: (mockData.feedback as any).languageInsights,
                     preparationUtilization: isInterview ? {
                         score: 78,
                         verdict: "Strong preparation leverage",
@@ -453,7 +464,7 @@ export function DevPreviewMenu({ onNavigate }: DevPreviewMenuProps) {
                 },
                 summary: {
                     overallSentiment: mockData.summary.overallSentiment,
-                    nextSteps: mockData.summary.nextSteps,
+                    nextSteps: mockData.summary.nextSteps.map(s => `${s.title}: ${s.desc}`),
                     sessionHighlight: mockData.summary.sessionHighlight,
                 },
                 sessionDuration: "8 min",

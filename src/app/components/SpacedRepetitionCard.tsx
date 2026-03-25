@@ -268,10 +268,8 @@ export function SpacedRepetitionCard() {
                         mode="review"
                         reviewSRPhrases={duePhrases}
                         onClose={() => setShowModal(false)}
-                        onComplete={(avg, passed, total) => {
-                            console.log(
-                                `[SRCard] Review complete: avg=${Math.round(avg)}%, passed=${passed}/${total}`
-                            );
+                        onComplete={() => {
+                            // Review complete — no-op, handled by onReviewComplete
                         }}
                         onReviewComplete={(updated) => {
                             handleReviewComplete(updated);

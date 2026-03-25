@@ -33,6 +33,7 @@ interface BriefingCardProps {
     onCardComplete: () => void;
     /** Bubble draft text changes up (Gap B) */
     onDraftChange?: (text: string) => void;
+    isSales?: boolean;
 }
 
 const LAYERS: { key: LayerKey; label: string; icon: typeof BookOpen }[] = [
@@ -41,7 +42,7 @@ const LAYERS: { key: LayerKey; label: string; icon: typeof BookOpen }[] = [
     { key: "response", label: "Your Response", icon: PenLine },
 ];
 
-export function BriefingCard({ card, index, isUnlocked, isCardComplete, onCardComplete, onDraftChange }: BriefingCardProps) {
+export function BriefingCard({ card, index, isUnlocked, isCardComplete, onCardComplete, onDraftChange, isSales }: BriefingCardProps) {
     const [activeLayer, setActiveLayer] = useState<LayerKey>("strategy");
     /* Track which layers the user has interacted with (visual indicators only, no gating) */
     const [visited, setVisited] = useState<Record<LayerKey, boolean>>({
@@ -109,7 +110,7 @@ export function BriefingCard({ card, index, isUnlocked, isCardComplete, onCardCo
                     </span>
                     <div className="flex-1 min-w-0">
                         <p className="text-[#94a3b8] text-base" style={{ fontWeight: 600 }}>
-                            "{card.question}"
+                            {isSales ? card.question : `"${card.question}"`}
                         </p>
                     </div>
                     <Lock className="w-4 h-4 text-[#94a3b8] shrink-0" />
@@ -141,7 +142,7 @@ export function BriefingCard({ card, index, isUnlocked, isCardComplete, onCardCo
                 </span>
                 <div className="flex-1 min-w-0">
                     <p className="text-[#0f172b] text-base md:text-lg leading-relaxed" style={{ fontWeight: 600 }}>
-                        "{card.question}"
+                        {isSales ? card.question : `"${card.question}"`}
                     </p>
                 </div>
             </div>
@@ -187,6 +188,7 @@ export function BriefingCard({ card, index, isUnlocked, isCardComplete, onCardCo
                         suggestedOpener={card.suggestedOpener}
                         framework={card.framework}
                         pivot={card.pivot}
+                        isSales={isSales}
                     />
                 )}
 

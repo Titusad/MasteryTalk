@@ -83,8 +83,8 @@ function KeyExperienceScreen({
         >
             <PastelBlobs />
 
-            <main className="relative w-full max-w-[768px] mx-auto px-6 pt-12 pb-20">
-                <div className="w-full mb-12">
+            <main className="relative w-full max-w-[768px] mx-auto px-6 pt-6 pb-20">
+                <div className="w-full mb-5">
                     <SessionProgressBar currentStep="key-experience" />
                 </div>
                 <motion.div

@@ -125,6 +125,35 @@ function splitStress(word: string): [string, string, string] {
     ];
 }
 
+/* ── Clean up raw transcription for shadowing display ── */
+
+/**
+ * Remove speech disfluencies from raw Whisper transcription:
+ *  - Consecutive repeated words: "I did did myself" → "I did myself"
+ *  - Filler words: "um", "uh", "hmm", "like" (when standalone filler)
+ *  - Double spaces and trailing whitespace
+ */
+function cleanTranscription(text: string): string {
+    let cleaned = text;
+
+    // 1. Remove consecutive repeated words (case-insensitive)
+    //    e.g., "did did" → "did", "the the" → "the"
+    cleaned = cleaned.replace(/\b(\w+)(\s+\1)+\b/gi, "$1");
+
+    // 2. Remove common filler words when surrounded by spaces
+    cleaned = cleaned.replace(/\b(um|uh|uhm|hmm|umm|er|ah)\b[,.]?\s*/gi, "");
+
+    // 3. Collapse multiple spaces
+    cleaned = cleaned.replace(/\s{2,}/g, " ").trim();
+
+    // 4. Re-capitalize first letter
+    if (cleaned.length > 0) {
+        cleaned = cleaned[0].toUpperCase() + cleaned.slice(1);
+    }
+
+    return cleaned;
+}
+
 /* ── Extract full-sentence phrases from pronunciation data ── */
 
 export function extractShadowingPhrases(
@@ -170,6 +199,9 @@ export function extractShadowingPhrases(
                 sentenceToPractice = matched.professionalVersion;
             }
         }
+
+        // Clean up speech disfluencies (repeated words, fillers) from raw transcription
+        sentenceToPractice = cleanTranscription(sentenceToPractice);
 
         phrases.push({
             id: `shadowing-t${turn.turnIndex}`,
@@ -495,9 +527,6 @@ export function ShadowingModal({
                             !flaggedForSR.has(currentIndex)
                         ) {
                             setFlaggedForSR((prev) => new Set([...prev, currentIndex]));
-                            console.log(
-                                `[ShadowingModal] Phrase "${currentPhrase.sentence.slice(0, 40)}..." flagged for spaced repetition (attempts=${newAttemptCount}, best=${Math.round(newBest)}%)`
-                            );
                         }
 
                         setScores((prev) => {
@@ -560,7 +589,7 @@ export function ShadowingModal({
                     )
                 );
             });
-            console.log(`[ShadowingModal] Saving ${srPhrases.length} phrases for spaced repetition`);
+
             await flagPhrasesForReview(srPhrases).catch((err) =>
                 console.error("[ShadowingModal] Failed to save SR phrases:", err)
             );

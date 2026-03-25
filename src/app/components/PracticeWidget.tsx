@@ -207,7 +207,7 @@ function PracticeSetupModal({
                         const isActive = selectedScenario === tab.id;
                         const TabIcon = tab.icon;
                         const tabLabel = sm.scenarioLabels[tab.id as "sales" | "interview"] ?? tab.label;
-                        const isDisabled = tab.id === "sales";
+                        const isDisabled = false;
                         return (
                           <button
                             key={tab.id}
@@ -402,8 +402,7 @@ export function PracticeWidget({
                 description: copy.widget.salesDesc,
                 icon: Target,
                 scenarioText: copy.widget.salesLabel,
-                disabled: true,
-                badge: comingSoonText,
+
               },
             ].map((card) => {
               const Icon = card.icon;

@@ -263,13 +263,12 @@ function PreBriefingScreen({
         >
             <PastelBlobs />
 
-            <main className="relative w-full max-w-[800px] mx-auto px-6 pt-12 pb-20">
-                <div className="w-full mb-12">
+            <main className="relative w-full max-w-[800px] mx-auto px-6 pt-6 pb-20">
+                <div className="w-full mb-5">
                     <SessionProgressBar currentStep="pre-briefing" />
                 </div>
                 {/* Title */}
                 <PageTitleBlock
-                    icon={<FileText className="w-8 h-8 text-white" />}
                     title="Your Conversation Script"
                     subtitle="A structured script gives you clarity and confidence — turn your ideas into a persuasive and natural message."
                 />

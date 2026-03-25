@@ -134,7 +134,7 @@ const PAYWALL_REASON_COPIES: Record<LandingLang, PaywallReasonCopyMap> = {
 
 const UPSELL_ES: UpsellCopy = {
   title: "Compra créditos de sesión",
-  subtitle: "Elige un paquete para continuar practicando con GPT-4o",
+  subtitle: "Elige un paquete para continuar practicando con IA",
   noCredits: "No tienes créditos disponibles",
   sessionSingular: "sesión",
   sessionPlural: "sesiones",
@@ -146,7 +146,7 @@ const UPSELL_ES: UpsellCopy = {
   errorFallback: "Ocurrió un error al procesar tu compra. Intenta de nuevo.",
   trustLine: "Pago seguro · Tus créditos no expiran · Sin suscripción",
   features: [
-    "Sesión completa con GPT-4o",
+    "Sesión completa con IA avanzada",
     "Feedback profundo + guión optimizado",
     "Shadowing con scoring de pronunciación",
     "Spaced Repetition cards generadas",
@@ -160,7 +160,7 @@ const UPSELL_ES: UpsellCopy = {
 
 const UPSELL_PT: UpsellCopy = {
   title: "Comprar créditos de sessão",
-  subtitle: "Escolha um pacote para continuar praticando com GPT-4o",
+  subtitle: "Escolha um pacote para continuar praticando com IA",
   noCredits: "Você não tem créditos disponíveis",
   sessionSingular: "sessão",
   sessionPlural: "sessões",
@@ -172,7 +172,7 @@ const UPSELL_PT: UpsellCopy = {
   errorFallback: "Ocorreu um erro ao processar sua compra. Tente novamente.",
   trustLine: "Pagamento seguro · Seus créditos não expiram · Sem assinatura",
   features: [
-    "Sessão completa com GPT-4o",
+    "Sessão completa com IA avançada",
     "Feedback profundo + roteiro otimizado",
     "Shadowing com scoring de pronúncia",
     "Spaced Repetition cards geradas",
@@ -186,7 +186,7 @@ const UPSELL_PT: UpsellCopy = {
 
 const UPSELL_EN: UpsellCopy = {
   title: "Buy session credits",
-  subtitle: "Choose a pack to keep practicing with GPT-4o",
+  subtitle: "Choose a pack to keep practicing with AI",
   noCredits: "You have no credits available",
   sessionSingular: "session",
   sessionPlural: "sessions",
@@ -198,7 +198,7 @@ const UPSELL_EN: UpsellCopy = {
   errorFallback: "An error occurred while processing your purchase. Please try again.",
   trustLine: "Secure payment · Credits never expire · No subscription",
   features: [
-    "Full session with GPT-4o",
+    "Full session with advanced AI",
     "Deep feedback + optimized script",
     "Shadowing with pronunciation scoring",
     "Spaced Repetition cards generated",

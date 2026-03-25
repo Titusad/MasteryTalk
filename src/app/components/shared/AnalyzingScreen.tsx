@@ -150,7 +150,7 @@ export function AnalyzingScreen({
         // Affirmation rotation — switch every ~3.5s so user can read
         const affirmationTimer = setInterval(() => {
             setAffirmationIdx((prev) => (prev + 1) % config.affirmations.length);
-        }, 3500);
+        }, 6000);
 
         // Mark animation timer done (but don't auto-advance — useEffect above handles that)
         const finishTimer = setTimeout(() => {
@@ -324,23 +324,14 @@ export function AnalyzingScreen({
                             initial={{ opacity: 0, y: 12 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -12 }}
-                            transition={{ duration: 0.6, ease: "easeInOut" }}
+                            transition={{ duration: 1, ease: "easeInOut" }}
                         >
                             &ldquo;{config.affirmations[affirmationIdx]}&rdquo;
                         </motion.p>
                     </AnimatePresence>
                 </div>
 
-                {/* Skip button */}
-                <motion.button
-                    className="mt-8 text-sm text-white/30 hover:text-white/60 transition-colors underline underline-offset-2"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 1.5 }}
-                    onClick={onComplete}
-                >
-                    Skip
-                </motion.button>
+
             </motion.div>
         </div>
     );

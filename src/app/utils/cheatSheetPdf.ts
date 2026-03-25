@@ -67,6 +67,11 @@ export interface ReportFeedbackData {
         observation: string;
         tip: string;
     }> | null;
+    languageInsights?: Array<{
+        dimension: string;
+        observation: string;
+        tip: string;
+    }> | null;
 }
 
 export interface ReportSummaryData {
@@ -381,7 +386,7 @@ export async function downloadSessionReportPdf(opts: {
             }
         }
 
-        /* ── Content Insights ── */
+        /* ── Content Insights (interview) ── */
         if (feedback.contentInsights && feedback.contentInsights.length > 0) {
             sectionTitle("Content Coaching");
             for (const ci of feedback.contentInsights) {
@@ -394,6 +399,23 @@ export async function downloadSessionReportPdf(opts: {
                 addWrappedText(ci.observation, margin + 2, contentWidth - 4, 8.5, MID, "normal", 4);
                 y += 1;
                 addWrappedText(`Tip: ${ci.tip}`, margin + 2, contentWidth - 4, 8, ACCENT, "italic", 3.8);
+                y += 3;
+            }
+        }
+
+        /* ── Language Coaching Insights (non-interview or always) ── */
+        if (feedback.languageInsights && feedback.languageInsights.length > 0) {
+            sectionTitle("Language Coaching");
+            for (const li of feedback.languageInsights) {
+                checkPageBreak(16);
+                doc.setFontSize(7.5);
+                doc.setTextColor(ACCENT);
+                doc.setFont("helvetica", "bold");
+                doc.text(li.dimension.toUpperCase(), margin + 2, y);
+                y += 3.5;
+                addWrappedText(li.observation, margin + 2, contentWidth - 4, 8.5, MID, "normal", 4);
+                y += 1;
+                addWrappedText(`Tip: ${li.tip}`, margin + 2, contentWidth - 4, 8, ACCENT, "italic", 3.8);
                 y += 3;
             }
         }
@@ -434,7 +456,7 @@ export async function downloadSessionReportPdf(opts: {
         doc.setFontSize(8);
         doc.setTextColor(LIGHT);
         doc.setFont("helvetica", "normal");
-        doc.text(`${turns.length} turn${turns.length !== 1 ? "s" : ""} analyzed by Azure Speech AI`, margin + 2, y);
+        doc.text(`${turns.length} turn${turns.length !== 1 ? "s" : ""} · AI pronunciation analysis`, margin + 2, y);
         y += 6;
 
         // Score bars

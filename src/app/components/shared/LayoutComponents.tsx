@@ -118,7 +118,7 @@ export function PageTitleBlock({
     subtitle,
     children,
 }: {
-    icon: React.ReactNode;
+    icon?: React.ReactNode;
     iconBg?: string;
     title: string;
     subtitle: string;
@@ -126,18 +126,20 @@ export function PageTitleBlock({
 }) {
     return (
         <motion.div
-            className="text-center mb-12"
+            className="text-center mb-6"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
         >
-            <div className="flex items-center justify-center gap-4 mb-4">
-                <div
-                    className="w-14 h-14 rounded-full flex items-center justify-center shrink-0"
-                    style={{ background: iconBg }}
-                >
-                    {icon}
-                </div>
+            <div className="flex items-center justify-center gap-4 mb-3">
+                {icon && (
+                    <div
+                        className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                        style={{ background: iconBg }}
+                    >
+                        {icon}
+                    </div>
+                )}
                 <h1
                     className="text-2xl md:text-[32px] text-[#0f172b] text-left"
                     style={{ fontWeight: 300, lineHeight: 1.25 }}

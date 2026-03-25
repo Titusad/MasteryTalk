@@ -53,6 +53,7 @@ const _detectedLocale = detectLanguageBackground();
 import { PreBriefingScreen } from "./session/PreBriefingScreen";
 import { ExtraContextScreen } from "./session/ExtraContextScreen";
 import { KeyExperienceScreen } from "./session/KeyExperienceScreen";
+import { scriptSectionsToBriefingData } from "./briefing/salesAdapter";
 
 /* ═══════════════════════════════════════════════════════════
    TYPES & DATA (MVP-simplified)
@@ -270,7 +271,7 @@ export function PracticeSessionPage({
       };
 
       const handlePopState = (e: PopStateEvent) => {
-        if (!window.confirm("Tienes una sesión activa. Si retrocedes, tu progreso se perderá. ¿Salir de todos modos?")) {
+        if (!window.confirm("You have an active session. If you go back, your progress will be lost. Leave anyway?")) {
           // Push state back to stay on the current screen
           window.history.pushState(
             { ...window.history.state, influSession: { step, sessionId } },
@@ -535,7 +536,6 @@ export function PracticeSessionPage({
     if (isDevPreview && devInitialStep === "generating-script") return;
     const contentReady = generatedScript || interviewBriefing;
     if (step === "generating-script" && scriptGenStatus === "ready" && contentReady) {
-      console.log("[Transition Triggered] Bypassing loader animation! Moving directly to pre-briefing.");
       setStep("pre-briefing");
     }
   }, [step, scriptGenStatus, generatedScript, interviewBriefing, isDevPreview, devInitialStep]);
@@ -971,7 +971,7 @@ export function PracticeSessionPage({
     <div className="size-full flex flex-col" style={{ fontFamily: "'Inter', sans-serif" }}>
       {/* Persistent header: BrandLogo + user profile */}
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-[#e2e8f0] shrink-0">
-        <div className="max-w-[1440px] mx-auto flex items-center justify-between px-6 md:px-8 h-16 md:h-20">
+        <div className="max-w-[1440px] mx-auto flex items-center justify-between px-6 md:px-8 h-12 md:h-14">
           <BrandLogo />
           <div className="flex items-center gap-3">
             <button
@@ -979,10 +979,10 @@ export function PracticeSessionPage({
               onClick={() => onLogout?.()}
               title="Cerrar sesión"
             >
-              <LogOut className="w-5 h-5" />
+              <LogOut className="w-4 h-4" />
             </button>
             <div
-              className="w-10 h-10 rounded-full bg-[#0f172b] flex items-center justify-center cursor-pointer"
+              className="w-8 h-8 rounded-full bg-[#0f172b] flex items-center justify-center cursor-pointer"
               title="Mi cuenta"
               onClick={() => onNavigateToAccount?.()}
             >
@@ -1182,7 +1182,36 @@ export function PracticeSessionPage({
                 scenario={scenario}
               />
             )}
-            {step === "pre-briefing" && generatedScript && scenarioType !== "interview" && (
+            {step === "pre-briefing" && generatedScript && scenarioType === "sales" && (
+              <InterviewBriefingScreen
+                interlocutor={interlocutor}
+                briefingData={scriptSectionsToBriefingData(generatedScript)}
+                onStartSimulation={(userDrafts) => {
+                  // Package sales briefing data for session
+                  const salesBriefing = scriptSectionsToBriefingData(generatedScript);
+                  const briefingPayload: SessionConfig["interviewBriefing"] = {
+                    anticipatedQuestions: salesBriefing.anticipatedQuestions.map(q => ({
+                      id: q.id,
+                      question: q.question,
+                      approach: q.approach,
+                      suggestedOpener: q.suggestedOpener,
+                      framework: q.framework,
+                      keyPhrases: q.keyPhrases.map(kp => kp.phrase),
+                    })),
+                    userDrafts: Object.keys(userDrafts).length > 0 ? userDrafts : undefined,
+                  };
+                  setBriefingForSession(briefingPayload);
+                  if (Object.keys(userDrafts).length > 0) {
+                    setUserDrafts(userDrafts);
+                  }
+                  setStep("practice");
+                }}
+                onBack={() => setStep("extra-context")}
+                scenario={scenario}
+                scenarioType={scenarioType}
+              />
+            )}
+            {step === "pre-briefing" && generatedScript && scenarioType !== "interview" && scenarioType !== "sales" && (
               <PreBriefingScreen
                 scenarioType={scenarioType}
                 interlocutor={interlocutor}
@@ -1293,6 +1322,7 @@ export function PracticeSessionPage({
                         interviewReadinessScore: realFeedback.interviewReadinessScore,
                         preparationUtilization: realFeedback.preparationUtilization,
                         contentInsights: realFeedback.contentInsights,
+                        languageInsights: realFeedback.languageInsights,
                       } : null,
                       summary: sessionSummary ? {
                         overallSentiment: sessionSummary.overallSentiment,

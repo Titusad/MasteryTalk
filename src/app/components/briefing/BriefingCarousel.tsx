@@ -26,6 +26,7 @@ interface BriefingCarouselProps {
     activeCardIndex: number;
     onNavigate: (index: number) => void;
     onDraftChange?: (questionId: number, text: string) => void;
+    isSales?: boolean;
 }
 
 export function BriefingCarousel({
@@ -36,6 +37,7 @@ export function BriefingCarousel({
     activeCardIndex,
     onNavigate,
     onDraftChange,
+    isSales,
 }: BriefingCarouselProps) {
     const [showCelebration, setShowCelebration] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -106,10 +108,10 @@ export function BriefingCarousel({
             <div className="space-y-2">
                 <div className="flex items-center justify-between">
                     <span className="text-xs text-[#62748e]" style={{ fontWeight: 500 }}>
-                        Question {activeCardIndex + 1} of {cards.length}
+                        {isSales ? "Section" : "Question"} {activeCardIndex + 1} of {cards.length}
                     </span>
                     <span className="text-xs text-[#62748e]" style={{ fontWeight: 500 }}>
-                        {completedCards.size}/{cards.length} mastered
+                        {completedCards.size}/{cards.length} {isSales ? "practiced" : "mastered"}
                     </span>
                 </div>
                 <div className="w-full h-2 bg-[#f1f5f9] rounded-full overflow-hidden">
@@ -146,7 +148,7 @@ export function BriefingCarousel({
                                     <PartyPopper className="w-8 h-8 text-emerald-500" />
                                 </div>
                                 <p className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
-                                    Question mastered!
+                                    {isSales ? "Section practiced!" : "Question mastered!"}
                                 </p>
                             </motion.div>
                         </motion.div>
@@ -162,6 +164,7 @@ export function BriefingCarousel({
                     isCardComplete={completedCards.has(activeCardIndex)}
                     onCardComplete={() => handleCardComplete(activeCardIndex)}
                     onDraftChange={onDraftChange ? (text) => onDraftChange(cards[activeCardIndex].id, text) : undefined}
+                    isSales={isSales}
                 />
             </div>
 

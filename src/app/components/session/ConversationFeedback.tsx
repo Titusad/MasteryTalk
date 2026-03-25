@@ -13,7 +13,6 @@ import {
   MessageSquare,
   Handshake,
   Users,
-  BarChart3,
   Lightbulb,
   AudioLines,
   ArrowRight,
@@ -448,13 +447,12 @@ function ConversationFeedback({
     >
       <PastelBlobs />
 
-      <main className="relative max-w-[800px] mx-auto px-6 pt-10 pb-20">
-        <div className="w-full mb-12">
+      <main className="relative max-w-[800px] mx-auto px-6 pt-6 pb-20">
+        <div className="w-full mb-5">
           <SessionProgressBar currentStep="conversation-feedback" />
         </div>
         {/* ═══ HERO ═══ */}
         <PageTitleBlock
-            icon={<Trophy className="w-8 h-8 text-white" />}
             title={isInterview ? "Interview Analysis" : "Session Feedback"}
             subtitle={isInterview ? "Your Readiness Score evaluates your true preparedness for the role, prioritizing Content Quality (60%) over Language Proficiency (40%)." : `Your ${scenarioLabel} practice analysis is ready. Review your performance below.`}
         >
@@ -861,15 +859,15 @@ function ConversationFeedback({
             </motion.div>
           </div>
         ) : (
-          /* ═══ NON-INTERVIEW: Original single gauge + radar ═══ */
+          /* ═══ NON-INTERVIEW: Proficiency Gauge + Skill Cards ═══ */
           <motion.div
-            className="bg-white rounded-3xl border border-[#e2e8f0] p-6 md:p-8 mb-6"
+            className="mb-6"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.08 }}
           >
-            <div className="grid md:grid-cols-2 gap-8 items-center">
-              {/* Left: Proficiency gauge */}
+            {/* Row 1: Proficiency gauge centered */}
+            <div className="bg-white rounded-3xl border border-[#e2e8f0] p-6 md:p-8 mb-4">
               <div className="flex flex-col items-center text-center">
                 <p
                   className="text-[10px] uppercase tracking-wider text-[#94a3b8] mb-4"
@@ -880,159 +878,152 @@ function ConversationFeedback({
                 {proficiencyScore !== null ? (
                   <ProficiencyGauge
                     score={proficiencyScore}
-                    size={160}
+                    size={140}
                   />
                 ) : (
-                  <div className="w-[160px] h-[160px] rounded-full border-[10px] border-[#e2e8f0] flex items-center justify-center">
+                  <div className="w-[140px] h-[140px] rounded-full border-[10px] border-[#e2e8f0] flex items-center justify-center">
                     <span className="text-sm text-[#94a3b8]">
                       No data
                     </span>
                   </div>
                 )}
               </div>
+            </div>
 
-              {/* Right: Radar chart */}
-              <div className="flex flex-col items-center">
-                <div className="flex items-center gap-2 mb-3">
-                  <BarChart3 className="w-4 h-4 text-[#6366f1]" />
+            {/* Row 2: Skill Cards */}
+            {hasRadarData && (() => {
+              const sorted = [...radarData].sort((a, b) => a.score - b.score);
+              const worstSkill = sorted[0]?.skill;
+
+              // Build insight lookup from languageInsights
+              const insightMap: Record<string, { observation: string; tip: string }> = {};
+              for (const ins of languageInsights) {
+                insightMap[ins.dimension] = { observation: ins.observation, tip: ins.tip };
+              }
+
+              // Fallback tips with concrete examples when GPT insights aren't available
+              const fallbackTips: Record<string, { tip: string; before: string; after: string }> = {
+                Vocabulary: {
+                  tip: "Replace general words with precise, domain-specific terms.",
+                  before: "We have a good solution for that.",
+                  after: "We offer a cost-effective, scalable solution for that.",
+                },
+                Grammar: {
+                  tip: "Watch for subject-verb agreement and consistent tense usage.",
+                  before: "The team have completed the reports and then we start reviewing.",
+                  after: "The team has completed the reports and we have started reviewing.",
+                },
+                Fluency: {
+                  tip: "Link ideas smoothly and reduce pauses between phrases.",
+                  before: "So... we did the project. And... it was successful.",
+                  after: "We completed the project successfully, exceeding the initial targets.",
+                },
+                Pronunciation: {
+                  tip: "Use the Shadowing Tool below to drill your problem words with AI feedback.",
+                  before: "",
+                  after: "",
+                },
+                "Professional Tone": {
+                  tip: "Replace casual expressions with formal, business-appropriate language.",
+                  before: "Yeah, that's pretty much what we did.",
+                  after: "That accurately reflects our approach and methodology.",
+                },
+                Persuasion: {
+                  tip: "Support your claims with specific metrics and real-world outcomes.",
+                  before: "Our product really helps companies a lot.",
+                  after: "Our platform reduced client onboarding time by 40% across 12 enterprise accounts.",
+                },
+              };
+
+              return (
+                <div className="bg-white rounded-3xl border border-[#e2e8f0] p-5 md:p-6">
                   <p
-                    className="text-sm text-[#0f172b]"
+                    className="text-sm text-[#0f172b] mb-4"
                     style={{ fontWeight: 600 }}
                   >
                     Skill Breakdown
                   </p>
-                </div>
-                {hasRadarData ? (
-                  <div
-                    className="w-full"
-                    style={{
-                      height: 240,
-                      maxWidth: 300,
-                      margin: "0 auto",
-                    }}
-                  >
-                    <ResponsiveContainer
-                      width="100%"
-                      height={240}
-                    >
-                      <RadarChart
-                        data={radarData}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius="72%"
-                      >
-                        <PolarGrid
-                          stroke="#e2e8f0"
-                          strokeDasharray="3 3"
-                        />
-                        <PolarAngleAxis
-                          dataKey="skill"
-                          tick={({
-                            payload,
-                            x,
-                            y,
-                            textAnchor,
-                            index,
-                          }: any) => {
-                            const label =
-                              payload.value as string;
-                            const scoreVal =
-                              radarData[index]?.score ?? 0;
-                            const pct = `${Math.round(scoreVal)}%`;
-                            if (label === "Professional Tone") {
-                              return (
-                                <text
-                                  x={x}
-                                  y={y}
-                                  textAnchor={textAnchor}
-                                  fontSize={10}
-                                  fill="#62748e"
-                                >
-                                  <tspan x={x} dy="0">
-                                    Professional
-                                  </tspan>
-                                  <tspan x={x} dy="12">
-                                    Tone
-                                  </tspan>
-                                  <tspan
-                                    x={x}
-                                    dy="12"
-                                    fontSize={9}
-                                    fontWeight={600}
-                                    fill="#6366f1"
-                                  >
-                                    {pct}
-                                  </tspan>
-                                </text>
-                              );
-                            }
-                            return (
-                              <text
-                                x={x}
-                                y={y}
-                                textAnchor={textAnchor}
-                                fontSize={10}
-                                fill="#62748e"
-                              >
-                                <tspan x={x} dy="0">
-                                  {label}
-                                </tspan>
-                                <tspan
-                                  x={x}
-                                  dy="12"
-                                  fontSize={9}
-                                  fontWeight={600}
-                                  fill="#6366f1"
-                                >
-                                  {pct}
-                                </tspan>
-                              </text>
-                            );
-                          }}
-                          tickLine={false}
-                        />
-                        <Radar
-                          name="Score"
-                          dataKey="score"
-                          stroke="#6366f1"
-                          fill="#6366f1"
-                          fillOpacity={0.15}
-                          strokeWidth={2}
-                          dot={{
-                            r: 3,
-                            fill: "#6366f1",
-                            strokeWidth: 0,
-                          }}
-                        />
-                      </RadarChart>
-                    </ResponsiveContainer>
-                  </div>
-                ) : (
-                  <div className="w-full h-[200px] flex items-center justify-center bg-[#f8fafc] rounded-2xl border border-dashed border-[#e2e8f0]">
-                    <p className="text-sm text-[#94a3b8]">
-                      Complete a session to see your skill
-                      breakdown
-                    </p>
-                  </div>
-                )}
 
-                {/* Language Insight Summary for Non-Interview */}
-                {hasRadarData && (
-                  <div className="mt-4 pt-4 border-t border-[#e2e8f0]">
-                    {(() => {
-                      const sorted = [...radarData].sort((a, b) => b.score - a.score);
-                      const top = sorted[0];
-                      const bottom = sorted[sorted.length - 1];
+                  <div className="space-y-3">
+                    {radarData.map((d, i) => {
+                      const colors = LANGUAGE_PILLAR_COLORS[d.skill] || { icon: "📊", bg: "rgba(99,102,241,0.12)", text: "#6366f1" };
+                      const isWorst = d.skill === worstSkill;
+                      const insight = insightMap[d.skill];
+                      const fallback = fallbackTips[d.skill];
+                      const score = Math.round(d.score);
+                      const barColor = score >= 80 ? "#22c55e" : score >= 60 ? "#6366f1" : "#f59e0b";
+
                       return (
-                        <p className="text-sm text-[#45556c] text-center leading-relaxed">
-                          Your <strong className="text-[#0f172b]">{top.skill}</strong> is solid. Focusing on <strong className="text-[#0f172b]">{bottom.skill}</strong> will elevate your overall proficiency.
-                        </p>
+                        <motion.div
+                          key={d.skill}
+                          className={`rounded-xl p-3.5 border ${isWorst ? "border-[#fde68a] bg-[#fffbeb]" : "border-[#e2e8f0] bg-[#fafbfc]"}`}
+                          initial={{ opacity: 0, x: -12 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.1 + i * 0.05 }}
+                        >
+                          {/* Skill header row */}
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-base">{colors.icon}</span>
+                              <span className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
+                                {d.skill}
+                              </span>
+                              {isWorst && (
+                                <span
+                                  className="text-[9px] bg-[#f59e0b]/15 text-[#b45309] px-1.5 py-0.5 rounded"
+                                  style={{ fontWeight: 600 }}
+                                >
+                                  FOCUS AREA
+                                </span>
+                              )}
+                            </div>
+                            <span
+                              className="text-sm"
+                              style={{ fontWeight: 700, color: barColor }}
+                            >
+                              {score}%
+                            </span>
+                          </div>
+
+                          {/* Progress bar */}
+                          <div className="h-1.5 bg-[#e2e8f0] rounded-full overflow-hidden mb-2">
+                            <motion.div
+                              className="h-full rounded-full"
+                              style={{ backgroundColor: barColor }}
+                              initial={{ width: 0 }}
+                              animate={{ width: `${score}%` }}
+                              transition={{ duration: 0.8, delay: 0.15 + i * 0.05, ease: "easeOut" }}
+                            />
+                          </div>
+
+                          {/* Tip: GPT insight or fallback with example */}
+                          {insight ? (
+                            <p className="text-xs text-[#62748e] leading-relaxed">
+                              <span className="text-[#6366f1]" style={{ fontWeight: 600 }}>Tip: </span>
+                              {insight.tip}
+                            </p>
+                          ) : fallback ? (
+                            <div>
+                              <p className="text-xs text-[#62748e] leading-relaxed mb-1.5">
+                                <span className="text-[#6366f1]" style={{ fontWeight: 600 }}>Tip: </span>
+                                {fallback.tip}
+                              </p>
+                              {fallback.before && fallback.after && (
+                                <div className="text-[11px] leading-relaxed bg-white/80 rounded-lg px-3 py-2 border border-[#e2e8f0]/60">
+                                  <span className="text-[#94a3b8] line-through">{fallback.before}</span>
+                                  <span className="text-[#94a3b8] mx-1.5">→</span>
+                                  <span className="text-[#0f172b]" style={{ fontWeight: 500 }}>{fallback.after}</span>
+                                </div>
+                              )}
+                            </div>
+                          ) : null}
+                        </motion.div>
                       );
-                    })()}
+                    })}
                   </div>
-                )}
-              </div>
-            </div>
+                </div>
+              );
+            })()}
           </motion.div>
         )}
 
@@ -1241,8 +1232,7 @@ function ConversationFeedback({
                 className="text-[10px] bg-[#6366f1]/10 text-[#6366f1] px-2.5 py-0.5 rounded-full"
                 style={{ fontWeight: 600 }}
               >
-                {pronunciationData.length} turns &middot; Azure
-                Speech AI
+                {pronunciationData.length} turns &middot; AI analysis
               </span>
             ) : (
               <span

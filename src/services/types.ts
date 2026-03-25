@@ -508,6 +508,10 @@ export interface OnboardingProfile {
   cvSummary?: string;
   /** Original CV filename for display */
   cvFileName?: string;
+  /** Extracted summary from uploaded sales deck (GPT-4o processed) */
+  deckSummary?: string;
+  /** Original deck filename for display */
+  deckFileName?: string;
   /** Whether user consented to share anonymized professional profile */
   cvConsentGiven?: boolean;
 }
