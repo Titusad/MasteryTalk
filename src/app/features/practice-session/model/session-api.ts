@@ -15,7 +15,7 @@ import type {
   TurnPronunciationData,
   SessionConfig,
 } from "../../../../services/types";
-import type { RealFeedbackData } from "../../session/ConversationFeedback";
+import type { RealFeedbackData } from "../../../../components/session/ConversationFeedback";
 
 const BASE_URL = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d`;
 const TIMEOUT_MS = 40_000;
@@ -284,25 +284,35 @@ export async function generateImprovedScript(
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
-  const res = await fetch(`${BASE_URL}/generate-improved-script`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({ sessionId, locale }),
-    signal: controller.signal,
-  });
+  try {
+    const res = await fetch(`${BASE_URL}/generate-improved-script`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ sessionId, locale }),
+      signal: controller.signal,
+    });
 
-  clearTimeout(timeoutId);
-  if (!res.ok) {
-    const errBody = await res.text();
-    throw new Error(`Script ${res.status}: ${errBody.slice(0, 200)}`);
+    clearTimeout(timeoutId);
+    if (!res.ok) {
+      if (res.status === 404) {
+        console.warn("⚠️ [GenerateImprovedScript] Edge function not found (404). Returning empty script.");
+        return [];
+      }
+      const errBody = await res.text();
+      throw new Error(`Script ${res.status}: ${errBody.slice(0, 200)}`);
+    }
+
+    const data = await res.json();
+    if (!data?.sections) throw new Error("No improved script sections returned");
+    return data.sections;
+  } catch (err: any) {
+    clearTimeout(timeoutId);
+    console.warn("⚠️ [GenerateImprovedScript] Error fetching script:", err.message);
+    throw err;
   }
-
-  const data = await res.json();
-  if (!data?.sections) throw new Error("No improved script sections returned");
-  return data.sections;
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -359,13 +369,18 @@ export async function completeProgressionLevel(
   score: number,
   pillarScores: Record<string, number> | null
 ): Promise<{ remedial?: unknown }> {
-  const res = await authFetch("/progression/complete-level", {
-    pathId,
-    levelId,
-    score,
-    pillarScores,
-  });
-  return res.json();
+  try {
+    const res = await authFetch("/progression/complete-level", {
+      pathId,
+      levelId,
+      score,
+      pillarScores,
+    });
+    return res.json();
+  } catch (err: any) {
+    console.warn("⚠️ [Progression] complete-level failed (Endpoint might not be deployed):", err.message);
+    return {};
+  }
 }
 
 export async function completeRemedial(
@@ -373,9 +388,13 @@ export async function completeRemedial(
   levelId: string,
   shadowingScore: number
 ): Promise<void> {
-  await authFetch("/progression/complete-remedial", {
-    pathId,
-    levelId,
-    shadowingScore,
-  });
+  try {
+    await authFetch("/progression/complete-remedial", {
+      pathId,
+      levelId,
+      shadowingScore,
+    });
+  } catch (err: any) {
+    console.warn("⚠️ [Progression] complete-remedial failed (Endpoint might not be deployed):", err.message);
+  }
 }

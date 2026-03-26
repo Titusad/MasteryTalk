@@ -1034,26 +1034,20 @@ export function PracticeSessionPage({
               <ConversationFeedback
                 scenarioType={scenarioType}
                 onGenerateReport={() => {
-                  // If progression level, go to remedial first
+                  fireSummaryGeneration();
+
+                  // Record completion and trigger streak updates in background
                   if (progressionLevelId && progressionPathId) {
-                    // Call complete-level to record score + generate remedial
                     const score = realFeedback?.professionalProficiency ?? 50;
                     const pillarScores = realFeedback?.pillarScores ?? null;
                     completeProgressionLevel(progressionPathId, progressionLevelId, score, pillarScores)
-                      .then((data: any) => {
-                        if (data.remedial) {
-                          setRemedialContent(data.remedial);
-                        }
-                        setStep("remedial");
-                      })
                       .catch((err: any) => {
-                        console.error("[Progression] complete-level failed:", err);
-                        setStep("remedial");
+                        console.info("[Progression] Progression api background task:", err);
                       });
-                  } else {
-                    fireSummaryGeneration();
-                    setStep("session-recap");
                   }
+                  
+                  // Always show the Session Report
+                  setStep("session-recap");
                 }}
                 onPracticeAgain={handlePracticeAgain}
                 repeatInfo={repeatInfo}
