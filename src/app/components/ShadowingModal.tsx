@@ -39,322 +39,28 @@ import {
 } from "../utils/spacedRepetition";
 import type { SpacedRepetitionPhrase } from "../utils/spacedRepetition";
 
-/* ── Types ── */
+/* ── Feature Module Imports ── */
+import {
+    type ShadowingPhrase,
+    type DrillResult,
+    type ShadowingPhase,
+    SR_FAIL_THRESHOLD,
+    SR_MAX_ATTEMPTS,
+    scoreLabel,
+    scoreColor,
+    spacedRepetitionDays,
+    extractShadowingPhrases,
+} from "../features/shadowing/model";
+import { WaveformBars, ScoreRing, PhraseCard } from "../features/shadowing/ui";
 
-export interface ShadowingPhrase {
-    id: string;
-    /** Full sentence from the conversation turn */
-    sentence: string;
-    /** Focus word (worst-scoring) */
-    focusWord: string;
-    /** IPA-like transcription from Azure phonemes */
-    ipa: string;
-    /** Original accuracy score from session */
-    originalScore: number;
-    /** Problem words in this sentence */
-    problemWords: { word: string; score: number; errorType: string }[];
-    /** Turn index for reference */
-    turnIndex: number;
-}
+/* Types, constants, pure functions, and sub-components now imported from
+   features/shadowing/model and features/shadowing/ui */
 
-interface DrillResult {
-    accuracy: number;
-    fluency: number;
-    prosody: number;
-    overall: number;
-    wordResults: { word: string; score: number; errorType: string }[];
-}
+/* Re-export for external consumers */
+export type { ShadowingPhrase } from "../features/shadowing/model";
+export { extractShadowingPhrases } from "../features/shadowing/model";
 
-type Phase = "idle" | "playing" | "ready" | "recording" | "processing" | "result" | "error";
-
-/* ── Phoneme to IPA mapping (Azure SAPI → IPA) ── */
-const PHONEME_IPA: Record<string, string> = {
-    aa: "\u0251", ah: "\u028C", ae: "\u00E6", ao: "\u0254", aw: "a\u028A",
-    ax: "\u0259", ay: "a\u026A", b: "b", ch: "t\u0283", d: "d",
-    dh: "\u00F0", eh: "\u025B", er: "\u025D", ey: "e\u026A", f: "f",
-    g: "\u0261", hh: "h", ih: "\u026A", iy: "i", jh: "d\u0292",
-    k: "k", l: "l", m: "m", n: "n", ng: "\u014B",
-    ow: "o\u028A", oy: "\u0254\u026A", p: "p", r: "\u0279", s: "s",
-    sh: "\u0283", t: "t", th: "\u03B8", uh: "\u028A", uw: "u",
-    v: "v", w: "w", y: "j", z: "z", zh: "\u0292",
-};
-
-function phonemesToIpa(phonemes: { phoneme: string }[]): string {
-    if (!phonemes || phonemes.length === 0) return "";
-    const ipa = phonemes
-        .map((p) => PHONEME_IPA[p.phoneme.toLowerCase()] || p.phoneme.toLowerCase())
-        .join("");
-    return `/${ipa}/`;
-}
-
-/* ── Stress syllable detection ── */
-
-/**
- * Simple heuristic: identify likely stressed syllable position
- * by finding the first vowel cluster (common in English stress-initial words).
- * Returns [beforeStress, stressedPart, afterStress].
- */
-function splitStress(word: string): [string, string, string] {
-    if (word.length <= 3) return ["", word, ""];
-    const lower = word.toLowerCase();
-    const vowels = "aeiouy";
-
-    // Find first vowel
-    let vStart = -1;
-    for (let i = 0; i < lower.length; i++) {
-        if (vowels.includes(lower[i])) {
-            vStart = i;
-            break;
-        }
-    }
-    if (vStart === -1) return ["", word, ""];
-
-    // Find end of vowel cluster
-    let vEnd = vStart;
-    while (vEnd < lower.length && vowels.includes(lower[vEnd])) vEnd++;
-
-    // Include one trailing consonant if exists
-    if (vEnd < lower.length) vEnd++;
-
-    // The stressed portion: from start of word up to end of first syllable
-    const stressEnd = Math.min(vEnd, word.length);
-    return [
-        "", // no prefix for stress-initial
-        word.slice(0, stressEnd),
-        word.slice(stressEnd),
-    ];
-}
-
-/* ── Clean up raw transcription for shadowing display ── */
-
-/**
- * Remove speech disfluencies from raw Whisper transcription:
- *  - Consecutive repeated words: "I did did myself" → "I did myself"
- *  - Filler words: "um", "uh", "hmm", "like" (when standalone filler)
- *  - Double spaces and trailing whitespace
- */
-function cleanTranscription(text: string): string {
-    let cleaned = text;
-
-    // 1. Remove consecutive repeated words (case-insensitive)
-    //    e.g., "did did" → "did", "the the" → "the"
-    cleaned = cleaned.replace(/\b(\w+)(\s+\1)+\b/gi, "$1");
-
-    // 2. Remove common filler words when surrounded by spaces
-    cleaned = cleaned.replace(/\b(um|uh|uhm|hmm|umm|er|ah)\b[,.]?\s*/gi, "");
-
-    // 3. Collapse multiple spaces
-    cleaned = cleaned.replace(/\s{2,}/g, " ").trim();
-
-    // 4. Re-capitalize first letter
-    if (cleaned.length > 0) {
-        cleaned = cleaned[0].toUpperCase() + cleaned.slice(1);
-    }
-
-    return cleaned;
-}
-
-/* ── Extract full-sentence phrases from pronunciation data ── */
-
-export function extractShadowingPhrases(
-    turns: TurnPronunciationData[],
-    beforeAfter?: BeforeAfterComparison[]
-): ShadowingPhrase[] {
-    const phrases: ShadowingPhrase[] = [];
-
-    for (const turn of turns) {
-        const { words, recognizedText, accuracyScore } = turn.assessment;
-        if (!words || words.length < 4) continue; // Skip very short turns
-        if (!recognizedText || recognizedText.trim().length < 10) continue;
-
-        // Find problem words
-        const problemWords = words
-            .filter((w) => w.errorType !== "None" || w.accuracyScore < 75)
-            .map((w) => ({ word: w.word, score: w.accuracyScore, errorType: w.errorType }));
-
-        // Only include turns with at least one problem word or below-average accuracy
-        if (problemWords.length === 0 && accuracyScore >= 85) continue;
-
-        // Focus word = worst-scoring word (with phonemes)
-        const sortedWords = [...words]
-            .filter((w) => w.word.length > 2) // Skip tiny words like "a", "I", "to"
-            .sort((a, b) => a.accuracyScore - b.accuracyScore);
-
-        const focusWordData = sortedWords[0];
-        if (!focusWordData) continue;
-
-        const ipa = phonemesToIpa(focusWordData.phonemes || []);
-
-        const normalize = (s: string) => s.toLowerCase().replace(/[^\w\s]/g, '').trim();
-        const normRecognized = normalize(recognizedText);
-        
-        let sentenceToPractice = recognizedText;
-        if (beforeAfter && beforeAfter.length > 0) {
-            const matched = beforeAfter.find(ba => {
-                if (!ba.userOriginal) return false;
-                const normOriginal = normalize(ba.userOriginal);
-                return normRecognized.includes(normOriginal) || normOriginal.includes(normRecognized);
-            });
-            if (matched && matched.professionalVersion) {
-                sentenceToPractice = matched.professionalVersion;
-            }
-        }
-
-        // Clean up speech disfluencies (repeated words, fillers) from raw transcription
-        sentenceToPractice = cleanTranscription(sentenceToPractice);
-
-        phrases.push({
-            id: `shadowing-t${turn.turnIndex}`,
-            sentence: sentenceToPractice.trim(),
-            focusWord: focusWordData.word.toLowerCase(),
-            ipa,
-            originalScore: accuracyScore,
-            problemWords,
-            turnIndex: turn.turnIndex,
-        });
-    }
-
-    // Sort by accuracy (worst first), take top 5
-    phrases.sort((a, b) => a.originalScore - b.originalScore);
-    return phrases.slice(0, 5);
-}
-
-/* ── Spaced repetition hint ── */
-function spacedRepetitionDays(score: number): number {
-    if (score >= 90) return 7;
-    if (score >= 80) return 3;
-    if (score >= 60) return 1;
-    return 0; // practice again today
-}
-
-function scoreLabel(score: number): string {
-    if (score >= 90) return "Excellent pronunciation";
-    if (score >= 80) return "Great pronunciation";
-    if (score >= 60) return "Good effort, keep practicing";
-    if (score >= 40) return "Needs more practice";
-    return "Let's try again";
-}
-
-function scoreColor(score: number): string {
-    if (score >= 80) return "#22c55e";
-    if (score >= 60) return "#f59e0b";
-    return "#ef4444";
-}
-
-/* ── Waveform bars animation ── */
-function WaveformBars({ color = "#6366f1", count = 7 }: { color?: string; count?: number }) {
-    return (
-        <div className="flex items-center justify-center gap-[3px] h-8">
-            {Array.from({ length: count }).map((_, i) => (
-                <motion.div
-                    key={i}
-                    className="w-[3px] rounded-full"
-                    style={{ backgroundColor: color }}
-                    animate={{
-                        height: [8, 20 + Math.random() * 12, 8],
-                    }}
-                    transition={{
-                        duration: 0.6 + Math.random() * 0.4,
-                        repeat: Infinity,
-                        delay: i * 0.08,
-                        ease: "easeInOut",
-                    }}
-                />
-            ))}
-        </div>
-    );
-}
-
-/* ── Circular Score Ring ── */
-function ScoreRing({ score, size = 100 }: { score: number; size?: number }) {
-    const strokeWidth = 6;
-    const radius = (size - strokeWidth) / 2;
-    const circumference = 2 * Math.PI * radius;
-    const filled = (score / 100) * circumference;
-    const color = scoreColor(score);
-
-    return (
-        <div className="relative" style={{ width: size, height: size }}>
-            <svg width={size} height={size} className="-rotate-90">
-                <circle
-                    cx={size / 2}
-                    cy={size / 2}
-                    r={radius}
-                    fill="none"
-                    stroke="#e5e7eb"
-                    strokeWidth={strokeWidth}
-                />
-                <motion.circle
-                    cx={size / 2}
-                    cy={size / 2}
-                    r={radius}
-                    fill="none"
-                    stroke={color}
-                    strokeWidth={strokeWidth}
-                    strokeLinecap="round"
-                    strokeDasharray={circumference}
-                    initial={{ strokeDashoffset: circumference }}
-                    animate={{ strokeDashoffset: circumference - filled }}
-                    transition={{ duration: 1, ease: "easeOut" }}
-                />
-            </svg>
-            <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-2xl" style={{ fontWeight: 700, color }}>
-                    {Math.round(score)}%
-                </span>
-            </div>
-        </div>
-    );
-}
-
-/* ── Phrase Card with stress markers ── */
-function PhraseCard({
-    sentence,
-    focusWord,
-    problemWords,
-}: {
-    sentence: string;
-    focusWord: string;
-    problemWords: { word: string; score: number }[];
-}) {
-    const problemSet = useMemo(
-        () => new Set(problemWords.map((w) => w.word.toLowerCase())),
-        [problemWords]
-    );
-
-    const words = sentence.split(/\s+/);
-
-    return (
-        <div className="rounded-2xl border border-[#e2e8f0] bg-[#fafbfc] p-5 md:p-6">
-            <p className="text-lg md:text-xl leading-relaxed text-[#1e293b]" style={{ fontWeight: 400 }}>
-                {words.map((word, i) => {
-                    const clean = word.replace(/[.,!?;:'"()]/g, "").toLowerCase();
-                    const isMultiSyllable = clean.length >= 4;
-                    const isProblem = problemSet.has(clean) || clean === focusWord;
-
-                    if (isMultiSyllable) {
-                        const [before, stressed, after] = splitStress(word);
-                        return (
-                            <span key={i}>
-                                {i > 0 ? " " : ""}
-                                {before}
-                                <span style={{ fontWeight: 700 }}>{stressed}</span>
-                                {after}
-                            </span>
-                        );
-                    }
-
-                    return (
-                        <span key={i} className={isProblem ? "text-[#6366f1]" : ""}>
-                            {i > 0 ? " " : ""}
-                            {word}
-                        </span>
-                    );
-                })}
-            </p>
-        </div>
-    );
-}
+type Phase = ShadowingPhase;
 
 /* ================================================================
    MAIN COMPONENT
@@ -375,9 +81,6 @@ export interface ShadowingModalProps {
     /** Called after review mode completes with updated SR phrase data */
     onReviewComplete?: (updatedPhrases: SpacedRepetitionPhrase[]) => void;
 }
-
-const SR_FAIL_THRESHOLD = 70;
-const SR_MAX_ATTEMPTS = 3;
 
 export function ShadowingModal({
     phrases,

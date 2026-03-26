@@ -54,69 +54,19 @@ import type {
 import type { CVMatchResult } from "../../services/cvMatchService";
 import { downloadSessionReportPdf } from "../utils/cheatSheetPdf";
 
-/* ─── Scenario labels ─── */
-const SCENARIO_LABELS_MAP: Record<string, string> = {
-  sales: "Sales Pitch",
-  interview: "Job Interview",
-  csuite: "Executive Presentation",
-  negotiation: "Negotiation",
-  networking: "Networking",
-};
+/* ── Feature Module Imports ── */
+import {
+  SCENARIO_LABELS_MAP,
+  PILLAR_COLORS,
+  computePronScores,
+  computeProblemWords,
+  computePronTip,
+} from "../features/session-report/model";
+import { ReportSection, ProficiencyGauge } from "../features/session-report/ui";
 
-/* ─── Pillar color map (for Next Steps badges) ─── */
-const PILLAR_COLORS: Record<string, { bg: string; text: string }> = {
-  "Resiliencia Linguistica": { bg: "rgba(96,165,250,0.15)", text: "#60a5fa" },
-  "Defensa de Valor": { bg: "rgba(251,191,36,0.15)", text: "#fbbf24" },
-  "Alineacion Cultural": { bg: "rgba(80,200,120,0.15)", text: "#50C878" },
-  "Estructura del Discurso": { bg: "rgba(168,85,247,0.15)", text: "#a855f7" },
-  "Resiliência Linguística": { bg: "rgba(96,165,250,0.15)", text: "#60a5fa" },
-  "Defesa de Valor": { bg: "rgba(251,191,36,0.15)", text: "#fbbf24" },
-  "Alinhamento Cultural": { bg: "rgba(80,200,120,0.15)", text: "#50C878" },
-  "Estrutura do Discurso": { bg: "rgba(168,85,247,0.15)", text: "#a855f7" },
-  Vocabulary: { bg: "rgba(96,165,250,0.15)", text: "#60a5fa" },
-  Grammar: { bg: "rgba(168,85,247,0.15)", text: "#a855f7" },
-  Fluency: { bg: "rgba(251,191,36,0.15)", text: "#fbbf24" },
-  Pronunciation: { bg: "rgba(239,68,68,0.12)", text: "#ef4444" },
-  "Professional Tone": { bg: "rgba(80,200,120,0.15)", text: "#50C878" },
-  Persuasion: { bg: "rgba(99,102,241,0.15)", text: "#6366f1" },
-};
+/* Constants and helpers now imported from features/session-report/model */
 
-/* ─── Section wrapper ─── */
-function ReportSection({
-  icon,
-  iconBg = "#0f172b",
-  title,
-  delay = 0,
-  children,
-}: {
-  icon: React.ReactNode;
-  iconBg?: string;
-  title: string;
-  delay?: number;
-  children: React.ReactNode;
-}) {
-  return (
-    <motion.div
-      className="rounded-3xl bg-white border border-[#e2e8f0] p-6 md:p-8 mb-6"
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay }}
-    >
-      <div className="flex items-center gap-3 mb-6">
-        <div
-          className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-          style={{ backgroundColor: iconBg }}
-        >
-          {icon}
-        </div>
-        <h2 className="text-xl text-[#0f172b]" style={{ fontWeight: 500 }}>
-          {title}
-        </h2>
-      </div>
-      {children}
-    </motion.div>
-  );
-}
+/* ReportSection now imported from features/session-report/ui */
 
 /* ═══════════════════════════════════════════════════════════════
    Real Feedback Data (from /analyze-feedback) — kept for prop compat
@@ -146,54 +96,7 @@ interface RealFeedbackData {
   } | null;
 }
 
-/* ── Helpers for ProficiencyGauge ── */
-function feedbackProficiencyColor(score: number): string {
-  if (score >= 75) return "#22c55e";
-  if (score >= 60) return "#6366f1";
-  if (score >= 40) return "#f59e0b";
-  return "#ef4444";
-}
-function feedbackProficiencyLabel(score: number): string {
-  if (score >= 90) return "Exceptional";
-  if (score >= 80) return "Strong";
-  if (score >= 60) return "Intermediate";
-  if (score >= 40) return "Developing";
-  return "Needs Work";
-}
-
-/* ── Circular gauge SVG ── */
-function ProficiencyGauge({
-  score,
-  size = 160,
-  darkBg = false,
-  hideLabel = false,
-  strokeWidth = 10,
-}: {
-  score: number;
-  size?: number;
-  darkBg?: boolean;
-  hideLabel?: boolean;
-  strokeWidth?: number;
-}) {
-  const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const progress = Math.min(100, Math.max(0, score)) / 100;
-  const strokeDashoffset = Math.max(0, circumference * (1 - progress));
-  const color = feedbackProficiencyColor(score);
-
-  return (
-    <div className="relative" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke={darkBg ? "rgba(255,255,255,0.15)" : "#e2e8f0"} strokeWidth={strokeWidth} />
-        <motion.circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeDasharray={circumference} initial={{ strokeDashoffset: circumference }} animate={{ strokeDashoffset }} transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.3 }} />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <motion.span className={`${size >= 140 ? "text-4xl" : size >= 80 ? "text-2xl" : "text-lg"} ${darkBg ? "text-white" : "text-[#0f172b]"}`} style={{ fontWeight: 700 }} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5, delay: 0.5 }}>{Math.round(score)}%</motion.span>
-        {!hideLabel && <span className="text-xs mt-0.5" style={{ fontWeight: 600, color }}>{feedbackProficiencyLabel(score)}</span>}
-      </div>
-    </div>
-  );
-}
+/* ProficiencyGauge and helpers now imported from features/session-report/ui + model */
 
 /* ═══════════════════════════════════════════════════════════════
    MAIN COMPONENT: SessionReport
@@ -270,46 +173,19 @@ export function SessionReport({
   const interviewReadiness = isInterview && typeof realFeedback?.interviewReadinessScore === "number" ? Math.round(realFeedback.interviewReadinessScore) : null;
   const topStrengths = (realFeedback?.strengths || []).slice(0, 2);
 
-  /* ── Pronunciation computed data ── */
-  const pronScores = useMemo(() => {
-    if (!pronunciationData?.length) return null;
-    const turns = pronunciationData;
-    const accuracy = turns.reduce((s, t) => s + t.assessment.accuracyScore, 0) / turns.length;
-    const fluency = turns.reduce((s, t) => s + t.assessment.fluencyScore, 0) / turns.length;
-    const prosody = turns.reduce((s, t) => s + t.assessment.prosodyScore, 0) / turns.length;
-    const overall = turns.reduce((s, t) => s + t.assessment.pronScore, 0) / turns.length;
-    return { accuracy, fluency, prosody, overall, turnCount: turns.length };
-  }, [pronunciationData]);
-
-  const problemWords = useMemo(() => {
-    if (!pronunciationData?.length) return [];
-    const wordMap = new Map<string, { count: number; totalScore: number; errorType: string }>();
-    for (const turn of pronunciationData) {
-      for (const w of turn.assessment.words) {
-        if (w.accuracyScore < 60 || w.errorType === "Mispronunciation") {
-          const key = w.word.toLowerCase();
-          const existing = wordMap.get(key);
-          if (existing) {
-            existing.count++;
-            existing.totalScore += w.accuracyScore;
-          } else {
-            wordMap.set(key, { count: 1, totalScore: w.accuracyScore, errorType: w.errorType });
-          }
-        }
-      }
-    }
-    return Array.from(wordMap.entries())
-      .map(([word, data]) => ({ word, avgScore: Math.round(data.totalScore / data.count), errorType: data.errorType, count: data.count }))
-      .sort((a, b) => a.avgScore - b.avgScore)
-      .slice(0, 8);
-  }, [pronunciationData]);
-
-  const pronTip = useMemo(() => {
-    if (!pronScores) return "";
-    if (pronScores.fluency >= 80) return "Your speech flow is strong. Focus on refining intonation and rhythm for even more natural delivery.";
-    if (pronScores.fluency >= 60) return "Practice linking words together smoothly. Try reading professional articles aloud for 5 minutes daily.";
-    return "Start with shorter sentences and gradually build complexity. Record yourself and compare with native speakers.";
-  }, [pronScores]);
+  /* ── Pronunciation computed data (from feature module) ── */
+  const pronScores = useMemo(
+    () => computePronScores(pronunciationData || []),
+    [pronunciationData]
+  );
+  const problemWords = useMemo(
+    () => computeProblemWords(pronunciationData || []),
+    [pronunciationData]
+  );
+  const pronTip = useMemo(
+    () => computePronTip(pronScores),
+    [pronScores]
+  );
 
   return (
     <div

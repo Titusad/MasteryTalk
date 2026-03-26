@@ -97,21 +97,19 @@ interface PracticeSessionPageProps {
   onNavigateToAccount?: () => void;
 }
 
-/** Repeat limits: free tier gets 1 repeat (2 total), paid gets 2 repeats (3 total) */
-const MAX_REPEATS: Record<UserPlan, number> = {
-  free: 1,
-  "per-session": 2,
-};
-
-/** RepeatInfo imported from ./session/ConversationFeedback */
-
-const SCENARIO_LABELS_MAP: Record<string, string> = {
-  sales: "Sales Pitch",
-  interview: "Job Interview",
-  csuite: "Executive Presentation",
-  negotiation: "Negotiation",
-  networking: "Networking",
-};
+import { MAX_REPEATS, SCENARIO_LABELS_MAP } from "../features/practice-session/model/session.constants";
+import {
+  generateInterviewBriefing,
+  generateScript,
+  generatePreparationToolkit,
+  analyzeFeedback,
+  generateSummary,
+  generateImprovedScript,
+  saveSession,
+  savePronunciationData,
+  completeProgressionLevel,
+  completeRemedial,
+} from "../features/practice-session/model/session-api";
 
 /* ═══════════════════════════════════════════════════════════
    MAIN ORCHESTRATOR (MVP-simplified flow)
@@ -364,59 +362,22 @@ export function PracticeSessionPage({
 
     const allFields = { ...guidedFields, ...(extraData || extraContext) };
 
-    // ━━━ INTERVIEW PATH: Single call → card-based briefing ━━━
+    const abortController = new AbortController();
+    briefingAbortRef.current = abortController;
+
     if (scenarioType === "interview") {
-      const briefingUrl = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/generate-interview-briefing`;
-
-      const iController = new AbortController();
-      briefingAbortRef.current = iController;
-      const iTimeout = setTimeout(() => iController.abort("timeout_40s"), 40_000);
-
       try {
-        const token = await getAuthToken();
-        if (!token) throw new Error("No auth token available");
-
-        const res = await fetch(briefingUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-            apikey: publicAnonKey,
-          },
-          body: JSON.stringify({
-            scenario,
-            interlocutor,
-            guidedFields: allFields,
-            locale: _detectedLocale,
-          }),
-          signal: iController.signal,
-        });
-
-        if (!res.ok) {
-          clearTimeout(iTimeout);
-          const errBody = await res.text();
-          throw new Error(`Server ${res.status}: ${errBody.slice(0, 200)}`);
-        }
-
-        const data = await res.json();
-        clearTimeout(iTimeout); // Safely clear only after FULL body is parsed
-
-        const questions = data.anticipatedQuestions || [];
-        if (questions.length === 0) {
-          throw new Error("No anticipated questions generated");
-        }
-
-        const briefing: InterviewBriefingData = {
-          anticipatedQuestions: questions,
-          questionsToAsk: data.questionsToAsk || [],
-          culturalTips: data.culturalTips || [],
-        };
+        const { briefing } = await generateInterviewBriefing(
+          scenario,
+          interlocutor,
+          allFields,
+          _detectedLocale,
+          abortController.signal
+        );
         setInterviewBriefing(briefing);
         interviewBriefingCache.set(sKey, briefing);
         setScriptGenStatus("ready");
-      } catch (err) {
-        clearTimeout(iTimeout);
-        // Silently ignore aborts — they're expected during navigation and StrictMode
+      } catch (err: any) {
         if (err instanceof DOMException && err.name === "AbortError") {
           console.log("[InterviewBriefing] ℹ️ Aborted (expected during navigation)");
           return;
@@ -426,62 +387,18 @@ export function PracticeSessionPage({
         setScriptGenError(msg);
         setScriptGenStatus("error");
       }
-
-      return; // Interview uses single endpoint — no separate toolkit call
+      return; 
     }
 
     // ━━━ SALES / DEFAULT PATH: Existing script + toolkit parallel calls ━━━
-    const serverUrl = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/generate-script`;
-
-    let token = "";
-    try {
-      token = await getAuthToken();
-    } catch (e: any) {
-      setScriptGenError(e.message);
-      setScriptGenStatus("error");
-      return;
-    }
-
-    const sController = new AbortController();
-    const sTimeout = setTimeout(() => sController.abort(), 40_000);
-
-    fetch(serverUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        scenario,
-        interlocutor,
-        scenarioType,
-        guidedFields: allFields,
-        locale: _detectedLocale,
-      }),
-      signal: sController.signal,
-    })
-      .then(async (res) => {
-        if (!res.ok) {
-          clearTimeout(sTimeout);
-          const errBody = await res.text();
-          throw new Error(`Server ${res.status}: ${errBody.slice(0, 200)}`);
-        }
-        return res.json();
-      })
-      .then((data) => {
-        clearTimeout(sTimeout);
-        if (data.sections && Array.isArray(data.sections) && data.sections.length > 0) {
-          if (data._debug) {
-          }
-          setGeneratedScript(data.sections);
-          scriptCache.set(sKey, data.sections);
-          setScriptGenStatus("ready");
-        } else {
-          throw new Error("Response missing valid sections array");
-        }
+    generateScript(scenario, interlocutor, scenarioType, allFields, _detectedLocale, abortController.signal)
+      .then(({ sections }) => {
+        setGeneratedScript(sections);
+        scriptCache.set(sKey, sections);
+        setScriptGenStatus("ready");
       })
       .catch((err) => {
-        clearTimeout(sTimeout);
+        if (err instanceof DOMException && err.name === "AbortError") return;
         console.error("[GenerateScript] ❌ Failed:", err.message);
         setScriptGenError(err.message);
         setScriptGenStatus("error");
@@ -505,52 +422,13 @@ export function PracticeSessionPage({
     }
 
     // ── Fire preparation toolkit generation in parallel (non-blocking) ──
-    const toolkitUrl = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/generate-preparation-toolkit`;
-    
-    getAuthToken()
-      .then((token) => {
-        const tController = new AbortController();
-        const tTimeout = setTimeout(() => tController.abort(), 40_000);
-
-        fetch(toolkitUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            scenario,
-            interlocutor,
-            scenarioType,
-            guidedFields: allFields,
-            locale: _detectedLocale,
-          }),
-          signal: tController.signal,
-        })
-          .then(async (res) => {
-            clearTimeout(tTimeout);
-        if (!res.ok) {
-          const errBody = await res.text();
-          throw new Error(`Toolkit server ${res.status}: ${errBody.slice(0, 200)}`);
-        }
-        return res.json();
-      })
-      .then((data) => {
-        const toolkit = {
-          powerPhrases: data.powerPhrases || [],
-          powerQuestions: data.powerQuestions || [],
-          culturalTips: data.culturalTips || [],
-        };
+    generatePreparationToolkit(scenario, interlocutor, scenarioType, allFields, _detectedLocale)
+      .then((toolkit) => {
         setPreparationToolkit(toolkit);
         toolkitCache.set(sKey, toolkit);
       })
-          .catch((err) => {
-            clearTimeout(tTimeout);
-            console.error("[PreparationToolkit] ❌ Failed:", err.message);
-          });
-      })
-      .catch((authErr) => {
-        console.error("[PreparationToolkit] ❌ Auth error:", authErr.message);
+      .catch((err) => {
+        console.error("[PreparationToolkit] ❌ Failed:", err.message);
       });
   }, [scenario, interlocutor, scenarioType, guidedFields, extraContext, sKey]);
 
@@ -574,66 +452,16 @@ export function PracticeSessionPage({
     setFeedbackStatus("loading");
     setRealFeedback(null);
 
-    const serverUrl = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/analyze-feedback`;
-
-    let token = "";
     try {
-      token = await getAuthToken();
-    } catch (e: any) {
+      const fb = await analyzeFeedback(sessionId, scenarioType, _detectedLocale);
+      setRealFeedback(fb);
+      if (sessionId) feedbackCache.set(sessionId, fb);
+      setFeedbackStatus("ready");
+    } catch (err: any) {
+      console.error("[AnalyzeFeedback] ❌ Failed:", err.message);
       setFeedbackStatus("error");
-      return;
+      // Don't block the flow — user can still see mock feedback
     }
-
-    // Safety timeout: abort after 35s to prevent infinite hanging
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 40_000);
-
-    fetch(serverUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        sessionId,
-        scenarioType,
-        locale: _detectedLocale,
-      }),
-      signal: controller.signal,
-    })
-      .then(async (res) => {
-        clearTimeout(timeoutId);
-        if (!res.ok) {
-          const errBody = await res.text();
-          throw new Error(`Server ${res.status}: ${errBody.slice(0, 200)}`);
-        }
-        return res.json();
-      })
-      .then((data) => {
-        if (data._debug) {
-        }
-        const fb: RealFeedbackData = {
-          strengths: data.strengths || [],
-          opportunities: data.opportunities || [],
-          beforeAfter: data.beforeAfter || [],
-          pillarScores: data.pillarScores || null,
-          professionalProficiency: typeof data.professionalProficiency === "number" ? data.professionalProficiency : null,
-          // Interview-specific Content Quality fields
-          contentScores: data.contentScores || null,
-          interviewReadinessScore: typeof data.interviewReadinessScore === "number" ? data.interviewReadinessScore : null,
-          contentInsights: data.contentInsights || null,
-          preparationUtilization: data.preparationUtilization || null,
-        };
-        setRealFeedback(fb);
-        if (sessionId) feedbackCache.set(sessionId, fb);
-        setFeedbackStatus("ready");
-      })
-      .catch((err) => {
-        clearTimeout(timeoutId);
-        console.error("[AnalyzeFeedback] ❌ Failed:", err.message);
-        setFeedbackStatus("error");
-        // Don't block the flow — user can still see mock feedback
-      });
   }, [sessionId, scenarioType, feedbackStatus]);
 
   /* ── Summary generation: call /generate-summary for session feedback ── */
@@ -642,56 +470,16 @@ export function PracticeSessionPage({
     setSessionSummary(null);
     setSummaryStatus("loading");
 
-    const serverUrl = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/generate-summary`;
-
-    let token = "";
     try {
-      token = await getAuthToken();
-    } catch (e: any) {
+      const sum = await generateSummary(sessionId, scenarioType, _detectedLocale);
+      setSessionSummary(sum);
+      setSummaryStatus("ready");
+      if (sessionId) summaryCache.set(sessionId, sum);
+    } catch (err: any) {
+      console.error("[GenerateSummary] ❌ Failed:", err.message);
       setSummaryStatus("error");
-      return;
+      // Non-blocking — report renders without summary
     }
-
-    const sController = new AbortController();
-    const sTimeout = setTimeout(() => sController.abort(), 40_000);
-
-    fetch(serverUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        sessionId,
-        scenarioType: scenarioType || "interview",
-        locale: _detectedLocale,
-      }),
-      signal: sController.signal,
-    })
-      .then((res) => {
-        clearTimeout(sTimeout);
-        if (!res.ok) return res.text().then((t) => { throw new Error(`Summary ${res.status}: ${t.slice(0, 200)}`); });
-        return res.json();
-      })
-      .then((data) => {
-        const sum = {
-          overallSentiment: data.overallSentiment || "",
-          nextSteps: data.nextSteps || [],
-          sessionHighlight: data.sessionHighlight || "",
-          pillarScores: data.pillarScores || null,
-          professionalProficiency: typeof data.professionalProficiency === "number" ? data.professionalProficiency : null,
-          cefrApprox: data.cefrApprox || null,
-        };
-        setSessionSummary(sum);
-        setSummaryStatus("ready");
-        if (sessionId) summaryCache.set(sessionId, sum);
-      })
-      .catch((err) => {
-        clearTimeout(sTimeout);
-        console.error("[GenerateSummary] ❌ Failed:", err.message);
-        setSummaryStatus("error");
-        // Non-blocking — report renders without summary
-      });
   }, [sessionId, scenarioType]);
 
   /* ── Golden Script generation: call /generate-improved-script async ── */
@@ -700,50 +488,15 @@ export function PracticeSessionPage({
     setImprovedScript(null);
     setImprovedScriptStatus("loading");
 
-    const serverUrl = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/generate-improved-script`;
-
-    let token = "";
     try {
-      token = await getAuthToken();
-    } catch (e: any) {
+      const sections = await generateImprovedScript(sessionId, _detectedLocale);
+      setImprovedScript(sections);
+      improvedScriptCache.set(sessionId, sections);
+      setImprovedScriptStatus("ready");
+    } catch (err: any) {
+      console.error("[GenerateImprovedScript] ❌ Failed:", err.message);
       setImprovedScriptStatus("error");
-      return;
     }
-
-    const sController = new AbortController();
-    const sTimeout = setTimeout(() => sController.abort(), 40_000);
-
-    fetch(serverUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        sessionId,
-        locale: _detectedLocale,
-      }),
-      signal: sController.signal,
-    })
-      .then((res) => {
-        clearTimeout(sTimeout);
-        if (!res.ok) return res.text().then((t) => { throw new Error(`Script ${res.status}: ${t.slice(0, 200)}`); });
-        return res.json();
-      })
-      .then((data) => {
-        if (data && data.sections) {
-          setImprovedScript(data.sections);
-          improvedScriptCache.set(sessionId, data.sections);
-          setImprovedScriptStatus("ready");
-        } else {
-          setImprovedScriptStatus("error");
-        }
-      })
-      .catch((err) => {
-        clearTimeout(sTimeout);
-        console.error("[GenerateImprovedScript] ❌ Failed:", err.message);
-        setImprovedScriptStatus("error");
-      });
   }, [sessionId]);
 
   /* ── Persist completed session to backend (fire-and-forget) ── */
@@ -784,7 +537,7 @@ export function PracticeSessionPage({
       // Include interview briefing data for dashboard cross-reference
       interviewBriefing: scenarioType === "interview" && interviewBriefing ? {
         anticipatedQuestions: interviewBriefing.anticipatedQuestions.map(q => ({
-          id: q.id,
+          id: String(q.id),
           question: q.question,
           approach: q.approach,
         })),
@@ -794,29 +547,10 @@ export function PracticeSessionPage({
       } : null,
     };
 
-    const serverUrl = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/sessions`;
-
-    fetch(serverUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${await getAuthToken()}`,
-      },
-      body: JSON.stringify(payload),
-    })
-      .then(async (res) => {
-        if (!res.ok) {
-          const errBody = await res.text();
-          throw new Error(`Server ${res.status}: ${errBody.slice(0, 200)}`);
-        }
-        return res.json();
-      })
-      .then((data) => {
-      })
-      .catch((err) => {
-        console.error("[SaveSession] ❌ Failed (non-blocking):", err.message);
-        sessionSavedRef.current = false; // Allow retry on next render
-      });
+    saveSession(payload).catch((err) => {
+      console.error("[SaveSession] ❌ Failed (non-blocking):", err.message);
+      sessionSavedRef.current = false; // Allow retry on next render
+    });
   }, [sessionId, scenario, interlocutor, scenarioType, realFeedback, sessionSummary, sessionPronData, interviewBriefing]);
 
   /* ── Auto-save session when entering session-recap with data ── */
@@ -1283,21 +1017,7 @@ export function PracticeSessionPage({
                   setStep("analyzing");
                   // Save pronunciation data to KV in background (non-blocking)
                   if (pronData.length > 0 && sessionId) {
-                    const saveUrl = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/save-pronunciation`;
-                    fetch(saveUrl, {
-                      method: "POST",
-                      headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${await getAuthToken()}`,
-                      },
-                      body: JSON.stringify({ sessionId, turns: pronData }),
-                    })
-                      .then(async (res) => {
-                        if (!res.ok) throw new Error(`Save pronunciation ${res.status}`);
-                        const data = await res.json();
-                      })
-                      .catch((err) => {
-                      });
+                    savePronunciationData(sessionId, pronData).catch(() => {});
                   }
                 }}
                 onEnd={onFinish}
@@ -1319,35 +1039,17 @@ export function PracticeSessionPage({
                     // Call complete-level to record score + generate remedial
                     const score = realFeedback?.professionalProficiency ?? 50;
                     const pillarScores = realFeedback?.pillarScores ?? null;
-                    getAuthToken().then((token) => {
-                      fetch(
-                        `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/progression/complete-level`,
-                        {
-                          method: "POST",
-                          headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${token}`,
-                          },
-                          body: JSON.stringify({
-                            pathId: progressionPathId,
-                            levelId: progressionLevelId,
-                            score,
-                            pillarScores,
-                          }),
-                        },
-                      )
-                        .then((res) => res.json())
-                        .then((data) => {
-                          if (data.remedial) {
-                            setRemedialContent(data.remedial);
-                          }
-                          setStep("remedial");
-                        })
-                        .catch((err) => {
-                          console.error("[Progression] complete-level failed:", err);
-                          setStep("remedial");
-                        });
-                    });
+                    completeProgressionLevel(progressionPathId, progressionLevelId, score, pillarScores)
+                      .then((data: any) => {
+                        if (data.remedial) {
+                          setRemedialContent(data.remedial);
+                        }
+                        setStep("remedial");
+                      })
+                      .catch((err: any) => {
+                        console.error("[Progression] complete-level failed:", err);
+                        setStep("remedial");
+                      });
                   } else {
                     fireSummaryGeneration();
                     setStep("session-recap");
@@ -1385,26 +1087,9 @@ export function PracticeSessionPage({
                 levelTitle={getLevelDefinition(progressionPathId, progressionLevelId)?.title || "Practice"}
                 onComplete={(shadowingScore) => {
                   // Call complete-remedial
-                  getAuthToken().then((token) => {
-                    fetch(
-                      `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/progression/complete-remedial`,
-                      {
-                        method: "POST",
-                        headers: {
-                          "Content-Type": "application/json",
-                          Authorization: `Bearer ${token}`,
-                        },
-                        body: JSON.stringify({
-                          pathId: progressionPathId,
-                          levelId: progressionLevelId,
-                          shadowingScore,
-                        }),
-                      },
-                    )
-                      .then((r) => r.json())
-                      .then(() => onFinish())
-                      .catch(() => onFinish());
-                  });
+                  completeRemedial(progressionPathId, progressionLevelId, shadowingScore)
+                    .then(() => onFinish())
+                    .catch(() => onFinish());
                 }}
                 onRetry={() => {
                   setStep("remedial");
