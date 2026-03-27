@@ -39,7 +39,7 @@ import {
 import { SessionProgressBar } from "./SessionProgressBar";
 import {
   getScriptSectionsForScenario,
-} from "../../services/scenario-data";
+} from "@/services/scenario-data";
 import type {
   ScenarioType,
   UserPlan,
@@ -50,9 +50,9 @@ import type {
   SessionSummary,
   TurnPronunciationData,
   InterviewBriefingData,
-} from "../../services/types";
-import type { CVMatchResult } from "../../services/cvMatchService";
-import { downloadSessionReportPdf } from "../utils/cheatSheetPdf";
+} from "@/services/types";
+import type { CVMatchResult } from "@/services/cvMatchService";
+import { downloadSessionReportPdf } from "@/app/utils/cheatSheetPdf";
 
 /* ── Feature Module Imports ── */
 import {
@@ -61,8 +61,8 @@ import {
   computePronScores,
   computeProblemWords,
   computePronTip,
-} from "../features/session-report/model";
-import { ReportSection, ProficiencyGauge } from "../features/session-report/ui";
+} from "@/app/features/session-report/model";
+import { ReportSection, ProficiencyGauge } from "@/app/features/session-report/ui";
 
 /* Constants and helpers now imported from features/session-report/model */
 

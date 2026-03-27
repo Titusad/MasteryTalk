@@ -48,7 +48,7 @@ import {
   ArenaProgressBar,
 } from "../features/arena/ui/ArenaSystem";
 import { ServiceErrorBanner } from "./shared/ServiceErrorBanner";
-import { ServiceError } from "../../services/errors";
+import { ServiceError } from "@/services/errors";
 
 /* ══════════════════════════════════════════════════════════════
    DESIGN SYSTEM HELPERS

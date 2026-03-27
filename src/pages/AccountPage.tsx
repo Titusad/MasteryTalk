@@ -3,7 +3,7 @@ import { User, CreditCard, Settings, LogOut, CheckCircle, AlertTriangle, ShieldA
 import { motion, AnimatePresence } from "motion/react";
 import { PastelBlobs, MiniFooter } from "./shared";
 import { AppHeader } from "@/shared/ui/AppHeader";
-import type { OnboardingProfile, User as AuthUser } from "../../services/types";
+import type { OnboardingProfile, User as AuthUser } from "@/services/types";
 
 interface AccountPageProps {
   userProfile?: OnboardingProfile | null;

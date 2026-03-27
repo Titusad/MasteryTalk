@@ -18,8 +18,8 @@ import {
 } from "lucide-react";
 import { motion } from "motion/react";
 import { BrandLogo, MiniFooter } from "./shared";
-import { MICRO_LESSONS, isLessonComplete, syncLessonProgress } from "../../services/microLessons";
-import type { MicroLesson } from "../../services/microLessons";
+import { MICRO_LESSONS, isLessonComplete, syncLessonProgress } from "@/services/microLessons";
+import type { MicroLesson } from "@/services/microLessons";
 import { LessonModal } from "./LessonModal";
 
 /* ─── Pillar config ─── */

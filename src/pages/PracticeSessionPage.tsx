@@ -2,18 +2,18 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { AppHeader } from "@/shared/ui";
 import { AnalyzingScreen } from "./shared";
-import { realConversationService } from "../../services";
-import { toServiceError } from "../../services/errors";
-import type { ServiceError } from "../../services/errors";
-import type { RemedialContent } from "../../services/types";
+import { realConversationService } from "@/services";
+import { toServiceError } from "@/services/errors";
+import type { ServiceError } from "@/services/errors";
+import type { RemedialContent } from "@/services/types";
 
-import { getLevelDefinition } from "../features/dashboard/model/progression-paths";
+import { getLevelDefinition } from "@/app/features/dashboard/model/progression-paths";
 import { ProgressionProvider } from "./shared/ProgressionContext";
 import { ServiceErrorBanner } from "./shared/ServiceErrorBanner";
-import { getBeforeAfterForScenario, getStrengthsForScenario } from "../../services/scenario-data";
-import { useMediaRecorder } from "../hooks/useMediaRecorder";
-import { projectId, publicAnonKey } from "../../../utils/supabase/info";
-import { getAuthToken } from "../../services/supabase";
+import { getBeforeAfterForScenario, getStrengthsForScenario } from "@/services/scenario-data";
+import { useMediaRecorder } from "@/app/hooks/useMediaRecorder";
+import { projectId, publicAnonKey } from "@/../utils/supabase/info";
+import { getAuthToken } from "@/services/supabase";
 import type {
   ScenarioType,
   ScriptSection,
@@ -22,18 +22,18 @@ import type {
   SessionSummary,
   TurnPronunciationData,
   SessionConfig,
-} from "../../services/types";
+} from "@/services/types";
 import { SessionProgressBar } from "./SessionProgressBar";
 import { SessionReport } from "@/widgets/SessionReport";
 import { InterviewBriefingScreen } from "@/widgets/InterviewBriefingScreen";
 import type { Step } from "./shared/session-types";
-import { VoicePractice } from "../features/practice-session/ui/VoicePractice";
-import { ConversationFeedback, type RealFeedbackData, type RepeatInfo } from "../features/practice-session/ui/ConversationFeedback";
+import { VoicePractice } from "@/app/features/practice-session/ui/VoicePractice";
+import { ConversationFeedback, type RealFeedbackData, type RepeatInfo } from "@/app/features/practice-session/ui/ConversationFeedback";
 import { CreditUpsellModal } from "@/widgets/CreditUpsellModal";
-import { useUsageGating } from "../hooks/useUsageGating";
-import type { PaywallReason } from "../hooks/useUsageGating";
-import { createSRPhrase, flagPhrasesForReview } from "../utils/spacedRepetition";
-import type { InterviewBriefingData, OnboardingProfile } from "../../services/types";
+import { useUsageGating } from "@/app/hooks/useUsageGating";
+import type { PaywallReason } from "@/app/hooks/useUsageGating";
+import { createSRPhrase, flagPhrasesForReview } from "@/app/utils/spacedRepetition";
+import type { InterviewBriefingData, OnboardingProfile } from "@/services/types";
 import {
   scenarioKey,
   scriptCache,
@@ -46,18 +46,18 @@ import {
   pronDataCache,
   cleanupExpiredCache,
 } from "../utils/sessionCache";
-import { detectLanguageBackground } from "../../services/locale-detect";
-import { downloadSessionReportPdf } from "../utils/cheatSheetPdf";
-import { analyzeCvMatch, type CVMatchResult } from "../../services/cvMatchService";
+import { detectLanguageBackground } from "@/services/locale-detect";
+import { downloadSessionReportPdf } from "@/app/utils/cheatSheetPdf";
+import { analyzeCvMatch, type CVMatchResult } from "@/services/cvMatchService";
 
 /** Detect locale once at module level — stable across renders */
 const _detectedLocale = detectLanguageBackground();
 
 /* ── Sub-screens extracted to session/ ── */
-import { PreBriefingScreen } from "../features/practice-session/ui/PreBriefingScreen";
-import { ExtraContextScreen } from "../features/practice-session/ui/ExtraContextScreen";
-import { KeyExperienceScreen } from "../features/practice-session/ui/KeyExperienceScreen";
-import { scriptSectionsToBriefingData } from "../features/practice-session/ui/briefing/salesAdapter";
+import { PreBriefingScreen } from "@/app/features/practice-session/ui/PreBriefingScreen";
+import { ExtraContextScreen } from "@/app/features/practice-session/ui/ExtraContextScreen";
+import { KeyExperienceScreen } from "@/app/features/practice-session/ui/KeyExperienceScreen";
+import { scriptSectionsToBriefingData } from "@/app/features/practice-session/ui/briefing/salesAdapter";
 
 /* ═══════════════════════════════════════════════════════════
    TYPES & DATA (MVP-simplified)
@@ -97,7 +97,7 @@ interface PracticeSessionPageProps {
   onNavigateToAccount?: () => void;
 }
 
-import { MAX_REPEATS, SCENARIO_LABELS_MAP } from "../features/practice-session/model/session.constants";
+import { MAX_REPEATS, SCENARIO_LABELS_MAP } from "@/app/features/practice-session/model/session.constants";
 import {
   generateInterviewBriefing,
   generateScript,
@@ -109,7 +109,7 @@ import {
   savePronunciationData,
   completeProgressionLevel,
   completeRemedial,
-} from "../features/practice-session/model/session-api";
+} from "@/app/features/practice-session/model/session-api";
 
 /* ═══════════════════════════════════════════════════════════
    MAIN ORCHESTRATOR (MVP-simplified flow)

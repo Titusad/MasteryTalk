@@ -25,11 +25,11 @@ import { AppModal } from "@/shared/ui/AppModal";
 import {
   CREDIT_PACK_DETAILS,
   type CreditPack,
-} from "../../services/types";
-import { paymentService } from "../../services";
-import { isPaymentError } from "../../services/errors";
+} from "@/services/types";
+import { paymentService } from "@/services";
+import { isPaymentError } from "@/services/errors";
 import type { LandingLang } from "@/shared/i18n/landing-i18n";
-import type { PaywallReason } from "../hooks/useUsageGating";
+import type { PaywallReason } from "@/app/hooks/useUsageGating";
 
 /* ══════════════════════════════════════════════════════════════
    i18n COPY

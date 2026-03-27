@@ -40,8 +40,8 @@ import {
   Tooltip,
   CartesianGrid,
 } from "recharts";
-import { projectId } from "../../../utils/supabase/info";
-import { getSupabaseClient } from "../../services/supabase";
+import { projectId } from "@/../utils/supabase/info";
+import { getSupabaseClient } from "@/services/supabase";
 
 /* ─── Types ─── */
 interface AdminUser {
