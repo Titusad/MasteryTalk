@@ -28,12 +28,12 @@ import {
 import {
     PastelBlobs,
     PageTitleBlock,
-} from "./shared";
+} from "@/app/components/shared";
 import type { InterviewBriefingData } from "@/services/types";
 import type { ScenarioType } from "@/services/types";
 import { BriefingCarousel } from "@/app/features/practice-session/ui/briefing/BriefingCarousel";
 import { ReadinessScore } from "@/app/features/practice-session/ui/briefing/ReadinessScore";
-import { SessionProgressBar } from "./SessionProgressBar";
+import { SessionProgressBar } from "@/app/components/SessionProgressBar";
 
 /* ── Minimum cards to unlock practice ── */
 const MIN_CARDS_FOR_PRACTICE = 3;

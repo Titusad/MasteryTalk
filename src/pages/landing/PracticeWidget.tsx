@@ -4,10 +4,10 @@ import { motion, AnimatePresence } from "motion/react";
 import { authService } from "@/services";
 import type { AuthProvider, ScenarioType } from "@/services/types";
 import { isAuthError } from "@/services/errors";
-import { useLandingCopy } from "./LandingLangContext";
+import { useLandingCopy } from "@/shared/i18n/LandingLangContext";
 import { ArrowRight, Sparkles, X, Loader2, Check, ArrowLeft } from "lucide-react";
 import { Mic, Target } from "lucide-react";
-import { SmoothHeight } from "./shared";
+import { SmoothHeight } from "@/app/components/shared";
 import {
   DEFAULT_INTERLOCUTOR,
   type InterlocutorType,

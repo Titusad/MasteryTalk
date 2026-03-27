@@ -1,15 +1,15 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { AppHeader } from "@/shared/ui";
-import { AnalyzingScreen } from "./shared";
+import { AnalyzingScreen } from "@/app/components/shared";
 import { realConversationService } from "@/services";
 import { toServiceError } from "@/services/errors";
 import type { ServiceError } from "@/services/errors";
 import type { RemedialContent } from "@/services/types";
 
 import { getLevelDefinition } from "@/app/features/dashboard/model/progression-paths";
-import { ProgressionProvider } from "./shared/ProgressionContext";
-import { ServiceErrorBanner } from "./shared/ServiceErrorBanner";
+import { ProgressionProvider } from "@/app/components/shared/ProgressionContext";
+import { ServiceErrorBanner } from "@/app/components/shared/ServiceErrorBanner";
 import { getBeforeAfterForScenario, getStrengthsForScenario } from "@/services/scenario-data";
 import { useMediaRecorder } from "@/app/hooks/useMediaRecorder";
 import { projectId, publicAnonKey } from "@/../utils/supabase/info";
@@ -23,10 +23,10 @@ import type {
   TurnPronunciationData,
   SessionConfig,
 } from "@/services/types";
-import { SessionProgressBar } from "./SessionProgressBar";
+import { SessionProgressBar } from "@/app/components/SessionProgressBar";
 import { SessionReport } from "@/widgets/SessionReport";
 import { InterviewBriefingScreen } from "@/widgets/InterviewBriefingScreen";
-import type { Step } from "./shared/session-types";
+import type { Step } from "@/app/components/shared/session-types";
 import { VoicePractice } from "@/app/features/practice-session/ui/VoicePractice";
 import { ConversationFeedback, type RealFeedbackData, type RepeatInfo } from "@/app/features/practice-session/ui/ConversationFeedback";
 import { CreditUpsellModal } from "@/widgets/CreditUpsellModal";
@@ -45,7 +45,7 @@ import {
   improvedScriptCache,
   pronDataCache,
   cleanupExpiredCache,
-} from "../utils/sessionCache";
+} from "@/app/utils/sessionCache";
 import { detectLanguageBackground } from "@/services/locale-detect";
 import { downloadSessionReportPdf } from "@/app/utils/cheatSheetPdf";
 import { analyzeCvMatch, type CVMatchResult } from "@/services/cvMatchService";

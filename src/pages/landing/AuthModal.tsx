@@ -2,11 +2,11 @@ import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { AppModal } from "@/shared/ui/AppModal";
-import { BrandLogo } from "./shared";
+import { BrandLogo } from "@/app/components/shared";
 import { authService } from "@/services";
 import type { AuthProvider } from "@/services/types";
 import { isAuthError, type ServiceError } from "@/services/errors";
-import { useLandingCopy } from "./LandingLangContext";
+import { useLandingCopy } from "@/shared/i18n/LandingLangContext";
 
 /* ──────────────────────── Social Icons ──────────────────────── */
 

@@ -35,8 +35,8 @@ import {
   PastelBlobs,
   MiniFooter,
   PageTitleBlock,
-} from "./shared";
-import { SessionProgressBar } from "./SessionProgressBar";
+} from "@/app/components/shared";
+import { SessionProgressBar } from "@/app/components/SessionProgressBar";
 import {
   getScriptSectionsForScenario,
 } from "@/services/scenario-data";

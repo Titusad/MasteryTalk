@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Target, Mic, ArrowRight, User, Sparkles, CheckCircle2, FileText, BarChart3, Lightbulb, Check, TrendingUp, Zap } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { useLandingCopy } from "./LandingLangContext";
+import { useLandingCopy } from "@/shared/i18n/LandingLangContext";
 
 /* ═══════════════════════ STEP DATA ═══════════════════════ */
 /* Steps are now dynamic — see useSteps() below */
