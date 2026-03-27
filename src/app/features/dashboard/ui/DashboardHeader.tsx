@@ -9,8 +9,8 @@ import {
 } from "lucide-react";
 import { BrandLogo } from "../../../components/shared";
 import { authService } from "../../../../services";
-import { getCreditsLabel } from "../../../../widgets/CreditUpsellModal";
-import type { LandingLang } from "../../../../shared/i18n/landing-i18n";
+import { getCreditsLabel } from "@/widgets/CreditUpsellModal";
+import type { LandingLang } from "@/shared/i18n/landing-i18n";
 
 interface DashboardHeaderProps {
   avatarInitials: string;

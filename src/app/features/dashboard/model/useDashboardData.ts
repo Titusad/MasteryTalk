@@ -31,8 +31,8 @@ import {
   toPracticeHistoryItem,
   type EnrichedHistoryItem,
 } from "./dashboard.computations";
-import type { LandingLang } from "../../../../shared/i18n/landing-i18n";
-import { LANDING_COPIES } from "../../../../shared/i18n/landing-i18n";
+import type { LandingLang } from "@/shared/i18n/landing-i18n";
+import { LANDING_COPIES } from "@/shared/i18n/landing-i18n";
 
 /* ── Hook Props ── */
 export interface UseDashboardDataProps {

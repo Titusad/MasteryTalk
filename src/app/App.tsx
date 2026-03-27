@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import { LandingPage } from "../pages/landing/LandingPage";
+import { LandingPage } from "@/pages/landing/LandingPage";
 /* ── Stale-chunk recovery for React.lazy after Vercel deploys ──
    On chunk 404, the URL is baked into the cached index.js — retrying
    the same URL won't help. A page reload fetches the new index.js
@@ -30,11 +30,11 @@ import { LoadingScreen } from "./components/LoadingScreen";
 import { LanguageTransitionModal } from "./components/LanguageTransitionModal";
 import { authService } from "../services";
 import type { User, OnboardingProfile, ScenarioType, CreditPack, SessionSummary, TurnPronunciationData, ScriptSection, InterviewBriefingData } from "../services/types";
-import type { SetupModalResult } from "../pages/landing/PracticeWidget";
+import type { SetupModalResult } from "@/pages/landing/PracticeWidget";
 // AnimatePresence removed — was causing modal to linger during exit animation
 // when auth re-renders interrupted the exit. Direct unmount is bulletproof.
-import type { LandingLang } from "../shared/i18n/landing-i18n";
-import { CreditUpsellModal } from "../widgets/CreditUpsellModal";
+import type { LandingLang } from "@/shared/i18n/landing-i18n";
+import { CreditUpsellModal } from "@/widgets/CreditUpsellModal";
 import { useUsageGating } from "./hooks/useUsageGating";
 import type { MarketFocus } from "../services/prompts";
 import { projectId } from "../../utils/supabase/info";

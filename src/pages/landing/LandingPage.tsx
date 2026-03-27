@@ -17,8 +17,8 @@ import type { SetupModalResult } from "./PracticeWidget";
 import { BrandLogo, SectionHeading, CheckIcon, XIcon, DotPattern } from "../../app/components/shared";
 import { AuthModal, type AuthMode } from "./AuthModal";
 import { HowItWorksTabs } from "./HowItWorksTabs";
-import { LANDING_COPIES, type LandingLang } from "../shared/i18n/landing-i18n";
-import { LandingLangProvider } from "../../shared/i18n/LandingLangContext";
+import { LANDING_COPIES, type LandingLang } from "@/shared/i18n/landing-i18n";
+import { LandingLangProvider } from "@/shared/i18n/LandingLangContext";
 
 /* ═══════════════ LANGUAGE SWITCHER ═══════════════ */
 const LANG_OPTIONS: { code: LandingLang; label: string; flag: string }[] = [

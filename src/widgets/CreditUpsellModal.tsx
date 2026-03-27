@@ -28,7 +28,7 @@ import {
 } from "../../services/types";
 import { paymentService } from "../../services";
 import { isPaymentError } from "../../services/errors";
-import type { LandingLang } from "../shared/i18n/landing-i18n";
+import type { LandingLang } from "@/shared/i18n/landing-i18n";
 import type { PaywallReason } from "../hooks/useUsageGating";
 
 /* ══════════════════════════════════════════════════════════════
