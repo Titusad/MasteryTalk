@@ -24,12 +24,12 @@ import type {
   SessionConfig,
 } from "../../services/types";
 import { SessionProgressBar } from "./SessionProgressBar";
-import { SessionReport } from "./SessionReport";
-import { InterviewBriefingScreen } from "./InterviewBriefingScreen";
+import { SessionReport } from "../../widgets/SessionReport";
+import { InterviewBriefingScreen } from "../../widgets/InterviewBriefingScreen";
 import type { Step } from "./shared/session-types";
 import { VoicePractice } from "../features/practice-session/ui/VoicePractice";
 import { ConversationFeedback, type RealFeedbackData, type RepeatInfo } from "../features/practice-session/ui/ConversationFeedback";
-import { CreditUpsellModal } from "./CreditUpsellModal";
+import { CreditUpsellModal } from "../../widgets/CreditUpsellModal";
 import { useUsageGating } from "../hooks/useUsageGating";
 import type { PaywallReason } from "../hooks/useUsageGating";
 import { createSRPhrase, flagPhrasesForReview } from "../utils/spacedRepetition";
