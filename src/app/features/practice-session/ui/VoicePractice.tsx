@@ -16,25 +16,23 @@ import {
   RecordButton,
   RecordingTimer,
   PastelBlobs,
-} from "../shared";
+  SessionProgressBar,
+  ServiceErrorBanner,
+} from "@/shared/ui";
 import {
   realConversationService,
   realSpeechService,
-} from "../../../services";
-import { toServiceError } from "../../../services/errors";
-import type { ServiceError } from "../../../services/errors";
-import { ServiceErrorBanner } from "../shared/ServiceErrorBanner";
-import { useMediaRecorder } from "../../hooks/useMediaRecorder";
-import {
-  projectId,
-  publicAnonKey,
-} from "../../../../utils/supabase/info";
+} from "@/services";
+import { toServiceError } from "@/services/errors";
+import type { ServiceError } from "@/services/errors";
+import { useMediaRecorder } from "@/app/hooks/useMediaRecorder";
+import { projectId } from "@/../utils/supabase/info";
+import { getAuthToken } from "@/services/supabase";
 import type {
   ChatMessage,
   ScenarioType,
   TurnPronunciationData,
-} from "../../../services/types";
-import { SessionProgressBar } from "../SessionProgressBar";
+} from "@/services/types";
 
 const SCENARIO_LABELS_MAP: Record<string, string> = {
   sales: "Sales Pitch",
@@ -123,11 +121,12 @@ function VoicePractice({
         if (msgIndex !== undefined)
           ttsTargetMsgRef.current = msgIndex;
         const ttsUrl = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/tts`;
+        const token = await getAuthToken();
         const res = await fetch(ttsUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${publicAnonKey}`,
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ text, role: "user_line" }),
         });

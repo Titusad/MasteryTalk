@@ -965,7 +965,7 @@ function ConversationFeedback({
                 </p>
               </div>
               <div className="space-y-2.5">
-                {strengths.slice(0, 4).map((s, i) => (
+                {strengths.slice(0, 4).map((s: Strength, i: number) => (
                   <motion.div
                     key={i}
                     className="bg-[#f0fdf4] border border-[#bbf7d0] rounded-xl px-4 py-3 flex items-start gap-2.5"
@@ -1009,7 +1009,7 @@ function ConversationFeedback({
                 </p>
               </div>
               <div className="space-y-2.5">
-                {beforeAfter.slice(0, 4).map((ba, i) => (
+                {beforeAfter.slice(0, 4).map((ba: BeforeAfterComparison, i: number) => (
                   <motion.div
                     key={i}
                     className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl px-4 py-3"

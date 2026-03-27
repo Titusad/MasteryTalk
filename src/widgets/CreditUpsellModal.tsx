@@ -26,7 +26,7 @@ import {
   CREDIT_PACK_DETAILS,
   type CreditPack,
 } from "@/services/types";
-import { paymentService } from "@/services";
+import { paymentService, authService } from "@/services";
 import { isPaymentError } from "@/services/errors";
 import type { LandingLang } from "@/shared/i18n/landing-i18n";
 import type { PaywallReason } from "@/app/hooks/useUsageGating";
@@ -260,7 +260,9 @@ export function CreditUpsellModal({
     setLoading(true);
     setError(null);
     try {
-      await paymentService.createCheckout(selected);
+      const user = authService.getCurrentUser();
+      if (!user) throw new Error("Not authenticated");
+      await paymentService.createCheckout(user.uid, selected);
       const detail = CREDIT_PACK_DETAILS[selected];
 
       // Confetti burst
