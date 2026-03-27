@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import { LandingPage } from "./components/LandingPage";
+import { LandingPage } from "../pages/LandingPage";
 /* ── Stale-chunk recovery for React.lazy after Vercel deploys ──
    On chunk 404, the URL is baked into the cached index.js — retrying
    the same URL won't help. A page reload fetches the new index.js
@@ -18,13 +18,13 @@ function lazyRetry(factory: () => Promise<any>) {
     })
   );
 }
-const DesignSystemPage = lazyRetry(() => import("./components/DesignSystemPage").then(m => ({ default: m.DesignSystemPage })));
-const PracticeSessionPage = lazyRetry(() => import("./components/PracticeSessionPage").then(m => ({ default: m.PracticeSessionPage })));
+const DesignSystemPage = lazyRetry(() => import("../pages/DesignSystemPage").then(m => ({ default: m.DesignSystemPage })));
+const PracticeSessionPage = lazyRetry(() => import("../pages/PracticeSessionPage").then(m => ({ default: m.PracticeSessionPage })));
 const DashboardPage = lazyRetry(() => import("./features/dashboard/ui/DashboardPage").then(m => ({ default: m.DashboardPage })));
 const PracticeHistoryPage = lazyRetry(() => import("./features/dashboard/ui/PracticeHistoryPage").then(m => ({ default: m.PracticeHistoryPage })));
-const AccountPage = lazyRetry(() => import("./components/AccountPage").then(m => ({ default: m.AccountPage })));
-const LibraryPage = lazyRetry(() => import("./components/LibraryPage").then(m => ({ default: m.LibraryPage })));
-const AdminDashboardPage = lazyRetry(() => import("./components/AdminDashboardPage").then(m => ({ default: m.AdminDashboardPage })));
+const AccountPage = lazyRetry(() => import("../pages/AccountPage").then(m => ({ default: m.AccountPage })));
+const LibraryPage = lazyRetry(() => import("../pages/LibraryPage").then(m => ({ default: m.LibraryPage })));
+const AdminDashboardPage = lazyRetry(() => import("../pages/AdminDashboardPage").then(m => ({ default: m.AdminDashboardPage })));
 
 import { LoadingScreen } from "./components/LoadingScreen";
 import { LanguageTransitionModal } from "./components/LanguageTransitionModal";
@@ -34,13 +34,13 @@ import type { SetupModalResult } from "./components/PracticeWidget";
 // AnimatePresence removed — was causing modal to linger during exit animation
 // when auth re-renders interrupted the exit. Direct unmount is bulletproof.
 import type { LandingLang } from "./components/landing-i18n";
-import { CreditUpsellModal } from "./components/CreditUpsellModal";
+import { CreditUpsellModal } from "../widgets/CreditUpsellModal";
 import { useUsageGating } from "./hooks/useUsageGating";
 import type { MarketFocus } from "../services/prompts";
 import { projectId } from "../../utils/supabase/info";
 import { DevPreviewMenu, getDevMockData } from "./components/DevPreviewMenu";
 import type { Step } from "./components/shared/session-types";
-import type { RealFeedbackData } from "./components/session/ConversationFeedback";
+import type { RealFeedbackData } from "./features/practice-session/ui/ConversationFeedback";
 
 /* ─── App-level page types ─── */
 type Page =
