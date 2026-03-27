@@ -14,7 +14,7 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import { PracticeWidget } from "./PracticeWidget";
 import type { SetupModalResult } from "./PracticeWidget";
-import { BrandLogo, SectionHeading, CheckIcon, XIcon, DotPattern } from "@/app/components/shared";
+import { BrandLogo, SectionHeading, CheckIcon, XIcon, DotPattern } from "@/shared/ui";
 import { AuthModal, type AuthMode } from "./AuthModal";
 import { HowItWorksTabs } from "./HowItWorksTabs";
 import { LANDING_COPIES, type LandingLang } from "@/shared/i18n/landing-i18n";

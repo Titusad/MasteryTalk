@@ -36,3 +36,7 @@ export { StageBadge } from "./StageBadge";
 export { SubtleTextLink } from "./SubtleTextLink";
 export { highlightEnglish, renderStressedPhrase, stripStressMarkers } from "./TextHelpers";
 export { PricingCard } from "./PricingCard";
+
+// ── Session utilities ─────────────────────────────────────────
+export { ProgressionProvider, useProgressionLevel } from "@/app/components/shared/ProgressionContext";
+export type { Step } from "@/entities/session";

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { User, CreditCard, Settings, LogOut, CheckCircle, AlertTriangle, ShieldAlert, Lock } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { PastelBlobs, MiniFooter } from "@/app/components/shared";
+import { PastelBlobs, MiniFooter } from "@/shared/ui";
 import { AppHeader } from "@/shared/ui/AppHeader";
 import type { OnboardingProfile, User as AuthUser } from "@/services/types";
 

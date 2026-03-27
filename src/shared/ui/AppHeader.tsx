@@ -14,7 +14,7 @@ import { ArrowLeft, LogOut } from "lucide-react";
 import type React from "react";
 import { BrandLogo } from "./BrandLogo";
 import { SessionProgressBar } from "./SessionProgressBar";
-import type { Step } from "@/app/components/shared/session-types";
+import type { Step } from "@/shared/ui";
 
 export interface AppHeaderProps {
   variant?: "app" | "session" | "minimal";

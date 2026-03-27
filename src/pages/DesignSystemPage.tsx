@@ -42,12 +42,12 @@ import {
   RecordingTimer,
   highlightEnglish,
   renderStressedPhrase,
-} from "@/app/components/shared";
+} from "@/shared/ui";
 import {
   PhaseIndicator,
   ArenaProgressBar,
 } from "@/app/features/arena/ui/ArenaSystem";
-import { ServiceErrorBanner } from "@/app/components/shared/ServiceErrorBanner";
+import { ServiceErrorBanner } from "@/shared/ui";
 import { ServiceError } from "@/services/errors";
 
 /* ══════════════════════════════════════════════════════════════

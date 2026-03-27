@@ -33,6 +33,7 @@ export const COLORS = {
     /* Semantic */
     success: "#00C950",
     successAlt: "#008236",
+    mutedIcon: "#cad5e2",
     auxText: "#4b5563",
     secondaryText: "#62748e",
     simulationBg: "#0f172b",

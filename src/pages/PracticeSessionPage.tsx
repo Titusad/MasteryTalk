@@ -1,15 +1,15 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { AppHeader } from "@/shared/ui";
-import { AnalyzingScreen } from "@/app/components/shared";
+import { AnalyzingScreen } from "@/shared/ui";
 import { realConversationService } from "@/services";
 import { toServiceError } from "@/services/errors";
 import type { ServiceError } from "@/services/errors";
 import type { RemedialContent } from "@/services/types";
 
 import { getLevelDefinition } from "@/app/features/dashboard/model/progression-paths";
-import { ProgressionProvider } from "@/app/components/shared/ProgressionContext";
-import { ServiceErrorBanner } from "@/app/components/shared/ServiceErrorBanner";
+import { ProgressionProvider } from "@/shared/ui";
+import { ServiceErrorBanner } from "@/shared/ui";
 import { getBeforeAfterForScenario, getStrengthsForScenario } from "@/services/scenario-data";
 import { useMediaRecorder } from "@/app/hooks/useMediaRecorder";
 import { projectId, publicAnonKey } from "@/../utils/supabase/info";
@@ -23,10 +23,10 @@ import type {
   TurnPronunciationData,
   SessionConfig,
 } from "@/services/types";
-import { SessionProgressBar } from "@/app/components/SessionProgressBar";
+import { SessionProgressBar } from "@/shared/ui";
 import { SessionReport } from "@/widgets/SessionReport";
 import { InterviewBriefingScreen } from "@/widgets/InterviewBriefingScreen";
-import type { Step } from "@/app/components/shared/session-types";
+import type { Step } from "@/shared/ui";
 import { VoicePractice } from "@/app/features/practice-session/ui/VoicePractice";
 import { ConversationFeedback, type RealFeedbackData, type RepeatInfo } from "@/app/features/practice-session/ui/ConversationFeedback";
 import { CreditUpsellModal } from "@/widgets/CreditUpsellModal";
@@ -581,7 +581,7 @@ export function PracticeSessionPage({
     const srPhrases = beforeAfter.slice(0, 5).map((ba, i) => {
       // Extract a focus word (first word > 4 chars from the professional version)
       const words = ba.professionalVersion.split(/\s+/);
-      const focusWord = words.find(w => w.replace(/[^a-zA-Z]/g, "").length > 4) || words[0] || "";
+      const focusWord = words.find((w: string) => w.replace(/[^a-zA-Z]/g, "").length > 4) || words[0] || "";
       return createSRPhrase(
         `feedback-${sessionId}-${i}`,
         ba.professionalVersion,
@@ -909,13 +909,13 @@ export function PracticeSessionPage({
                 onStartSimulation={(userDrafts) => {
                   // Package briefing data for the interviewer prompt (Gap A+B)
                   const briefingPayload: SessionConfig["interviewBriefing"] = {
-                    anticipatedQuestions: interviewBriefing.anticipatedQuestions.map(q => ({
+                    anticipatedQuestions: interviewBriefing.anticipatedQuestions.map((q) => ({
                       id: q.id,
                       question: q.question,
                       approach: q.approach,
                       suggestedOpener: q.suggestedOpener,
                       framework: q.framework,
-                      keyPhrases: q.keyPhrases.map(kp => kp.phrase),
+                      keyPhrases: q.keyPhrases.map((kp) => kp.phrase),
                     })),
                     userDrafts: Object.keys(userDrafts).length > 0 ? userDrafts : undefined,
                   };
@@ -938,13 +938,13 @@ export function PracticeSessionPage({
                   // Package sales briefing data for session
                   const salesBriefing = scriptSectionsToBriefingData(generatedScript);
                   const briefingPayload: SessionConfig["interviewBriefing"] = {
-                    anticipatedQuestions: salesBriefing.anticipatedQuestions.map(q => ({
+                    anticipatedQuestions: salesBriefing.anticipatedQuestions.map((q) => ({
                       id: q.id,
                       question: q.question,
                       approach: q.approach,
                       suggestedOpener: q.suggestedOpener,
                       framework: q.framework,
-                      keyPhrases: q.keyPhrases.map(kp => kp.phrase),
+                      keyPhrases: q.keyPhrases.map((kp) => kp.phrase),
                     })),
                     userDrafts: Object.keys(userDrafts).length > 0 ? userDrafts : undefined,
                   };

@@ -28,7 +28,7 @@ import {
 import {
     PastelBlobs,
     PageTitleBlock,
-} from "@/app/components/shared";
+} from "@/shared/ui";
 import type { InterviewBriefingData } from "@/services/types";
 import type { ScenarioType } from "@/services/types";
 import { BriefingCarousel } from "@/app/features/practice-session/ui/briefing/BriefingCarousel";

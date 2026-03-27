@@ -7,7 +7,7 @@ import { isAuthError } from "@/services/errors";
 import { useLandingCopy } from "@/shared/i18n/LandingLangContext";
 import { ArrowRight, Sparkles, X, Loader2, Check, ArrowLeft } from "lucide-react";
 import { Mic, Target } from "lucide-react";
-import { SmoothHeight } from "@/app/components/shared";
+import { SmoothHeight } from "@/shared/ui";
 import {
   DEFAULT_INTERLOCUTOR,
   type InterlocutorType,
@@ -409,53 +409,33 @@ export function PracticeWidget({
               return (
                 <motion.button
                   key={card.id}
-                  onClick={card.disabled ? undefined : () => handleScenarioClick(card)}
-                  className={`group/card relative rounded-2xl p-6 text-left transition-all duration-300 ${
-                    card.disabled
-                      ? "bg-[#f8fafc] border-2 border-[#e2e8f0] opacity-70 cursor-not-allowed"
-                      : "bg-[#f8fafc] hover:bg-[#0f172b] border-2 border-[#e2e8f0] hover:border-[#0f172b] cursor-pointer"
-                  }`}
-                  whileHover={card.disabled ? {} : { scale: 1.02, y: -2 }}
-                  whileTap={card.disabled ? {} : { scale: 0.98 }}
+                  onClick={() => handleScenarioClick(card)}
+                  className="group/card relative rounded-2xl p-6 text-left transition-all duration-300 bg-[#f8fafc] hover:bg-[#0f172b] border-2 border-[#e2e8f0] hover:border-[#0f172b] cursor-pointer"
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
                 >
-                  {card.badge && (
-                    <div className="absolute top-4 right-4 bg-[#e2e8f0] text-[#45556c] text-[10px] uppercase px-2 py-0.5 rounded-full" style={{ fontWeight: 700, letterSpacing: "0.5px" }}>
-                      {card.badge}
-                    </div>
-                  )}
-
                   {/* Icon */}
-                  <div className={`w-11 h-11 rounded-full flex items-center justify-center mb-4 transition-colors duration-300 ${
-                    card.disabled ? "bg-[#e2e8f0]" : "bg-[#0f172b] group-hover/card:bg-white"
-                  }`}>
-                    <Icon className={`w-5 h-5 transition-colors duration-300 ${
-                      card.disabled ? "text-[#94a3b8]" : "text-white group-hover/card:text-[#0f172b]"
-                    }`} strokeWidth={1.5} />
+                  <div className="w-11 h-11 rounded-full flex items-center justify-center mb-4 transition-colors duration-300 bg-[#0f172b] group-hover/card:bg-white">
+                    <Icon className="w-5 h-5 transition-colors duration-300 text-white group-hover/card:text-[#0f172b]" strokeWidth={1.5} />
                   </div>
 
                   {/* Label */}
                   <p
-                    className={`text-[15px] mb-1.5 transition-colors duration-300 ${
-                      card.disabled ? "text-[#94a3b8]" : "text-[#0f172b] group-hover/card:text-white"
-                    }`}
+                    className="text-[15px] mb-1.5 transition-colors duration-300 text-[#0f172b] group-hover/card:text-white"
                     style={{ fontWeight: 600 }}
                   >
                     {card.label}
                   </p>
 
                   {/* Description */}
-                  <p className={`text-[13px] leading-relaxed transition-colors duration-300 ${
-                      card.disabled ? "text-[#94a3b8]/70" : "text-[#62748e] group-hover/card:text-white/70"
-                  }`}>
+                  <p className="text-[13px] leading-relaxed transition-colors duration-300 text-[#62748e] group-hover/card:text-white/70">
                     {card.description}
                   </p>
 
                   {/* Arrow indicator */}
-                  {!card.disabled && (
-                    <div className="absolute top-6 right-6 w-8 h-8 rounded-full bg-transparent group-hover/card:bg-white/15 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-all duration-300">
-                      <ArrowRight className="w-4 h-4 text-white" />
-                    </div>
-                  )}
+                  <div className="absolute top-6 right-6 w-8 h-8 rounded-full bg-transparent group-hover/card:bg-white/15 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-all duration-300">
+                    <ArrowRight className="w-4 h-4 text-white" />
+                  </div>
                 </motion.button>
               );
             })}

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { AppModal } from "@/shared/ui/AppModal";
-import { BrandLogo } from "@/app/components/shared";
+import { BrandLogo } from "@/shared/ui";
 import { authService } from "@/services";
 import type { AuthProvider } from "@/services/types";
 import { isAuthError, type ServiceError } from "@/services/errors";

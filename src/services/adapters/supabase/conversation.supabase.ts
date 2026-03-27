@@ -29,22 +29,54 @@ import { getAuthToken } from "../../supabase";
 
 const BASE_URL = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d`;
 
+const MAX_RETRIES = 2;
+const BASE_DELAY_MS = 1000;
+
 async function serverFetch(path: string, body: Record<string, unknown>) {
     const token = await getAuthToken();
-    const res = await fetch(`${BASE_URL}${path}`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(body),
-    });
+    let lastError: Error | null = null;
 
-    if (!res.ok) {
-        const errBody = await res.text();
-        throw new Error(`Server ${res.status}: ${errBody.slice(0, 300)}`);
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+        try {
+            const res = await fetch(`${BASE_URL}${path}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(body),
+            });
+
+            // 4xx errors: don't retry (bad request / auth issue)
+            if (res.status >= 400 && res.status < 500) {
+                const errBody = await res.text();
+                throw new Error(`Server ${res.status}: ${errBody.slice(0, 300)}`);
+            }
+
+            // 5xx errors: retry with backoff
+            if (!res.ok) {
+                const errBody = await res.text();
+                lastError = new Error(`Server ${res.status}: ${errBody.slice(0, 300)}`);
+                if (attempt < MAX_RETRIES) {
+                    await new Promise((r) => setTimeout(r, BASE_DELAY_MS * 2 ** attempt));
+                    continue;
+                }
+                throw lastError;
+            }
+
+            return res.json();
+        } catch (err) {
+            lastError = err instanceof Error ? err : new Error(String(err));
+            // Network errors: retry with backoff
+            if (attempt < MAX_RETRIES && !(err instanceof Error && err.message.startsWith("Server 4"))) {
+                await new Promise((r) => setTimeout(r, BASE_DELAY_MS * 2 ** attempt));
+                continue;
+            }
+            throw lastError;
+        }
     }
-    return res.json();
+
+    throw lastError ?? new Error("serverFetch: unexpected retry exhaustion");
 }
 
 export class SupabaseConversationService implements IConversationService {
