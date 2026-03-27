@@ -5,11 +5,8 @@ trigger: always_on
 # GEMINI.md - Antigravity Kit
 
 > This file defines how the AI behaves in this workspace.
-
 ---
-
 ## CRITICAL: AGENT & SKILL PROTOCOL (START HERE)
-
 > **MANDATORY:** You MUST read the appropriate agent file and its skills BEFORE performing any implementation. This is the highest priority rule.
 
 ### 1. Modular Skill Loading Protocol
@@ -174,7 +171,6 @@ When user's prompt is NOT in English:
 | **Direct "Proceed"**    | Validation     | **STOP** → Even if answers are given, ask 2 "Edge Case" questions |
 
 **Protocol:**
-
 1. **Never Assume:** If even 1% is unclear, ASK.
 2. **Handle Spec-heavy Requests:** When user gives a list (Answers 1, 2, 3...), do NOT skip the gate. Instead, ask about **Trade-offs** or **Edge Cases** (e.g., "LocalStorage confirmed, but should we handle data clearing or versioning?") before starting.
 3. **Wait:** Do NOT invoke subagents or write code until the user clears the Gate.
@@ -183,16 +179,13 @@ When user's prompt is NOT in English:
 ### 🏁 Final Checklist Protocol
 
 **Trigger:** When the user says "son kontrolleri yap", "final checks", "çalıştır tüm testleri", or similar phrases.
-
 | Task Stage       | Command                                            | Purpose                        |
 | ---------------- | -------------------------------------------------- | ------------------------------ |
 | **Manual Audit** | `python .agent/scripts/checklist.py .`             | Priority-based project audit   |
 | **Pre-Deploy**   | `python .agent/scripts/checklist.py . --url <URL>` | Full Suite + Performance + E2E |
 
 **Priority Execution Order:**
-
 1. **Security** → 2. **Lint** → 3. **Schema** → 4. **Tests** → 5. **UX** → 6. **Seo** → 7. **Lighthouse/E2E**
-
 **Rules:**
 
 - **Completion:** A task is NOT finished until `checklist.py` returns success.
@@ -218,7 +211,6 @@ When user's prompt is NOT in English:
 > 🔴 **Agents & Skills can invoke ANY script** via `python .agent/skills/<skill>/scripts/<script>.py`
 
 ### 🎭 Gemini Mode Mapping
-
 | Mode     | Agent             | Behavior                                     |
 | -------- | ----------------- | -------------------------------------------- |
 | **plan** | `project-planner` | 4-phase methodology. NO CODE before Phase 4. |
@@ -226,18 +218,15 @@ When user's prompt is NOT in English:
 | **edit** | `orchestrator`    | Execute. Check `{task-slug}.md` first.       |
 
 **Plan Mode (4-Phase):**
-
 1. ANALYSIS → Research, questions
 2. PLANNING → `{task-slug}.md`, task breakdown
 3. SOLUTIONING → Architecture, design (NO CODE!)
 4. IMPLEMENTATION → Code + tests
 
 > 🔴 **Edit mode:** If multi-file or structural change → Offer to create `{task-slug}.md`. For single-file fixes → Proceed directly.
-
 ---
 
 ## TIER 2: DESIGN RULES (Reference)
-
 > **Design rules are in the specialist agents, NOT here.**
 
 | Task         | Read                            |
@@ -251,23 +240,25 @@ When user's prompt is NOT in English:
 - Template Ban (no standard layouts)
 - Anti-cliché rules
 - Deep Design Thinking protocol
-
 > 🔴 **For design work:** Open and READ the agent file. Rules are there.
-
 ---
 
 ## 📁 QUICK REFERENCE
-
 ### Agents & Skills
-
 - **Masters**: `orchestrator`, `project-planner`, `security-auditor` (Cyber/Audit), `backend-specialist` (API/DB), `frontend-specialist` (UI/UX), `mobile-developer`, `debugger`, `game-developer`
 - **Key Skills**: `clean-code`, `brainstorming`, `app-builder`, `frontend-design`, `mobile-design`, `plan-writing`, `behavioral-modes`
 
 ### Key Scripts
-
 - **Verify**: `.agent/scripts/verify_all.py`, `.agent/scripts/checklist.py`
 - **Scanners**: `security_scan.py`, `dependency_analyzer.py`
 - **Audits**: `ux_audit.py`, `mobile_audit.py`, `lighthouse_audit.py`, `seo_checker.py`
 - **Test**: `playwright_runner.py`, `test_runner.py`
-
 ---
+
+## 🏗️ PROJECT CONTEXT
+> **MANDATORY:** Read `.agent/skills/influentia-context/SKILL.md` before
+> ANY task in this project. It contains P0-level rules that override
+> skill defaults: Component Registry, Design System, Business Model,
+> Confirmation Protocol,and FSD Architecture
+
+
