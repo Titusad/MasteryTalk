@@ -6,7 +6,7 @@ import { realConversationService } from "../../services";
 import { toServiceError } from "../../services/errors";
 import type { ServiceError } from "../../services/errors";
 import type { RemedialContent } from "../../services/types";
-import { RemedialView } from "./progression/RemedialView";
+
 import { getLevelDefinition } from "./progression/progression-paths";
 import { ProgressionProvider } from "./shared/ProgressionContext";
 import { ServiceErrorBanner } from "./shared/ServiceErrorBanner";
@@ -329,8 +329,7 @@ export function PracticeSessionPage({
   /** User drafts from "Your Response" tab — persisted for PDF generation */
   const [userDrafts, setUserDrafts] = useState<Record<number, string>>({});
 
-  /* Remedial content from progression complete-level API */
-  const [remedialContent, setRemedialContent] = useState<RemedialContent | null>(null);
+
 
   /* AI-generated preparation toolkit (power phrases, power questions, cultural tips) */
   const [preparationToolkit, setPreparationToolkit] = useState<{
@@ -551,7 +550,19 @@ export function PracticeSessionPage({
       console.error("[SaveSession] ❌ Failed (non-blocking):", err.message);
       sessionSavedRef.current = false; // Allow retry on next render
     });
-  }, [sessionId, scenario, interlocutor, scenarioType, realFeedback, sessionSummary, sessionPronData, interviewBriefing]);
+
+    // If part of a progression path, tell backend to generate remedial lessons
+    if (progressionLevelId && progressionPathId && realFeedback) {
+      completeProgressionLevel(
+        progressionPathId,
+        progressionLevelId,
+        realFeedback.professionalProficiency ?? 0,
+        realFeedback.pillarScores || {}
+      ).catch((err) => {
+        console.error("[Progression] ❌ Failed to generate remedial content:", err.message);
+      });
+    }
+  }, [sessionId, scenario, interlocutor, scenarioType, realFeedback, sessionSummary, sessionPronData, interviewBriefing, progressionLevelId, progressionPathId]);
 
   /* ── Auto-save session when entering session-recap with data ── */
   useEffect(() => {
@@ -1058,38 +1069,7 @@ export function PracticeSessionPage({
                 sessionId={sessionId}
               />
             )}
-            {step === "remedial" && progressionLevelId && progressionPathId && (
-              <RemedialView
-                remedial={remedialContent || {
-                  generatedAt: new Date().toISOString(),
-                  weakPillars: ["Fluency"],
-                  lessons: [{
-                    id: "loading",
-                    title: "Loading...",
-                    pillar: "General",
-                    content: "Your personalized lessons are being prepared.",
-                    example: { wrong: "...", correct: "..." },
-                  }],
-                  shadowingPhrases: [{
-                    id: "loading",
-                    phrase: "Loading your practice phrases...",
-                    focus: "General",
-                  }],
-                  completedAt: null,
-                  shadowingScore: null,
-                }}
-                levelTitle={getLevelDefinition(progressionPathId, progressionLevelId)?.title || "Practice"}
-                onComplete={(shadowingScore) => {
-                  // Call complete-remedial
-                  completeRemedial(progressionPathId, progressionLevelId, shadowingScore)
-                    .then(() => onFinish())
-                    .catch(() => onFinish());
-                }}
-                onRetry={() => {
-                  setStep("remedial");
-                }}
-              />
-            )}
+
             {step === "session-recap" && (
               <SessionReport
                 scenarioType={scenarioType}

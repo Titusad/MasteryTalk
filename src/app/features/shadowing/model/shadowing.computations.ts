@@ -135,19 +135,34 @@ export function extractShadowingPhrases(
     const normalize = (s: string) =>
       s.toLowerCase().replace(/[^\w\s]/g, "").trim();
     const normRecognized = normalize(recognizedText);
+    const recognizedWords = new Set(normRecognized.split(/\s+/).filter(Boolean));
 
     let sentenceToPractice = recognizedText;
     if (beforeAfter && beforeAfter.length > 0) {
-      const matched = beforeAfter.find((ba) => {
-        if (!ba.userOriginal) return false;
-        const normOriginal = normalize(ba.userOriginal);
-        return (
-          normRecognized.includes(normOriginal) ||
-          normOriginal.includes(normRecognized)
-        );
-      });
-      if (matched?.professionalVersion) {
-        sentenceToPractice = matched.professionalVersion;
+      // Use word-overlap (Jaccard) similarity for robust fuzzy matching
+      let bestMatch: BeforeAfterComparison | null = null;
+      let bestSimilarity = 0;
+
+      for (const ba of beforeAfter) {
+        if (!ba.userOriginal) continue;
+        const origWords = new Set(normalize(ba.userOriginal).split(/\s+/).filter(Boolean));
+        // Calculate Jaccard similarity: |intersection| / |union|
+        let intersection = 0;
+        for (const w of origWords) {
+          if (recognizedWords.has(w)) intersection++;
+        }
+        const union = new Set([...recognizedWords, ...origWords]).size;
+        const similarity = union > 0 ? intersection / union : 0;
+
+        if (similarity > bestSimilarity) {
+          bestSimilarity = similarity;
+          bestMatch = ba;
+        }
+      }
+
+      // Threshold: 30% word overlap is enough for a match
+      if (bestMatch?.professionalVersion && bestSimilarity >= 0.3) {
+        sentenceToPractice = bestMatch.professionalVersion;
       }
     }
 

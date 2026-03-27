@@ -49,6 +49,7 @@ en ingles, disenado para el mercado de nearshoring en Latinoamerica.
 | -------------------------- | -------------------------------------- | ----------------------------------------------------------- |
 | **Backend & DB**           | Supabase (PostgreSQL)                  | Queries relacionales para analytics, Edge Functions rapidas |
 | **Logic Layer**            | Supabase Edge Functions (Deno/TS)      | Menor latencia, integracion nativa con Supabase             |
+| **Generación de Lecciones**| GPT-4o                                 | Creación dinámica de 5-Step Lessons basadas en debilidades  |
 | **Chat en Vivo**           | GPT-4o                                 | Maximo realismo en confrontacion ejecutiva                  |
 | **Feedback/Procesamiento** | Gemini 1.5 Flash                       | Ahorro ~98% vs GPT-4o en tareas analiticas                  |
 | **TTS Sistema**            | Azure Neural                           | Costo $0 para guiar al usuario                              |
@@ -116,7 +117,25 @@ CREATE TABLE sessions (
 );
 ```
 
-### 3.3 Tabla `sr_cards`
+### 3.3 Tablas de Progresión (Nuevo)
+
+```sql
+CREATE TABLE progression_paths (
+  id              text PRIMARY KEY,
+  title           text NOT NULL,
+  description     text NOT NULL
+);
+
+CREATE TABLE user_progression (
+  user_id         uuid REFERENCES profiles(id) ON DELETE CASCADE,
+  path_id         text REFERENCES progression_paths(id),
+  unlocked_level  integer DEFAULT 1,
+  completed_levels integer[] DEFAULT '{}',
+  PRIMARY KEY (user_id, path_id)
+);
+```
+
+### 3.4 Tabla `sr_cards`
 
 ```sql
 CREATE TABLE sr_cards (
@@ -457,10 +476,12 @@ PracticeSessionPage (#practice-session) — 8 internal steps (simplified in v5.0
 
 Dashboard (#dashboard):
   |
+  +-- Header (PracticeDropdown para quick-start Interview/Sales)
+  +-- ProgressionTree (Rutas visuales de niveles Interview/Sales)
+        |
+        +-- [Nivel Clicked] → Lesson Modal (LevelDrawer -> 5-Step LessonStepper)
   +-- Credit balance display + CreditUpsellModal
-  +-- handleStartSession() validates credits via userService.canStartSession()
   +-- Practice History (recent sessions with before/after highlights)
-  +-- "Nueva practica" → Landing
   +-- "Ver historial" → Practice History (#practice-history)
 
 Practice History (#practice-history):
@@ -537,6 +558,11 @@ Internal pages layout: BrandLogo header, PastelBlobs background, MiniFooter
 
 ### 9.7 `webhook-payment`
 - Mercado Pago/Stripe webhook → confirma pago → actualiza creditos en `credit_balances`
+
+### 9.8 Módulo Progression (Lecciones)
+- **`get-progression-path`**: Edge function para recuperar el árbol visual y estado del usuario.
+- **`make-server` (/progression/lesson)**: Inyecta el pilar débil en un prompt estructurado de GPT-4o para generar 5 pasos (Concept, Scenario, Comparison, Toolkit, Exercise) regresando un JSON tipado compatible con `StructuredLesson`.
+- **`make-server` (/progression/complete-lesson)**: Valida la culminación del test final y hace `UPDATE user_progression` saltando el `unlocked_level` al siguiente nodo.
 
 ---
 

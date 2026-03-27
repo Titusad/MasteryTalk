@@ -22,7 +22,8 @@
 | 6 | [Analyzing Feedback](#pantalla-6-analyzing-feedback-loader) | `#practice-session` | `AnalyzingScreen(variant="feedback")` | (loader + mindset) |
 | 7 | [Conversation Feedback](#pantalla-7-conversation-feedback) | `#practice-session` | `ConversationFeedback` (inline) | Datos cargados en step anterior |
 | 8 | [Session Report](#pantalla-8-session-report) | `#practice-session` | `SessionReport` | `feedbackService.getCompletedSummary()`, `.generateResultsSummary()` |
-| 10 | [Dashboard](#pantalla-10-dashboard) | `#dashboard` | `DashboardPage` | `userService.*`, `paymentService.*` |
+| 10 | [Dashboard](#pantalla-10-dashboard) | `#dashboard` | `DashboardPage` | `progressionService.*`, `userService.*` |
+| 10.1 | [Lesson Modal (Remedial Learning)](#pantalla-101-lesson-modal-remedial-learning) | overlay en `#dashboard` | `LevelDrawer` + `LessonStepper` | `progressionService.getLessonContent()` |
 | 10.5 | [Practice History](#pantalla-105-practice-history) | `#practice-history` | `PracticeHistoryPage` | `userService.getPracticeHistory()` |
 | DS | [Design System](#design-system) | `#design-system` | `DesignSystemPage` | Ninguno |
 
@@ -283,11 +284,17 @@ Reporte comprehensivo post-sesion que consolida toda la informacion de feedback,
 
 ### UI
 - **Header**: BrandLogo + avatar + nombre + logout
+- **Practice Dropdown**: Selector rápido para saltar directo a "Interview" o "Sales" basado en el siguiente nivel desbloqueado (`PracticeDropdown.tsx`).
+- **Progression Tree**: Un mapa visual estructurado en ramas (Interview, Sales). Los niveles aumentan progresivamente (e.g., Phone Screen -> Behavioral Round).
 - **Credit Balance**: muestra creditos restantes + label contextual (i18n)
 - **CreditUpsellModal**: se abre cuando el usuario no tiene creditos e intenta iniciar sesion
 - **Practice History** (ultimas sesiones)
-- **CTAs**: "Nueva practica" (valida creditos via `handleStartSession`)
-- **Ver historial**
+
+### Progression & Learning Loop (Nuevo v6.0)
+Los usuarios ya no eligen escenarios al azar. Siguen el `ProgressionTree` renderizado en el Dashboard.
+1. Al hacer click en un nivel bloqueado, se muestra el estado y requisitos.
+2. Al hacer click en un nivel actual o remedial, se abre el **Lesson Modal** (`LevelDrawer.tsx`).
+3. Al aprobar el **Lesson Modal**, se desbloquea el nivel para practicar en **The Arena**.
 
 ### Credit Validation Flow (nuevo v5.0)
 1. Click "Start session" → `handleStartSession()` se ejecuta
@@ -295,10 +302,38 @@ Reporte comprehensivo post-sesion que consolida toda la informacion de feedback,
 3. Si `allowed: true` → navega a Landing para nueva practica
 4. Si `allowed: false` → abre `CreditUpsellModal`
 
-### Service Calls (mock)
+### Service Calls (mock & edge)
+- `progressionService.getProgressionPath(pathId)` — obtiene el árbol
 - `userService.canStartSession(uid)` — valida creditos
 - `paymentService.getCreditsBalance(uid)` — obtiene balance
 - `userService.getPracticeHistory(uid)`
+
+---
+
+## Pantalla 10.1: Lesson Modal (Remedial Learning)
+
+### Componente
+`LevelDrawer.tsx` (overlay full-screen) + `LessonStepper.tsx`
+
+### Objetivo
+Entrenamiento guiado y remediación si el usuario falla parámetros en "The Arena" (ej. bajo nivel de *Professional Tone*). 
+
+### UX / UI
+- Modal full-screen con **Fondo Gradiente** (`#f0f4ff` a `#ffffff`) para paridad visual con la sesión de práctica.
+- **Botón Cerrar (Close):** A la misma altura del título (top/right: 48px).
+- **Stepper Elegante:** Píldoras y dots full-width de color negro (#0f172b), indicando progreso en 5 pasos.
+- La **navegación (Previous / Next)** vive como un `footer` internamente renderizado **adentro** de la *card* blanca de contenido de cada paso.
+
+### 5 Pasos Generados por IA (`LessonStepper`)
+1. **ConceptStep**: Explicación teórica del *weak pillar* detectado.
+2. **ScenarioStep**: Ejemplo contextualizado real basado en la industria del usuario.
+3. **ComparisonStep**: Comparativa lado a lado (Amateur vs. Professional).
+4. **ToolkitStep**: Bloque interactivo para hacer sombra (Shadowing) de frases clave generadas por GPT-4o.
+5. **VoiceExerciseStep**: Tarea final de voz. El usuario debe hablar al micrófono usando la plantilla aprendida. Minta simulando una evaluación de `Azure Pronunciation Assessment`.
+
+### Service Calls
+- `progressionService.getLessonContent(pathId, levelId)` — orquesta GPT-4o vía Edge Functions
+- `progressionService.completeLessonAndUnlock(pathId, levelId)` — persiste en Base de Datos
 
 ---
 

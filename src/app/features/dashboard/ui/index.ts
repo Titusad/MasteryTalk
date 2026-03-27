@@ -10,5 +10,5 @@ export { ProgressChart } from "./ProgressChart";
 export { ProficiencyHeroCard } from "./ProficiencyHeroCard";
 export { BeforeAfterCard } from "./BeforeAfterCard";
 export { RecentSessionsList } from "./RecentSessionsList";
-export { CoachRecommendation } from "./CoachRecommendation";
 export { InterviewPrepCard } from "./InterviewPrepCard";
+export { ProgressionTree } from "./progression-tree/ProgressionTree";

@@ -563,3 +563,63 @@ export interface RemedialContent {
   completedAt: string | null;
   shadowingScore: number | null;
 }
+
+/* ── Structured Lesson (5-step study phase) ── */
+
+export interface LessonConceptStep {
+  id: "concept";
+  title: string;
+  subtitle: string;
+  body: string;
+  mentalModel: string;
+}
+
+export interface LessonScenarioStep {
+  id: "scenario";
+  title: string;
+  context: string;
+  challenge: string;
+}
+
+export interface LessonComparisonStep {
+  id: "comparison";
+  title: string;
+  weak: { label: string; script: string };
+  strong: { label: string; script: string };
+  analysis: string;
+}
+
+export interface LessonToolkitPhrase {
+  pattern: string;
+  usage: string;
+}
+
+export interface LessonToolkitStep {
+  id: "toolkit";
+  title: string;
+  phrases: LessonToolkitPhrase[];
+}
+
+export interface LessonExerciseStep {
+  id: "exercise";
+  title: string;
+  instruction: string;
+  template: string;
+  evaluationCriteria: string;
+}
+
+export type LessonStep =
+  | LessonConceptStep
+  | LessonScenarioStep
+  | LessonComparisonStep
+  | LessonToolkitStep
+  | LessonExerciseStep;
+
+export interface StructuredLesson {
+  lessonTitle: string;
+  targetPillar: string;
+  nextLevelPrep: string;
+  steps: LessonStep[];
+  generatedAt: string;
+  completedAt: string | null;
+}

@@ -20,11 +20,12 @@ function lazyRetry(factory: () => Promise<any>) {
 }
 const DesignSystemPage = lazyRetry(() => import("./components/DesignSystemPage").then(m => ({ default: m.DesignSystemPage })));
 const PracticeSessionPage = lazyRetry(() => import("./components/PracticeSessionPage").then(m => ({ default: m.PracticeSessionPage })));
-const DashboardPage = lazyRetry(() => import("./components/DashboardPage").then(m => ({ default: m.DashboardPage })));
-const PracticeHistoryPage = lazyRetry(() => import("./components/PracticeHistoryPage").then(m => ({ default: m.PracticeHistoryPage })));
+const DashboardPage = lazyRetry(() => import("./features/dashboard/ui/DashboardPage").then(m => ({ default: m.DashboardPage })));
+const PracticeHistoryPage = lazyRetry(() => import("./features/dashboard/ui/PracticeHistoryPage").then(m => ({ default: m.PracticeHistoryPage })));
 const AccountPage = lazyRetry(() => import("./components/AccountPage").then(m => ({ default: m.AccountPage })));
 const LibraryPage = lazyRetry(() => import("./components/LibraryPage").then(m => ({ default: m.LibraryPage })));
 const AdminDashboardPage = lazyRetry(() => import("./components/AdminDashboardPage").then(m => ({ default: m.AdminDashboardPage })));
+
 import { LoadingScreen } from "./components/LoadingScreen";
 import { LanguageTransitionModal } from "./components/LanguageTransitionModal";
 import { authService } from "../services";
@@ -51,7 +52,8 @@ type Page =
   | "practice-history"
   | "account"
   | "library"
-  | "admin";
+  | "admin"
+  | "study-phase";
 
 /* ─── Shared flow state ─── */
 interface FlowState {
@@ -96,8 +98,9 @@ export default function App() {
       "#practice-history": "practice-history",
       "#account": "account",
       "#library": "library",
+      "#study-phase": "study-phase",
     };
-    if (AUTH_PAGES[hash]) {
+    if (AUTH_PAGES[hash] || hash.startsWith("#study-phase")) {
       // Quick check: does a Supabase session exist in localStorage?
       const hasSession = Object.keys(localStorage).some(
         (k) => k.startsWith("sb-") && k.endsWith("-auth-token")
@@ -433,6 +436,7 @@ export default function App() {
       else if (hash === "#account") setPage("account");
       else if (hash === "#library") setPage("library");
       else if (hash === "#admin") setPage("admin");
+      else if (hash.startsWith("#study-phase")) setPage("study-phase");
       else setPage("landing");
     };
     window.addEventListener("hashchange", handleHash);
@@ -717,6 +721,7 @@ export default function App() {
               }}
             />
           )}
+
           {showLangModal && (
             <LanguageTransitionModal
               fromLang={landingLang}

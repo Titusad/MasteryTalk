@@ -14,16 +14,13 @@
  */
 import { useState } from "react";
 import { Zap, Trophy, BarChart3 } from "lucide-react";
-import { PastelBlobs, MiniFooter } from "./shared";
-import type { LandingLang } from "./landing-i18n";
-import { CreditUpsellModal } from "./CreditUpsellModal";
-import { SpacedRepetitionCard } from "./SpacedRepetitionCard";
-import { LessonModal } from "./LessonModal";
-import { ProgressionTree } from "./progression/ProgressionTree";
-import type { CreditPack, OnboardingProfile } from "../../services/types";
+import { PastelBlobs, MiniFooter } from "../../../components/shared";
+import type { LandingLang } from "../../../components/landing-i18n";
+import { CreditUpsellModal } from "../../../components/CreditUpsellModal";
+import type { CreditPack, OnboardingProfile } from "../../../../services/types";
 
 /* ── Feature Module Imports ── */
-import { useDashboardData } from "../features/dashboard/model";
+import { useDashboardData } from "../model";
 import {
   DashboardHeader,
   StatPills,
@@ -32,9 +29,10 @@ import {
   ProficiencyHeroCard,
   BeforeAfterCard,
   RecentSessionsList,
-  CoachRecommendation,
   InterviewPrepCard,
-} from "../features/dashboard/ui";
+  ProgressionTree,
+} from "./index";
+import { PracticeDropdown } from "./PracticeDropdown";
 
 /* ─── Types ─── */
 interface DashboardPageProps {
@@ -74,8 +72,7 @@ export function DashboardPage({
   /* ─── UI-Local State (web-only) ─── */
   const [upsellOpen, setUpsellOpen] = useState(false);
   const [pendingScenario, setPendingScenario] = useState<string | null>(null);
-  const [lessonModalOpen, setLessonModalOpen] = useState(false);
-  const [lessonModalIndex, setLessonModalIndex] = useState(0);
+
 
   /* ─── Handlers ─── */
   const handleStartSession = (
@@ -143,73 +140,42 @@ export function DashboardPage({
                 : data.dc.subtitleEmpty}
             </p>
           </div>
+
+          {/* Practice Conversation Dropdown */}
+          <PracticeDropdown onSelect={handleStartSession} />
         </div>
 
-        {/* ═══════ SECTION 1: DAILY PRESCRIPTION ═══════ */}
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-2">
-              <Zap className="w-5 h-5 text-[#6366f1]" />
-              <h2
-                className="text-lg text-[#0f172b]"
-                style={{ fontWeight: 700 }}
-              >
-                Your Daily Practice
-              </h2>
-            </div>
-            <SpacedRepetitionCard />
+        {/* ═══════ SECTION 1: YOUR LEARNING PATH ═══════ */}
+        <div className="mb-10">
+          <div className="flex items-center gap-2 mb-4">
+            <Trophy className="w-6 h-6 text-[#f59e0b]" />
+            <h2
+              className="text-xl md:text-2xl text-[#0f172b]"
+              style={{ fontWeight: 800 }}
+            >
+              Your Learning Path
+            </h2>
           </div>
+          <ProgressionTree
+            onStartLevel={(scenario, scenarioType, levelId, interlocutor) => {
+              handleStartSession(scenario, scenarioType, levelId, interlocutor);
+            }}
+            onDrillComplete={(pathId, levelId, score) => {
+              console.log("Drill complete", pathId, levelId, score);
+            }}
+          />
+        </div>
 
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-[#f59e0b]" />
-              <h2
-                className="text-lg text-[#0f172b]"
-                style={{ fontWeight: 700 }}
-              >
-                Your Learning Path
-              </h2>
-            </div>
-            <ProgressionTree
-              onStartLevel={(scenario, scenarioType, levelId, interlocutor) => {
-                handleStartSession(scenario, scenarioType, levelId, interlocutor);
-              }}
-              onContinueStudy={(pathId, levelId) => {
-                handleStartSession(
-                  pathId === "interview"
-                    ? "Interview Practice"
-                    : "Sales Practice",
-                  pathId,
-                  levelId
-                );
-              }}
+        {/* ═══════ SECTION 2: RECENT ACTIVITY ═══════ */}
+        {data.allRecent && data.allRecent.length > 0 && (
+          <div className="mb-8">
+            <RecentSessionsList
+              allRecent={data.allRecent}
+              dc={data.dc}
+              onNavigateToHistory={onNavigateToHistory}
             />
           </div>
-        </div>
-
-        {/* ═══════ SECTION 2: COACH + RECENT SESSIONS ═══════ */}
-        <div className="grid lg:grid-cols-2 gap-6 mb-8">
-          <CoachRecommendation
-            lessons={data.recommendedLessons}
-            focusArea={data.focusArea}
-            hasPracticed={data.hasPracticed}
-            dc={data.dc}
-            onOpenLesson={(i) => {
-              setLessonModalIndex(i);
-              setLessonModalOpen(true);
-            }}
-            onSeeAll={() => {
-              setLessonModalIndex(0);
-              setLessonModalOpen(true);
-            }}
-          />
-
-          <RecentSessionsList
-            allRecent={data.allRecent}
-            dc={data.dc}
-            onNavigateToHistory={onNavigateToHistory}
-          />
-        </div>
+        )}
 
         {/* ═══════ SECTION 3: PROGRESS HISTORY ═══════ */}
         <div className="border-t border-[#e2e8f0] pt-8 mt-4">
@@ -274,14 +240,7 @@ export function DashboardPage({
       <MiniFooter />
 
       {/* ═══════ MODALS ═══════ */}
-      {lessonModalOpen && (
-        <LessonModal
-          lessons={data.recommendedLessons}
-          currentIndex={lessonModalIndex}
-          onClose={() => setLessonModalOpen(false)}
-          onNavigate={(i) => setLessonModalIndex(i)}
-        />
-      )}
+
 
       <CreditUpsellModal
         open={upsellOpen}

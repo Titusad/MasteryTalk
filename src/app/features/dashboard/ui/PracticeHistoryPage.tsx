@@ -8,12 +8,12 @@ import {
   FileText,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { BrandLogo, PastelBlobs, MiniFooter } from "./shared";
-import { authService, userService } from "../../services";
-import type { PracticeHistoryItem, ScenarioType } from "../../services/types";
-import { SessionReport } from "./SessionReport";
-import { projectId, publicAnonKey } from "../../../utils/supabase/info";
-import { getAuthToken } from "../../services/supabase";
+import { BrandLogo, PastelBlobs, MiniFooter } from "../../../components/shared";
+import { authService, userService } from "../../../../services";
+import type { PracticeHistoryItem, ScenarioType } from "../../../../services/types";
+import { SessionReport } from "../../../components/SessionReport";
+import { projectId, publicAnonKey } from "../../../../../utils/supabase/info";
+import { getAuthToken } from "../../../../services/supabase";
 
 /* ─── Props ─── */
 interface PracticeHistoryPageProps {

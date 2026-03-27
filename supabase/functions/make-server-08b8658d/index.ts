@@ -2651,6 +2651,35 @@ app.get("/make-server-08b8658d/progression", async (c) => {
 });
 
 // ═══════════════════════════════════════════════════════════════
+// Progression Tree — GET /progression/remedial
+// Fetch remedial content for a specific level
+// ═══════════════════════════════════════════════════════════════
+app.get("/make-server-08b8658d/progression/remedial", async (c) => {
+  try {
+    const user = await getAuthUser(c.req.header("Authorization"));
+    if (!user) return c.json({ error: "Unauthorized" }, 401);
+
+    const pathId = c.req.query("pathId");
+    const levelId = c.req.query("levelId");
+    if (!pathId || !levelId) {
+      return c.json({ error: "Missing pathId or levelId" }, 400);
+    }
+
+    const remedialKey = `remedial:${user.id}:${levelId}`;
+    const remedialRaw = await kv.get(remedialKey);
+
+    if (!remedialRaw) {
+      return c.json({ error: "No remedial content found" }, 404);
+    }
+
+    return c.json(JSON.parse(remedialRaw));
+  } catch (err) {
+    console.log("[Progression get-remedial] Error:", err);
+    return c.json({ error: `Failed to fetch remedial content: ${err}` }, 500);
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
 // Progression Tree — POST /progression/complete-level
 // Record level score + generate AI remedial content via GPT-4o-mini
 // ═══════════════════════════════════════════════════════════════
@@ -2897,6 +2926,230 @@ app.post("/make-server-08b8658d/progression/complete-remedial", async (c) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════════
+// Structured Study Lesson — GET /progression/lesson
+// Fetch or generate a 5-step personalized lesson for a level
+// ═══════════════════════════════════════════════════════════════
+app.get("/make-server-08b8658d/progression/lesson", async (c) => {
+  try {
+    const user = await getAuthUser(c.req.header("Authorization"));
+    if (!user) return c.json({ error: "Unauthorized" }, 401);
+
+    const pathId = c.req.query("pathId");
+    const levelId = c.req.query("levelId");
+    if (!pathId || !levelId) return c.json({ error: "Missing pathId or levelId" }, 400);
+
+    // Check cache first
+    const lessonKey = `lesson:${user.id}:${levelId}`;
+    const cached = await kv.get(lessonKey);
+    if (cached) {
+      const parsed = typeof cached === "string" ? JSON.parse(cached) : cached;
+      console.log(`[Lesson] Returning cached lesson for ${levelId}`);
+      return c.json(parsed);
+    }
+
+    // Look up user's weak pillars from most recent session feedback
+    const progRaw = await kv.get(`progression:${user.id}`);
+    const progState = progRaw ? (typeof progRaw === "string" ? JSON.parse(progRaw) : progRaw) : {};
+    const levelState = progState[pathId]?.[levelId];
+    const score = levelState?.bestScore || 50;
+
+    // Try to get weak pillars from remedial data
+    const remedialKey = `remedial:${user.id}:${levelId}`;
+    const remedialRaw = await kv.get(remedialKey);
+    let weakPillars = ["Fluency", "Professional Tone"];
+    if (remedialRaw) {
+      const remedial = typeof remedialRaw === "string" ? JSON.parse(remedialRaw) : remedialRaw;
+      if (remedial.weakPillars?.length) weakPillars = remedial.weakPillars;
+    }
+
+    // Level title and next level
+    const levelTitles: Record<string, string> = {
+      "int-1": "Phone Screen", "int-2": "Behavioral Round",
+      "int-3": "Technical Discussion", "int-4": "Salary Negotiation",
+      "sal-1": "Discovery Call", "sal-2": "Product Demo",
+      "sal-3": "Objection Handling", "sal-4": "Close the Deal",
+    };
+    const nextLevelMap: Record<string, string> = {
+      "int-1": "int-2", "int-2": "int-3", "int-3": "int-4",
+      "sal-1": "sal-2", "sal-2": "sal-3", "sal-3": "sal-4",
+    };
+    const levelTitle = levelTitles[levelId] || levelId;
+    const nextLevelId = nextLevelMap[levelId];
+    const nextLevelTitle = nextLevelId ? (levelTitles[nextLevelId] || "Next Level") : "Mastery";
+    const domain = pathId === "interview" ? "job interview" : "B2B sales";
+    const primaryPillar = weakPillars[0] || "Fluency";
+
+    const lessonPrompt = `You are an expert English communication coach for Latin American professionals. A user just completed a "${levelTitle}" practice (${domain} context) with a score of ${score}%.
+
+Their weakest communication pillar is: "${primaryPillar}" (also weak in: ${weakPillars.slice(1).join(", ") || "N/A"}).
+
+Generate a STRUCTURED LESSON that:
+1. Teaches a specific technique or framework to improve their "${primaryPillar}" skill
+2. Is contextualized to their ${domain} scenario
+3. PREPARES THEM for their next challenge: "${nextLevelTitle}"
+
+Return valid JSON with this exact schema:
+{
+  "lessonTitle": "A compelling 4-8 word lesson title (e.g. 'Start with the Answer')",
+  "targetPillar": "${primaryPillar}",
+  "nextLevelPrep": "${nextLevelTitle}",
+  "steps": [
+    {
+      "id": "concept",
+      "title": "The Concept",
+      "subtitle": "A short subtitle explaining why this matters",
+      "body": "2-3 paragraphs explaining the technique or framework. Use clear, conversational language. Include a specific mental model the user can remember.",
+      "mentalModel": "One memorable sentence that captures the core idea (e.g. 'Lead with the destination, not the journey.')"
+    },
+    {
+      "id": "scenario",
+      "title": "Practice Scenario",
+      "context": "A 2-3 sentence description of a realistic scenario. The user is a Latin American professional working with English-speaking colleagues/clients. Make it specific: include role, company type, and situation.",
+      "challenge": "What specifically they need to accomplish in this scenario (1-2 sentences)"
+    },
+    {
+      "id": "comparison",
+      "title": "Side-by-Side Comparison",
+      "weak": {
+        "label": "What We Usually Say",
+        "script": "A 3-4 sentence example of how a non-native speaker would typically handle this (with common mistakes)"
+      },
+      "strong": {
+        "label": "The Professional Way",
+        "script": "The same scenario handled using the technique taught in step 1 (3-4 sentences)"
+      },
+      "analysis": "2 sentences explaining exactly why the professional version is more effective"
+    },
+    {
+      "id": "toolkit",
+      "title": "Power Phrases",
+      "phrases": [
+        { "pattern": "A ready-to-use English phrase (8-15 words)", "usage": "When/how to use it (5-8 words)" },
+        { "pattern": "Another powerful phrase", "usage": "Its usage context" },
+        { "pattern": "A third phrase", "usage": "Its usage context" },
+        { "pattern": "A fourth phrase", "usage": "Its usage context" }
+      ]
+    },
+    {
+      "id": "exercise",
+      "title": "Your Turn",
+      "instruction": "A clear instruction in Spanish for the user. Tell them to respond to a specific ${domain} scenario using the technique they just learned. 2-3 sentences.",
+      "template": "A fill-in-the-blank English template they should follow (e.g. 'I am recommending we [action] because of three factors: First, [reason]. Second, [reason]. Finally, [reason].')",
+      "evaluationCriteria": "What the coach will evaluate: structure, ${primaryPillar.toLowerCase()}, and confidence."
+    }
+  ]
+}
+
+IMPORTANT:
+- All lesson content (except the exercise instruction) must be in English
+- The exercise instruction should be in Spanish (the user's native language)
+- Make phrases practical and immediately usable in real ${domain} situations
+- The lesson should feel premium: like a $200/hour executive coaching session
+- Connect the lesson to their upcoming "${nextLevelTitle}" challenge`;
+
+    let lessonData;
+    try {
+      const openaiKey = Deno.env.get("OPENAI_API_KEY");
+      if (!openaiKey) throw new Error("OPENAI_API_KEY not configured");
+
+      const res = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${openaiKey}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [{ role: "user", content: lessonPrompt }],
+          temperature: 0.7,
+          max_tokens: 2000,
+          response_format: { type: "json_object" },
+        }),
+      });
+
+      if (!res.ok) {
+        const errBody = await res.text();
+        throw new Error(`GPT-4o-mini ${res.status}: ${errBody.slice(0, 200)}`);
+      }
+
+      const aiData = await res.json();
+      const content = aiData.choices?.[0]?.message?.content || "{}";
+      lessonData = {
+        ...JSON.parse(content),
+        generatedAt: new Date().toISOString(),
+        completedAt: null,
+      };
+    } catch (aiErr) {
+      console.log("[Lesson] GPT generation failed:", aiErr);
+      return c.json({ error: "Failed to generate lesson content" }, 500);
+    }
+
+    await kv.set(lessonKey, JSON.stringify(lessonData));
+    console.log(`[Lesson] ✅ Generated lesson for ${levelId} (pillar: ${primaryPillar})`);
+
+    return c.json(lessonData);
+  } catch (err) {
+    console.log("[Lesson GET] Error:", err);
+    return c.json({ error: `Failed to fetch lesson: ${err}` }, 500);
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// Structured Study Lesson — POST /progression/complete-lesson
+// Mark lesson completed, unlock next level
+// ═══════════════════════════════════════════════════════════════
+app.post("/make-server-08b8658d/progression/complete-lesson", async (c) => {
+  try {
+    const user = await getAuthUser(c.req.header("Authorization"));
+    if (!user) return c.json({ error: "Unauthorized" }, 401);
+
+    const { pathId, levelId } = await c.req.json();
+    if (!pathId || !levelId) return c.json({ error: "Missing pathId or levelId" }, 400);
+
+    // 1. Mark lesson as completed
+    const lessonKey = `lesson:${user.id}:${levelId}`;
+    const lessonRaw = await kv.get(lessonKey);
+    if (lessonRaw) {
+      const lesson = typeof lessonRaw === "string" ? JSON.parse(lessonRaw) : lessonRaw;
+      lesson.completedAt = new Date().toISOString();
+      await kv.set(lessonKey, JSON.stringify(lesson));
+    }
+
+    // 2. Update progression: mark current as completed, unlock next
+    const progRaw = await kv.get(`progression:${user.id}`);
+    if (!progRaw) return c.json({ error: "No progression state found" }, 404);
+
+    const state = typeof progRaw === "string" ? JSON.parse(progRaw) : progRaw;
+    const pathState = state[pathId];
+    if (!pathState) return c.json({ error: `Path ${pathId} not found` }, 404);
+
+    pathState[levelId] = {
+      ...pathState[levelId],
+      status: "completed",
+      remedialCompleted: true,
+    };
+
+    // Unlock next level
+    const levelOrder: Record<string, string> = {
+      "int-1": "int-2", "int-2": "int-3", "int-3": "int-4",
+      "sal-1": "sal-2", "sal-2": "sal-3", "sal-3": "sal-4",
+    };
+    const nextId = levelOrder[levelId];
+    if (nextId && pathState[nextId]?.status === "locked") {
+      pathState[nextId] = { ...pathState[nextId], status: "unlocked" };
+    }
+
+    state[pathId] = pathState;
+    await kv.set(`progression:${user.id}`, JSON.stringify(state));
+
+    console.log(`[Lesson] ✅ Lesson completed for ${levelId}. ${nextId ? `Level ${nextId} unlocked.` : "Path complete!"}`);
+    return c.json({ success: true, state, nextLevelUnlocked: !!nextId });
+  } catch (err) {
+    console.log("[Lesson complete] Error:", err);
+    return c.json({ error: `Failed to complete lesson: ${err}` }, 500);
+  }
+});
 
 Deno.serve({
   onError(err) {

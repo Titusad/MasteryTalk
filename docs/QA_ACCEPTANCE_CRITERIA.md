@@ -182,15 +182,27 @@ Estado actual: **prototipo funcional, flujo E2E verificado.**
 
 | ID | Test | Pasos | Resultado Esperado | Prioridad |
 |---|---|---|---|---|
-| F0-51 | Dashboard renderiza | `[MOCK]` Llegar a Dashboard | Header, credit balance, historial, CTAs visibles. | **P0** |
-| F0-52 | Credit balance display | `[MOCK]` Verificar | Balance de creditos con label correcto. | **P1** |
-| F0-53 | Practice history cards | `[MOCK]` Verificar historial | Cards con titulo, fecha, duracion. | **P1** |
-| F0-54 | Start session — con creditos | `[MOCK]` Click "Nueva practica" con creditos disponibles | Navega a Landing para nueva practica. | **P0** |
-| F0-55 | Start session — sin creditos | `[MOCK]` Click "Nueva practica" sin creditos | CreditUpsellModal se abre. | **P0** |
-| F0-56 | CreditUpsellModal | `[MOCK]` Verificar modal | Grid de 3 packs, badges de descuento, boton de checkout. | **P1** |
+| F0-51 | Dashboard renderiza | `[MOCK]` Llegar a Dashboard | Header, Progression Tree, Practice Dropdown, historial. | **P0** |
+| F0-52 | Progression Tree renderiza | `[MOCK]` Verificar nodos | Nodos desbloqueados clickeables, nodos bloqueados muestran tooltip/cerrojo. | **P0** |
+| F0-53 | Practice Dropdown | `[MOCK]` Cambiar de 'Interview' a 'Sales' | El Progression Tree cambia de ruta instantaneamente. | **P1** |
+| F0-54 | Start session via Dropdown | `[MOCK]` Click "Start Practice" en dropdown con creditos | Navega directo a PracticeSession apuntando al nodo correcto. | **P0** |
+| F0-55 | Practice Dropdown sin creditos | `[MOCK]` Click "Start Practice" sin creditos | CreditUpsellModal se abre. | **P0** |
+| F0-56 | Start Lesson Modal | `[MOCK]` Click en nodo actual/remedial | Se despliega LevelDrawer con LessonStepper. | **P0** |
 | F0-57 | CreditUpsellModal — compra simulada | `[MOCK]` Click comprar en modal | Celebracion de confetti, creditos actualizados. | **P1** |
 | F0-58 | Logout | `[MOCK]` Click logout | Regresa a Landing, estado limpio. | **P1** |
-| F0-59 | "Ver historial" | `[MOCK]` Click | Navega a Practice History. | **P1** |
+| F0-59 | Practice history cards | `[MOCK]` Verificar historial | Cards con titulo, fecha, duracion visibles debajo del arbol. | **P1** |
+
+---
+
+### 0.13.5 Lesson Modal (Remedial Learning)
+
+| ID | Test | Pasos | Resultado Esperado | Prioridad |
+|---|---|---|---|---|
+| F0-59a | Modal render | `[MOCK]` Click en Progression Level | `LevelDrawer` full-screen se abre. Animacion suave. | **P0** |
+| F0-59b | Navigacion Steps | `[MOCK]` Click "Next" en ConceptStep | Transicion animada a ScenarioStep. Footer Navigation interno a la tarjeta. | **P0** |
+| F0-59c | Shadowing Toolkit | `[MOCK]` Probar audio en ToolkitStep | Permite grabar frases clave ("Practice it"). | **P1** |
+| F0-59d | Voice Exercise submit | `[MOCK]` Completar grabacion final | Simula evaluacion Azure, muestra loader, luego checkmark verde. | **P0** |
+| F0-59e | Desbloqueo Nivel | `[MOCK]` Click "Complete Lesson & Unlock Level" | Modal cierra, trigger confetti, ProgressionTree avanza un nodo visualmente. | **P0** |
 
 ---
 
