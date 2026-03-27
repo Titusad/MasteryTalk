@@ -40,3 +40,7 @@ export { PricingCard } from "./PricingCard";
 // ── Session utilities ─────────────────────────────────────────
 export { ProgressionProvider, useProgressionLevel } from "@/app/components/shared/ProgressionContext";
 export type { Step } from "@/entities/session";
+
+// ── Feedback components ───────────────────────────────────────
+export { ProficiencyGauge } from "./ProficiencyGauge";
+export { FeedbackAccordion } from "./FeedbackAccordion";

@@ -26,22 +26,21 @@ import {
   PolarAngleAxis,
   Radar,
 } from "recharts";
-import { PastelBlobs, MiniFooter, PageTitleBlock } from "../shared";
+import { PastelBlobs, MiniFooter, PageTitleBlock, ProficiencyGauge, FeedbackAccordion, SessionProgressBar } from "@/shared/ui";
 import {
   getBeforeAfterForScenario,
   getStrengthsForScenario,
-} from "../../../services/scenario-data";
+} from "@/services/scenario-data";
 import type {
   ScenarioType,
   TurnPronunciationData,
   Strength,
   Opportunity,
   BeforeAfterComparison,
-} from "../../../services/types";
+} from "@/services/types";
 import { PronunciationTab } from "../PronunciationTab";
-import { SessionProgressBar } from "../SessionProgressBar";
 
-import type { PaywallReason } from "../../hooks/useUsageGating";
+import type { PaywallReason } from "@/app/hooks/useUsageGating";
 
 /* Re-export shared types */
 export interface RepeatInfo {
@@ -148,6 +147,7 @@ const LANGUAGE_PILLAR_COLORS: Record<
   Persuasion: { icon: "🎯", bg: "rgba(245,158,11,0.12)", text: "#f59e0b" },
 };
 
+/* ── Label/Color helpers (used for inline rendering) ── */
 function feedbackProficiencyLabel(score: number): string {
   if (score >= 90) return "Expert";
   if (score >= 75) return "Advanced";
@@ -161,165 +161,6 @@ function feedbackProficiencyColor(score: number): string {
   if (score >= 60) return "#6366f1";
   if (score >= 40) return "#f59e0b";
   return "#ef4444";
-}
-
-/* ── Circular gauge SVG ── */
-function ProficiencyGauge({
-  score,
-  size = 160,
-  darkBg = false,
-  hideLabel = false,
-  strokeWidth = 10,
-}: {
-  score: number;
-  size?: number;
-  darkBg?: boolean;
-  hideLabel?: boolean;
-  strokeWidth?: number;
-}) {
-  const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const progress = Math.min(100, Math.max(0, score)) / 100;
-  const strokeDashoffset = circumference * (1 - progress);
-  const color = feedbackProficiencyColor(score);
-
-  return (
-    <div
-      className="relative"
-      style={{ width: size, height: size }}
-    >
-      <svg width={size} height={size} className="-rotate-90">
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          stroke={darkBg ? "rgba(255,255,255,0.15)" : "#e2e8f0"}
-          strokeWidth={strokeWidth}
-        />
-        <motion.circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          stroke={color}
-          strokeWidth={strokeWidth}
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          initial={{ strokeDashoffset: circumference }}
-          animate={{ strokeDashoffset }}
-          transition={{
-            duration: 1.2,
-            ease: [0.22, 1, 0.36, 1],
-            delay: 0.3,
-          }}
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <motion.span
-          className={`${size >= 140 ? "text-4xl" : size >= 80 ? "text-2xl" : "text-lg"} ${darkBg ? "text-white" : "text-[#0f172b]"}`}
-          style={{ fontWeight: 700 }}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
-        >
-          {score}%
-        </motion.span>
-        {!hideLabel && (
-          <span
-            className="text-xs mt-0.5"
-            style={{ fontWeight: 600, color }}
-          >
-            {feedbackProficiencyLabel(score)}
-          </span>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/* ── Collapsible accordion section ── */
-function FeedbackAccordion({
-  icon,
-  title,
-  badge,
-  defaultOpen = false,
-  isOpen,
-  onToggle,
-  children,
-  delay = 0,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  badge?: React.ReactNode;
-  defaultOpen?: boolean;
-  isOpen?: boolean;
-  onToggle?: () => void;
-  children: React.ReactNode;
-  delay?: number;
-}) {
-  const [internalOpen, setInternalOpen] = useState(defaultOpen);
-  const isControlled = isOpen !== undefined;
-  const open = isControlled ? isOpen : internalOpen;
-
-  const handleToggle = () => {
-    if (isControlled && onToggle) {
-      onToggle();
-    } else {
-      setInternalOpen(!open);
-    }
-  };
-
-  return (
-    <motion.div
-      className="bg-white border border-[#e2e8f0] rounded-3xl overflow-hidden mb-4"
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay }}
-    >
-      <button
-        onClick={handleToggle}
-        className="w-full flex items-center gap-3 p-5 md:p-6 text-left hover:bg-[#f8fafc] transition-colors"
-      >
-        <div className="w-10 h-10 rounded-xl bg-[#0f172b] flex items-center justify-center shrink-0">
-          {icon}
-        </div>
-        <div className="flex-1 min-w-0">
-          <h3
-            className="text-[#0f172b] text-base"
-            style={{ fontWeight: 600 }}
-          >
-            {title}
-          </h3>
-        </div>
-        {badge}
-        <motion.div
-          animate={{ rotate: open ? 180 : 0 }}
-          transition={{ duration: 0.25 }}
-        >
-          <ChevronDown className="w-5 h-5 text-[#94a3b8]" />
-        </motion.div>
-      </button>
-      <AnimatePresence initial={false}>
-        {open && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{
-              duration: 0.35,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-            className="overflow-hidden"
-          >
-            <div className="px-5 pb-6 md:px-6 md:pb-8">
-              {children}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
-  );
 }
 
 function ConversationFeedback({
