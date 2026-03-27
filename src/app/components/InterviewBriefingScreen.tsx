@@ -31,8 +31,8 @@ import {
 } from "./shared";
 import type { InterviewBriefingData } from "../../services/types";
 import type { ScenarioType } from "../../services/types";
-import { BriefingCarousel } from "./briefing/BriefingCarousel";
-import { ReadinessScore } from "./briefing/ReadinessScore";
+import { BriefingCarousel } from "../features/practice-session/ui/briefing/BriefingCarousel";
+import { ReadinessScore } from "../features/practice-session/ui/briefing/ReadinessScore";
 import { SessionProgressBar } from "./SessionProgressBar";
 
 /* ── Minimum cards to unlock practice ── */

@@ -7,7 +7,7 @@ import { toServiceError } from "../../services/errors";
 import type { ServiceError } from "../../services/errors";
 import type { RemedialContent } from "../../services/types";
 
-import { getLevelDefinition } from "./progression/progression-paths";
+import { getLevelDefinition } from "../features/dashboard/model/progression-paths";
 import { ProgressionProvider } from "./shared/ProgressionContext";
 import { ServiceErrorBanner } from "./shared/ServiceErrorBanner";
 import { getBeforeAfterForScenario, getStrengthsForScenario } from "../../services/scenario-data";
@@ -27,8 +27,8 @@ import { SessionProgressBar } from "./SessionProgressBar";
 import { SessionReport } from "./SessionReport";
 import { InterviewBriefingScreen } from "./InterviewBriefingScreen";
 import type { Step } from "./shared/session-types";
-import { VoicePractice } from "./session/VoicePractice";
-import { ConversationFeedback, type RealFeedbackData, type RepeatInfo } from "./session/ConversationFeedback";
+import { VoicePractice } from "../features/practice-session/ui/VoicePractice";
+import { ConversationFeedback, type RealFeedbackData, type RepeatInfo } from "../features/practice-session/ui/ConversationFeedback";
 import { CreditUpsellModal } from "./CreditUpsellModal";
 import { useUsageGating } from "../hooks/useUsageGating";
 import type { PaywallReason } from "../hooks/useUsageGating";
@@ -54,10 +54,10 @@ import { analyzeCvMatch, type CVMatchResult } from "../../services/cvMatchServic
 const _detectedLocale = detectLanguageBackground();
 
 /* ── Sub-screens extracted to session/ ── */
-import { PreBriefingScreen } from "./session/PreBriefingScreen";
-import { ExtraContextScreen } from "./session/ExtraContextScreen";
-import { KeyExperienceScreen } from "./session/KeyExperienceScreen";
-import { scriptSectionsToBriefingData } from "./briefing/salesAdapter";
+import { PreBriefingScreen } from "../features/practice-session/ui/PreBriefingScreen";
+import { ExtraContextScreen } from "../features/practice-session/ui/ExtraContextScreen";
+import { KeyExperienceScreen } from "../features/practice-session/ui/KeyExperienceScreen";
+import { scriptSectionsToBriefingData } from "../features/practice-session/ui/briefing/salesAdapter";
 
 /* ═══════════════════════════════════════════════════════════
    TYPES & DATA (MVP-simplified)
