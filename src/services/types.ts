@@ -7,61 +7,15 @@
 
 /* ── User & Auth ── */
 
-export type UserPlan = "free" | "per-session";
-
-export interface User {
-  uid: string;
-  displayName: string;
-  email: string;
-  photoURL?: string;
-  plan: UserPlan;
-  freeSessionUsed: boolean;
-  sessionsCompleted: number;
-  createdAt: string;
-}
-
-export type AuthProvider = "google";
+import type { UserPlan, User, AuthProvider } from "@/entities/user";
+export type { UserPlan, User, AuthProvider };
 
 /* ── Scenario Types (Master Prompt Adaptation) ── */
 
-export type ScenarioType =
-  | "interview"
-  | "sales";
-
-/* MVP ships with interview + sales only. Future expansions (csuite, negotiation, networking) were removed from assembler.ts during v2.1 cleanup. */
+import type { ScenarioType, ChatMessage, SessionConfig, ArenaPhase, ArenaPowerPhrase, ArenaState } from "@/entities/session";
+export type { ScenarioType, ChatMessage, SessionConfig, ArenaPhase, ArenaPowerPhrase, ArenaState };
 
 /* ── Session & Conversation ── */
-
-export interface ChatMessage {
-  role: "user" | "ai";
-  label?: string;
-  time: string;
-  text: string;
-  /** Contextual coaching hint from GPT-4o (only on AI messages) */
-  coachingHint?: { starter: string; keywords?: string[]; strategy: string } | null;
-}
-
-export interface SessionConfig {
-  scenario: string;
-  interlocutor: string;
-  scenarioType?: ScenarioType;
-  context?: string;
-  /** Guided fields captured in PracticeSetup (varies per scenarioType) */
-  guidedFields?: Record<string, string>;
-  /** Interview briefing data for coherence: anticipated questions + user drafts → injected into interviewer prompt (Gap A+B) */
-  interviewBriefing?: {
-    anticipatedQuestions: Array<{
-      id: number;
-      question: string;
-      approach: string;
-      suggestedOpener: string;
-      framework?: { name: string; description: string };
-      keyPhrases: string[];
-    }>;
-    /** User-drafted responses from the "Your Response" tab, keyed by question index */
-    userDrafts?: Record<number, string>;
-  };
-}
 
 export interface PreparedSession {
   sessionId: string;
@@ -360,20 +314,8 @@ export interface ResultsSummary {
 
 /* ── Session Summary (from /generate-summary endpoint) ── */
 
-export interface SessionSummaryNextStep {
-  title: string;
-  desc: string;
-  pillar: string;
-}
-
-export interface SessionSummary {
-  overallSentiment: string;
-  nextSteps: SessionSummaryNextStep[];
-  sessionHighlight: string;
-  pillarScores?: Record<string, number> | null;
-  professionalProficiency?: number | null;
-  cefrApprox?: string | null;
-}
+import type { SessionSummaryNextStep, SessionSummary } from "@/entities/feedback";
+export type { SessionSummaryNextStep, SessionSummary };
 
 /* ── Shadowing ── */
 
@@ -474,47 +416,12 @@ export interface CompletedPhraseSummary {
   hasActions: boolean;
 }
 
-/* ── Arena / Progressive Scaffolding ── */
-
-export type ArenaPhase = "support" | "guidance" | "challenge";
-
-export interface ArenaPowerPhrase {
-  id: string;
-  phrase: string;
-  context: string;
-  category: "opener" | "transition" | "closing" | "objection" | "data" | "recast";
-}
-
-export interface ArenaState {
-  phase: ArenaPhase;
-  goodInteractions: number;
-  totalInteractions: number;
-  cognitiveLoadLevel: "normal" | "elevated";
-}
+/* ── Arena / Progressive Scaffolding — re-exported from @/entities/session ── */
 
 /* ── Onboarding Profile ── */
 
-export interface OnboardingProfile {
-  industry: string;
-  position: string;
-  seniority: string;
-  /** Persisted from widget — role user is applying for */
-  role?: string;
-  /** Persisted from widget — company or company type */
-  company?: string;
-  /** Persisted from Key Experience screen — career highlights */
-  keyExperience?: string;
-  /** Extracted summary from uploaded CV/resume (GPT-4o processed) */
-  cvSummary?: string;
-  /** Original CV filename for display */
-  cvFileName?: string;
-  /** Extracted summary from uploaded sales deck (GPT-4o processed) */
-  deckSummary?: string;
-  /** Original deck filename for display */
-  deckFileName?: string;
-  /** Whether user consented to share anonymized professional profile */
-  cvConsentGiven?: boolean;
-}
+import type { OnboardingProfile } from "@/entities/user";
+export type { OnboardingProfile };
 
 /* ── Before/After Comparison (Briefing Room) ── */
 

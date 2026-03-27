@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { ArrowLeft, User, CreditCard, Settings, LogOut, CheckCircle, AlertTriangle, ShieldAlert, Lock } from "lucide-react";
+import { User, CreditCard, Settings, LogOut, CheckCircle, AlertTriangle, ShieldAlert, Lock } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { BrandLogo, PastelBlobs, MiniFooter } from "./shared";
+import { PastelBlobs, MiniFooter } from "./shared";
+import { AppHeader } from "@/shared/ui/AppHeader";
 import type { OnboardingProfile, User as AuthUser } from "../../services/types";
 
 interface AccountPageProps {
@@ -24,24 +25,17 @@ export function AccountPage({ userProfile, authUser, onBack, onLogout }: Account
       <PastelBlobs />
 
       {/* HEADER */}
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-[#e2e8f0] relative">
-        <div className="max-w-[1440px] mx-auto flex items-center justify-between px-6 md:px-8 h-16 md:h-20">
-          <BrandLogo />
-        </div>
-      </header>
+      <AppHeader
+        variant="app"
+        showBackButton
+        backLabel="Volver al Dashboard"
+        onBack={onBack}
+        userName={authUser?.displayName}
+        onLogout={onLogout}
+      />
 
       {/* MAIN CONTENT */}
       <main className="relative w-full max-w-[800px] mx-auto px-4 md:px-8 pt-8 pb-20 flex-1">
-        
-        {/* Back Button */}
-        <button
-          onClick={onBack}
-          className="flex items-center gap-2 text-[#45556c] hover:text-[#0f172b] transition-colors mb-6 w-fit"
-          style={{ fontWeight: 500 }}
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Volver al Dashboard
-        </button>
 
         <h1 className="text-3xl md:text-4xl text-[#0f172b] mb-8" style={{ fontWeight: 300 }}>
           Mi Cuenta

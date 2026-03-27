@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { LogOut } from "lucide-react";
-import { BrandLogo, AnalyzingScreen } from "./shared";
+import { AppHeader } from "@/shared/ui";
+import { AnalyzingScreen } from "./shared";
 import { realConversationService } from "../../services";
 import { toServiceError } from "../../services/errors";
 import type { ServiceError } from "../../services/errors";
@@ -139,15 +139,6 @@ export function PracticeSessionPage({
   onNavigateToAccount,
 }: PracticeSessionPageProps) {
   const isDevPreview = !!devInitialStep;
-
-  const avatarInitials = userName
-    ? userName
-      .split(" ")
-      .map((w) => w[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase()
-    : "U";
 
   /* Recover session state from browser history if navigating Back/Forward */
   const initialHistoryState = useMemo(() => {
@@ -746,33 +737,13 @@ export function PracticeSessionPage({
   return (
     <ProgressionProvider value={{ levelTitle: progressionLevelTitle }}>
     <div className="size-full flex flex-col" style={{ fontFamily: "'Inter', sans-serif" }}>
-      {/* Persistent header: BrandLogo + user profile */}
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-[#e2e8f0] shrink-0">
-        <div className="max-w-[1440px] mx-auto flex items-center justify-between px-6 md:px-8 h-12 md:h-14">
-          <BrandLogo />
-          <div className="flex items-center gap-3">
-            <button
-              className="text-[#45556c] hover:text-[#0f172b] transition-colors p-2 rounded-full cursor-pointer flex items-center justify-center"
-              onClick={() => onLogout?.()}
-              title="Cerrar sesión"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
-            <div
-              className="w-8 h-8 rounded-full bg-[#0f172b] flex items-center justify-center cursor-pointer"
-              title="Mi cuenta"
-              onClick={() => onNavigateToAccount?.()}
-            >
-              <span
-                className="text-white text-sm"
-                style={{ fontWeight: 500 }}
-              >
-                {avatarInitials}
-              </span>
-            </div>
-          </div>
-        </div>
-      </header>
+      <AppHeader
+        variant="session"
+        showProgressBar={false}
+        userName={userName}
+        onLogout={onLogout}
+        onNavigateToAccount={onNavigateToAccount}
+      />
 
       {/* Step content (animated transitions) */}
       <div ref={stepContainerRef} className="flex-1 relative min-h-0 overflow-y-auto">

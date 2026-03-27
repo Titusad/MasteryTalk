@@ -1,14 +1,5 @@
 /**
- * Shared Step type used by PracticeSessionPage and SessionProgressBar.
- * Single source of truth for the MVP session flow.
+ * Sprint 2 FSD: Step now lives in @/entities/session.
+ * Re-exported here for backward compatibility.
  */
-export type Step =
-  | "key-experience"
-  | "extra-context"
-  | "generating-script"
-  | "pre-briefing"
-  | "practice"
-  | "analyzing"
-  | "conversation-feedback"
-  | "remedial"
-  | "session-recap";
+export type { Step } from "@/entities/session";

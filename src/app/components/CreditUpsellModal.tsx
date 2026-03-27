@@ -12,7 +12,6 @@
  */
 import { useState } from "react";
 import {
-  X,
   Zap,
   Check,
   Loader2,
@@ -20,8 +19,9 @@ import {
   AlertCircle,
   Sparkles,
 } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import confetti from "canvas-confetti";
+import { AppModal } from "@/shared/ui/AppModal";
 import {
   CREDIT_PACK_DETAILS,
   type CreditPack,
@@ -287,182 +287,149 @@ export function CreditUpsellModal({
     }
   };
 
-  if (!open) return null;
-
   return (
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          className="fixed inset-0 z-[200] flex items-center justify-center p-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.25 }}
-        >
-          {/* Backdrop */}
-          <div className="absolute inset-0 bg-[#0f172b]/60 backdrop-blur-sm" onClick={onClose} />
+    <AppModal open={open} onClose={onClose} size="md" showCloseButton={true}>
+      {/* Top gradient bar */}
+      <div className="h-1.5 bg-gradient-to-r from-[#00D3F3] via-[#50C878] to-[#E1D5F8]" />
 
-          {/* Card */}
-          <motion.div
-            className="relative z-10 bg-white rounded-3xl w-full shadow-2xl overflow-hidden"
-            style={{ maxWidth: 440 }}
-            initial={{ opacity: 0, scale: 0.92, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.92, y: 20 }}
-            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-          >
-            {/* Top bar */}
-            <div className="h-1.5 bg-gradient-to-r from-[#00D3F3] via-[#50C878] to-[#E1D5F8]" />
+      <div className="px-6 pt-6 pb-6">
+        {/* Credits badge */}
+        <div className="flex items-center gap-2 mb-4">
+          <div className="bg-[#f0f4f8] rounded-full px-3 py-1 flex items-center gap-1.5">
+            <Zap className="w-3.5 h-3.5 text-[#50C878]" />
+            <span className="text-xs text-[#4B505B]" style={{ fontWeight: 600 }}>
+              {creditsRemaining} {getCreditsLabel(creditsRemaining, lang)}
+            </span>
+          </div>
+        </div>
 
-            {/* Close */}
-            <button
-              onClick={onClose}
-              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors z-10"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            <div className="px-6 pt-6 pb-6">
-              {/* Credits badge */}
-              <div className="flex items-center gap-2 mb-4">
-                <div className="bg-[#f0f4f8] rounded-full px-3 py-1 flex items-center gap-1.5">
-                  <Zap className="w-3.5 h-3.5 text-[#50C878]" />
-                  <span className="text-xs text-[#4B505B]" style={{ fontWeight: 600 }}>
-                    {creditsRemaining} {getCreditsLabel(creditsRemaining, lang)}
-                  </span>
+        {/* Header — contextual per paywall reason */}
+        {reasonCopy ? (
+          <>
+            <h2 className="text-xl text-[#0f172b] mb-1" style={{ fontWeight: 600 }}>
+              {reasonCopy.title}
+            </h2>
+            <p className="text-sm text-[#62748e] mb-4">{reasonCopy.subtitle}</p>
+            <div className="space-y-1.5 mb-5">
+              {reasonCopy.valueProps.map((vp) => (
+                <div key={vp} className="flex items-start gap-2">
+                  <Sparkles className="w-3.5 h-3.5 text-[#50C878] mt-0.5 shrink-0" />
+                  <span className="text-xs text-[#45556c]">{vp}</span>
                 </div>
-              </div>
-
-              {/* Header — contextual per paywall reason */}
-              {reasonCopy ? (
-                <>
-                  <h2 className="text-xl text-[#0f172b] mb-1" style={{ fontWeight: 600 }}>
-                    {reasonCopy.title}
-                  </h2>
-                  <p className="text-sm text-[#62748e] mb-4">{reasonCopy.subtitle}</p>
-                  <div className="space-y-1.5 mb-5">
-                    {reasonCopy.valueProps.map((vp) => (
-                      <div key={vp} className="flex items-start gap-2">
-                        <Sparkles className="w-3.5 h-3.5 text-[#50C878] mt-0.5 shrink-0" />
-                        <span className="text-xs text-[#45556c]">{vp}</span>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <>
-                  <h2 className="text-xl text-[#0f172b] mb-1" style={{ fontWeight: 600 }}>
-                    {copy.title}
-                  </h2>
-                  <p className="text-sm text-[#62748e] mb-5">{copy.subtitle}</p>
-                </>
-              )}
-
-              {/* Pack selector */}
-              <div className="space-y-2 mb-5">
-                {PACKS.map((pack, i) => {
-                  const detail = CREDIT_PACK_DETAILS[pack];
-                  const isSelected = selected === pack;
-                  const isFeatured = pack === "session_5";
-                  return (
-                    <button
-                      key={pack}
-                      onClick={() => setSelected(pack)}
-                      className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left ${
-                        isSelected
-                          ? "border-[#0f172b] bg-[#f8fafc]"
-                          : "border-gray-200 hover:border-gray-300"
-                      }`}
-                    >
-                      {/* Radio */}
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                        isSelected ? "border-[#0f172b]" : "border-gray-300"
-                      }`}>
-                        {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-[#0f172b]" />}
-                      </div>
-
-                      {/* Info */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
-                            {copy.packNames[i]}
-                          </span>
-                          {isFeatured && (
-                            <span className="bg-[#50C878] text-white text-[10px] px-1.5 py-0.5 rounded-full" style={{ fontWeight: 600 }}>
-                              ⭐
-                            </span>
-                          )}
-                          {detail.discount > 0 && (
-                            <span className="text-[10px] text-[#50C878] bg-[#DBEDDF] px-1.5 py-0.5 rounded-full" style={{ fontWeight: 600 }}>
-                              -{detail.discount}%
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-xs text-[#62748e]">{copy.packTaglines[i]}</span>
-                      </div>
-
-                      {/* Price */}
-                      <div className="text-right shrink-0">
-                        <div className="text-base text-[#0f172b]" style={{ fontWeight: 700 }}>
-                          ${detail.price.toFixed(2)}
-                        </div>
-                        <div className="text-[10px] text-[#62748e]">
-                          ${detail.perSession.toFixed(2)}{copy.perSessionSuffix}
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Error */}
-              {error && (
-                <div className="flex items-center gap-2 bg-red-50 text-red-600 rounded-xl px-3 py-2 mb-3 text-xs">
-                  <AlertCircle className="w-4 h-4 shrink-0" />
-                  {error}
-                </div>
-              )}
-
-              {/* CTA */}
-              <motion.button
-                onClick={handlePurchase}
-                disabled={loading || success}
-                className="w-full py-3.5 rounded-full text-white flex items-center justify-center gap-2 text-sm disabled:opacity-70 transition-colors"
-                style={{
-                  fontWeight: 500,
-                  background: success
-                    ? "#50C878"
-                    : "linear-gradient(135deg, #0f172b, #1e293b)",
-                }}
-                whileHover={{ scale: loading || success ? 1 : 1.02 }}
-                whileTap={{ scale: loading || success ? 1 : 0.98 }}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    {copy.processing}
-                  </>
-                ) : success ? (
-                  <>
-                    <Check className="w-4 h-4" />
-                    {copy.done}
-                  </>
-                ) : (
-                  <>
-                    <ShoppingCart className="w-4 h-4" />
-                    {copy.buy} — ${CREDIT_PACK_DETAILS[selected].price.toFixed(2)}
-                  </>
-                )}
-              </motion.button>
-
-              {/* Trust line */}
-              <p className="text-center text-[10px] text-[#94a3b8] mt-3">
-                {copy.trustLine}
-              </p>
+              ))}
             </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+          </>
+        ) : (
+          <>
+            <h2 className="text-xl text-[#0f172b] mb-1" style={{ fontWeight: 600 }}>
+              {copy.title}
+            </h2>
+            <p className="text-sm text-[#62748e] mb-5">{copy.subtitle}</p>
+          </>
+        )}
+
+        {/* Pack selector */}
+        <div className="space-y-2 mb-5">
+          {PACKS.map((pack, i) => {
+            const detail = CREDIT_PACK_DETAILS[pack];
+            const isSelected = selected === pack;
+            const isFeatured = pack === "session_5";
+            return (
+              <button
+                key={pack}
+                onClick={() => setSelected(pack)}
+                className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left ${
+                  isSelected
+                    ? "border-[#0f172b] bg-[#f8fafc]"
+                    : "border-gray-200 hover:border-gray-300"
+                }`}
+              >
+                {/* Radio */}
+                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                  isSelected ? "border-[#0f172b]" : "border-gray-300"
+                }`}>
+                  {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-[#0f172b]" />}
+                </div>
+
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
+                      {copy.packNames[i]}
+                    </span>
+                    {isFeatured && (
+                      <span className="bg-[#50C878] text-white text-[10px] px-1.5 py-0.5 rounded-full" style={{ fontWeight: 600 }}>
+                        ⭐
+                      </span>
+                    )}
+                    {detail.discount > 0 && (
+                      <span className="text-[10px] text-[#50C878] bg-[#DBEDDF] px-1.5 py-0.5 rounded-full" style={{ fontWeight: 600 }}>
+                        -{detail.discount}%
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-xs text-[#62748e]">{copy.packTaglines[i]}</span>
+                </div>
+
+                {/* Price */}
+                <div className="text-right shrink-0">
+                  <div className="text-base text-[#0f172b]" style={{ fontWeight: 700 }}>
+                    ${detail.price.toFixed(2)}
+                  </div>
+                  <div className="text-[10px] text-[#62748e]">
+                    ${detail.perSession.toFixed(2)}{copy.perSessionSuffix}
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Error */}
+        {error && (
+          <div className="flex items-center gap-2 bg-red-50 text-red-600 rounded-xl px-3 py-2 mb-3 text-xs">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            {error}
+          </div>
+        )}
+
+        {/* CTA */}
+        <motion.button
+          onClick={handlePurchase}
+          disabled={loading || success}
+          className="w-full py-3.5 rounded-full text-white flex items-center justify-center gap-2 text-sm disabled:opacity-70 transition-colors"
+          style={{
+            fontWeight: 500,
+            background: success
+              ? "#50C878"
+              : "linear-gradient(135deg, #0f172b, #1e293b)",
+          }}
+          whileHover={{ scale: loading || success ? 1 : 1.02 }}
+          whileTap={{ scale: loading || success ? 1 : 0.98 }}
+        >
+          {loading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              {copy.processing}
+            </>
+          ) : success ? (
+            <>
+              <Check className="w-4 h-4" />
+              {copy.done}
+            </>
+          ) : (
+            <>
+              <ShoppingCart className="w-4 h-4" />
+              {copy.buy} — ${CREDIT_PACK_DETAILS[selected].price.toFixed(2)}
+            </>
+          )}
+        </motion.button>
+
+        {/* Trust line */}
+        <p className="text-center text-[10px] text-[#94a3b8] mt-3">
+          {copy.trustLine}
+        </p>
+      </div>
+    </AppModal>
   );
 }

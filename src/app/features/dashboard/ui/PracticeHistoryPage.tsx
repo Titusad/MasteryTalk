@@ -4,16 +4,16 @@ import {
   Clock,
   ChevronDown,
   BookOpen,
-  ArrowLeft,
   FileText,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { BrandLogo, PastelBlobs, MiniFooter } from "../../../components/shared";
-import { authService, userService } from "../../../../services";
+import { PastelBlobs, MiniFooter } from "../../../components/shared";
+import { userService } from "../../../../services";
 import type { PracticeHistoryItem, ScenarioType } from "../../../../services/types";
 import { SessionReport } from "../../../components/SessionReport";
 import { projectId, publicAnonKey } from "../../../../../utils/supabase/info";
 import { getAuthToken } from "../../../../services/supabase";
+import { AppHeader } from "@/shared/ui/AppHeader";
 
 /* ─── Props ─── */
 interface PracticeHistoryPageProps {
@@ -102,9 +102,7 @@ export function PracticeHistoryPage({
   const [persistedSessions, setPersistedSessions] = useState<PersistedSession[]>([]);
   const [viewingReport, setViewingReport] = useState<number | null>(null);
 
-  const avatarInitials = userName
-    ? userName.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2)
-    : "U";
+
 
   /* ─── Load practice history ─── */
   useEffect(() => {
@@ -143,37 +141,14 @@ export function PracticeHistoryPage({
       <PastelBlobs />
 
       {/* ───── HEADER ───── */}
-      <header className="sticky top-0 z-50 bg-white border-b border-[#e2e8f0] relative">
-        <div className="max-w-[1440px] mx-auto flex items-center justify-between px-8 h-20">
-          <div className="flex items-center gap-6">
-            <BrandLogo />
-            <button
-              onClick={onBack}
-              className="flex items-center gap-1.5 text-sm text-[#45556c] hover:text-[#0f172b] transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Dashboard
-            </button>
-          </div>
-          <div className="flex items-center gap-6">
-            <div
-              className="w-10 h-10 rounded-full bg-[#0f172b] flex items-center justify-center cursor-pointer"
-              onClick={() => {
-                authService.signOut().catch(() => { });
-                onLogout?.();
-              }}
-              title="Sign out"
-            >
-              <span
-                className="text-white text-sm"
-                style={{ fontWeight: 500 }}
-              >
-                {avatarInitials}
-              </span>
-            </div>
-          </div>
-        </div>
-      </header>
+      <AppHeader
+        variant="app"
+        showBackButton
+        backLabel="Dashboard"
+        onBack={onBack}
+        userName={userName}
+        onLogout={onLogout}
+      />
 
       {/* ───── CONTENT ───── */}
       <main className="flex-1 relative z-10">
@@ -381,24 +356,12 @@ export function PracticeHistoryPage({
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
             >
               {/* Report header */}
-              <header className="sticky top-0 z-50 bg-white border-b border-[#e2e8f0]">
-                <div className="max-w-[860px] mx-auto flex items-center justify-between px-6 h-16">
-                  <button
-                    onClick={() => setViewingReport(null)}
-                    className="flex items-center gap-1.5 text-sm text-[#45556c] hover:text-[#0f172b] transition-colors"
-                    style={{ fontWeight: 500 }}
-                  >
-                    <ArrowLeft className="w-4 h-4" />
-                    Back to history
-                  </button>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-[#62748e]">{practice.date}</span>
-                    <span className="text-xs bg-[#f1f5f9] text-[#62748e] px-2 py-0.5 rounded-full" style={{ fontWeight: 500 }}>
-                      {practice.tag}
-                    </span>
-                  </div>
-                </div>
-              </header>
+              <AppHeader
+                variant="minimal"
+                showBackButton
+                backLabel="Back to history"
+                onBack={() => setViewingReport(null)}
+              />
 
               {/* Report content */}
               <SessionReport

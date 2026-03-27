@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { X, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { AppModal } from "@/shared/ui/AppModal";
 import { BrandLogo } from "./shared";
 import { authService } from "../../services";
 import type { AuthProvider } from "../../services/types";
@@ -120,134 +121,101 @@ export function AuthModal({
   };
 
   return (
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.25 }}
+    <AppModal open={open} onClose={onClose} size="md" showCloseButton={true}>
+      <div className="px-8 pt-10 pb-8">
+        {/* Logo */}
+        <div className="flex justify-center mb-8">
+          <BrandLogo />
+        </div>
+
+        {/* Title + Subtitle */}
+        <h2
+          className="text-2xl text-gray-900 text-center mb-2"
+          style={{ fontWeight: 600, lineHeight: 1.3 }}
         >
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            onClick={onClose}
-          />
+          {title}
+        </h2>
+        <p className="text-[#4B505B] text-center mb-8">
+          {subtitle}
+        </p>
 
-          {/* Modal card */}
-          <motion.div
-            className="relative bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden"
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-          >
-            {/* Close button */}
-            <button
-              onClick={onClose}
-              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors z-10"
+        {/* Inline error message (F1-05: POPUP_CLOSED, etc.) */}
+        <AnimatePresence>
+          {inlineError && (
+            <motion.div
+              className="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
             >
-              <X className="w-4 h-4 text-[#4B505B]" />
-            </button>
+              {inlineError}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-            <div className="px-8 pt-10 pb-8">
-              {/* Logo */}
-              <div className="flex justify-center mb-8">
-                <BrandLogo />
-              </div>
+        {/* Social buttons */}
+        <div className="space-y-3 mb-6">
+          {/* Google */}
+          <button
+            className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-200 rounded-full py-3.5 hover:bg-gray-50 hover:border-gray-300 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            onClick={() => handleSocialLogin("google")}
+            disabled={loadingProvider !== null}
+          >
+            {loadingProvider === "google" ? (
+              <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+            ) : (
+              <GoogleIcon />
+            )}
+            <span className="text-gray-900" style={{ fontWeight: 500 }}>
+              {googleLabel}
+            </span>
+          </button>
+        </div>
 
-              {/* Title + Subtitle */}
-              <h2
-                className="text-2xl text-gray-900 text-center mb-2"
-                style={{ fontWeight: 600, lineHeight: 1.3 }}
+        {/* Divider */}
+        <div className="flex items-center gap-3 mb-6">
+          <div className="flex-1 h-px bg-gray-200" />
+          <span className="text-xs text-gray-400">
+            {isLogin ? authCopy.login.divider : authCopy.register.divider}
+          </span>
+          <div className="flex-1 h-px bg-gray-200" />
+        </div>
+
+        {/* Toggle mode */}
+        <p className="text-center text-sm text-[#4B505B]">
+          {isLogin ? (
+            <>
+              {authCopy.login.toggle}{" "}
+              <button
+                onClick={onToggleMode}
+                className="text-gray-900 underline underline-offset-2 hover:text-[#2d2d2d] transition-colors"
+                style={{ fontWeight: 600 }}
               >
-                {title}
-              </h2>
-              <p className="text-[#4B505B] text-center mb-8">
-                {subtitle}
-              </p>
+                {authCopy.login.toggleAction}
+              </button>
+            </>
+          ) : (
+            <>
+              {authCopy.register.toggle}{" "}
+              <button
+                onClick={onToggleMode}
+                className="text-gray-900 underline underline-offset-2 hover:text-[#2d2d2d] transition-colors"
+                style={{ fontWeight: 600 }}
+              >
+                {authCopy.register.toggleAction}
+              </button>
+            </>
+          )}
+        </p>
 
-              {/* Inline error message (F1-05: POPUP_CLOSED, etc.) */}
-              <AnimatePresence>
-                {inlineError && (
-                  <motion.div
-                    className="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700"
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    {inlineError}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* Social buttons */}
-              <div className="space-y-3 mb-6">
-                {/* Google */}
-                <button
-                  className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-200 rounded-full py-3.5 hover:bg-gray-50 hover:border-gray-300 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-                  onClick={() => handleSocialLogin("google")}
-                  disabled={loadingProvider !== null}
-                >
-                  {loadingProvider === "google" ? (
-                    <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
-                  ) : (
-                    <GoogleIcon />
-                  )}
-                  <span className="text-gray-900" style={{ fontWeight: 500 }}>
-                    {googleLabel}
-                  </span>
-                </button>
-              </div>
-
-              {/* Divider */}
-              <div className="flex items-center gap-3 mb-6">
-                <div className="flex-1 h-px bg-gray-200" />
-                <span className="text-xs text-gray-400">
-                  {isLogin ? authCopy.login.divider : authCopy.register.divider}
-                </span>
-                <div className="flex-1 h-px bg-gray-200" />
-              </div>
-
-              {/* Toggle mode */}
-              <p className="text-center text-sm text-[#4B505B]">
-                {isLogin ? (
-                  <>
-                    {authCopy.login.toggle}{" "}
-                    <button
-                      onClick={onToggleMode}
-                      className="text-gray-900 underline underline-offset-2 hover:text-[#2d2d2d] transition-colors"
-                      style={{ fontWeight: 600 }}
-                    >
-                      {authCopy.login.toggleAction}
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    {authCopy.register.toggle}{" "}
-                    <button
-                      onClick={onToggleMode}
-                      className="text-gray-900 underline underline-offset-2 hover:text-[#2d2d2d] transition-colors"
-                      style={{ fontWeight: 600 }}
-                    >
-                      {authCopy.register.toggleAction}
-                    </button>
-                  </>
-                )}
-              </p>
-
-              {/* Trust line */}
-              {mode === "registro" && (
-                <p className="text-center text-xs text-gray-400 mt-5">
-                  {authCopy.register.trust}
-                </p>
-              )}
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+        {/* Trust line */}
+        {mode === "registro" && (
+          <p className="text-center text-xs text-gray-400 mt-5">
+            {authCopy.register.trust}
+          </p>
+        )}
+      </div>
+    </AppModal>
   );
 }
