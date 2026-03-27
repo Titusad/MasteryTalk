@@ -7,23 +7,13 @@ import type {
 } from "../../types";
 import { FeedbackError } from "../../errors";
 import { MockFeedbackService } from "../mock/feedback.mock";
-import { projectId, publicAnonKey } from "../../../../utils/supabase/info";
+import { projectId } from "../../../../utils/supabase/info";
+import { getAuthToken } from "../../supabase";
 
 const BASE_URL = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d`;
 
-async function getToken(): Promise<string> {
-  try {
-    const { getSupabaseClient } = await import("../../supabase");
-    const supabase = getSupabaseClient();
-    const { data: { session } } = await supabase.auth.getSession();
-    return session?.access_token || publicAnonKey;
-  } catch {
-    return publicAnonKey;
-  }
-}
-
 async function serverFetch(path: string, body: Record<string, unknown>) {
-  const token = await getToken();
+  const token = await getAuthToken();
   const res = await fetch(`${BASE_URL}${path}`, {
     method: "POST",
     headers: {

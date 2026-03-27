@@ -8,7 +8,8 @@
  */
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { projectId, publicAnonKey } from "../../../../utils/supabase/info";
+import { projectId } from "../../../../utils/supabase/info";
+import { getAuthToken } from "@/services/supabase";
 
 interface UseBriefingTTSReturn {
     /** Currently-playing phrase key (null if idle) */
@@ -60,11 +61,12 @@ export function useBriefingTTS(): UseBriefingTTSReturn {
                     let blobUrl = cacheRef.current.get(key);
                     if (!blobUrl) {
                         const url = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/tts`;
+                        const token = await getAuthToken();
                         const res = await fetch(url, {
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json",
-                                Authorization: `Bearer ${publicAnonKey}`,
+                                Authorization: `Bearer ${token}`,
                             },
                             body: JSON.stringify({ text, role: "user_line" }),
                             signal: controller.signal,

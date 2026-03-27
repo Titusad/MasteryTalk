@@ -12,7 +12,8 @@ import {
 } from "lucide-react";
 import { motion } from "motion/react";
 import { PastelBlobs, MiniFooter } from "../shared";
-import { projectId, publicAnonKey } from "../../../../utils/supabase/info";
+import { projectId } from "../../../../utils/supabase/info";
+import { getAuthToken } from "@/services/supabase";
 import type { ScenarioType, OnboardingProfile } from "../../../services/types";
 import { SessionProgressBar } from "../SessionProgressBar";
 
@@ -180,9 +181,10 @@ function ExtraContextScreen({
             formData.append("type", isSales ? "deck" : "cv");
 
             const url = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/process-cv`;
+            const token = await getAuthToken();
             const res = await fetch(url, {
                 method: "POST",
-                headers: { Authorization: `Bearer ${publicAnonKey}` },
+                headers: { Authorization: `Bearer ${token}` },
                 body: formData,
             });
 

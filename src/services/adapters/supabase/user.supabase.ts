@@ -11,25 +11,14 @@ import type {
   PracticeHistoryItem,
   PowerPhrase,
 } from "../../types";
-import { projectId, publicAnonKey } from "../../../../utils/supabase/info";
+import { projectId } from "../../../../utils/supabase/info";
+import { getAuthToken } from "../../supabase";
 
 const BASE = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d`;
 
-async function getToken(): Promise<string> {
-  try {
-    const { getSupabaseClient } = await import("../../supabase");
-    const supabase = getSupabaseClient();
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    return session?.access_token || publicAnonKey;
-  } catch {
-    return publicAnonKey;
-  }
-}
 
 async function apiFetch(path: string, init: RequestInit = {}): Promise<Response> {
-  const token = await getToken();
+  const token = await getAuthToken();
   return fetch(`${BASE}${path}`, {
     ...init,
     headers: {

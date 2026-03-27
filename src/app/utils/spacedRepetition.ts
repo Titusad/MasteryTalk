@@ -23,28 +23,9 @@
  * ==============================================================
  */
 
-import { projectId, publicAnonKey } from "../../../utils/supabase/info";
+import { projectId } from "../../../utils/supabase/info";
+import { getAuthToken } from "../../services/supabase";
 
-/** Get the authenticated user's JWT token (or fall back to anon key).
- *  Reads directly from localStorage to avoid getSession() mutex deadlock
- *  and to prevent aggressive token-clearing side effects from getAuthToken(). */
-async function getToken(): Promise<string> {
-    try {
-        // Read Supabase auth token directly from localStorage (instant, no network)
-        const storageKey = Object.keys(localStorage).find(
-            (k) => k.startsWith("sb-") && k.endsWith("-auth-token")
-        );
-        if (storageKey) {
-            const raw = localStorage.getItem(storageKey);
-            if (raw) {
-                const parsed = JSON.parse(raw);
-                const token = parsed?.access_token || parsed?.currentSession?.access_token;
-                if (token) return token;
-            }
-        }
-    } catch { /* ignore parse errors */ }
-    return publicAnonKey;
-}
 
 /* -- Types -- */
 
@@ -221,7 +202,7 @@ export function archiveStale(
 
 export async function fetchSRPhrases(): Promise<SpacedRepetitionPhrase[]> {
     try {
-        const token = await getToken();
+        const token = await getAuthToken();
         const res = await fetch(`${SERVER_BASE}/spaced-repetition`, {
             headers: { Authorization: `Bearer ${token}` },
         });
@@ -241,7 +222,7 @@ export async function saveSRPhrases(
     phrases: SpacedRepetitionPhrase[]
 ): Promise<boolean> {
     try {
-        const token = await getToken();
+        const token = await getAuthToken();
         const res = await fetch(`${SERVER_BASE}/spaced-repetition`, {
             method: "POST",
             headers: {

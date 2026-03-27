@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { defineConfig } from 'vite'
 import path from 'path'
 import tailwindcss from '@tailwindcss/vite'
@@ -24,5 +25,13 @@ export default defineConfig({
   // console.error is kept for critical error tracking.
   esbuild: {
     drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : [],
+  },
+
+  // ── Test configuration ──
+  test: {
+    globals: true,
+    environment: 'happy-dom',
+    include: ['src/**/__tests__/**/*.test.{ts,tsx}'],
+    setupFiles: [],
   },
 })

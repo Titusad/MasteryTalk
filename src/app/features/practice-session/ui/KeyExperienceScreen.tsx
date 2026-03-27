@@ -11,7 +11,8 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { PastelBlobs, MiniFooter } from "../shared";
-import { projectId, publicAnonKey } from "../../../../utils/supabase/info";
+import { projectId } from "../../../../utils/supabase/info";
+import { getAuthToken } from "@/services/supabase";
 import type { OnboardingProfile } from "../../../services/types";
 import { SessionProgressBar } from "../SessionProgressBar";
 
@@ -63,13 +64,15 @@ function KeyExperienceScreen({
         // Also persist to backend
         try {
             const serverUrl = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/profile`;
-            fetch(serverUrl, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${publicAnonKey}`,
-                },
-                body: JSON.stringify(updatedProfile),
+            getAuthToken().then((token) => {
+                fetch(serverUrl, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify(updatedProfile),
+                });
             });
         } catch { /* ignore */ }
 

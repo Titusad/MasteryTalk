@@ -18,7 +18,7 @@ import type {
     AzurePronunciationAssessment,
 } from "@/services/types";
 import { SpeechError } from "@/services/errors";
-import { projectId, publicAnonKey } from "../../../../utils/supabase/info";
+import { projectId } from "../../../../utils/supabase/info";
 import { getAuthToken } from "@/services/supabase";
 
 const BASE_URL = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d`;
@@ -122,10 +122,11 @@ export class SupabaseSpeechService implements ISpeechService {
             `[SupabaseSpeech] Sending ${audioBlob.size} bytes (${audioBlob.type}) to Whisper`
         );
 
+        const token = await getAuthToken();
         const res = await fetch(`${BASE_URL}/transcribe`, {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${publicAnonKey}`,
+                Authorization: `Bearer ${token}`,
             },
             body: formData,
         });
@@ -166,11 +167,12 @@ export class SupabaseSpeechService implements ISpeechService {
     async speak(
         text: string
     ): Promise<{ stop: () => void; duration: number }> {
+        const token = await getAuthToken();
         const res = await fetch(`${BASE_URL}/tts`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${publicAnonKey}`,
+                Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({ text, role: "coach" }),
         });
@@ -204,11 +206,12 @@ export class SupabaseSpeechService implements ISpeechService {
      * Used by VoicePractice for AI message narration.
      */
     async speakAndWait(text: string): Promise<void> {
+        const token = await getAuthToken();
         const res = await fetch(`${BASE_URL}/tts`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${publicAnonKey}`,
+                Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({ text, role: "coach" }),
         });
@@ -270,14 +273,13 @@ export class SupabaseSpeechService implements ISpeechService {
             try {
                 authHeader = `Bearer ${await getAuthToken()}`;
             } catch {
-                authHeader = `Bearer ${publicAnonKey}`;
+                throw new SpeechError("STT_NETWORK_ERROR");
             }
 
             const res = await fetch(`${BASE_URL}/pronunciation-assess`, {
                 method: "POST",
                 headers: {
                     Authorization: authHeader,
-                    apikey: publicAnonKey,
                 },
                 body: formData,
             });

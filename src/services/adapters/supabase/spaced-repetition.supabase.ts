@@ -12,7 +12,8 @@ import type {
   ArenaPowerPhrase,
   ArenaPhase,
 } from "../../types";
-import { projectId, publicAnonKey } from "../../../../utils/supabase/info";
+import { projectId } from "../../../../utils/supabase/info";
+import { getAuthToken } from "../../supabase";
 
 const BASE_URL = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d`;
 
@@ -22,19 +23,6 @@ const SR_INTERVALS: SRInterval[] = [
   { step: 3, days: 7, label: "1 week" },
   { step: 4, days: 14, label: "2 weeks" },
 ];
-
-async function getAuthToken(): Promise<string> {
-  try {
-    const { getSupabaseClient } = await import("../../supabase");
-    const supabase = getSupabaseClient();
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    return session?.access_token || publicAnonKey;
-  } catch {
-    return publicAnonKey;
-  }
-}
 
 async function srFetch(
   path: string,

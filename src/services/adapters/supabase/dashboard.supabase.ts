@@ -4,22 +4,10 @@
  * Replaces the direct `fetch()` calls in DashboardPage.tsx with
  * a proper service adapter that follows the existing pattern.
  */
-import { projectId, publicAnonKey } from "../../../../utils/supabase/info";
+import { projectId } from "../../../../utils/supabase/info";
+import { getAuthToken } from "../../supabase";
 
 const BASE = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d`;
-
-async function getToken(): Promise<string> {
-  try {
-    const { getSupabaseClient } = await import("../../supabase");
-    const supabase = getSupabaseClient();
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    return session?.access_token || publicAnonKey;
-  } catch {
-    return publicAnonKey;
-  }
-}
 
 export interface PersistedSession {
   id: string;
@@ -70,7 +58,7 @@ export interface ProfileStats {
  */
 export async function fetchSessions(): Promise<PersistedSession[]> {
   try {
-    const token = await getToken();
+    const token = await getAuthToken();
     const res = await fetch(`${BASE}/sessions`, {
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -88,7 +76,7 @@ export async function fetchSessions(): Promise<PersistedSession[]> {
  */
 export async function fetchProfileStats(): Promise<ProfileStats> {
   try {
-    const token = await getToken();
+    const token = await getAuthToken();
     const res = await fetch(`${BASE}/profile`, {
       headers: { Authorization: `Bearer ${token}` },
     });

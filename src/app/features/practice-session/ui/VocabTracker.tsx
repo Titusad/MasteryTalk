@@ -27,7 +27,8 @@ import {
     Filter,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { projectId, publicAnonKey } from "../../../utils/supabase/info";
+import { projectId } from "../../../utils/supabase/info";
+import { getAuthToken } from "@/services/supabase";
 import type { VocabPronunciationEntry } from "../../services/types";
 
 /* ─── Mastery config ─── */
@@ -142,20 +143,19 @@ export function VocabTracker({ initialData }: VocabTrackerProps) {
     const [categoryFilter, setCategoryFilter] = useState<string>("all");
     const [expandedWord, setExpandedWord] = useState<string | null>(null);
     const [showAtRisk, setShowAtRisk] = useState(true);
-
     /* ── Fetch vocab tracker data ── */
     useEffect(() => {
         if (initialData) return;
 
         const url = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/vocab-tracker`;
-        fetch(url, {
-            headers: { Authorization: `Bearer ${publicAnonKey}` },
-        })
-            .then(async (res) => {
+        (async () => {
+            try {
+                const token = await getAuthToken();
+                const res = await fetch(url, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
                 if (!res.ok) throw new Error(`${res.status}`);
-                return res.json();
-            })
-            .then((data) => {
+                const data = await res.json();
                 setEntries(data.entries || []);
                 setStats({
                     totalWords: data.totalWords || 0,
@@ -168,12 +168,12 @@ export function VocabTracker({ initialData }: VocabTrackerProps) {
                 setCategoryCounts(data.categoryCounts || {});
                 setAtRisk(data.atRisk || []);
                 setLoading(false);
-            })
-            .catch((err) => {
+            } catch (err: any) {
                 console.warn("[VocabTracker] Failed to fetch:", err.message);
                 setError(err.message);
                 setLoading(false);
-            });
+            }
+        })();
     }, [initialData]);
 
     /* ── Filtered entries ── */

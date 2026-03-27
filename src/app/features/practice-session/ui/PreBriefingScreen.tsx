@@ -20,7 +20,8 @@ import {
     HighlightWithTooltip,
     PageTitleBlock,
 } from "../shared";
-import { projectId, publicAnonKey } from "../../../../utils/supabase/info";
+import { projectId } from "../../../../utils/supabase/info";
+import { getAuthToken } from "@/services/supabase";
 import type { ScenarioType, ScriptSection } from "../../../services/types";
 import { SessionProgressBar } from "../SessionProgressBar";
 
@@ -92,9 +93,10 @@ function useBriefingNarration(sections: ScriptSection[]) {
 
     const fetchAudio = useCallback(async (text: string, role: string, signal: AbortSignal): Promise<string> => {
         const url = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/tts`;
+        const token = await getAuthToken();
         const res = await fetch(url, {
             method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${publicAnonKey}` },
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
             body: JSON.stringify({ text, role }),
             signal,
         });
