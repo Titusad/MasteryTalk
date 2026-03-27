@@ -15,8 +15,8 @@
 import { useState } from "react";
 import { Zap, Trophy, BarChart3 } from "lucide-react";
 import { PastelBlobs, MiniFooter } from "../../../components/shared";
-import type { LandingLang } from "../../../components/landing-i18n";
-import { CreditUpsellModal } from "../../../components/CreditUpsellModal";
+import type { LandingLang } from "../../../../shared/i18n/landing-i18n";
+import { CreditUpsellModal } from "../../../../widgets/CreditUpsellModal";
 import type { CreditPack, OnboardingProfile } from "../../../../services/types";
 
 /* ── Feature Module Imports ── */

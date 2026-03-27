@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import { Globe, ArrowRight } from "lucide-react";
 import { AppModal } from "@/shared/ui";
-import type { LandingLang } from "./landing-i18n";
+import type { LandingLang } from "../../shared/i18n/landing-i18n";
 
 /* ─── Copy per language ─── */
 const MODAL_COPY = {
