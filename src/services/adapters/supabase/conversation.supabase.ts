@@ -24,16 +24,18 @@ import {
     DEFAULT_INTERLOCUTOR,
     type InterlocutorType,
 } from "../../prompts";
-import { projectId, publicAnonKey } from "../../../../utils/supabase/info";
+import { projectId } from "../../../../utils/supabase/info";
+import { getAuthToken } from "../../supabase";
 
 const BASE_URL = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d`;
 
 async function serverFetch(path: string, body: Record<string, unknown>) {
+    const token = await getAuthToken();
     const res = await fetch(`${BASE_URL}${path}`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${publicAnonKey}`,
+            Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(body),
     });

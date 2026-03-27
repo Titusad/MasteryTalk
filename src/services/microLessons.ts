@@ -767,14 +767,9 @@ export function getCompletedLessonIds(): string[] {
 /** Sync a single lesson completion to the backend */
 async function _syncToBackend(lessonId: string): Promise<void> {
   try {
-    const { projectId, publicAnonKey } = await import("../../utils/supabase/info");
-    let token = publicAnonKey;
-    try {
-      const { getSupabaseClient } = await import("./supabase");
-      const supabase = getSupabaseClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.access_token) token = session.access_token;
-    } catch { /* use anon key */ }
+    const { projectId } = await import("../../utils/supabase/info");
+    const { getAuthToken } = await import("./supabase");
+    const token = await getAuthToken();
 
     await fetch(
       `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/lesson-progress`,
@@ -796,14 +791,9 @@ async function _syncToBackend(lessonId: string): Promise<void> {
  */
 export async function syncLessonProgress(): Promise<void> {
   try {
-    const { projectId, publicAnonKey } = await import("../../utils/supabase/info");
-    let token = publicAnonKey;
-    try {
-      const { getSupabaseClient } = await import("./supabase");
-      const supabase = getSupabaseClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.access_token) token = session.access_token;
-    } catch { /* use anon key */ }
+    const { projectId } = await import("../../utils/supabase/info");
+    const { getAuthToken } = await import("./supabase");
+    const token = await getAuthToken();
 
     const res = await fetch(
       `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/lesson-progress`,
