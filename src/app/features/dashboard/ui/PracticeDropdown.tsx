@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { Mic, ChevronDown, Briefcase, Target } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { PROGRESSION_PATHS, getLevelState, getDefaultProgressionState } from "../../../components/progression/progression-paths";
-import type { ProgressionState } from "../../../../services/types";
-import { projectId } from "../../../../../utils/supabase/info";
-import { getAuthToken } from "../../../../services/supabase";
+import { PROGRESSION_PATHS, getLevelState, getDefaultProgressionState } from "@/app/features/dashboard/model/progression-paths";
+import type { ProgressionState } from "@/services/types";
+import { projectId } from "@/../utils/supabase/info";
+import { getAuthToken } from "@/services/supabase";
 
 interface PracticeDropdownProps {
   onSelect: (scenario: string, scenarioType: string, levelId: string, interlocutor: string) => void;

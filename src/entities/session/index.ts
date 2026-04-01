@@ -15,6 +15,8 @@ export type Step =
   | "practice"
   | "analyzing"
   | "conversation-feedback"
+  | "skill-drill"
+  | "cp-unlock"
   | "remedial"
   | "session-recap";
 
@@ -48,6 +50,8 @@ export interface SessionConfig {
   context?: string;
   /** Guided fields captured in PracticeSetup (varies per scenarioType) */
   guidedFields?: Record<string, string>;
+  /** Market focus / target geography (optional, passed to assembler) */
+  marketFocus?: string;
   /** Interview briefing data for coherence: anticipated questions + user drafts → injected into interviewer prompt (Gap A+B) */
   interviewBriefing?: {
     anticipatedQuestions: Array<{

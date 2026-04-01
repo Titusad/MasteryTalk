@@ -5,8 +5,8 @@
  *  No React, no DOM — 100% reusable in React Native.
  * ══════════════════════════════════════════════════════════════
  */
-import { projectId, publicAnonKey } from "../../../../../utils/supabase/info";
-import { getAuthToken } from "../../../../services/supabase";
+import { projectId, publicAnonKey } from "@/../utils/supabase/info";
+import { getAuthToken } from "@/services/supabase";
 import type {
   ScenarioType,
   ScriptSection,
@@ -14,8 +14,8 @@ import type {
   InterviewBriefingData,
   TurnPronunciationData,
   SessionConfig,
-} from "../../../../services/types";
-import type { RealFeedbackData } from "../../../../components/session/ConversationFeedback";
+} from "@/services/types";
+import type { RealFeedbackData } from "@/app/features/practice-session/ui/ConversationFeedback";
 
 const BASE_URL = `https://${projectId}.supabase.co/functions/v1/make-server-08b8658d`;
 const TIMEOUT_MS = 40_000;

@@ -38,7 +38,7 @@ import type {
   Opportunity,
   BeforeAfterComparison,
 } from "@/services/types";
-import { PronunciationTab } from "../PronunciationTab";
+import { PronunciationTab } from "./PronunciationTab";
 
 import type { PaywallReason } from "@/app/hooks/useUsageGating";
 

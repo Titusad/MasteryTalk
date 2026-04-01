@@ -10,11 +10,11 @@ import {
     Briefcase,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { PastelBlobs, MiniFooter } from "../shared";
-import { projectId } from "../../../../utils/supabase/info";
+import { PastelBlobs, MiniFooter } from "@/app/components/shared";
+import { projectId } from "@/../utils/supabase/info";
 import { getAuthToken } from "@/services/supabase";
-import type { OnboardingProfile } from "../../../services/types";
-import { SessionProgressBar } from "../SessionProgressBar";
+import type { OnboardingProfile } from "@/services/types";
+import { SessionProgressBar } from "@/shared/ui/SessionProgressBar";
 
 /* ═══════════════════════════════════════════════════════════
    KEY EXPERIENCE SCREEN (interview only — persisted to profile)

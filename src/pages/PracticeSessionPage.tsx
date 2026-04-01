@@ -29,7 +29,9 @@ import { InterviewBriefingScreen } from "@/widgets/InterviewBriefingScreen";
 import type { Step } from "@/shared/ui";
 import { VoicePractice } from "@/app/features/practice-session/ui/VoicePractice";
 import { ConversationFeedback, type RealFeedbackData, type RepeatInfo } from "@/app/features/practice-session/ui/ConversationFeedback";
-import { CreditUpsellModal } from "@/widgets/CreditUpsellModal";
+import { SkillDrillScreen } from "@/app/features/skill-drill/ui/SkillDrillScreen";
+import { ConversationalPathUnlockScreen } from "@/app/features/skill-drill/ui/ConversationalPathUnlockScreen";
+import { SubscriptionModal, type PlanId } from "@/widgets/SubscriptionModal";
 import { useUsageGating } from "@/app/hooks/useUsageGating";
 import type { PaywallReason } from "@/app/hooks/useUsageGating";
 import { createSRPhrase, flagPhrasesForReview } from "@/app/utils/spacedRepetition";
@@ -243,6 +245,15 @@ export function PracticeSessionPage({
     }
     return [];
   });
+
+  /* Skill Drill result (stored after drill completion for cp-unlock and session-recap) */
+  const [drillResult, setDrillResult] = useState<{
+    pillar: string;
+    finalScore: number;
+    passed: boolean;
+    attempts: 1 | 2;
+    srCardCreated: boolean;
+  } | null>(null);
 
 
   /* Session start timestamp for duration calculation */
@@ -627,17 +638,19 @@ export function PracticeSessionPage({
   const usageGating = useUsageGating(plan);
   const [paywallOpen, setPaywallOpen] = useState(false);
   const [paywallReason, setPaywallReason] = useState<PaywallReason | null>(null);
+  const [paywallDefaultPlan, setPaywallDefaultPlan] = useState<PlanId>("pro-annual");
 
   /** Determine if free user should see paywall on repeat limit */
   const gateResult = usageGating.canPracticeAgain(repeatInfo.attempt, repeatInfo.maxAttempts);
   const showPaywallOnRepeat = !repeatInfo.canRepeat && gateResult.reason === "extra-practice";
 
-  const handlePaywallTriggered = useCallback((reason: PaywallReason) => {
+  const handlePaywallTriggered = useCallback((reason: PaywallReason, defaultPlan: PlanId = "pro-annual") => {
     setPaywallReason(reason);
+    setPaywallDefaultPlan(defaultPlan);
     setPaywallOpen(true);
   }, []);
 
-  const handlePurchaseComplete = useCallback((_pack: CreditPack, creditsAdded: number) => {
+  const handlePurchaseComplete = useCallback((_plan: PlanId, creditsAdded: number) => {
     usageGating.addCredits(creditsAdded);
     setPaywallOpen(false);
     setPaywallReason(null);
@@ -1016,20 +1029,8 @@ export function PracticeSessionPage({
               <ConversationFeedback
                 scenarioType={scenarioType}
                 onGenerateReport={() => {
-                  fireSummaryGeneration();
-
-                  // Record completion and trigger streak updates in background
-                  if (progressionLevelId && progressionPathId) {
-                    const score = realFeedback?.professionalProficiency ?? 50;
-                    const pillarScores = realFeedback?.pillarScores ?? null;
-                    completeProgressionLevel(progressionPathId, progressionLevelId, score, pillarScores)
-                      .catch((err: any) => {
-                        console.info("[Progression] Progression api background task:", err);
-                      });
-                  }
-                  
-                  // Always show the Session Report
-                  setStep("session-recap");
+                  // Transition to Skill Drill instead of directly to session-recap
+                  setStep("skill-drill");
                 }}
                 onPracticeAgain={handlePracticeAgain}
                 repeatInfo={repeatInfo}
@@ -1038,6 +1039,61 @@ export function PracticeSessionPage({
                 realFeedback={realFeedback}
                 pronunciationData={sessionPronData}
                 sessionId={sessionId}
+              />
+            )}
+
+            {step === "skill-drill" && (
+              <SkillDrillScreen
+                pillarScores={realFeedback?.pillarScores ?? null}
+                pronunciationScore={
+                  sessionPronData.length > 0
+                    ? Math.round(sessionPronData.reduce((s, t) => s + t.assessment.accuracyScore, 0) / sessionPronData.length)
+                    : 0
+                }
+                beforeAfter={realFeedback?.beforeAfter?.map(ba => ({
+                  originalPhrase: ba.userOriginal || "",
+                  professionalVersion: ba.professionalVersion || "",
+                }))}
+                scenarioType={scenarioType}
+                interlocutor={interlocutor}
+                onComplete={(drillResult) => {
+                  // Store drill result for session-recap
+                  setDrillResult(drillResult);
+                  // Transition to unlock screen
+                  setStep("cp-unlock");
+                }}
+                onSkip={() => {
+                  // All pillars are strong — skip directly to session-recap
+                  fireSummaryGeneration();
+                  if (progressionLevelId && progressionPathId) {
+                    const score = realFeedback?.professionalProficiency ?? 50;
+                    const pillarScores = realFeedback?.pillarScores ?? null;
+                    completeProgressionLevel(progressionPathId, progressionLevelId, score, pillarScores)
+                      .catch((err: any) => console.info("[Progression]", err));
+                  }
+                  setStep("session-recap");
+                }}
+              />
+            )}
+
+            {step === "cp-unlock" && drillResult && (
+              <ConversationalPathUnlockScreen
+                pillar={drillResult.pillar}
+                score={drillResult.finalScore}
+                passed={drillResult.passed}
+                scenarioType={scenarioType}
+                onContinue={() => {
+                  fireSummaryGeneration();
+                  if (progressionLevelId && progressionPathId) {
+                    const score = realFeedback?.professionalProficiency ?? 50;
+                    const pillarScores = realFeedback?.pillarScores ?? null;
+                    completeProgressionLevel(progressionPathId, progressionLevelId, score, pillarScores)
+                      .catch((err: any) => console.info("[Progression]", err));
+                  }
+                  setStep("session-recap");
+                }}
+                onSubscribe={() => handlePaywallTriggered("extra-practice", "pro-annual")}
+                onPayPerSession={() => handlePaywallTriggered("extra-practice", "per-session")}
               />
             )}
 
@@ -1098,12 +1154,12 @@ export function PracticeSessionPage({
       </div>
 
       {/* ── Paywall Modal (shared across all triggers) ── */}
-      <CreditUpsellModal
+      <SubscriptionModal
         open={paywallOpen}
         onClose={() => { setPaywallOpen(false); setPaywallReason(null); }}
         onPurchaseComplete={handlePurchaseComplete}
         paywallReason={paywallReason ?? undefined}
-        creditsRemaining={usageGating.credits}
+        defaultPlan={paywallDefaultPlan}
       />
     </div>
     </ProgressionProvider>

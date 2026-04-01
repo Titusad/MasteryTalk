@@ -14,7 +14,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Lock, PartyPopper } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import type { InterviewQuestionCard } from "../../../services/types";
+import type { InterviewQuestionCard } from "@/services/types";
 import { BriefingCard } from "./BriefingCard";
 import confetti from "canvas-confetti";
 

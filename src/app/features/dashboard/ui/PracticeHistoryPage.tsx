@@ -7,12 +7,12 @@ import {
   FileText,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { PastelBlobs, MiniFooter } from "../../../components/shared";
-import { userService } from "../../../../services";
-import type { PracticeHistoryItem, ScenarioType } from "../../../../services/types";
+import { PastelBlobs, MiniFooter } from "@/app/components/shared";
+import { userService } from "@/services";
+import type { PracticeHistoryItem, ScenarioType } from "@/services/types";
 import { SessionReport } from "@/widgets/SessionReport";
-import { projectId, publicAnonKey } from "../../../../../utils/supabase/info";
-import { getAuthToken } from "../../../../services/supabase";
+import { projectId, publicAnonKey } from "@/../utils/supabase/info";
+import { getAuthToken } from "@/services/supabase";
 import { AppHeader } from "@/shared/ui/AppHeader";
 
 /* ─── Props ─── */

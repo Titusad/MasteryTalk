@@ -14,7 +14,7 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import type {
   BeforeAfterComparison,
-} from "../../../services/types";
+} from "@/services/types";
 
 /* ══════════════════════════════════════════════════════════════
    COMPONENT: BeforeAfterSection

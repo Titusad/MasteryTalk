@@ -12,7 +12,7 @@
  * ==============================================================
  */
 
-import type { ScriptSection, InterviewQuestionCard, InterviewBriefingData, ScriptHighlight } from "../../../services/types";
+import type { ScriptSection, InterviewQuestionCard, InterviewBriefingData, ScriptHighlight } from "@/services/types";
 
 /**
  * Remove inline single-quoted phrases from text that already appear

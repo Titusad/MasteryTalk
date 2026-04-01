@@ -33,7 +33,7 @@ import type {
   ArenaPhase,
   ArenaState,
   ArenaPowerPhrase,
-} from "../../../services/types";
+} from "@/services/types";
 
 /* ══════════════════════════════════════════════════════════════
    HOOK: useArenaPhase

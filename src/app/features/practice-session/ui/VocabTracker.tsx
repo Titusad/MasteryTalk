@@ -27,9 +27,9 @@ import {
     Filter,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { projectId } from "../../../utils/supabase/info";
+import { projectId } from "@/../utils/supabase/info";
 import { getAuthToken } from "@/services/supabase";
-import type { VocabPronunciationEntry } from "../../services/types";
+import type { VocabPronunciationEntry } from "@/services/types";
 
 /* ─── Mastery config ─── */
 

@@ -11,11 +11,11 @@ import {
     Loader2,
 } from "lucide-react";
 import { motion } from "motion/react";
-import { PastelBlobs, MiniFooter } from "../shared";
-import { projectId } from "../../../../utils/supabase/info";
+import { PastelBlobs, MiniFooter } from "@/app/components/shared";
+import { projectId } from "@/../utils/supabase/info";
 import { getAuthToken } from "@/services/supabase";
-import type { ScenarioType, OnboardingProfile } from "../../../services/types";
-import { SessionProgressBar } from "../SessionProgressBar";
+import type { ScenarioType, OnboardingProfile } from "@/services/types";
+import { SessionProgressBar } from "@/shared/ui/SessionProgressBar";
 
 /* ═══════════════════════════════════════════════════════════
    EXTRA CONTEXT FIELD DATA

@@ -5,7 +5,7 @@
  * ══════════════════════════════════════════════════════════════
  */
 
-import type { ProgressionState, LevelState, LevelStatus } from "../../../services/types";
+import type { ProgressionState, LevelState, LevelStatus } from "@/services/types";
 
 /* ── Level Definition ── */
 

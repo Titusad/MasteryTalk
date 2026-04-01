@@ -14,11 +14,11 @@
 import { useState, useCallback } from "react";
 import { Play, Square, Mic, Check, Volume2, Loader2, Lightbulb, RotateCcw } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import type { ScriptHighlight } from "../../../services/types";
-import { realSpeechService } from "../../../services";
+import type { ScriptHighlight } from "@/services/types";
+import { realSpeechService } from "@/services";
 import { useBriefingTTS } from "./useBriefingTTS";
-import { useMediaRecorder } from "../../hooks/useMediaRecorder";
-import { RecordingWaveformBars, RecordingTimer } from "../shared";
+import { useMediaRecorder } from "@/app/hooks/useMediaRecorder";
+import { RecordingWaveformBars, RecordingTimer } from "@/app/components/shared";
 
 type PhraseStep = "idle" | "listened" | "recording" | "processing" | "done";
 

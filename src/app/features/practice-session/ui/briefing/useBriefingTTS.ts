@@ -8,7 +8,7 @@
  */
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { projectId } from "../../../../utils/supabase/info";
+import { projectId } from "@/../utils/supabase/info";
 import { getAuthToken } from "@/services/supabase";
 
 interface UseBriefingTTSReturn {

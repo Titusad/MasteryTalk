@@ -16,7 +16,7 @@
 import { useState, useCallback } from "react";
 import { BookOpen, Volume2, PenLine, Check, Lock, ChevronRight, ChevronLeft, CheckCircle2 } from "lucide-react";
 import { motion } from "motion/react";
-import type { InterviewQuestionCard } from "../../../services/types";
+import type { InterviewQuestionCard } from "@/services/types";
 import { StrategyLayer } from "./StrategyLayer";
 import { PhrasesLayer } from "./PhrasesLayer";
 import { ResponseLayer } from "./ResponseLayer";

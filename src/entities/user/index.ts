@@ -16,6 +16,7 @@ export interface User {
   freeSessionUsed: boolean;
   sessionsCompleted: number;
   createdAt: string;
+  marketFocus?: string;
 }
 
 export type AuthProvider = "google";

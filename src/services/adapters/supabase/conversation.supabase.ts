@@ -17,6 +17,7 @@ import type {
     PreparedSession,
     ChatMessage,
     ConversationTurnResult,
+    ScriptSection,
 } from "../../types";
 import { ConversationError } from "../../errors";
 import {
@@ -82,6 +83,30 @@ async function serverFetch(path: string, body: Record<string, unknown>) {
 export class SupabaseConversationService implements IConversationService {
     /** Local cache of messages per session (avoids extra server calls) */
     private localMessages: Map<string, ChatMessage[]> = new Map();
+    async generateContextSuggestions(
+        scenarioType: string,
+        scenario: string,
+        interlocutor: string,
+    ): Promise<{ fields: Array<{ label: string; placeholder: string; hint: string; pasteHint: string; suggestions: string[] }> }> {
+        const data = await serverFetch("/context-suggestions", {
+            scenarioType,
+            scenario,
+            interlocutor,
+        });
+        return data as { fields: Array<{ label: string; placeholder: string; hint: string; pasteHint: string; suggestions: string[] }> };
+    }
+
+    async generatePreBriefing(params: {
+        scenarioType: string;
+        scenario: string;
+        interlocutor: string;
+        guidedFields?: Record<string, string>;
+        marketFocus?: string | null;
+        extraContext?: string;
+    }): Promise<{ sections: ScriptSection[] }> {
+        const data = await serverFetch("/pre-briefing", params);
+        return data as { sections: ScriptSection[] };
+    }
 
     async prepareSession(config: SessionConfig): Promise<PreparedSession> {
         try {

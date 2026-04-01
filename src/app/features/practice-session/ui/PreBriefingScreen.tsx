@@ -19,11 +19,11 @@ import {
     MiniFooter,
     HighlightWithTooltip,
     PageTitleBlock,
-} from "../shared";
-import { projectId } from "../../../../utils/supabase/info";
+} from "@/app/components/shared";
+import { projectId } from "@/../utils/supabase/info";
 import { getAuthToken } from "@/services/supabase";
-import type { ScenarioType, ScriptSection } from "../../../services/types";
-import { SessionProgressBar } from "../SessionProgressBar";
+import type { ScenarioType, ScriptSection } from "@/services/types";
+import { SessionProgressBar } from "@/shared/ui/SessionProgressBar";
 
 /* ── Coaching Cue Formatter ──
    Detects coaching directives at the start of paragraph text

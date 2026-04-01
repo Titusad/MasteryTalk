@@ -32,9 +32,9 @@ import {
     ArrowRight,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import type { TurnPronunciationData, BeforeAfterComparison } from "../../services/types";
-import { realSpeechService } from "../../services";
-import { shadowingScoresCache } from "../utils/sessionCache";
+import type { TurnPronunciationData, BeforeAfterComparison } from "@/services/types";
+import { realSpeechService } from "@/services";
+import { shadowingScoresCache } from "@/app/utils/sessionCache";
 import { ShadowingModal, extractShadowingPhrases } from "./ShadowingModal";
 import type { ShadowingPhrase } from "./ShadowingModal";
 

@@ -154,6 +154,8 @@ export interface AssemblyConfig {
   includeFirstMessage?: boolean;
   /** Scenario type for adaptation block */
   scenarioType?: ScenarioType | null;
+  /** Market focus / target geography (optional) */
+  marketFocus?: string;
   /**
    * Current Arena phase for progressive scaffolding.
    * Injected as Block 6.5 to modulate AI difficulty level.

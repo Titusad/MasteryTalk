@@ -28,16 +28,16 @@ import {
     Lightbulb,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import type { TurnPronunciationData, BeforeAfterComparison } from "../../services/types";
-import { realSpeechService } from "../../services";
-import { shadowingScoresCache } from "../utils/sessionCache";
+import type { TurnPronunciationData, BeforeAfterComparison } from "@/services/types";
+import { realSpeechService } from "@/services";
+import { shadowingScoresCache } from "@/app/utils/sessionCache";
 import {
     createSRPhrase,
     flagPhrasesForReview,
     updatePhraseAfterReview,
     saveSRPhrases,
-} from "../utils/spacedRepetition";
-import type { SpacedRepetitionPhrase } from "../utils/spacedRepetition";
+} from "@/app/utils/spacedRepetition";
+import type { SpacedRepetitionPhrase } from "@/app/utils/spacedRepetition";
 
 /* ── Feature Module Imports ── */
 import {
@@ -50,15 +50,15 @@ import {
     scoreColor,
     spacedRepetitionDays,
     extractShadowingPhrases,
-} from "../features/shadowing/model";
-import { WaveformBars, ScoreRing, PhraseCard } from "../features/shadowing/ui";
+} from "@/app/features/shadowing/model";
+import { WaveformBars, ScoreRing, PhraseCard } from "@/app/features/shadowing/ui";
 
 /* Types, constants, pure functions, and sub-components now imported from
    features/shadowing/model and features/shadowing/ui */
 
 /* Re-export for external consumers */
-export type { ShadowingPhrase } from "../features/shadowing/model";
-export { extractShadowingPhrases } from "../features/shadowing/model";
+export type { ShadowingPhrase } from "@/app/features/shadowing/model";
+export { extractShadowingPhrases } from "@/app/features/shadowing/model";
 
 type Phase = ShadowingPhase;
 
@@ -307,11 +307,11 @@ export function ShadowingModal({
             });
             // Fetch full phrase list, merge updated, then save
             try {
-                const { fetchSRPhrases: fetchAll } = await import("../utils/spacedRepetition");
+                const { fetchSRPhrases: fetchAll } = await import("@/app/utils/spacedRepetition");
                 const allPhrases = await fetchAll();
-                const updatedIds = new Set(updated.map((p) => p.id));
+                const updatedIds = new Set(updated.map((p: SpacedRepetitionPhrase) => p.id));
                 const merged = [
-                    ...allPhrases.filter((p) => !updatedIds.has(p.id)),
+                    ...allPhrases.filter((p: SpacedRepetitionPhrase) => !updatedIds.has(p.id)),
                     ...updated,
                 ];
                 await saveSRPhrases(merged);

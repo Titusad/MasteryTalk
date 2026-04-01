@@ -6,10 +6,10 @@ import {
   PROGRESSION_PATHS,
   getDefaultProgressionState,
   getLevelState,
-} from "../../../../components/progression/progression-paths";
-import type { ProgressionState, LevelStatus } from "../../../../../services/types";
-import { projectId } from "../../../../../../utils/supabase/info";
-import { getAuthToken } from "../../../../../services/supabase";
+} from "@/app/features/dashboard/model/progression-paths";
+import type { ProgressionState, LevelStatus } from "@/services/types";
+import { projectId } from "@/../utils/supabase/info";
+import { getAuthToken } from "@/services/supabase";
 
 import { LevelNode } from "./LevelNode";
 import { LevelDrawer } from "./LevelDrawer";
