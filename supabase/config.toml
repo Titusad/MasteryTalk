@@ -6,3 +6,6 @@ project_id = "zkuryztcwmazspscomiu"
 # supabase.auth.getUser() in the getAuthUser() helper, which supports ES256 natively.
 [functions.make-server-08b8658d]
 verify_jwt = false
+
+[functions.evaluate-drill]
+verify_jwt = false
