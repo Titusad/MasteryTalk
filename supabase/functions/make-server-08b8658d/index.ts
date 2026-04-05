@@ -394,11 +394,79 @@ app.post("/make-server-08b8658d/profile/mark-free-used", async (c) => {
 });
 
 // ═══════════════════════════════════════════════════════════════
-// Helper: Call OpenAI Chat Completions
+// API Usage Tracking — logs every external API call for cost monitoring
+// ═══════════════════════════════════════════════════════════════
+const API_COST_RATES: Record<string, { input: number; output: number }> = {
+  "gpt-4o":        { input: 0.0025, output: 0.01 },     // $2.50/$10 per 1M tokens
+  "gpt-4o-mini":   { input: 0.00015, output: 0.0006 },
+  "whisper-1":     { input: 0.006, output: 0 },          // $0.006/min (~1500 tokens/min)
+  "tts-1":         { input: 0.015, output: 0 },           // $15/1M chars
+  "tts-1-hd":      { input: 0.030, output: 0 },
+  "elevenlabs":    { input: 0.0003, output: 0 },          // ~$0.30/1K chars
+};
+
+async function logApiUsage(
+  service: string,
+  endpoint: string,
+  tokens: { prompt: number; completion: number; total: number },
+  model: string,
+  userId?: string,
+) {
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    const key = `api_usage:${today}`;
+
+    const rate = API_COST_RATES[model] || { input: 0, output: 0 };
+    const cost = (tokens.prompt * rate.input / 1000) + (tokens.completion * rate.output / 1000);
+
+    const existing = await kv.get(key);
+    const daily = existing || { date: today, calls: [], totals: {}, byUser: {} };
+
+    // Append call record (keep last 500 per day to avoid unbounded growth)
+    if (!daily.calls) daily.calls = [];
+    if (daily.calls.length < 500) {
+      daily.calls.push({
+        ts: Date.now(),
+        service,
+        endpoint,
+        model,
+        tokens,
+        cost: +cost.toFixed(6),
+        userId: userId || "anonymous",
+      });
+    }
+
+    // Update service totals
+    if (!daily.totals) daily.totals = {};
+    if (!daily.totals[service]) daily.totals[service] = { calls: 0, tokens: 0, cost: 0, chars: 0 };
+    daily.totals[service].calls++;
+    daily.totals[service].tokens += tokens.total;
+    daily.totals[service].cost = +(daily.totals[service].cost + cost).toFixed(6);
+    if (service === "elevenlabs" || service === "openai-tts") {
+      daily.totals[service].chars = (daily.totals[service].chars || 0) + tokens.prompt;
+    }
+
+    // Update per-user totals
+    if (userId) {
+      if (!daily.byUser) daily.byUser = {};
+      if (!daily.byUser[userId]) daily.byUser[userId] = { calls: 0, tokens: 0, cost: 0 };
+      daily.byUser[userId].calls++;
+      daily.byUser[userId].tokens += tokens.total;
+      daily.byUser[userId].cost = +(daily.byUser[userId].cost + cost).toFixed(6);
+    }
+
+    await kv.set(key, daily);
+  } catch (e) {
+    console.warn("[API Usage Log] Failed to log:", e);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Helper: Call OpenAI Chat Completions (with usage logging)
 // ═══════════════════════════════════════════════════════════════
 async function callOpenAIChat(
   messages: Array<{ role: string; content: string }>,
-  options: { temperature?: number; max_tokens?: number; jsonMode?: boolean } = {},
+  options: { temperature?: number; max_tokens?: number; jsonMode?: boolean; endpoint?: string; userId?: string } = {},
 ) {
   const openaiKey = Deno.env.get("OPENAI_API_KEY");
   if (!openaiKey) throw new Error("OPENAI_API_KEY not configured on server");
@@ -427,6 +495,15 @@ async function callOpenAIChat(
     throw new Error(`OpenAI ${res.status}: ${errBody.slice(0, 300)}`);
   }
   const data = await res.json();
+
+  // Log usage
+  const usage = data.usage || {};
+  logApiUsage("openai-chat", options.endpoint || "chat-completions", {
+    prompt: usage.prompt_tokens || 0,
+    completion: usage.completion_tokens || 0,
+    total: usage.total_tokens || 0,
+  }, (body.model as string) || "gpt-4o", options.userId).catch(() => {});
+
   return data.choices?.[0]?.message?.content || "";
 }
 
@@ -744,6 +821,12 @@ app.post("/make-server-08b8658d/transcribe", async (c) => {
 
     console.log(`[Transcribe] ✅ "${rawText.slice(0, 80)}..." | duration=${result.duration}s | no_speech_prob=${noSpeechProb}`);
 
+    // Log API usage (Whisper charges per minute, estimate ~1500 tokens/min)
+    const estimatedTokens = Math.ceil((result.duration || 1) / 60 * 1500);
+    logApiUsage("whisper", "/transcribe", {
+      prompt: estimatedTokens, completion: 0, total: estimatedTokens,
+    }, "whisper-1").catch(() => {});
+
     return c.json({
       text: rawText,
       confidence: noSpeechProb < 0.3 ? 0.95 : 0.7,
@@ -808,6 +891,10 @@ app.post("/make-server-08b8658d/generate-script", async (c) => {
         throw new Error(`OpenAI ${res.status}: ${errBody.slice(0, 300)}`);
       }
       const data = await res.json();
+      const u = data.usage || {};
+      logApiUsage("openai-chat", "/generate-script", {
+        prompt: u.prompt_tokens || 0, completion: u.completion_tokens || 0, total: u.total_tokens || 0,
+      }, "gpt-4o").catch(() => {});
       return data.choices?.[0]?.message?.content || "";
     }
 
@@ -994,6 +1081,10 @@ app.post("/make-server-08b8658d/generate-preparation-toolkit", async (c) => {
     }
 
     const data = await res.json();
+    const ptUsage = data.usage || {};
+    logApiUsage("openai-chat", "/preparation-toolkit", {
+      prompt: ptUsage.prompt_tokens || 0, completion: ptUsage.completion_tokens || 0, total: ptUsage.total_tokens || 0,
+    }, "gpt-4o").catch(() => {});
     const content = data.choices?.[0]?.message?.content || "";
 
     let parsed;
@@ -1069,6 +1160,10 @@ app.post("/make-server-08b8658d/generate-interview-briefing", async (c) => {
     }
 
     const data = await res.json();
+    const ibUsage = data.usage || {};
+    logApiUsage("openai-chat", "/interview-briefing", {
+      prompt: ibUsage.prompt_tokens || 0, completion: ibUsage.completion_tokens || 0, total: ibUsage.total_tokens || 0,
+    }, "gpt-4o").catch(() => {});
     const content = data.choices?.[0]?.message?.content || "";
 
     let parsed;
@@ -1179,6 +1274,10 @@ app.post("/make-server-08b8658d/tts", async (c) => {
 
         if (elRes.ok && elRes.body) {
           console.log(`[TTS ElevenLabs] ✅ Streaming started — role=${effectiveRole}`);
+          // Log ElevenLabs usage (chars as tokens for cost tracking)
+          logApiUsage("elevenlabs", "/tts", {
+            prompt: text.length, completion: 0, total: text.length,
+          }, "elevenlabs").catch(() => {});
           // Stream audio directly to client — no buffering for lowest latency
           return new Response(elRes.body, {
             status: 200,
@@ -1234,6 +1333,10 @@ app.post("/make-server-08b8658d/tts", async (c) => {
 
     const audioBuffer = await ttsResponse.arrayBuffer();
     console.log(`[TTS OpenAI Fallback] ✅ Audio generated — voice=${oaiProfile.voice}, size=${audioBuffer.byteLength} bytes`);
+    // Log OpenAI TTS usage (chars as tokens for cost tracking)
+    logApiUsage("openai-tts", "/tts", {
+      prompt: text.length, completion: 0, total: text.length,
+    }, "tts-1").catch(() => {});
 
     return new Response(audioBuffer, {
       status: 200,
@@ -2649,6 +2752,110 @@ app.get("/make-server-08b8658d/admin/kpis", async (c: any) => {
   } catch (err: any) {
     console.log("[Admin /kpis error]", err);
     return c.json({ error: `Failed to compute KPIs: ${err}` }, 500);
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// GET /admin/api-usage — API cost tracking (30d)
+// ═══════════════════════════════════════════════════════════════
+app.get("/make-server-08b8658d/admin/api-usage", async (c: any) => {
+  try {
+    const adminSupabase = createClient(
+      Deno.env.get("SUPABASE_URL"),
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),
+    );
+
+    // Fetch last 30 days of usage logs from KV
+    const { data: rows, error } = await adminSupabase
+      .from("kv_store_4e8a5b39")
+      .select("key, value")
+      .like("key", "api_usage:%")
+      .order("key", { ascending: false })
+      .limit(30);
+
+    if (error) throw error;
+
+    const days = (rows || []).map((r: any) => typeof r.value === "string" ? JSON.parse(r.value) : r.value);
+
+    // Aggregate totals
+    let totalCost = 0, totalCalls = 0, totalTokens = 0;
+    const byService: Record<string, { calls: number; tokens: number; cost: number; chars: number }> = {};
+    const byUser: Record<string, { calls: number; tokens: number; cost: number }> = {};
+
+    for (const day of days) {
+      // Service totals
+      for (const [svc, data] of Object.entries(day.totals || {}) as any[]) {
+        if (!byService[svc]) byService[svc] = { calls: 0, tokens: 0, cost: 0, chars: 0 };
+        byService[svc].calls += data.calls || 0;
+        byService[svc].tokens += data.tokens || 0;
+        byService[svc].cost += data.cost || 0;
+        byService[svc].chars += data.chars || 0;
+        totalCost += data.cost || 0;
+        totalCalls += data.calls || 0;
+        totalTokens += data.tokens || 0;
+      }
+      // Per-user totals
+      for (const [uid, data] of Object.entries(day.byUser || {}) as any[]) {
+        if (!byUser[uid]) byUser[uid] = { calls: 0, tokens: 0, cost: 0 };
+        byUser[uid].calls += data.calls || 0;
+        byUser[uid].tokens += data.tokens || 0;
+        byUser[uid].cost += data.cost || 0;
+      }
+    }
+
+    // Resolve user emails for byUser
+    const userIds = Object.keys(byUser).filter(id => id !== "anonymous");
+    let userEmails: Record<string, string> = {};
+    if (userIds.length > 0) {
+      try {
+        const profileRows = await adminSupabase
+          .from("kv_store_4e8a5b39")
+          .select("key, value")
+          .in("key", userIds.map(id => `profile:${id}`));
+        for (const row of profileRows.data || []) {
+          const uid = row.key.replace("profile:", "");
+          const profile = typeof row.value === "string" ? JSON.parse(row.value) : row.value;
+          userEmails[uid] = profile.email || uid.slice(0, 8);
+        }
+      } catch { /* skip email resolution on error */ }
+    }
+
+    // Daily costs for chart
+    const dailyCosts = days.map((d: any) => {
+      const dayCost = Object.values(d.totals || {}).reduce((s: number, v: any) => s + (v.cost || 0), 0);
+      const dayCalls = Object.values(d.totals || {}).reduce((s: number, v: any) => s + (v.calls || 0), 0);
+      return { date: d.date, cost: +dayCost.toFixed(4), calls: dayCalls };
+    }).reverse();
+
+    // Budget alert: check if today's cost exceeds $5
+    const DAILY_BUDGET = 5.0;
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const todayData = days.find((d: any) => d.date === todayStr);
+    const todayCost = todayData
+      ? Object.values(todayData.totals || {}).reduce((s: number, v: any) => s + (v.cost || 0), 0)
+      : 0;
+
+    return c.json({
+      totalCost: +totalCost.toFixed(4),
+      totalCalls,
+      totalTokens,
+      byService,
+      byUser: Object.entries(byUser).map(([uid, data]) => ({
+        userId: uid,
+        email: userEmails[uid] || uid.slice(0, 8),
+        ...data,
+        cost: +data.cost.toFixed(4),
+      })).sort((a: any, b: any) => b.cost - a.cost),
+      dailyCosts,
+      budgetAlert: todayCost > DAILY_BUDGET ? {
+        message: `⚠️ Today's cost ($${(todayCost as number).toFixed(2)}) exceeds the $${DAILY_BUDGET} daily budget!`,
+        todayCost: +(todayCost as number).toFixed(4),
+        budget: DAILY_BUDGET,
+      } : null,
+    });
+  } catch (err: any) {
+    console.log("[Admin /api-usage error]", err);
+    return c.json({ error: `Failed to load API usage: ${err}` }, 500);
   }
 });
 

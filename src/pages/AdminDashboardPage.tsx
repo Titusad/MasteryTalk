@@ -26,6 +26,10 @@ import {
   BookOpen,
   CheckCircle2,
   XCircle,
+  DollarSign,
+  Zap,
+  AlertTriangle,
+  Hash,
 } from "lucide-react";
 import {
   RadarChart,
@@ -69,6 +73,16 @@ interface AdminKPIs {
   cvConsented: number;
   avgPillarScores: Record<string, number>;
   sessionsPerDay: { date: string; count: number }[];
+}
+
+interface ApiUsageData {
+  totalCost: number;
+  totalCalls: number;
+  totalTokens: number;
+  byService: Record<string, { calls: number; tokens: number; cost: number; chars: number }>;
+  byUser: Array<{ userId: string; email: string; calls: number; tokens: number; cost: number }>;
+  dailyCosts: Array<{ date: string; cost: number; calls: number }>;
+  budgetAlert: { message: string; todayCost: number; budget: number } | null;
 }
 
 interface UserDetail {
@@ -145,17 +159,21 @@ export function AdminDashboardPage({ onBack }: AdminDashboardPageProps) {
   const [sortKey, setSortKey] = useState<SortKey>("sessionsCount");
   const [sortAsc, setSortAsc] = useState(false);
   const [view, setView] = useState<"overview" | "detail">("overview");
+  const [apiUsage, setApiUsage] = useState<ApiUsageData | null>(null);
+  const [activeTab, setActiveTab] = useState<"platform" | "costs">("platform");
 
   const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const [kpiData, userData] = await Promise.all([
+      const [kpiData, userData, usageData] = await Promise.all([
         adminFetch("/admin/kpis"),
         adminFetch("/admin/users"),
+        adminFetch("/admin/api-usage").catch(() => null),
       ]);
       setKpis(kpiData);
       setUsers(userData.users || []);
+      setApiUsage(usageData);
     } catch (err: any) {
       setError(err.message || "Failed to load admin data");
     } finally {
@@ -396,6 +414,151 @@ export function AdminDashboardPage({ onBack }: AdminDashboardPageProps) {
           </>
         )}
 
+        {/* ── Tab Selector ── */}
+        <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
+          <button
+            onClick={() => setActiveTab("platform")}
+            style={{
+              padding: "8px 20px",
+              borderRadius: 8,
+              border: activeTab === "platform" ? "1px solid #6366f1" : "1px solid #334155",
+              background: activeTab === "platform" ? "rgba(99,102,241,0.15)" : "rgba(30,41,59,0.5)",
+              color: activeTab === "platform" ? "#a5b4fc" : "#94a3b8",
+              cursor: "pointer",
+              fontSize: 13,
+              fontWeight: 600,
+            }}
+          >
+            📊 Platform
+          </button>
+          <button
+            onClick={() => setActiveTab("costs")}
+            style={{
+              padding: "8px 20px",
+              borderRadius: 8,
+              border: activeTab === "costs" ? "1px solid #f59e0b" : "1px solid #334155",
+              background: activeTab === "costs" ? "rgba(245,158,11,0.15)" : "rgba(30,41,59,0.5)",
+              color: activeTab === "costs" ? "#fbbf24" : "#94a3b8",
+              cursor: "pointer",
+              fontSize: 13,
+              fontWeight: 600,
+            }}
+          >
+            💰 API Costs
+          </button>
+        </div>
+
+        {/* ── API Costs Tab ── */}
+        {activeTab === "costs" && apiUsage && (
+          <>
+            {/* Budget Alert */}
+            {apiUsage.budgetAlert && (
+              <div style={{ background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.4)", borderRadius: 12, padding: 16, marginBottom: 24, display: "flex", alignItems: "center", gap: 12 }}>
+                <AlertTriangle size={20} color="#ef4444" />
+                <span style={{ color: "#fca5a5", fontSize: 14, fontWeight: 500 }}>{apiUsage.budgetAlert.message}</span>
+              </div>
+            )}
+
+            {/* Cost KPI Cards */}
+            <div style={styles.kpiGrid}>
+              <KPICard icon={<DollarSign size={20} />} label="Total Cost (30d)" value={`$${apiUsage.totalCost.toFixed(2)}`} color="#f59e0b" />
+              <KPICard icon={<Zap size={20} />} label="API Calls (30d)" value={apiUsage.totalCalls} color="#6366f1" />
+              <KPICard icon={<Hash size={20} />} label="Tokens Used" value={apiUsage.totalTokens > 1000000 ? `${(apiUsage.totalTokens / 1000000).toFixed(1)}M` : apiUsage.totalTokens > 1000 ? `${(apiUsage.totalTokens / 1000).toFixed(1)}K` : apiUsage.totalTokens} color="#0ea5e9" />
+              <KPICard icon={<Activity size={20} />} label="$/Session Avg" value={kpis && kpis.totalSessions > 0 ? `$${(apiUsage.totalCost / kpis.totalSessions).toFixed(3)}` : "—"} color="#22c55e" />
+            </div>
+
+            {/* Daily Cost Chart */}
+            {apiUsage.dailyCosts.length > 0 && (
+              <div style={styles.chartBox}>
+                <h3 style={styles.sectionTitle}>Daily API Cost (30d)</h3>
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart data={apiUsage.dailyCosts}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                    <XAxis dataKey="date" tick={{ fill: "#64748b", fontSize: 10 }} tickFormatter={(v) => v.slice(5)} />
+                    <YAxis tick={{ fill: "#64748b", fontSize: 11 }} tickFormatter={(v) => `$${v}`} />
+                    <Tooltip
+                      contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0" }}
+                      formatter={(value: any) => [`$${Number(value).toFixed(4)}`, "Cost"]}
+                    />
+                    <Bar dataKey="cost" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+
+            {/* Service Breakdown */}
+            <div style={styles.chartBox}>
+              <h3 style={styles.sectionTitle}>🔧 Service Breakdown</h3>
+              <div style={{ overflowX: "auto" }}>
+                <table style={styles.table}>
+                  <thead>
+                    <tr>
+                      <th style={styles.th}>Service</th>
+                      <th style={{ ...styles.th, textAlign: "right" }}>Calls</th>
+                      <th style={{ ...styles.th, textAlign: "right" }}>Tokens</th>
+                      <th style={{ ...styles.th, textAlign: "right" }}>Chars</th>
+                      <th style={{ ...styles.th, textAlign: "right" }}>Cost</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(apiUsage.byService).sort(([,a], [,b]) => b.cost - a.cost).map(([svc, data], i) => (
+                      <tr key={svc} style={i % 2 === 0 ? styles.trEven : {}}>
+                        <td style={styles.td}>
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "2px 10px", borderRadius: 6, background: svc.includes("openai") ? "rgba(99,102,241,0.15)" : svc === "whisper" ? "rgba(14,165,233,0.15)" : "rgba(245,158,11,0.15)", color: svc.includes("openai") ? "#a5b4fc" : svc === "whisper" ? "#7dd3fc" : "#fcd34d", fontSize: 12, fontWeight: 600 }}>
+                            {svc}
+                          </span>
+                        </td>
+                        <td style={{ ...styles.td, textAlign: "right" }}>{data.calls.toLocaleString()}</td>
+                        <td style={{ ...styles.td, textAlign: "right" }}>{data.tokens > 1000 ? `${(data.tokens / 1000).toFixed(1)}K` : data.tokens}</td>
+                        <td style={{ ...styles.td, textAlign: "right" }}>{data.chars > 0 ? data.chars.toLocaleString() : "—"}</td>
+                        <td style={{ ...styles.td, textAlign: "right", fontWeight: 600, color: "#fbbf24" }}>${data.cost.toFixed(4)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Per-User Breakdown */}
+            {apiUsage.byUser.length > 0 && (
+              <div style={styles.chartBox}>
+                <h3 style={styles.sectionTitle}>👤 Cost by User</h3>
+                <div style={{ overflowX: "auto" }}>
+                  <table style={styles.table}>
+                    <thead>
+                      <tr>
+                        <th style={styles.th}>User</th>
+                        <th style={{ ...styles.th, textAlign: "right" }}>Calls</th>
+                        <th style={{ ...styles.th, textAlign: "right" }}>Tokens</th>
+                        <th style={{ ...styles.th, textAlign: "right" }}>Cost</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {apiUsage.byUser.map((u, i) => (
+                        <tr key={u.userId} style={i % 2 === 0 ? styles.trEven : {}}>
+                          <td style={{ ...styles.td, fontSize: 12 }}>{u.email}</td>
+                          <td style={{ ...styles.td, textAlign: "right" }}>{u.calls}</td>
+                          <td style={{ ...styles.td, textAlign: "right" }}>{u.tokens > 1000 ? `${(u.tokens / 1000).toFixed(1)}K` : u.tokens}</td>
+                          <td style={{ ...styles.td, textAlign: "right", fontWeight: 600, color: "#fbbf24" }}>${u.cost.toFixed(4)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {!apiUsage.totalCalls && (
+              <div style={{ ...styles.chartBox, textAlign: "center", padding: 48 }}>
+                <p style={{ color: "#64748b", fontSize: 16 }}>No API usage data yet. Data will appear after the first user session.</p>
+              </div>
+            )}
+          </>
+        )}
+
+        {activeTab === "platform" && (
+          <>
+
         {/* ── Users Table ── */}
         <div style={styles.chartBox}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
@@ -467,6 +630,8 @@ export function AdminDashboardPage({ onBack }: AdminDashboardPageProps) {
             </table>
           </div>
         </div>
+        </> /* end platform tab */
+        )}
       </div>
     </div>
   );
