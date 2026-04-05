@@ -773,8 +773,10 @@ export default function App() {
           />
         </Suspense>
 
-        {/* Dev Preview Menu — floating dropdown for rapid UI testing (disabled for prod) */}
-        {/* <DevPreviewMenu onNavigate={handleDevNavigate} /> */}
+        {/* Dev Preview Menu — floating dropdown for rapid UI testing (admin only) */}
+        {authUser && ADMIN_EMAILS.includes(authUser.email?.toLowerCase() || "") && (
+          <DevPreviewMenu onNavigate={handleDevNavigate} />
+        )}
       </div>
     </ErrorBoundary>
   );
