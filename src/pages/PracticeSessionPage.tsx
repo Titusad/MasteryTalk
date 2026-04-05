@@ -1088,12 +1088,7 @@ export function PracticeSessionPage({
                   });
                 }}
                 onFinish={() => {
-                  // v9.0: Demo users see PathConversionScreen before exiting
-                  if (plan === "free") {
-                    setStep("path-conversion");
-                  } else {
-                    onFinish();
-                  }
+                  onFinish();
                 }}
                 canRetryFree={canRepeat}
               />

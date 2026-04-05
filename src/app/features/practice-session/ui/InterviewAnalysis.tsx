@@ -22,7 +22,6 @@ import {
     RotateCcw,
     Download,
     ChevronDown,
-    Volume2,
     Check,
     Sparkles,
     AudioLines,
@@ -52,7 +51,6 @@ import type {
     Opportunity,
 } from "@/services/types";
 import type { RealFeedbackData } from "./ConversationFeedback";
-import { useBriefingTTS } from "./briefing/useBriefingTTS";
 import { ShadowingModal } from "@/app/features/practice-session/ui/ShadowingModal";
 import type { ShadowingPhrase } from "@/app/features/shadowing/model";
 import {
@@ -79,7 +77,7 @@ const PILLAR_COLORS: Record<string, { icon: string; bg: string; text: string }> 
     Vocabulary: { icon: "📚", bg: "rgba(16,185,129,0.12)", text: "#10b981" },
 };
 
-type ShadowState = "idle" | "listening" | "done";
+type ShadowState = "idle" | "done";
 
 /* ── Props ── */
 interface InterviewAnalysisProps {
@@ -104,7 +102,6 @@ export function InterviewAnalysis({
 }: InterviewAnalysisProps) {
     const [insightsOpen, setInsightsOpen] = useState(false);
     const isInterview = scenarioType === "interview";
-    const tts = useBriefingTTS();
 
     /* ── Shadow state per before/after item ── */
     const [shadowStates, setShadowStates] = useState<Record<number, ShadowState>>({});
@@ -209,11 +206,6 @@ export function InterviewAnalysis({
     }, [beforeAfter]);
 
     /* ── Shadowing handlers ── */
-    const handleListen = useCallback((idx: number, text: string) => {
-        updateShadow(idx, "listening");
-        tts.play(`ba-${idx}`, text);
-        setTimeout(() => updateShadow(idx, "idle"), 3000);
-    }, [tts, updateShadow]);
 
     const handleOpenShadowModal = useCallback((idx: number) => {
         setActiveShadowIdx(idx);
@@ -423,20 +415,6 @@ export function InterviewAnalysis({
                                         </div>
                                         {/* Shadowing controls */}
                                         <div className="px-4 py-2.5 bg-[#f8fafc] border-t border-[#f1f5f9] flex items-center gap-2">
-                                            <button
-                                                onClick={() => handleListen(i, ba.professionalVersion)}
-                                                disabled={ss === "listening"}
-                                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] transition-all ${
-                                                    ss === "listening"
-                                                        ? "bg-[#6366f1] text-white"
-                                                        : "bg-white text-[#45556c] border border-[#e2e8f0] hover:border-[#c7d2e0]"
-                                                }`}
-                                                style={{ fontWeight: 500 }}
-                                            >
-                                                <Volume2 className={`w-3 h-3 ${ss === "listening" ? "animate-pulse" : ""}`} />
-                                                {ss === "listening" ? "Playing..." : "Listen"}
-                                            </button>
-
                                             {ss === "done" ? (
                                                 <span className="text-[11px] text-emerald-600 flex items-center gap-1.5" style={{ fontWeight: 500 }}>
                                                     <Check className="w-3 h-3" /> Practiced ✓
@@ -448,7 +426,7 @@ export function InterviewAnalysis({
                                                     style={{ fontWeight: 500 }}
                                                 >
                                                     <Headphones className="w-3 h-3" />
-                                                    Shadow
+                                                    Practice Pronunciation
                                                 </button>
                                             )}
                                         </div>
