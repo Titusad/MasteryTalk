@@ -435,37 +435,42 @@ export function LandingPage({
                   </div>
                 </div>
 
-                {/* Credit packs grid */}
-                <div className="grid md:grid-cols-3 gap-4 md:gap-5 max-w-5xl mx-auto mb-10">
-                  {copy.pricing.packs.map((pack) => {
-                    const isFeatured = pack.featured;
+                {/* Learning Path cards */}
+                <div className="grid md:grid-cols-2 gap-4 md:gap-5 max-w-4xl mx-auto mb-10">
+                  {copy.pricing.paths.map((path) => {
+                    const isFeatured = path.featured;
                     return (
                       <div
-                        key={pack.sessions}
+                        key={path.sessions}
                         className={`relative rounded-2xl p-5 md:p-6 flex flex-col transition-shadow ${isFeatured
                             ? "bg-[#2d2d2d] shadow-xl ring-2 ring-[#50C878]/30 md:-mt-2 md:mb-[-8px]"
                             : "bg-white border border-gray-200 hover:shadow-md"
                           }`}
                       >
                         {/* Badge */}
-                        {pack.discount && (
+                        {path.discount && (
                           <div className={`absolute -top-2.5 right-4 px-2.5 py-1 rounded-full text-[10px] ${isFeatured
                               ? "bg-[#50C878] text-white"
                               : "bg-[#f0f4f8] text-[#2d2d2d] border border-gray-200"
                             }`} style={{ fontWeight: 600 }}>
-                            -{pack.discount}
+                            -{path.discount}
                           </div>
                         )}
 
-                        {/* Pack name */}
-                        <p className={`text-sm mb-3 ${isFeatured ? "text-gray-400" : "text-[#4B505B]"}`} style={{ fontWeight: 500 }}>
-                          {pack.name}
+                        {/* Path name */}
+                        <p className={`text-sm mb-1 ${isFeatured ? "text-gray-400" : "text-[#4B505B]"}`} style={{ fontWeight: 500 }}>
+                          {path.name}
+                        </p>
+
+                        {/* Sessions count */}
+                        <p className={`text-[10px] mb-3 ${isFeatured ? "text-gray-500" : "text-[#94a3b8]"}`} style={{ fontWeight: 500 }}>
+                          {path.sessions} sessions
                         </p>
 
                         {/* Price */}
                         <div className="mb-1">
                           <span className={`text-3xl md:text-4xl ${isFeatured ? "text-white" : "text-[#2d2d2d]"}`} style={{ fontWeight: 800 }}>
-                            {pack.price}
+                            {path.price}
                           </span>
                           <span className={`text-xs ml-1 ${isFeatured ? "text-gray-400" : "text-[#4B505B]"}`}>USD</span>
                         </div>
@@ -474,7 +479,7 @@ export function LandingPage({
                         <div className={`flex items-center gap-1.5 mb-5 ${isFeatured ? "text-emerald-300" : "text-[#4B505B]"}`}>
                           <Zap className="w-3 h-3" />
                           <span className="text-xs" style={{ fontWeight: 500 }}>
-                            {pack.perSession} {copy.pricing.perSessionLabel}
+                            {path.perSession} {copy.pricing.perSessionLabel}
                           </span>
                         </div>
 
@@ -487,12 +492,12 @@ export function LandingPage({
                           style={{ fontWeight: 500 }}
                           onClick={() => openAuth("registro")}
                         >
-                          {pack.button}
+                          {path.button}
                         </button>
 
                         {/* Features */}
                         <div className={`border-t pt-4 space-y-2.5 mt-auto ${isFeatured ? "border-white/20" : "border-gray-200/60"}`}>
-                          {pack.features.map((f) => (
+                          {path.features.map((f) => (
                             <div key={f} className="flex items-start gap-2">
                               <CheckIcon color={isFeatured ? "#ffffff" : "#2d2d2d"} />
                               <p className={`text-xs ${isFeatured ? "text-gray-300" : "text-gray-600"}`}>{f}</p>

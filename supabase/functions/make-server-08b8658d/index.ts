@@ -685,6 +685,10 @@ app.post("/make-server-08b8658d/transcribe", async (c) => {
       whisperForm.append("language", language);
     }
     whisperForm.append("response_format", "verbose_json");
+    // Anti-hallucination: temperature=0 makes output deterministic (no creative guessing)
+    whisperForm.append("temperature", "0");
+    // Prompt gives Whisper context — dramatically reduces hallucination on short/quiet audio
+    whisperForm.append("prompt", "This is an English-speaking professional practicing interview and sales conversation skills. They are answering a question about their professional background, experience, or approach.");
 
     const whisperRes = await fetch("https://api.openai.com/v1/audio/transcriptions", {
       method: "POST",
@@ -701,11 +705,48 @@ app.post("/make-server-08b8658d/transcribe", async (c) => {
     }
 
     const result = await whisperRes.json();
-    console.log(`[Transcribe] ✅ "${result.text?.slice(0, 80)}..." | duration=${result.duration}s`);
+
+    // Anti-hallucination: detect and reject common Whisper noise hallucinations
+    const rawText = (result.text || "").trim();
+    const noSpeechProb = result.segments?.[0]?.no_speech_prob ?? 0;
+
+    // Known hallucination patterns: Whisper outputs these when it hears silence/noise
+    const HALLUCINATION_PATTERNS = [
+      /^(thank you|thanks for watching|please subscribe|like and subscribe)/i,
+      /^(music|applause|\[music\]|\(music\))/i,
+      /you$/, // ends abruptly with "you"
+      /^.{1,8}$/, // extremely short output (likely noise)
+    ];
+
+    const isLikelyHallucination =
+      noSpeechProb > 0.6 ||
+      HALLUCINATION_PATTERNS.some(p => p.test(rawText)) ||
+      // Repetition detection: same word repeated 4+ times
+      (() => {
+        const words = rawText.toLowerCase().split(/\s+/);
+        if (words.length < 4) return false;
+        const counts: Record<string, number> = {};
+        for (const w of words) { counts[w] = (counts[w] || 0) + 1; }
+        return Object.values(counts).some(c => c >= Math.max(4, words.length * 0.4));
+      })();
+
+    if (isLikelyHallucination) {
+      console.log(`[Transcribe] ⚠️ Rejected hallucination: "${rawText}" (no_speech_prob=${noSpeechProb})`);
+      return c.json({
+        text: "",
+        confidence: 0,
+        duration: result.duration,
+        language: result.language,
+        rejected: true,
+        reason: "hallucination_detected",
+      });
+    }
+
+    console.log(`[Transcribe] ✅ "${rawText.slice(0, 80)}..." | duration=${result.duration}s | no_speech_prob=${noSpeechProb}`);
 
     return c.json({
-      text: result.text || "",
-      confidence: 0.95, // Whisper doesn't return per-word confidence in this mode
+      text: rawText,
+      confidence: noSpeechProb < 0.3 ? 0.95 : 0.7,
       duration: result.duration,
       language: result.language,
     });
@@ -3148,6 +3189,119 @@ app.post("/make-server-08b8658d/progression/complete-lesson", async (c) => {
   } catch (err) {
     console.log("[Lesson complete] Error:", err);
     return c.json({ error: `Failed to complete lesson: ${err}` }, 500);
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// POST /evaluate-briefing-draft — Evaluate user's practice answer
+// Returns improved version + explanation based on communication strategy
+// Used by Briefing Card 4 (FeedbackCard)
+// ═══════════════════════════════════════════════════════════════
+app.post("/make-server-08b8658d/evaluate-briefing-draft", async (c) => {
+  try {
+    const user = await getAuthUser(c.req.header("Authorization"));
+    if (!user) {
+      return c.json({ error: "Unauthorized" }, 401);
+    }
+
+    const {
+      question,
+      userDraft,
+      strategy,
+      framework,
+      suggestedOpener,
+      scenarioType,
+      interlocutor,
+    } = await c.req.json();
+
+    if (!question || !userDraft) {
+      return c.json({ error: "Missing required fields: question and userDraft" }, 400);
+    }
+
+    const isInterview = scenarioType === "interview";
+    const contextLabel = isInterview ? "interview question" : "sales scenario";
+    const roleLabel = isInterview
+      ? `${interlocutor || "interviewer"}`
+      : `${interlocutor || "prospect/buyer"}`;
+
+    const systemPrompt = `You are MasteryTalk Pro's communication coach — an expert in professional English communication for non-native speakers in high-stakes business conversations.
+
+Your task: Evaluate the user's draft answer to a ${contextLabel} and produce an improved, professional version they can practice saying out loud.
+
+CONTEXT:
+- Question: "${question}"
+- Communication Strategy: ${strategy || "Not provided"}
+- Framework: ${framework ? `${framework.name}: ${framework.description}` : "Not provided"}
+- Suggested Opener: ${suggestedOpener || "Not provided"}
+- Scenario: ${scenarioType || "interview"} with ${roleLabel}
+
+RULES:
+1. The improved response must sound NATURAL when spoken aloud — not like written text.
+2. Keep the user's core message and personal experiences intact — don't invent facts.
+3. Apply the communication strategy/framework to structure the answer better.
+4. Use professional but conversational English (avoid overly formal or stiff language).
+5. The improved version should be 2-4 sentences max — concise and impactful.
+6. Explain WHY each change makes it stronger (reference the framework/strategy).
+7. Identify 2-3 key changes as bullet points.
+
+SHADOWING PHRASES:
+Split the improvedResponse into 2-5 short clause-level chunks (5-10 words each) for pronunciation practice.
+For each chunk provide:
+- "sentence": the phrase text
+- "stressedWords": words that carry PRIMARY lexical stress (content words the speaker should emphasize)
+- "linkedPairs": pairs of adjacent words that should flow together without a pause (e.g. ["excited","about"], ["aligns","with"])
+- "ipa": full IPA transcription for the phrase (use standard IPA notation with stress marks ˈ and ˌ)
+- "focusWord": the single most challenging word to pronounce for a non-native speaker
+
+Respond in JSON:
+{
+  "improvedResponse": "The improved version of their answer",
+  "explanation": "1-2 sentences explaining the overall improvement approach",
+  "keyChanges": [
+    { "original": "what they said (paraphrased)", "improved": "what the improvement does", "reason": "why this is stronger" }
+  ],
+  "communicationScore": 0-100 (how effective the original draft was),
+  "tone": "professional|casual|too-formal|unclear",
+  "shadowingPhrases": [
+    {
+      "sentence": "I'm excited about Addi's mission",
+      "stressedWords": ["excited", "Addi's", "mission"],
+      "linkedPairs": [["excited", "about"], ["Addi's", "mission"]],
+      "ipa": "/aɪm ɪkˈsaɪtɪd əˈbaʊt ˈædiz ˈmɪʃən/",
+      "focusWord": "excited"
+    }
+  ]
+}`;
+
+    console.log(`[EvaluateBriefingDraft] User ${user.id} | Q: "${question.slice(0, 60)}..." | Draft: ${userDraft.length} chars`);
+
+    const aiResponse = await callOpenAIChat(
+      [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: `My answer: "${userDraft}"` },
+      ],
+      { temperature: 0.7, max_tokens: 1500, jsonMode: true },
+    );
+
+    let parsed;
+    try {
+      parsed = JSON.parse(aiResponse);
+    } catch {
+      parsed = {
+        improvedResponse: aiResponse,
+        explanation: "Could not parse structured feedback.",
+        keyChanges: [],
+        communicationScore: 50,
+        tone: "unclear",
+      };
+    }
+
+    console.log(`[EvaluateBriefingDraft] ✅ Score: ${parsed.communicationScore} | Improved: ${(parsed.improvedResponse || "").length} chars`);
+
+    return c.json(parsed);
+  } catch (err) {
+    console.log("[EvaluateBriefingDraft Error]", err);
+    return c.json({ error: `Briefing evaluation failed: ${err}` }, 500);
   }
 });
 

@@ -16,8 +16,8 @@ import { useState } from "react";
 import { Zap, Trophy, BarChart3 } from "lucide-react";
 import { PastelBlobs, MiniFooter } from "../../../components/shared";
 import type { LandingLang } from "@/shared/i18n/landing-i18n";
-import { CreditUpsellModal } from "@/widgets/CreditUpsellModal";
-import type { CreditPack, OnboardingProfile } from "../../../../services/types";
+import { PathPurchaseModal } from "@/widgets/PathPurchaseModal";
+import type { PurchaseType, OnboardingProfile } from "../../../../services/types";
 
 /* ── Feature Module Imports ── */
 import { useDashboardData } from "../model";
@@ -84,11 +84,9 @@ export function DashboardPage({
     onStartNewPractice?.(scenario, scenarioType, levelId, interlocutor);
   };
 
-  const handlePurchaseComplete = (
-    _pack: CreditPack,
-    creditsAdded: number
-  ) => {
-    data.setCredits((prev) => (prev ?? 0) + creditsAdded);
+  const handlePurchaseComplete = (purchaseType: PurchaseType) => {
+    // v9.0: Update path count in dashboard data
+    data.setCredits((prev) => (prev ?? 0) + (purchaseType === "all_access" ? 5 : 1));
     data.setFreeSessionAvailable(false);
     setUpsellOpen(false);
     if (pendingScenario) {
@@ -242,12 +240,12 @@ export function DashboardPage({
       {/* ═══════ MODALS ═══════ */}
 
 
-      <CreditUpsellModal
+      <PathPurchaseModal
         open={upsellOpen}
         onClose={() => setUpsellOpen(false)}
+        scenarioType="interview"
+        paywallReason="path-required"
         onPurchaseComplete={handlePurchaseComplete}
-        lang={lang}
-        creditsRemaining={data.credits ?? 0}
       />
     </div>
   );

@@ -1,12 +1,11 @@
 /**
- * MockUserService — Simulates Supabase user operations
+ * MockUserService — v9.0 Learning Path model
  *
- * Preserves current prototype behavior:
- * - Dashboard shows hardcoded practice history
- * - Power phrases are from mock data
- * - Plan logic: free session available by default
+ * - Demo session: first session per scenario is free
+ * - Path access: mock simulates purchased paths
+ * - Dashboard: hardcoded practice history
  */
-import type { IUserService } from "../../interfaces";
+import type { IUserService, SessionAccessResult } from "../../interfaces";
 import type { User, UserPlan, PracticeHistoryItem, PowerPhrase } from "../../types";
 import {
   MOCK_PRACTICE_HISTORY,
@@ -23,11 +22,11 @@ export class MockUserService implements IUserService {
     if (!mockUserStore[uid]) {
       mockUserStore[uid] = {
         uid,
-        displayName: "Mar\u00EDa Garc\u00EDa",
+        displayName: "María García",
         email: "maria.garcia@example.com",
         plan: "free",
-        freeSessionUsed: false,
-        sessionsCompleted: 3,
+        freeSessionsUsed: [],
+        pathsPurchased: [],
         marketFocus: "mexico",
         createdAt: "2026-02-10T08:00:00Z",
       };
@@ -49,35 +48,42 @@ export class MockUserService implements IUserService {
   }
 
   async canStartSession(
-    uid: string
-  ): Promise<{ allowed: boolean; reason?: string; creditsRemaining?: number }> {
+    uid: string,
+    scenarioType: string
+  ): Promise<SessionAccessResult> {
     await delay(100);
     const user = await this.getProfile(uid);
 
-    switch (user.plan) {
-      case "free":
-        if (user.freeSessionUsed) {
-          return {
-            allowed: false,
-            reason: "Ya usaste tu sesión gratuita. Compra créditos para continuar.",
-            creditsRemaining: 0,
-          };
-        }
-        return { allowed: true, creditsRemaining: 0 };
-
-      case "per-session":
-        // Per-session: check via paymentService (but mock always allows)
-        return { allowed: true, creditsRemaining: 1 };
-
-      default:
-        return { allowed: false, reason: "Plan no reconocido.", creditsRemaining: 0 };
+    // Demo: first session of this scenario always allowed
+    if (!user.freeSessionsUsed.includes(scenarioType)) {
+      return { allowed: true, mode: "demo" };
     }
+
+    // Path purchased: allowed
+    if (user.pathsPurchased.includes(scenarioType)) {
+      return { allowed: true, mode: "path" };
+    }
+
+    return { allowed: false, reason: "PATH_PURCHASE_REQUIRED" };
   }
 
-  async markFreeSessionUsed(uid: string): Promise<void> {
+  async canStartFreshAttempt(
+    _uid: string,
+    _scenarioType: string,
+    _levelId: string
+  ): Promise<SessionAccessResult> {
+    await delay(100);
+    // Mock: always allow fresh attempts
+    return { allowed: true, mode: "path" };
+  }
+
+  async markDemoSessionUsed(uid: string, scenarioType: string): Promise<void> {
     await delay(100);
     if (mockUserStore[uid]) {
-      mockUserStore[uid].freeSessionUsed = true;
+      const used = mockUserStore[uid].freeSessionsUsed;
+      if (!used.includes(scenarioType)) {
+        used.push(scenarioType);
+      }
     }
   }
 
@@ -93,7 +99,6 @@ export class MockUserService implements IUserService {
 
   async savePowerPhrase(_uid: string, phrase: PowerPhrase): Promise<void> {
     await delay(150);
-    // In mock, just log — phrase is not persisted
     console.log("[MockUserService] Power phrase saved:", phrase.phrase);
   }
 }

@@ -508,6 +508,9 @@ export function ShadowingModal({
                         sentence={currentPhrase.sentence}
                         focusWord={currentPhrase.focusWord}
                         problemWords={currentPhrase.problemWords}
+                        stressedWords={currentPhrase.stressedWords}
+                        linkedPairs={currentPhrase.linkedPairs}
+                        phraseIpa={currentPhrase.ipa || undefined}
                     />
 
                     {/* Focus word + IPA + scenario */}

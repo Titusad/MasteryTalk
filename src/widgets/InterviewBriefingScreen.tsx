@@ -1,14 +1,12 @@
 /**
  * ==============================================================
- *  inFluentia PRO — Interview Briefing Screen (Carousel Edition)
+ *  inFluentia PRO — Interview Preparation Screen (Stepper Edition)
  *
- *  Gamified, Duolingo-style horizontal carousel that replaces the
- *  original accordion layout. Each anticipated question becomes a
- *  BriefingCard with 3 sequential layers:
- *    Strategy → Phrases (TTS) → Shadowing (record)
- *
- *  After completing all cards the ReadinessScore screen appears
- *  with confetti, animated ring, and CTA to start practice.
+ *  New 4-step per-question mastery flow:
+ *    Step 1: See the question
+ *    Step 2: Understand the strategy
+ *    Step 3: Record your answer (voice STT)
+ *    Step 4: Get AI feedback + shadowing practice
  *
  *  Cultural Tips & Questions to Ask are NOT shown in the UI;
  *  they are included in the post-session comprehensive PDF report.
@@ -16,14 +14,9 @@
  */
 
 import { useState, useCallback, useRef } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import {
     ArrowLeft,
-    MessageCircleQuestion,
-    Play,
-    Mic,
-    Lock,
-    FileText,
 } from "lucide-react";
 import {
     PastelBlobs,
@@ -31,12 +24,12 @@ import {
 } from "@/shared/ui";
 import type { InterviewBriefingData } from "@/services/types";
 import type { ScenarioType } from "@/services/types";
-import { BriefingCarousel } from "@/app/features/practice-session/ui/briefing/BriefingCarousel";
+import { BriefingStepperCarousel } from "@/app/features/practice-session/ui/briefing/BriefingStepperCarousel";
 import { ReadinessScore } from "@/app/features/practice-session/ui/briefing/ReadinessScore";
 import { SessionProgressBar } from "@/app/components/SessionProgressBar";
 
-/* ── Minimum cards to unlock practice ── */
-const MIN_CARDS_FOR_PRACTICE = 3;
+/* ── Minimum cards to unlock practice early ── */
+const MIN_CARDS_FOR_SKIP = 3;
 
 /* ── Interlocutor labels ── */
 const INTERLOCUTOR_LABELS: Record<string, { label: string; emoji: string }> = {
@@ -65,11 +58,8 @@ export function InterviewBriefingScreen({
     scenario,
     scenarioType,
 }: InterviewBriefingScreenProps) {
-    /* Carousel state lifted here so ReadinessScore can access it */
-    const [completedCards, setCompletedCards] = useState<Set<number>>(new Set());
-    const [activeCardIndex, setActiveCardIndex] = useState(0);
     const [allDone, setAllDone] = useState(false);
-    
+
     /** Accumulated user drafts keyed by question id (Gap B) */
     const draftsRef = useRef<Record<number, string>>({});
 
@@ -81,16 +71,6 @@ export function InterviewBriefingScreen({
         label: interlocutor,
         emoji: "💼",
     };
-
-    const practiceUnlocked = completedCards.size >= MIN_CARDS_FOR_PRACTICE;
-
-    const handleCardComplete = useCallback((index: number) => {
-        setCompletedCards((prev) => {
-            const next = new Set(prev);
-            next.add(index);
-            return next;
-        });
-    }, []);
 
     const handleAllComplete = useCallback(() => {
         setAllDone(true);
@@ -113,10 +93,10 @@ export function InterviewBriefingScreen({
                 </div>
                 {/* Header */}
                 <PageTitleBlock
-                    title={scenarioType === "sales" ? "Sales Briefing" : "Interview Briefing"}
+                    title={scenarioType === "sales" ? "Sales Preparation" : "Interview Preparation"}
                     subtitle={scenarioType === "sales"
-                        ? `${briefingData.anticipatedQuestions.length} sections in your pitch — master each one step by step.`
-                        : `${briefingData.anticipatedQuestions.length} questions your ${interlocutorInfo.label} will likely ask — master each one step by step.`
+                        ? `${briefingData.anticipatedQuestions.length} sections — master each one step by step.`
+                        : `${briefingData.anticipatedQuestions.length} questions your ${interlocutorInfo.label} will likely ask — master each one.`
                     }
                 />
 
@@ -124,68 +104,21 @@ export function InterviewBriefingScreen({
                 {allDone ? (
                     <ReadinessScore
                         totalCards={briefingData.anticipatedQuestions.length}
-                        completedCards={completedCards.size}
+                        completedCards={briefingData.anticipatedQuestions.length}
                         onStartPractice={handleStartPractice}
                     />
                 ) : (
-                    <BriefingCarousel
+                    <BriefingStepperCarousel
                         cards={briefingData.anticipatedQuestions}
                         onAllComplete={handleAllComplete}
-                        completedCards={completedCards}
-                        onCardComplete={handleCardComplete}
-                        activeCardIndex={activeCardIndex}
-                        onNavigate={setActiveCardIndex}
                         onDraftChange={handleDraftChange}
                         isSales={scenarioType === "sales"}
+                        scenarioType={scenarioType}
+                        interlocutor={interlocutor}
                     />
                 )}
 
-                {/* ── Always-visible Practice Interview CTA ── */}
-                {!allDone && (
-                    <motion.div
-                        className="mt-8"
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4, delay: 0.3 }}
-                    >
-                        <div className={`rounded-2xl border p-5 text-center transition-all ${practiceUnlocked
-                                ? "bg-gradient-to-br from-[#f0f9ff] to-[#eef2ff] border-[#bfdbfe]/50"
-                                : "bg-[#f8fafc] border-[#e2e8f0]"
-                            }`}>
-                            <div className={`w-11 h-11 rounded-xl flex items-center justify-center mx-auto mb-3 transition-colors ${practiceUnlocked ? "bg-[#0f172b]" : "bg-[#cbd5e1]"
-                                }`}>
-                                {practiceUnlocked ? (
-                                    <Mic className="w-5 h-5 text-white" />
-                                ) : (
-                                    <Lock className="w-5 h-5 text-white" />
-                                )}
-                            </div>
 
-                            <p className="text-sm text-[#45556c] mb-3">
-                                {practiceUnlocked
-                                    ? scenarioType === "sales"
-                                        ? "You're ready — simulate the pitch with AI."
-                                        : "You're ready — simulate the interview with AI."
-                                    : `Complete ${MIN_CARDS_FOR_PRACTICE} ${scenarioType === "sales" ? "sections" : "questions"} to unlock the practice ${scenarioType === "sales" ? "pitch" : "interview"}.`
-                                }
-                            </p>
-
-                            <button
-                                onClick={handleStartPractice}
-                                disabled={!practiceUnlocked}
-                                className={`px-6 py-3 rounded-full flex items-center gap-2.5 mx-auto transition-all text-sm ${practiceUnlocked
-                                        ? "bg-[#0f172b] text-white shadow-lg hover:bg-[#1d293d]"
-                                        : "bg-[#e2e8f0] text-[#94a3b8] cursor-not-allowed"
-                                    }`}
-                                style={{ fontWeight: 500 }}
-                                aria-label={practiceUnlocked ? "Start practice interview" : `Complete ${MIN_CARDS_FOR_PRACTICE - completedCards.size} more questions to unlock`}
-                            >
-                                <Play className="w-4 h-4" />
-                                {scenarioType === "sales" ? "Practice Pitch" : "Practice Interview"}
-                            </button>
-                        </div>
-                    </motion.div>
-                )}
 
                 {/* Back Button (Bottom) */}
                 <motion.div

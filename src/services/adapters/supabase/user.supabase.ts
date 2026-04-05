@@ -1,10 +1,10 @@
 /**
- * SupabaseUserService — Real user profile via Edge Function KV
+ * SupabaseUserService — Real user profile via Edge Function KV (v9.0)
  *
- * Calls /profile and /profile/mark-free-used endpoints on make-server.
+ * Calls /profile and /profile/mark-demo-used endpoints on make-server.
  * For getPracticeHistory and getPowerPhrases, fetches from session data.
  */
-import type { IUserService } from "../../interfaces";
+import type { IUserService, SessionAccessResult } from "../../interfaces";
 import type {
   User,
   UserPlan,
@@ -40,8 +40,8 @@ export class SupabaseUserService implements IUserService {
         displayName: profile.display_name || profile.id?.slice(0, 8) || "User",
         email: profile.email || "",
         plan: profile.plan || "free",
-        freeSessionUsed: profile.free_session_used ?? false,
-        sessionsCompleted: profile.stats?.sessions_count || 0,
+        freeSessionsUsed: profile.free_sessions_used || [],
+        pathsPurchased: profile.paths_purchased || [],
         createdAt: profile.created_at || new Date().toISOString(),
       };
     } catch (err) {
@@ -51,8 +51,8 @@ export class SupabaseUserService implements IUserService {
         displayName: "User",
         email: "",
         plan: "free",
-        freeSessionUsed: false,
-        sessionsCompleted: 0,
+        freeSessionsUsed: [],
+        pathsPurchased: [],
         createdAt: new Date().toISOString(),
       };
     }
@@ -75,24 +75,42 @@ export class SupabaseUserService implements IUserService {
   }
 
   async canStartSession(
-    _uid: string
-  ): Promise<{ allowed: boolean; reason?: string; creditsRemaining?: number }> {
+    _uid: string,
+    scenarioType: string
+  ): Promise<SessionAccessResult> {
     const user = await this.getProfile(_uid);
-    if (user.plan === "free" && user.freeSessionUsed) {
-      return {
-        allowed: false,
-        reason: "Ya usaste tu sesión gratuita. Compra créditos para continuar.",
-        creditsRemaining: 0,
-      };
+
+    // Demo: first session of this scenario always allowed
+    if (!user.freeSessionsUsed.includes(scenarioType)) {
+      return { allowed: true, mode: "demo" };
     }
-    return { allowed: true, creditsRemaining: 1 };
+
+    // Path purchased (or all-access): allowed
+    if (user.pathsPurchased.includes(scenarioType)) {
+      return { allowed: true, mode: "path" };
+    }
+
+    return { allowed: false, reason: "PATH_PURCHASE_REQUIRED" };
   }
 
-  async markFreeSessionUsed(_uid: string): Promise<void> {
+  async canStartFreshAttempt(
+    _uid: string,
+    _scenarioType: string,
+    _levelId: string
+  ): Promise<SessionAccessResult> {
+    // TODO: implement via /path-progress endpoint
+    // For now, always allow (fresh attempt tracking is MVP phase 4)
+    return { allowed: true, mode: "path" };
+  }
+
+  async markDemoSessionUsed(_uid: string, scenarioType: string): Promise<void> {
     try {
-      await apiFetch("/profile/mark-free-used", { method: "POST" });
+      await apiFetch("/profile/mark-demo-used", {
+        method: "POST",
+        body: JSON.stringify({ scenarioType }),
+      });
     } catch (err) {
-      console.warn("[UserService Supabase] markFreeSessionUsed failed:", err);
+      console.warn("[UserService Supabase] markDemoSessionUsed failed:", err);
     }
   }
 
@@ -118,7 +136,6 @@ export class SupabaseUserService implements IUserService {
   }
 
   async getPowerPhrases(_uid: string): Promise<PowerPhrase[]> {
-    // Power phrases not yet stored in KV — return empty
     return [];
   }
 

@@ -538,6 +538,44 @@ function VoicePractice({
     };
   }, []);
 
+  /* ── Thinking Time Awareness ── */
+  const [thinkingSeconds, setThinkingSeconds] = useState(0);
+  const thinkingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Start/stop thinking timer based on conversation state
+  useEffect(() => {
+    // Only track when it's the user's turn (not recording, not processing, AI done speaking)
+    const isUserTurn = !recorder.isRecording && !isProcessing && !isAiTyping && !isTtsPlaying
+      && !isConversationComplete && revealingMsgIndex === null
+      && messages.length > 0 && messages[messages.length - 1]?.role === "ai";
+
+    if (isUserTurn) {
+      setThinkingSeconds(0);
+      thinkingTimerRef.current = setInterval(() => {
+        setThinkingSeconds(prev => prev + 1);
+      }, 1000);
+    } else {
+      if (thinkingTimerRef.current) {
+        clearInterval(thinkingTimerRef.current);
+        thinkingTimerRef.current = null;
+      }
+      setThinkingSeconds(0);
+    }
+
+    return () => {
+      if (thinkingTimerRef.current) {
+        clearInterval(thinkingTimerRef.current);
+        thinkingTimerRef.current = null;
+      }
+    };
+  }, [recorder.isRecording, isProcessing, isAiTyping, isTtsPlaying, isConversationComplete, revealingMsgIndex, messages.length]);
+
+  const thinkingHint = thinkingSeconds >= 15
+    ? "In a real conversation, this pause might feel long 💭"
+    : thinkingSeconds >= 8
+      ? "Take your time... 🧠"
+      : null;
+
   return (
     <div
       className="flex flex-col h-[calc(100dvh-4rem)] relative"
@@ -621,8 +659,7 @@ function VoicePractice({
               className="text-xs text-[#4B505B]"
               style={{ fontWeight: 500 }}
             >
-              Voice conversation — AI speaks, you respond with
-              your microphone
+              We're live 🎙️ — listen, think, respond naturally
             </span>
           </motion.div>
 
@@ -720,7 +757,7 @@ function VoicePractice({
                       <Mic className="w-3 h-3" />
                     )}
                     {aiWaiting ? (
-                      <>{interlocutor} · thinking...</>
+                      <>{interlocutor} is processing...</>
                     ) : (
                       <>
                         {msg.label} · {msg.time}
@@ -879,7 +916,7 @@ function VoicePractice({
                             className="text-xs text-[#15803d]"
                             style={{ fontWeight: 500 }}
                           >
-                            🧠 Start with:{" "}
+                             🧠 Try opening with:{" "}
                             <span
                               className="text-[#0f172b] italic"
                               style={{ fontWeight: 600 }}
@@ -968,7 +1005,7 @@ function VoicePractice({
                   >
                     <span className="text-xs text-[#62748e] mb-2 flex items-center gap-1.5">
                       <Volume2 className="w-3 h-3" />
-                      {interlocutor} · thinking...
+                      {interlocutor} is processing...
                     </span>
                     <div className="bg-white border border-[#e2e8f0] rounded-2xl px-6 py-4">
                       <div className="flex gap-1 items-center h-5">
@@ -1020,7 +1057,7 @@ function VoicePractice({
                 >
                   <span className="text-xs text-[#62748e] mb-2 flex items-center gap-1.5">
                     <Mic className="w-3 h-3" />
-                    Transcribing...
+                     Catching what you said...
                   </span>
                   <div className="bg-[#0f172b]/80 rounded-2xl px-6 h-14 flex items-center justify-center">
                     <div className="flex gap-1 items-center h-6">
@@ -1086,10 +1123,10 @@ function VoicePractice({
             size="sm"
             label={
               recorder.isRecording
-                ? "Recording — tap to stop"
+                ? "Listening... tap when done"
                 : isProcessing
                   ? undefined
-                  : "Tap to speak"
+                  : "Your turn — tap to speak"
             }
             disabled={micDisabled}
           />
@@ -1100,14 +1137,16 @@ function VoicePractice({
                 className="text-sm text-[#45556c] animate-fade-in"
                 style={{ fontWeight: 500 }}
               >
-                Transcribing your response...
+                 Processing what you said...
               </p>
             )}
             {!recorder.isRecording && !isProcessing && (
               <p className="text-xs text-[#62748e] text-center">
-                {isConversationComplete
-                  ? "Conversation complete — view your feedback below"
-                  : "Respond naturally. There are no wrong answers."}
+                 {isConversationComplete
+                   ? "That's a wrap! Let's see how you did 👇"
+                   : thinkingHint
+                     ? thinkingHint
+                     : "Speak like you would in the real thing. No wrong answers."}
               </p>
             )}
           </div>
@@ -1136,8 +1175,8 @@ function VoicePractice({
                 className="w-full py-3.5 rounded-full flex items-center justify-center gap-2.5 transition-all shadow-lg bg-[#2d2d2d] text-white hover:bg-[#1a1a1a]"
                 style={{ fontWeight: 500 }}
               >
-                Analyze my presentation
-                <ArrowRight className="w-4 h-4" />
+                 Show me my results
+                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           )}

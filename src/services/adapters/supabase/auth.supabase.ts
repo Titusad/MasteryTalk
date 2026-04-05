@@ -11,8 +11,8 @@
  *    - email        ← auth.users.email
  *    - photoURL     ← auth.users.user_metadata.avatar_url (from OAuth)
  *    - plan         ← profiles.plan
- *    - freeSessionUsed ← profiles.free_session_used
- *    - sessionsCompleted ← profiles.stats.sessions_count
+ *    - freeSessionsUsed ← profiles.free_sessions_used
+ *    - pathsPurchased ← profiles.paths_purchased
  *    - marketFocus  ← profiles.market_focus
  *    - createdAt    ← profiles.created_at
  *
@@ -42,8 +42,8 @@ function mapToUser(authUser: AuthUser, profile: ProfileRow): User {
     email: authUser.email || "",
     photoURL: meta.avatar_url || meta.picture || undefined,
     plan: profile.plan,
-    freeSessionUsed: profile.free_session_used,
-    sessionsCompleted: profile.stats?.sessions_count ?? 0,
+    freeSessionsUsed: profile.free_sessions_used || [],
+    pathsPurchased: profile.paths_purchased || [],
     marketFocus: profile.market_focus ?? undefined,
     createdAt: profile.created_at,
   };
@@ -110,8 +110,8 @@ export class SupabaseAuthService implements IAuthService {
             email: session.user.email || "",
             photoURL: session.user.user_metadata?.avatar_url,
             plan: "free",
-            freeSessionUsed: false,
-            sessionsCompleted: 0,
+            freeSessionsUsed: [],
+            pathsPurchased: [],
             createdAt: new Date().toISOString(),
           };
         }
@@ -158,8 +158,8 @@ export class SupabaseAuthService implements IAuthService {
       id: authUser.id,
       market_focus: null,
       plan: "free",
-      plan_status: "active",
-      free_session_used: false,
+      free_sessions_used: [],
+      paths_purchased: [],
       stats: {},
       achievements: [],
     };
@@ -190,8 +190,8 @@ export class SupabaseAuthService implements IAuthService {
       id: uid,
       market_focus: null,
       plan: "free",
-      plan_status: "active",
-      free_session_used: false,
+      free_sessions_used: [],
+      paths_purchased: [],
       stats: {},
       achievements: [],
       created_at: new Date().toISOString(),
@@ -297,8 +297,8 @@ export class SupabaseAuthService implements IAuthService {
         displayName: "",
         email: "",
         plan: "free" as const,
-        freeSessionUsed: false,
-        sessionsCompleted: 0,
+        freeSessionsUsed: [],
+        pathsPurchased: [],
         createdAt: new Date().toISOString(),
       }
     );

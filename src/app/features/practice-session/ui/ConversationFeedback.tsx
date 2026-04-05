@@ -294,8 +294,8 @@ function ConversationFeedback({
         </div>
         {/* ═══ HERO ═══ */}
         <PageTitleBlock
-            title={isInterview ? "Interview Analysis" : "Session Feedback"}
-            subtitle={isInterview ? "Your Readiness Score evaluates your true preparedness for the role, prioritizing Content Quality (60%) over Language Proficiency (40%)." : `Your ${scenarioLabel} practice analysis is ready. Review your performance below.`}
+            title={isInterview ? "Your Interview Breakdown" : "Here's how you did"}
+            subtitle={isInterview ? "This score tells you how ready you actually are. Content matters most (60%), then delivery (40%)." : `I broke down every part of your ${scenarioLabel}. Here's where you're killing it — and what to work on next.`}
         >
           {isRealData ? (
             <span
@@ -346,14 +346,14 @@ function ConversationFeedback({
             {/* Right side: Coach Verdict */}
             <div className="flex-1 text-left border-t md:border-t-0 md:border-l border-white/10 pt-6 md:pt-0 md:pl-8 flex flex-col justify-center">
               <h3 className="text-white text-lg mb-2" style={{ fontWeight: 500 }}>
-                Coach's Verdict
+                The Verdict
               </h3>
               <p className="text-white/80 text-sm mb-5 leading-relaxed">
                 {interviewReadiness >= 80 
-                  ? "Outstanding performance! You combined strong professional content with confident delivery. Focus on minor refinements to sound even more natural and persuasive."
+                  ? "You crushed it. Your content was solid AND your delivery was on point. Just a few tweaks to make it even sharper."
                   : interviewReadiness >= 60
-                  ? "Good effort. Your content is clear and structured, but there are opportunities to enhance your fluency and delivery to make a stronger impact."
-                  : "Keep practicing! You covered the basics, but building more solid structure and practicing your pacing will greatly improve your persuasiveness."}
+                  ? "Good stuff — you're getting there. The foundation is solid, now let's polish your delivery to really land it."
+                  : "OK, here's the deal — we've got work to do, but that's why you're here. Let's lock in your structure and pacing."}
               </p>
               
               <div className="space-y-3">
@@ -420,7 +420,7 @@ function ConversationFeedback({
                     </p>
                   </div>
                   <p className="text-[10px] text-[#94a3b8] ml-9">
-                    How did you sound?
+                    How you sounded
                   </p>
                 </div>
                 {proficiencyScore !== null && (
@@ -548,7 +548,7 @@ function ConversationFeedback({
                     const bottom = sorted[sorted.length - 1];
                     return (
                       <p className="text-sm text-[#45556c] leading-relaxed">
-                        Your <strong className="text-[#0f172b]">{top.skill}</strong> is solid, demonstrating a great command in this area. However, there's significant room for growth in <strong className="text-[#0f172b]">{bottom.skill}</strong>. Focusing on this specific area during your next practice sessions will make the most noticeable difference in elevating your overall language proficiency and sounding much more natural.
+                        Your <strong className="text-[#0f172b]">{top.skill}</strong> is looking sharp — keep that up. Now let's zero in on <strong className="text-[#0f172b]">{bottom.skill}</strong>. That's where the biggest gains are hiding.
                       </p>
                     );
                   })()}
@@ -577,7 +577,7 @@ function ConversationFeedback({
                     </p>
                   </div>
                   <p className="text-[10px] text-[#94a3b8] ml-9">
-                    How well did you answer?
+                    How strong was your content?
                   </p>
                 </div>
                 {hasContentData && (
@@ -691,7 +691,7 @@ function ConversationFeedback({
                     const bottom = sorted[sorted.length - 1];
                     return (
                       <p className="text-sm text-[#45556c] leading-relaxed">
-                        Great work on your <strong className="text-[#0f172b]">{top.skill}</strong>! You're providing strong points here. Try to deliberately reinforce your <strong className="text-[#0f172b]">{bottom.skill}</strong>. Taking a few extra seconds to craft your responses with this element in mind will dramatically increase the professional impact and overall persuasiveness of your answers.
+                        Your <strong className="text-[#0f172b]">{top.skill}</strong> is on point — nice work there. Now let's level up your <strong className="text-[#0f172b]">{bottom.skill}</strong>. A little more intention there and your answers will hit way harder.
                       </p>
                     );
                   })()}
@@ -714,7 +714,7 @@ function ConversationFeedback({
                   className="text-[10px] uppercase tracking-wider text-[#94a3b8] mb-4"
                   style={{ fontWeight: 600 }}
                 >
-                  Professional Proficiency
+                  Your English Level
                 </p>
                 {proficiencyScore !== null ? (
                   <ProficiencyGauge
@@ -782,7 +782,7 @@ function ConversationFeedback({
                     className="text-sm text-[#0f172b] mb-4"
                     style={{ fontWeight: 600 }}
                   >
-                    Skill Breakdown
+                    Skill by Skill
                   </p>
 
                   <div className="space-y-3">
@@ -872,7 +872,7 @@ function ConversationFeedback({
         {allInsights.length > 0 && (
           <FeedbackAccordion
             icon={<Lightbulb className="w-5 h-5 text-white" />}
-            title="Coaching Insights"
+            title="My Notes for You"
             isOpen={activeAccordion === "coaching"}
             onToggle={() => handleAccordionToggle("coaching")}
             badge={
@@ -939,7 +939,7 @@ function ConversationFeedback({
         {/* ═══ COLLAPSIBLE: Practice Analysis ═══ */}
         <FeedbackAccordion
           icon={<Target className="w-5 h-5 text-white" />}
-          title="Practice Analysis"
+          title="What Worked & What Didn't"
           isOpen={activeAccordion === "practice"}
           onToggle={() => handleAccordionToggle("practice")}
           badge={
@@ -961,7 +961,7 @@ function ConversationFeedback({
                   className="text-sm text-[#0f172b]"
                   style={{ fontWeight: 600 }}
                 >
-                  What worked well
+                  Where you nailed it 🎯
                 </p>
               </div>
               <div className="space-y-2.5">
@@ -1005,7 +1005,7 @@ function ConversationFeedback({
                   className="text-sm text-[#0f172b]"
                   style={{ fontWeight: 600 }}
                 >
-                  Key improvements
+                  Level-up moves ⚡
                 </p>
               </div>
               <div className="space-y-2.5">
@@ -1064,7 +1064,7 @@ function ConversationFeedback({
         {/* ═══ COLLAPSIBLE: Pronunciation Analysis ═══ */}
         <FeedbackAccordion
           icon={<Mic className="w-5 h-5 text-white" />}
-          title="Pronunciation & Shadowing"
+          title="How You Sound Up Close"
           isOpen={activeAccordion === "pronunciation"}
           onToggle={() => handleAccordionToggle("pronunciation")}
           badge={
@@ -1131,11 +1131,10 @@ function ConversationFeedback({
                   className="text-xl text-[#0f172b] mb-2"
                   style={{ fontWeight: 500 }}
                 >
-                  Ready to try again?
+                  Wanna go again?
                 </h3>
                 <p className="text-[#45556c] mb-1 max-w-md mx-auto">
-                  Apply your feedback in a new conversation. The
-                  AI will respond differently each time.
+                  Take what you just learned and run it back. I'll throw different curveballs this time.
                 </p>
                 <p
                   className="text-xs text-[#6366f1] mb-6"
@@ -1157,7 +1156,7 @@ function ConversationFeedback({
                   style={{ fontWeight: 500 }}
                 >
                   <RotateCcw className="w-5 h-5" />
-                  Practice Again
+                  Run it back
                 </button>
               </div>
             ) : showPaywallOnRepeat ? (
@@ -1169,16 +1168,15 @@ function ConversationFeedback({
                   className="text-xl text-[#0f172b] mb-2"
                   style={{ fontWeight: 500 }}
                 >
-                  Want more practice?
+                  Want to keep going?
                 </h3>
                 <p className="text-[#45556c] mb-2 max-w-md mx-auto">
-                  You've completed your {repeatInfo.maxAttempts}{" "}
+                  You've used your {repeatInfo.maxAttempts}{" "}
                   free{" "}
                   {repeatInfo.maxAttempts === 1
-                    ? "attempt"
-                    : "attempts"}
-                  . Unlock unlimited practice to perfect your
-                  delivery.
+                    ? "round"
+                    : "rounds"}
+                  . Unlock unlimited practice and keep building momentum.
                 </p>
                 <p className="text-xs text-[#92400e]/70 mb-6">
                   Each attempt generates a different
@@ -1187,18 +1185,17 @@ function ConversationFeedback({
                 </p>
                 <button
                   onClick={() =>
-                    onPaywallTriggered?.("extra-practice")
+                    onPaywallTriggered?.("attempts-exhausted")
                   }
                   className="bg-[#0f172b] text-white px-8 py-4 rounded-full flex items-center gap-3 shadow-lg hover:bg-[#1d293d] transition-colors mx-auto text-lg"
                   style={{ fontWeight: 500 }}
                 >
                   <Sparkles className="w-5 h-5" />
-                  Unlock More Practice
+                  Unlock This Path →
                   <ArrowRight className="w-5 h-5" />
                 </button>
                 <p className="text-[10px] text-[#92400e]/50 mt-3">
-                  Starting at $4.99 per session · No
-                  subscription required
+                  $24.99 one-time · Permanent access
                 </p>
               </div>
             ) : (
@@ -1210,15 +1207,10 @@ function ConversationFeedback({
                   className="text-xl text-[#0f172b] mb-2"
                   style={{ fontWeight: 500 }}
                 >
-                  You've mastered this scenario!
+                  This scenario? Crushed. ✅
                 </h3>
                 <p className="text-[#45556c] mb-6 max-w-md mx-auto">
-                  You've completed {repeatInfo.maxAttempts}{" "}
-                  {repeatInfo.maxAttempts === 1
-                    ? "attempt"
-                    : "attempts"}{" "}
-                  of this scenario. Try a different one to build
-                  versatility.
+                  Time to test yourself in a new arena. Pick your next challenge:
                 </p>
                 <div className="flex flex-wrap justify-center gap-3">
                   {[
@@ -1277,7 +1269,7 @@ function ConversationFeedback({
             style={{ fontWeight: 500 }}
           >
             <FileText className="w-5 h-5" />
-            Generate Full Report
+            Get My Full Report →
             <ArrowRight className="w-5 h-5" />
           </button>
         </motion.div>

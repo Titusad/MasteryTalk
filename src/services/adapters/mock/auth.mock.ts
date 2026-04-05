@@ -15,12 +15,12 @@ import { delay, shouldSimulateError } from "./utils";
 
 const MOCK_USER: User = {
   uid: "mock-uid-001",
-  displayName: "Mar\u00EDa Garc\u00EDa",
+  displayName: "María García",
   email: "maria.garcia@example.com",
   photoURL: undefined,
   plan: "free",
-  freeSessionUsed: false,
-  sessionsCompleted: 0,
+  freeSessionsUsed: [],
+  pathsPurchased: [],
   marketFocus: "mexico",
   createdAt: "2026-02-10T08:00:00Z",
 };

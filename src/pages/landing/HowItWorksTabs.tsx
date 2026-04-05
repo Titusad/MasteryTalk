@@ -29,7 +29,7 @@ function ScreenSetup() {
           <div className="w-2.5 h-2.5 rounded-full bg-[#86efac]" />
         </div>
         <div className="flex-1 bg-white rounded-md px-3 py-1 text-[10px] text-[#94a3b8] border border-[#e2e8f0] ml-2">
-          app.influentiapro.com/practice/script
+          app.masterytalk.pro/practice/script
         </div>
       </div>
       {/* Pre-Briefing / Script content */}
@@ -126,7 +126,7 @@ function ScreenChat() {
           <div className="w-2.5 h-2.5 rounded-full bg-[#86efac]" />
         </div>
         <div className="flex-1 bg-white rounded-md px-3 py-1 text-[10px] text-[#94a3b8] border border-[#e2e8f0] ml-2">
-          app.influentiapro.com/practice/session
+          app.masterytalk.pro/practice/session
         </div>
       </div>
       {/* Session header */}
@@ -229,7 +229,7 @@ function ScreenFeedback() {
           <div className="w-2.5 h-2.5 rounded-full bg-[#86efac]" />
         </div>
         <div className="flex-1 bg-white rounded-md px-3 py-1 text-[10px] text-[#94a3b8] border border-[#e2e8f0] ml-2">
-          app.influentiapro.com/practice/feedback
+          app.masterytalk.pro/practice/feedback
         </div>
       </div>
       {/* Feedback content */}

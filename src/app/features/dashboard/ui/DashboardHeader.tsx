@@ -1,15 +1,15 @@
 /**
  * DashboardHeader — Top navigation bar
  * Presentational component (web-specific).
+ * v9.0: Replaced credit display with path access indicator.
  */
 import {
   LogOut,
   BookOpen,
-  Zap,
+  Sparkles,
 } from "lucide-react";
 import { BrandLogo } from "../../../components/shared";
 import { authService } from "../../../../services";
-import { getCreditsLabel } from "@/widgets/CreditUpsellModal";
 import type { LandingLang } from "@/shared/i18n/landing-i18n";
 
 interface DashboardHeaderProps {
@@ -37,6 +37,9 @@ export function DashboardHeader({
   onLogout,
   onOpenUpsell,
 }: DashboardHeaderProps) {
+  // v9.0: credits now represents number of purchased paths
+  const pathCount = credits ?? 0;
+
   return (
     <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-[#e2e8f0] relative">
       <div className="max-w-[1440px] mx-auto flex items-center justify-between px-6 md:px-8 h-16 md:h-20">
@@ -59,30 +62,29 @@ export function DashboardHeader({
             Library
           </button>
 
-          {credits !== null && (
-            <button
-              onClick={onOpenUpsell}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-all cursor-pointer ${
-                credits === 0 && !freeSessionAvailable
-                  ? "bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100"
-                  : "bg-[#f1f5f9] border border-[#e2e8f0] text-[#45556c] hover:bg-[#e2e8f0]"
+          {/* v9.0: Path access indicator */}
+          <button
+            onClick={onOpenUpsell}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all cursor-pointer ${
+              pathCount > 0
+                ? "bg-[#f0fdf4] border border-[#bbf7d0] text-[#16a34a] hover:bg-[#dcfce7]"
+                : freeSessionAvailable
+                  ? "bg-[#f1f5f9] border border-[#e2e8f0] text-[#45556c] hover:bg-[#e2e8f0]"
+                  : "bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100"
+            }`}
+            style={{ fontWeight: 500 }}
+          >
+            <Sparkles
+              className={`w-3 h-3 ${
+                pathCount > 0 ? "text-[#22c55e]" : "text-amber-500"
               }`}
-              style={{ fontWeight: 600 }}
-            >
-              <Zap
-                className={`w-3 h-3 ${
-                  credits === 0 && !freeSessionAvailable
-                    ? "text-amber-500"
-                    : "text-[#50C878]"
-                }`}
-              />
-              {freeSessionAvailable && credits === 0
-                ? lang === "pt"
-                  ? "1 sessao gratis"
-                  : "1 sesion gratis"
-                : `${credits} ${getCreditsLabel(credits, lang)}`}
-            </button>
-          )}
+            />
+            {pathCount > 0
+              ? `${pathCount} ${pathCount === 1 ? "Path" : "Paths"}`
+              : freeSessionAvailable
+                ? lang === "pt" ? "Demo grátis" : "Demo gratis"
+                : lang === "pt" ? "Obter acesso" : "Get access"}
+          </button>
 
           <div className="flex items-center gap-3">
             <button

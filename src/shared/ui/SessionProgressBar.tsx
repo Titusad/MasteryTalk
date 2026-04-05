@@ -23,7 +23,7 @@ const PHASES: Phase[] = [
   {
     id: "prep",
     label: "Preparation",
-    steps: ["key-experience", "extra-context", "generating-script", "pre-briefing"],
+    steps: ["key-experience", "cv-upload", "extra-context", "generating-script", "pre-briefing"],
   },
   {
     id: "practice",
@@ -33,7 +33,7 @@ const PHASES: Phase[] = [
   {
     id: "feedback",
     label: "Feedback",
-    steps: ["analyzing", "conversation-feedback", "session-recap"],
+    steps: ["analyzing", "interview-analysis"],
   },
 ];
 

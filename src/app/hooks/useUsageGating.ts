@@ -1,15 +1,15 @@
 /**
  * ══════════════════════════════════════════════════════════════
- *  useUsageGating — Free tier usage tracking & paywall gates
+ *  useUsageGating — v9.0 Learning Path access gating
  *
  *  Tracks (via localStorage in prototype mode):
- *  - Free session used this month (1 free session/month)
- *  - Practice attempts per session
+ *  - Demo sessions used per scenario (1 demo/scenario)
+ *  - Path purchases (permanent access)
+ *  - Fresh attempts per level (3 max)
  *
- *  Three paywall triggers:
- *  1. extra-practice  → 3rd practice attempt (free gets 2 total)
- *  2. download-report → Downloading the PDF report
- *  3. new-session     → Starting a new session after free used
+ *  Paywall triggers:
+ *  1. path-required → User tries to access a path they haven't purchased
+ *  2. attempts-exhausted → User has used all 3 fresh attempts on a level
  * ══════════════════════════════════════════════════════════════
  */
 
@@ -18,54 +18,50 @@ import type { UserPlan } from "../../services/types";
 
 /* ── Paywall Reason Type ── */
 
-export type PaywallReason = "extra-practice" | "download-report" | "new-session";
+export type PaywallReason = "path-required" | "attempts-exhausted";
 
 export interface GateResult {
   allowed: boolean;
+  mode?: "demo" | "path";
   reason?: PaywallReason;
 }
 
 /* ── localStorage keys ── */
-const STORAGE_KEY_FREE_SESSION = "influentia_free_session";
-const STORAGE_KEY_CREDITS = "influentia_credits";
+const STORAGE_KEY_DEMOS = "masterytalk_demo_sessions";
+const STORAGE_KEY_PATHS = "masterytalk_purchased_paths";
+const STORAGE_KEY_ATTEMPTS = "masterytalk_fresh_attempts";
 
-interface FreeSessionRecord {
-  usedAt: string; // ISO date
-  month: string;  // "YYYY-MM"
-}
-
-function getCurrentMonth(): string {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-}
-
-function getFreeSessionRecord(): FreeSessionRecord | null {
+function getStoredArray(key: string): string[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY_FREE_SESSION);
-    return raw ? JSON.parse(raw) : null;
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : [];
   } catch {
-    return null;
+    return [];
   }
 }
 
-function setFreeSessionRecord(record: FreeSessionRecord): void {
+function setStoredArray(key: string, value: string[]): void {
   try {
-    localStorage.setItem(STORAGE_KEY_FREE_SESSION, JSON.stringify(record));
+    localStorage.setItem(key, JSON.stringify(value));
   } catch { /* ignore */ }
 }
 
-function getStoredCredits(): number {
+interface AttemptRecord {
+  [levelKey: string]: number; // "interview:int-1" → 2
+}
+
+function getStoredAttempts(): AttemptRecord {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY_CREDITS);
-    return raw ? parseInt(raw, 10) : 0;
+    const raw = localStorage.getItem(STORAGE_KEY_ATTEMPTS);
+    return raw ? JSON.parse(raw) : {};
   } catch {
-    return 0;
+    return {};
   }
 }
 
-function setStoredCredits(n: number): void {
+function setStoredAttempts(record: AttemptRecord): void {
   try {
-    localStorage.setItem(STORAGE_KEY_CREDITS, String(n));
+    localStorage.setItem(STORAGE_KEY_ATTEMPTS, JSON.stringify(record));
   } catch { /* ignore */ }
 }
 
@@ -74,83 +70,94 @@ function setStoredCredits(n: number): void {
    ══════════════════════════════════════════════════════════════ */
 
 export function useUsageGating(userPlan: UserPlan = "free") {
-  const [credits, setCredits] = useState(getStoredCredits);
-  const [freeUsedThisMonth, setFreeUsedThisMonth] = useState(() => {
-    const record = getFreeSessionRecord();
-    return record?.month === getCurrentMonth();
-  });
+  const [demosUsed, setDemosUsed] = useState<string[]>(() => getStoredArray(STORAGE_KEY_DEMOS));
+  const [purchasedPaths, setPurchasedPaths] = useState<string[]>(() => getStoredArray(STORAGE_KEY_PATHS));
+  const [attempts, setAttempts] = useState<AttemptRecord>(() => getStoredAttempts());
 
-  /* Sync credits to localStorage */
-  useEffect(() => {
-    setStoredCredits(credits);
-  }, [credits]);
+  /* Sync to localStorage */
+  useEffect(() => { setStoredArray(STORAGE_KEY_DEMOS, demosUsed); }, [demosUsed]);
+  useEffect(() => { setStoredArray(STORAGE_KEY_PATHS, purchasedPaths); }, [purchasedPaths]);
+  useEffect(() => { setStoredAttempts(attempts); }, [attempts]);
 
-  /* ── Gate: Can start a new session? ── */
-  const canStartSession = useCallback((): GateResult => {
-    // Paid users with credits can always start
-    if (userPlan === "per-session" || credits > 0) {
-      return { allowed: true };
+  /* ── Gate: Can start a session for a scenario? ── */
+  const canStartSession = useCallback((scenarioType: string): GateResult => {
+    // Demo: first session of this scenario is always free
+    if (!demosUsed.includes(scenarioType)) {
+      return { allowed: true, mode: "demo" };
     }
-    // Free user: check monthly free session
-    if (!freeUsedThisMonth) {
-      return { allowed: true };
+
+    // Path purchased by user or via all-access
+    if (purchasedPaths.includes(scenarioType) || userPlan === "path") {
+      return { allowed: true, mode: "path" };
     }
-    return { allowed: false, reason: "new-session" };
-  }, [userPlan, credits, freeUsedThisMonth]);
 
-  /* ── Gate: Can download report? ── */
-  const canDownloadReport = useCallback((): GateResult => {
-    if (userPlan === "per-session" || credits > 0) {
-      return { allowed: true };
+    // No access
+    return { allowed: false, reason: "path-required" };
+  }, [demosUsed, purchasedPaths, userPlan]);
+
+  /* ── Gate: Can start a fresh attempt on a level? ── */
+  const canStartFreshAttempt = useCallback((
+    scenarioType: string,
+    levelId: string,
+    maxAttempts = 3
+  ): GateResult => {
+    const key = `${scenarioType}:${levelId}`;
+    const used = attempts[key] || 0;
+    if (used >= maxAttempts) {
+      return { allowed: false, reason: "attempts-exhausted" };
     }
-    return { allowed: false, reason: "download-report" };
-  }, [userPlan, credits]);
+    return { allowed: true, mode: "path" };
+  }, [attempts]);
 
-  /* ── Gate: Can practice again? (called with current attempt count) ── */
-  const canPracticeAgain = useCallback(
-    (currentAttempt: number, maxAttempts: number): GateResult => {
-      if (currentAttempt < maxAttempts) {
-        return { allowed: true };
-      }
-      // At limit — if free, show paywall; if paid, show mastery
-      if (userPlan === "free" && credits <= 0) {
-        return { allowed: false, reason: "extra-practice" };
-      }
-      return { allowed: false }; // paid user at limit → mastery nudge
-    },
-    [userPlan, credits]
-  );
-
-  /* ── Mark free session as used ── */
-  const markFreeSessionUsed = useCallback(() => {
-    const record: FreeSessionRecord = {
-      usedAt: new Date().toISOString(),
-      month: getCurrentMonth(),
-    };
-    setFreeSessionRecord(record);
-    setFreeUsedThisMonth(true);
+  /* ── Mark demo session as used ── */
+  const markDemoSessionUsed = useCallback((scenarioType: string) => {
+    setDemosUsed((prev) => {
+      if (prev.includes(scenarioType)) return prev;
+      return [...prev, scenarioType];
+    });
   }, []);
 
-  /* ── Add credits after purchase ── */
-  const addCredits = useCallback((amount: number) => {
-    setCredits((prev) => prev + amount);
+  /* ── Mark a path as purchased ── */
+  const addPurchasedPath = useCallback((scenarioType: string) => {
+    setPurchasedPaths((prev) => {
+      if (prev.includes(scenarioType)) return prev;
+      return [...prev, scenarioType];
+    });
   }, []);
 
-  /* ── Consume a credit (for paid sessions) ── */
-  const consumeCredit = useCallback((): boolean => {
-    if (credits <= 0) return false;
-    setCredits((prev) => prev - 1);
-    return true;
-  }, [credits]);
+  /* ── Add all paths (All-Access Bundle) ── */
+  const addAllAccess = useCallback(() => {
+    setPurchasedPaths(["interview", "sales", "networking", "negotiation", "csuite"]);
+  }, []);
+
+  /* ── Record a fresh attempt for a level ── */
+  const recordAttempt = useCallback((scenarioType: string, levelId: string) => {
+    const key = `${scenarioType}:${levelId}`;
+    setAttempts((prev) => ({
+      ...prev,
+      [key]: (prev[key] || 0) + 1,
+    }));
+  }, []);
+
+  /* ── Get remaining attempts for a level ── */
+  const getRemainingAttempts = useCallback((
+    scenarioType: string,
+    levelId: string,
+    maxAttempts = 3
+  ): number => {
+    const key = `${scenarioType}:${levelId}`;
+    return Math.max(0, maxAttempts - (attempts[key] || 0));
+  }, [attempts]);
 
   return {
-    credits,
-    freeUsedThisMonth,
+    demosUsed,
+    purchasedPaths,
     canStartSession,
-    canDownloadReport,
-    canPracticeAgain,
-    markFreeSessionUsed,
-    addCredits,
-    consumeCredit,
+    canStartFreshAttempt,
+    markDemoSessionUsed,
+    addPurchasedPath,
+    addAllAccess,
+    recordAttempt,
+    getRemainingAttempts,
   };
 }

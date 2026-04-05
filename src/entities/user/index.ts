@@ -5,7 +5,8 @@
  * services/types.ts re-exports from here for backward compat.
  */
 
-export type UserPlan = "free" | "per-session";
+/** v9.0: "free" = no purchases, "path" = at least 1 Learning Path purchased */
+export type UserPlan = "free" | "path";
 
 export interface User {
   uid: string;
@@ -13,8 +14,10 @@ export interface User {
   email: string;
   photoURL?: string;
   plan: UserPlan;
-  freeSessionUsed: boolean;
-  sessionsCompleted: number;
+  /** ScenarioType[] — scenarios where demo session was used */
+  freeSessionsUsed: string[];
+  /** ScenarioType[] — purchased paths (permanent access) */
+  pathsPurchased: string[];
   createdAt: string;
   marketFocus?: string;
 }

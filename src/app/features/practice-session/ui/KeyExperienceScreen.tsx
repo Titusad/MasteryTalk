@@ -99,19 +99,19 @@ function KeyExperienceScreen({
                     <div className="inline-flex items-center gap-2 bg-[#f0fdf4] border border-[#bbf7d0] rounded-full px-4 py-2 mb-6">
                         <Briefcase className="w-4 h-4 text-[#16a34a]" />
                         <span className="text-sm text-[#15803d]" style={{ fontWeight: 500 }}>
-                            One-time setup
+                            Quick setup — one time only
                         </span>
                     </div>
                     <h1
                         className="text-3xl md:text-[40px] text-[#0f172b] mb-3"
                         style={{ fontWeight: 300, lineHeight: 1.2 }}
                     >
-                        Your key experience
+                        What are your career highlights?
                     </h1>
                     <p className="text-[#45556c] text-base md:text-lg max-w-lg mx-auto">
-                        Share your career highlights so the AI can build personalized{" "}
-                        <span className="text-[#6366f1]" style={{ fontWeight: 500 }}>STAR-method</span> answers.{" "}
-                        <span className="text-[#94a3b8]">You'll only need to do this once.</span>
+                        Tell me about your best professional moments — I'll use them to craft killer{" "}
+                        <span className="text-[#6366f1]" style={{ fontWeight: 500 }}>STAR-method</span> answers for you.{" "}
+                        <span className="text-[#94a3b8]">Just this once.</span>
                     </p>
                 </motion.div>
 
@@ -125,12 +125,12 @@ function KeyExperienceScreen({
                     <div className="flex items-start justify-between mb-3">
                         <label className="flex items-center gap-1.5">
                             <span className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
-                                Your key experience
+                                Your highlights
                             </span>
                             <span className="relative group cursor-help">
                                 <Info className="w-3.5 h-3.5 text-[#94a3b8] group-hover:text-[#0f172b] transition-colors" />
                                 <span className="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-56 rounded-xl bg-[#0f172b] text-white text-xs px-3 py-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-lg z-50" style={{ lineHeight: "1.45" }}>
-                                    The AI will help you build STAR-method answers using your real career history
+                                    I'll turn these into strong STAR-method answers tailored to your real experience
                                     <span className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-[5px] border-x-transparent border-t-[5px] border-t-[#0f172b]" />
                                 </span>
                             </span>
@@ -143,14 +143,14 @@ function KeyExperienceScreen({
                     {/* Paste hint */}
                     <div className="flex items-center gap-1.5 mb-3 text-xs text-[#62748e]">
                         <ClipboardPaste className="w-3 h-3 shrink-0" />
-                        <span>No need to paste your full CV — just the highlights relevant to this role</span>
+                        <span>Skip the full CV — just the good stuff that matters for this role</span>
                     </div>
 
                     {/* Textarea */}
                     <textarea
                         value={keyExperience}
                         onChange={(e) => setKeyExperience(e.target.value)}
-                        placeholder="Your 3 most relevant roles, key achievements, and skills that match this position..."
+                        placeholder="e.g. 'Led a 12-person team, grew ARR 3x in 18 months, shipped to US enterprise clients...'"
                         className="w-full h-[140px] bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-4 text-[#0f172b] placeholder:text-[#94a3b8] focus:outline-none focus:border-[#0f172b] focus:bg-white transition-all resize-none"
                         style={{ fontSize: "14px", lineHeight: "22px" }}
                     />
@@ -256,7 +256,7 @@ function KeyExperienceScreen({
                             }`}
                         style={{ fontWeight: 500 }}
                     >
-                        Continue
+                        Lock it in
                         <ArrowRight className="w-6 h-6" />
                     </button>
 

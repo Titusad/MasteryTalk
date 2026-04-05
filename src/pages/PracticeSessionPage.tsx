@@ -24,20 +24,20 @@ import type {
   SessionConfig,
 } from "@/services/types";
 import { SessionProgressBar } from "@/shared/ui";
-import { SessionReport } from "@/widgets/SessionReport";
 import { InterviewBriefingScreen } from "@/widgets/InterviewBriefingScreen";
 import type { Step } from "@/shared/ui";
 import { VoicePractice } from "@/app/features/practice-session/ui/VoicePractice";
-import { ConversationFeedback, type RealFeedbackData, type RepeatInfo } from "@/app/features/practice-session/ui/ConversationFeedback";
-import { SkillDrillScreen } from "@/app/features/skill-drill/ui/SkillDrillScreen";
-import { ConversationalPathUnlockScreen } from "@/app/features/skill-drill/ui/ConversationalPathUnlockScreen";
-import { SubscriptionModal, type PlanId } from "@/widgets/SubscriptionModal";
+import { type RealFeedbackData, type RepeatInfo } from "@/app/features/practice-session/ui/ConversationFeedback";
+import { InterviewAnalysis } from "@/app/features/practice-session/ui/InterviewAnalysis";
+import { PathConversionScreen } from "@/app/features/skill-drill/ui/PathConversionScreen";
+import { PathPurchaseModal } from "@/widgets/PathPurchaseModal";
 import { useUsageGating } from "@/app/hooks/useUsageGating";
 import type { PaywallReason } from "@/app/hooks/useUsageGating";
 import { createSRPhrase, flagPhrasesForReview } from "@/app/utils/spacedRepetition";
 import type { InterviewBriefingData, OnboardingProfile } from "@/services/types";
 import {
   scenarioKey,
+  simpleHash,
   scriptCache,
   toolkitCache,
   cvMatchCacheV2,
@@ -57,6 +57,7 @@ const _detectedLocale = detectLanguageBackground();
 
 /* ── Sub-screens extracted to session/ ── */
 import { PreBriefingScreen } from "@/app/features/practice-session/ui/PreBriefingScreen";
+import { CVUploadScreen } from "@/app/features/practice-session/ui/CVUploadScreen";
 import { ExtraContextScreen } from "@/app/features/practice-session/ui/ExtraContextScreen";
 import { KeyExperienceScreen } from "@/app/features/practice-session/ui/KeyExperienceScreen";
 import { scriptSectionsToBriefingData } from "@/app/features/practice-session/ui/briefing/salesAdapter";
@@ -115,8 +116,8 @@ import {
 
 /* ═══════════════════════════════════════════════════════════
    MAIN ORCHESTRATOR (MVP-simplified flow)
-   extra-context → generating-script → pre-briefing →
-   practice → analyzing → conversation-feedback → session-recap → Dashboard
+   cv-upload → extra-context → generating-script → pre-briefing →
+   practice → analyzing → interview-analysis → Dashboard
    ═══════════════════════════════════════════════════════════ */
 export function PracticeSessionPage({
   scenario,
@@ -155,7 +156,7 @@ export function PracticeSessionPage({
   const [step, setStep] = useState<Step>(() => {
     if (devInitialStep) return devInitialStep;
     if (initialHistoryState?.step) return initialHistoryState.step;
-    return "extra-context";
+    return "cv-upload";
   });
 
   /* ── Scenario cache key for pre-session data (script, toolkit) ── */
@@ -201,12 +202,12 @@ export function PracticeSessionPage({
   });
   const [feedbackStatus, setFeedbackStatus] = useState<"idle" | "loading" | "ready" | "error">(() => {
     if (isDevPreview) return "ready";
-    if (initialHistoryState?.step === "conversation-feedback" || initialHistoryState?.step === "session-recap") return "ready";
+    if (initialHistoryState?.step === "conversation-feedback" || initialHistoryState?.step === "session-recap" || initialHistoryState?.step === "interview-analysis") return "ready";
     return "idle";
   });
   const [feedbackAnimDone, setFeedbackAnimDone] = useState(() => {
     if (isDevPreview) return true;
-    if (initialHistoryState?.step === "conversation-feedback" || initialHistoryState?.step === "session-recap") return true;
+    if (initialHistoryState?.step === "conversation-feedback" || initialHistoryState?.step === "session-recap" || initialHistoryState?.step === "interview-analysis") return true;
     return false;
   });
 
@@ -220,7 +221,7 @@ export function PracticeSessionPage({
   });
   const [summaryStatus, setSummaryStatus] = useState<"idle" | "loading" | "ready" | "error">(() => {
     if (isDevPreview) return "ready";
-    if (initialHistoryState?.step === "session-recap") return "ready";
+    if (initialHistoryState?.step === "session-recap" || initialHistoryState?.step === "interview-analysis") return "ready";
     return "idle";
   });
 
@@ -233,7 +234,7 @@ export function PracticeSessionPage({
   });
   const [improvedScriptStatus, setImprovedScriptStatus] = useState<"idle" | "loading" | "ready" | "error">(() => {
     if (isDevPreview) return "ready";
-    if (initialHistoryState?.step === "session-recap") return "ready";
+    if (initialHistoryState?.step === "session-recap" || initialHistoryState?.step === "interview-analysis") return "ready";
     return "idle";
   });
 
@@ -245,15 +246,6 @@ export function PracticeSessionPage({
     }
     return [];
   });
-
-  /* Skill Drill result (stored after drill completion for cp-unlock and session-recap) */
-  const [drillResult, setDrillResult] = useState<{
-    pillar: string;
-    finalScore: number;
-    passed: boolean;
-    attempts: 1 | 2;
-    srCardCreated: boolean;
-  } | null>(null);
 
 
   /* Session start timestamp for duration calculation */
@@ -376,7 +368,11 @@ export function PracticeSessionPage({
           abortController.signal
         );
         setInterviewBriefing(briefing);
-        interviewBriefingCache.set(sKey, briefing);
+        // Content-aware cache key: same logic as the read path
+        const fp = JSON.stringify(
+          Object.entries(allFields).sort(([a], [b]) => a.localeCompare(b))
+        );
+        interviewBriefingCache.set(`${sKey}_${simpleHash(fp)}`, briefing);
         setScriptGenStatus("ready");
       } catch (err: any) {
         if (err instanceof DOMException && err.name === "AbortError") {
@@ -566,9 +562,9 @@ export function PracticeSessionPage({
     }
   }, [sessionId, scenario, interlocutor, scenarioType, realFeedback, sessionSummary, sessionPronData, interviewBriefing, progressionLevelId, progressionPathId]);
 
-  /* ── Auto-save session when entering session-recap with data ── */
+  /* ── Auto-save session when entering interview-analysis with data ── */
   useEffect(() => {
-    if (step === "session-recap" && sessionId && !sessionSavedRef.current) {
+    if ((step === "session-recap" || step === "interview-analysis") && sessionId && !sessionSavedRef.current) {
       if (
         (feedbackStatus === "ready" || feedbackStatus === "error") &&
         (summaryStatus === "ready" || summaryStatus === "error")
@@ -614,13 +610,21 @@ export function PracticeSessionPage({
   useEffect(() => {
     if (step !== "analyzing" || !feedbackAnimDone) return;
     if (feedbackStatus === "ready" || feedbackStatus === "error") {
-      setStep("conversation-feedback");
+      // New flow: go to interview-analysis (replaces conversation-feedback → skill-drill → cp-unlock → session-recap)
+      setStep("interview-analysis");
+      // Fire session save + progression completion now (no longer gated behind skill drill)
+      fireSummaryGeneration();
+      if (progressionLevelId && progressionPathId && realFeedback) {
+        const score = realFeedback.professionalProficiency ?? 0;
+        const pillarScores = realFeedback.pillarScores || {};
+        completeProgressionLevel(progressionPathId, progressionLevelId, score, pillarScores)
+          .catch((err: any) => console.info("[Progression]", err));
+      }
     } else if (feedbackStatus === "loading") {
-      // User pressed Skip while API was still loading — abort and move on immediately
       console.warn("[AnalyzeFeedback] ⚠️ Skip pressed while API loading — forcing transition");
       setFeedbackStatus("error");
     }
-  }, [step, feedbackAnimDone, feedbackStatus]);
+  }, [step, feedbackAnimDone, feedbackStatus, fireSummaryGeneration, progressionLevelId, progressionPathId, realFeedback, completeProgressionLevel]);
 
   /* ── Practice Again: repeat tracking ── */
   const [repeatCount, setRepeatCount] = useState(0);
@@ -638,33 +642,34 @@ export function PracticeSessionPage({
   const usageGating = useUsageGating(plan);
   const [paywallOpen, setPaywallOpen] = useState(false);
   const [paywallReason, setPaywallReason] = useState<PaywallReason | null>(null);
-  const [paywallDefaultPlan, setPaywallDefaultPlan] = useState<PlanId>("pro-annual");
 
-  /** Determine if free user should see paywall on repeat limit */
-  const gateResult = usageGating.canPracticeAgain(repeatInfo.attempt, repeatInfo.maxAttempts);
-  const showPaywallOnRepeat = !repeatInfo.canRepeat && gateResult.reason === "extra-practice";
+  /** v9.0: Check if user can start a fresh attempt on current level */
+  const gateResult = usageGating.canStartFreshAttempt(
+    scenarioType || "interview",
+    progressionLevelId || "default",
+    repeatInfo.maxAttempts
+  );
 
-  const handlePaywallTriggered = useCallback((reason: PaywallReason, defaultPlan: PlanId = "pro-annual") => {
+  const handlePaywallTriggered = useCallback((reason: PaywallReason) => {
     setPaywallReason(reason);
-    setPaywallDefaultPlan(defaultPlan);
     setPaywallOpen(true);
   }, []);
 
-  const handlePurchaseComplete = useCallback((_plan: PlanId, creditsAdded: number) => {
-    usageGating.addCredits(creditsAdded);
+  const handlePurchaseComplete = useCallback((purchaseType: import("../services/types").PurchaseType) => {
+    // v9.0: Mark path as purchased
+    usageGating.addPurchasedPath(scenarioType || "interview");
     setPaywallOpen(false);
     setPaywallReason(null);
 
-    // After purchase, grant extra repeats based on what was bought
-    if (paywallReason === "extra-practice") {
-      // Immediately allow practice again
-      setRepeatCount(0); // Reset attempts
+    // After purchase, grant extra repeats
+    if (paywallReason === "attempts-exhausted") {
+      setRepeatCount(0);
       setSessionId(null);
       setServiceError(null);
       setSessionVersion((v) => v + 1);
       setStep("practice");
     }
-  }, [paywallReason, usageGating]);
+  }, [paywallReason, usageGating, scenarioType]);
 
   /** Handle "Practice Again" from Conversation Feedback */
   const handlePracticeAgain = useCallback(() => {
@@ -786,7 +791,20 @@ export function PracticeSessionPage({
                 guidedFields={guidedFields}
                 userProfile={userProfile}
                 onProfileUpdate={onProfileUpdate}
-                onContinue={() => setStep("extra-context")}
+                onContinue={() => setStep("cv-upload")}
+                onBack={onFinish}
+              />
+            )}
+            {step === "cv-upload" && (
+              <CVUploadScreen
+                scenarioType={scenarioType}
+                userProfile={userProfile}
+                onProfileUpdate={onProfileUpdate}
+                onContinue={(cvData) => {
+                  // Store CV data for later merging with extra-context
+                  setExtraContext((prev) => ({ ...prev, ...cvData }));
+                  setStep("extra-context");
+                }}
                 onBack={onFinish}
               />
             )}
@@ -815,7 +833,13 @@ export function PracticeSessionPage({
                   setExtraContext(enriched);
                   /* ── Cache-hit fast path: skip GPT call if content is already cached ── */
                   if (scenarioType === "interview") {
-                    const cachedBriefing = interviewBriefingCache.get(sKey);
+                    // Use content-aware cache key: include user's actual input so
+                    // different JD/experience combos produce different cache entries
+                    const contentFingerprint = JSON.stringify(
+                      Object.entries(enriched).sort(([a], [b]) => a.localeCompare(b))
+                    );
+                    const briefingCacheKey = `${sKey}_${simpleHash(contentFingerprint)}`;
+                    const cachedBriefing = interviewBriefingCache.get(briefingCacheKey);
                     if (cachedBriefing && cachedBriefing.anticipatedQuestions?.length > 0) {
                       setInterviewBriefing(cachedBriefing);
                       setScriptGenStatus("ready");
@@ -856,7 +880,7 @@ export function PracticeSessionPage({
                   setStep("generating-script");
                   fireScriptGeneration(enriched);
                 }}
-                onBack={onFinish}
+                onBack={() => setStep("cv-upload")}
               />
             )}
             {step === "generating-script" && (
@@ -884,7 +908,7 @@ export function PracticeSessionPage({
                       </h3>
                       <p className="text-sm text-[#94a3b8] mb-1">
                         {scenarioType === "interview"
-                          ? "We couldn't generate your interview briefing. This is usually a temporary issue."
+                          ? "We couldn't generate your interview preparation. This is usually a temporary issue."
                           : "We couldn't generate your personalized script. This is usually a temporary issue."}
                       </p>
                       {scriptGenError && (
@@ -1025,141 +1049,74 @@ export function PracticeSessionPage({
                 onComplete={() => setFeedbackAnimDone(true)}
               />
             )}
-            {step === "conversation-feedback" && (
-              <ConversationFeedback
+            {step === "interview-analysis" && (
+              <InterviewAnalysis
                 scenarioType={scenarioType}
-                onGenerateReport={() => {
-                  // Transition to Skill Drill instead of directly to session-recap
-                  setStep("skill-drill");
-                }}
-                onPracticeAgain={handlePracticeAgain}
-                repeatInfo={repeatInfo}
-                onPaywallTriggered={handlePaywallTriggered}
-                showPaywallOnRepeat={showPaywallOnRepeat}
                 realFeedback={realFeedback}
                 pronunciationData={sessionPronData}
-                sessionId={sessionId}
-              />
-            )}
-
-            {step === "skill-drill" && (
-              <SkillDrillScreen
-                pillarScores={realFeedback?.pillarScores ?? null}
-                pronunciationScore={
-                  sessionPronData.length > 0
-                    ? Math.round(sessionPronData.reduce((s, t) => s + t.assessment.accuracyScore, 0) / sessionPronData.length)
-                    : 0
-                }
-                beforeAfter={realFeedback?.beforeAfter?.map(ba => ({
-                  originalPhrase: ba.userOriginal || "",
-                  professionalVersion: ba.professionalVersion || "",
-                }))}
-                scenarioType={scenarioType}
-                interlocutor={interlocutor}
-                onComplete={(drillResult) => {
-                  // Store drill result for session-recap
-                  setDrillResult(drillResult);
-                  // Transition to unlock screen
-                  setStep("cp-unlock");
-                }}
-                onSkip={() => {
-                  // All pillars are strong — skip directly to session-recap
-                  fireSummaryGeneration();
-                  if (progressionLevelId && progressionPathId) {
-                    const score = realFeedback?.professionalProficiency ?? 50;
-                    const pillarScores = realFeedback?.pillarScores ?? null;
-                    completeProgressionLevel(progressionPathId, progressionLevelId, score, pillarScores)
-                      .catch((err: any) => console.info("[Progression]", err));
-                  }
-                  setStep("session-recap");
-                }}
-              />
-            )}
-
-            {step === "cp-unlock" && drillResult && (
-              <ConversationalPathUnlockScreen
-                pillar={drillResult.pillar}
-                score={drillResult.finalScore}
-                passed={drillResult.passed}
-                scenarioType={scenarioType}
-                onContinue={() => {
-                  fireSummaryGeneration();
-                  if (progressionLevelId && progressionPathId) {
-                    const score = realFeedback?.professionalProficiency ?? 50;
-                    const pillarScores = realFeedback?.pillarScores ?? null;
-                    completeProgressionLevel(progressionPathId, progressionLevelId, score, pillarScores)
-                      .catch((err: any) => console.info("[Progression]", err));
-                  }
-                  setStep("session-recap");
-                }}
-                onSubscribe={() => handlePaywallTriggered("extra-practice", "pro-annual")}
-                onPayPerSession={() => handlePaywallTriggered("extra-practice", "per-session")}
-              />
-            )}
-
-            {step === "session-recap" && (
-              <SessionReport
-                scenarioType={scenarioType}
-                guidedFields={mergedGuidedFields}
-                realFeedback={realFeedback}
-                sessionSummary={sessionSummary}
-                generatedScript={generatedScript}
-                sessionDuration={`${Math.round((Date.now() - sessionStartRef.current) / 60000)} min`}
-                pronunciationData={sessionPronData}
-                onFinish={onFinish}
-                finishLabel="Go To Dashboard"
-                onDownloadReport={() => {
-                  // bypass gating to offer free tests
+                onPracticeAgain={canRepeat ? handlePracticeAgain : undefined}
+                onDownloadPdf={() => {
                   downloadSessionReportPdf({
-                      briefing: scenarioType === "interview" ? interviewBriefing : null,
-                      interlocutor,
-                      scenario,
-                      scenarioType,
-                      feedback: realFeedback ? {
-                        strengths: realFeedback.strengths,
-                        opportunities: realFeedback.opportunities,
-                        beforeAfter: realFeedback.beforeAfter,
-                        pillarScores: realFeedback.pillarScores,
-                        professionalProficiency: realFeedback.professionalProficiency,
-                        contentScores: realFeedback.contentScores,
-                        interviewReadinessScore: realFeedback.interviewReadinessScore,
-                        preparationUtilization: realFeedback.preparationUtilization,
-                        contentInsights: realFeedback.contentInsights,
-                        languageInsights: realFeedback.languageInsights,
-                      } : null,
-                      summary: sessionSummary ? {
-                        overallSentiment: sessionSummary.overallSentiment,
-                        nextSteps: sessionSummary.nextSteps.map(s => `${s.title}: ${s.desc}`),
-                        sessionHighlight: sessionSummary.sessionHighlight,
-                      } : null,
-                      sessionDuration: `${Math.round((Date.now() - sessionStartRef.current) / 60000)} min`,
-                      userDrafts: scenarioType === "interview" && Object.keys(userDrafts).length > 0 ? userDrafts : undefined,
-                      pronunciationData: sessionPronData.length > 0 ? sessionPronData : undefined,
-                      improvedScript: improvedScript,
-                      cvMatchData: (cvMatchStatus === "success" && cvMatchData) ? cvMatchData : null,
-                    }).catch((err) => {
-                      console.error("[SessionReport] PDF generation failed:", err);
-                    });
+                    briefing: scenarioType === "interview" ? interviewBriefing : null,
+                    interlocutor,
+                    scenario,
+                    scenarioType,
+                    feedback: realFeedback ? {
+                      strengths: realFeedback.strengths,
+                      opportunities: realFeedback.opportunities,
+                      beforeAfter: realFeedback.beforeAfter,
+                      pillarScores: realFeedback.pillarScores,
+                      professionalProficiency: realFeedback.professionalProficiency,
+                      contentScores: realFeedback.contentScores,
+                      interviewReadinessScore: realFeedback.interviewReadinessScore,
+                      preparationUtilization: realFeedback.preparationUtilization,
+                      contentInsights: realFeedback.contentInsights,
+                      languageInsights: realFeedback.languageInsights,
+                    } : null,
+                    summary: sessionSummary ? {
+                      overallSentiment: sessionSummary.overallSentiment,
+                      nextSteps: sessionSummary.nextSteps.map(s => `${s.title}: ${s.desc}`),
+                      sessionHighlight: sessionSummary.sessionHighlight,
+                    } : null,
+                    sessionDuration: `${Math.round((Date.now() - sessionStartRef.current) / 60000)} min`,
+                    userDrafts: scenarioType === "interview" && Object.keys(userDrafts).length > 0 ? userDrafts : undefined,
+                    pronunciationData: sessionPronData.length > 0 ? sessionPronData : undefined,
+                    improvedScript: improvedScript,
+                    cvMatchData: (cvMatchStatus === "success" && cvMatchData) ? cvMatchData : null,
+                  }).catch((err) => {
+                    console.error("[InterviewAnalysis] PDF generation failed:", err);
+                  });
                 }}
-                userPlan={plan}
-                interviewBriefing={scenarioType === "interview" ? interviewBriefing : null}
-                interlocutor={interlocutor}
-                scenario={scenario}
-                cvMatchData={cvMatchData}
-                cvMatchStatus={cvMatchStatus}
+                onFinish={() => {
+                  // v9.0: Demo users see PathConversionScreen before exiting
+                  if (plan === "free") {
+                    setStep("path-conversion");
+                  } else {
+                    onFinish();
+                  }
+                }}
+                canRetryFree={canRepeat}
+              />
+            )}
+            {step === "path-conversion" && (
+              <PathConversionScreen
+                scenarioType={scenarioType}
+                proficiencyScore={realFeedback?.professionalProficiency ?? undefined}
+                onPurchasePath={() => handlePaywallTriggered("path-required")}
+                onContinue={onFinish}
               />
             )}
           </motion.div>
         </AnimatePresence>
       </div>
 
-      {/* ── Paywall Modal (shared across all triggers) ── */}
-      <SubscriptionModal
+      {/* ── Paywall Modal (v9.0 — Learning Path) ── */}
+      <PathPurchaseModal
         open={paywallOpen}
         onClose={() => { setPaywallOpen(false); setPaywallReason(null); }}
+        scenarioType={scenarioType || "interview"}
+        paywallReason={paywallReason ?? "path-required"}
         onPurchaseComplete={handlePurchaseComplete}
-        paywallReason={paywallReason ?? undefined}
-        defaultPlan={paywallDefaultPlan}
       />
     </div>
     </ProgressionProvider>

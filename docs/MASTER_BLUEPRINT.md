@@ -1,8 +1,8 @@
-# inFluentia PRO - Master Blueprint v8.0
+# inFluentia PRO - Master Blueprint v9.0
 
 > **The Scalable Blueprint** - De concepto educativo a herramienta de rendimiento ejecutivo.
 > Documento maestro que consolida arquitectura, decisiones, y hoja de ruta.
-> Ultima actualizacion: 27 marzo 2026 (v8.0 — Migración a Feature-Sliced Design (FSD), Lecciones GPT-4o integradas, Admin Dashboard activo, Security Hardening via getAuthToken, Tests Fundacionales (Vitest). Prioridad actual focalizada en la culminación del Skill Drill y esquema de pagos)
+> Ultima actualizacion: 5 abril 2026 (v9.0 — Modelo de negocio rediseñado a **per-Learning-Path**. Se elimina suscripcion mensual y pay-per-session. Nuevo schema `path_purchases`. Acceso permanente con 3 fresh sessions por nivel + review ilimitado. Prioridad: conversion inicial con sesion gratis + Learning Path $24.99)
 
 ---
 
@@ -90,20 +90,18 @@ en ingles, disenado para el mercado de nearshoring en Latinoamerica.
 CREATE TABLE profiles (
   id                    uuid PRIMARY KEY REFERENCES auth.users ON DELETE CASCADE,
   market_focus          text CHECK (market_focus IN ('mexico', 'colombia')),
-  plan                  text DEFAULT 'free' CHECK (plan IN ('free', 'per-session', 'subscription')),
-  plan_status           text DEFAULT 'active' CHECK (plan_status IN ('active', 'trial', 'expired')),
-  subscription_active   boolean DEFAULT false,
-  -- Escenarios donde ya se uso la sesion gratuita
+  plan                  text DEFAULT 'free' CHECK (plan IN ('free', 'path')),
+  -- Escenarios donde ya se uso la sesion gratuita (demo session)
   free_sessions_used    text[] DEFAULT '{}',
-  -- Escenarios con Conversational Path desbloqueado (completaron drill)
-  conversational_unlocked text[] DEFAULT '{}',
+  -- Paths comprados (ScenarioType[]) — acceso permanente
+  paths_purchased       text[] DEFAULT '{}',
   stats                 jsonb DEFAULT '{}',
   achievements          text[] DEFAULT '{}',
   created_at            timestamptz DEFAULT now()
 );
 ```
 
-> **Cambio v7.0:** Se reemplaza `free_session_used boolean` por `free_sessions_used text[]` (array de ScenarioType) para soportar primera sesion gratuita por escenario. Se agrega `conversational_unlocked text[]` para trackear desbloqueos del Conversational Path. Se agrega `subscription_active boolean`. Se agrega plan value `'subscription'`.
+> **Cambio v9.0:** Se simplifica `plan` a `'free' | 'path'`. Se elimina `subscription_active`, `plan_status`, `conversational_unlocked`. Se reemplaza por `paths_purchased text[]` que trackea los paths comprados por ScenarioType. El acceso es permanente una vez comprado.
 
 ### 3.2 Tabla `sessions`
 
@@ -118,15 +116,19 @@ CREATE TABLE sessions (
   history         jsonb DEFAULT '[]',
   feedback        jsonb,
   drill_result    jsonb,
-  -- null = primera sesion gratuita, 'per-session' = pagado, 'subscription' = suscripcion
-  session_type    text DEFAULT null,
+  -- 'demo' = sesion gratuita, 'path' = sesion dentro de un path comprado, 'booster' = sesion extra pagada
+  session_type    text DEFAULT 'demo' CHECK (session_type IN ('demo', 'path', 'booster')),
+  -- Nivel del path al que pertenece esta sesion (ej: 'int-1', 'sal-3')
+  path_level_id   text,
+  -- Numero de intento dentro del nivel (1-3 para fresh, null para demo)
+  attempt_number  integer,
   status          text DEFAULT 'active' CHECK (status IN ('active', 'completed')),
   created_at      timestamptz DEFAULT now(),
   completed_at    timestamptz
 );
 ```
 
-> **Cambio v7.0:** Se agrega `drill_result jsonb` para persistir el resultado del Skill Drill. Se agrega `session_type` para distinguir sesiones gratuitas de pagadas.
+> **Cambio v9.0:** Se reemplaza `session_type` values por `'demo' | 'path' | 'booster'`. Se agregan `path_level_id` y `attempt_number` para trackear sesiones dentro de Learning Paths.
 
 ### 3.3 Tabla `sr_cards`
 
@@ -180,33 +182,39 @@ CREATE TABLE audit_logs (
 );
 ```
 
-### 3.6 Tablas de pagos (v7.0 — suscripcion mensual + pay-per-session)
+### 3.6 Tablas de pagos (v9.0 — per-Learning-Path + Booster Pack)
 
 ```sql
-CREATE TABLE subscriptions (
+CREATE TABLE path_purchases (
   id                uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id           uuid REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
-  status            text DEFAULT 'active' CHECK (status IN ('active', 'cancelled', 'expired')),
+  -- Tipo de compra: 'single_path' | 'all_access' | 'booster'
+  purchase_type     text NOT NULL CHECK (purchase_type IN ('single_path', 'all_access', 'booster')),
+  -- ScenarioType del path comprado (null para all_access)
+  scenario_type     text,
+  amount_usd        numeric(10,2) NOT NULL,
   payment_provider  text NOT NULL CHECK (payment_provider IN ('mercadopago', 'stripe')),
   payment_id        text,
-  current_period_start timestamptz,
-  current_period_end   timestamptz,
+  status            text DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
   created_at        timestamptz DEFAULT now()
 );
 
-CREATE TABLE session_purchases (
+-- Track de intentos frescos consumidos por nivel
+CREATE TABLE path_level_progress (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id         uuid REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
-  amount_usd      numeric(10,2) NOT NULL DEFAULT 4.99,
-  scenario_type   text,
-  payment_provider text NOT NULL CHECK (payment_provider IN ('mercadopago', 'stripe')),
-  payment_id      text,
-  status          text DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'expired')),
-  created_at      timestamptz DEFAULT now()
+  scenario_type   text NOT NULL,
+  level_id        text NOT NULL,          -- ej: 'int-1', 'sal-3'
+  fresh_attempts  integer DEFAULT 0,      -- intentos fresh usados (max 3)
+  best_session_id uuid REFERENCES sessions(id),  -- mejor sesion para review mode
+  status          text DEFAULT 'unlocked' CHECK (status IN ('locked', 'unlocked', 'completed')),
+  completed_at    timestamptz,
+  created_at      timestamptz DEFAULT now(),
+  UNIQUE (user_id, scenario_type, level_id)
 );
 ```
 
-> **Cambio v7.0:** Se reemplazan las tablas `credit_purchases` y `credit_balances` por `subscriptions` y `session_purchases`. El modelo de credit packs (session_1, session_3, session_5) queda deprecado.
+> **Cambio v9.0:** Se eliminan `subscriptions` y `session_purchases`. Se crean `path_purchases` (compra one-time de paths/bundles/boosters) y `path_level_progress` (tracking de intentos y progreso por nivel dentro del path).
 
 > Schema completo con RLS, indexes y triggers: ver `/docs/FASE1_MIGRATION.sql`
 
@@ -269,25 +277,35 @@ export {
 
 Ver `/src/services/interfaces/` para los 7 contratos completos.
 
-Tipos clave actualizados en v7.0:
+Tipos clave actualizados en v9.0:
 
 ```typescript
-type UserPlan = "free" | "per-session" | "subscription";
+type UserPlan = "free" | "path";
 
 type ScenarioType = "interview" | "sales" | "networking" | "negotiation" | "csuite";
 
-type ScenarioStatus =
-  | "not-started"            // Usuario nunca entro a este escenario
-  | "free-completed"         // Completo la primera sesion, CP desbloqueado pero inaccesible
-  | "conversational-active"  // Suscripcion activa, CP disponible
-  | "in-progress";           // Dentro del Conversational Path, N sesiones completadas
+type PathStatus =
+  | "not-started"       // Usuario nunca entro a este escenario
+  | "demo-completed"    // Completo la sesion demo gratuita
+  | "purchased"         // Compro el path, aun no empieza
+  | "in-progress"       // Dentro del Learning Path, avanzando niveles
+  | "completed";        // Completo todos los niveles del path
+
+type PurchaseType = "single_path" | "all_access" | "booster";
 
 interface UserAccess {
   plan: UserPlan;
-  subscriptionActive: boolean;
-  freeSessionsUsed: ScenarioType[];       // Escenarios con sesion gratuita consumida
-  conversationalUnlocked: ScenarioType[]; // Escenarios con CP desbloqueado (drill completado)
-  conversationalPathActive: boolean;      // true si subscriptionActive
+  freeSessionsUsed: ScenarioType[];   // Escenarios con demo session consumida
+  pathsPurchased: ScenarioType[];     // Paths comprados (acceso permanente)
+}
+
+interface PathLevelAccess {
+  scenarioType: ScenarioType;
+  levelId: string;                     // ej: 'int-1'
+  freshAttempts: number;               // intentos fresh usados (max 3)
+  freshAttemptsRemaining: number;      // 3 - freshAttempts
+  bestSessionId: string | null;        // para review mode
+  status: "locked" | "unlocked" | "completed";
 }
 
 interface DrillEvaluation {
@@ -317,8 +335,9 @@ interface DrillResult {
 
 Sin cambios respecto a v6.0. Ver `/src/services/errors.ts` para los 5 dominios y ~31 error codes.
 
-Nuevo error code agregado en v7.0:
-- `SUBSCRIPTION_REQUIRED` — usuario intenta acceder al Conversational Path sin suscripcion activa
+Nuevos error codes en v9.0:
+- `PATH_PURCHASE_REQUIRED` — usuario intenta acceder a un Learning Path sin haberlo comprado
+- `FRESH_ATTEMPTS_EXHAUSTED` — usuario agoto sus 3 intentos fresh en un nivel (ofrecer Booster Pack o Review Mode)
 
 ---
 
@@ -399,21 +418,37 @@ Sin cambios respecto a v6.0.
 ```typescript
 function canStartSession(
   scenarioType: ScenarioType,
-  userAccess: UserAccess
-): { allowed: boolean; reason?: string } {
-  // Suscripcion activa: acceso ilimitado a todo
-  if (userAccess.subscriptionActive) return { allowed: true };
-
-  // Primera sesion de este escenario: siempre permitida
+  userAccess: UserAccess,
+  levelId?: string
+): { allowed: boolean; mode: "demo" | "path" | "purchase_required"; reason?: string } {
+  // Demo session: primera sesion de este escenario siempre permitida
   if (!userAccess.freeSessionsUsed.includes(scenarioType)) {
-    return { allowed: true };
+    return { allowed: true, mode: "demo" };
   }
 
-  // Sesion adicional del escenario: requiere pago
+  // Path comprado: verificar intentos del nivel
+  if (userAccess.pathsPurchased.includes(scenarioType)) {
+    return { allowed: true, mode: "path" };
+  }
+
+  // Sin path comprado: requiere compra
   return {
     allowed: false,
-    reason: "SUBSCRIPTION_REQUIRED",
+    mode: "purchase_required",
+    reason: "PATH_PURCHASE_REQUIRED",
   };
+}
+
+function canStartFreshAttempt(
+  levelAccess: PathLevelAccess
+): { allowed: boolean; reason?: string } {
+  if (levelAccess.status === "locked") {
+    return { allowed: false, reason: "LEVEL_LOCKED" };
+  }
+  if (levelAccess.freshAttempts >= 3) {
+    return { allowed: false, reason: "FRESH_ATTEMPTS_EXHAUSTED" };
+  }
+  return { allowed: true };
 }
 ```
 
@@ -472,75 +507,101 @@ Validado: Azure Speech REST API funciona desde Deno Edge Functions sin SDK pesad
 
 ## 11. Modelo de Negocio
 
-> **Actualizado: marzo 2026 (v7.0)** — Modelo rediseñado de credit packs a Freemium + Suscripcion mensual con Conversational Path como feature premium.
+> **Actualizado: 5 abril 2026 (v9.0)** — Modelo rediseñado a **per-Learning-Path**. Se eliminan suscripcion mensual y pay-per-session. One-time purchase por path con acceso permanente.
+
+### Filosofia del modelo
+
+**No vendemos acceso. Vendemos resultado.** El profesional LATAM piensa en terminos de metas concretas: "necesito dominar entrevistas en ingles". Un Learning Path es una inversion con meta clara, no un gasto recurrente. Maximizamos conversion inicial con pricing transparente y sesion demo gratuita.
 
 ### Tiers de acceso
 
-| | Free | Pay-per-session | Suscripcion mensual |
+| | Demo (Free) | Learning Path ($24.99) | All-Access ($59.99) |
 |---|---|---|---|
-| Primera sesion por escenario | ✅ Completa, todos los poderes | — | ✅ |
-| Skill Drill post-sesion | ✅ Incluido (desbloqueo siempre ocurre) | ✅ | ✅ Drill completo |
-| Conversational Path | 👁 Visible pero inaccesible | ✅ Para esa sesion | ✅ Activo en todos los escenarios |
-| Sesiones adicionales por escenario | 💳 Pay-per-session | ✅ | ✅ Ilimitadas |
-| Dashboard educativo | 📚 Contenido estatico (microLessons) | 📚 Contenido estatico | ✅ Contenido custom por sesion |
-| Resultados y estadisticas | ✅ De sesiones completadas | ✅ | ✅ |
+| Sesion completa por escenario | ✅ 1 demo session, todos los poderes | ✅ 3 fresh sessions × 4 niveles | ✅ Todo en 5 paths |
+| Skill Drill post-sesion | ✅ Incluido en demo | ✅ Incluido | ✅ Incluido |
+| Learning Path progresivo | 🔒 Visible pero bloqueado | ✅ 4 niveles con dificultad progresiva | ✅ 5 paths completos |
+| Review Mode (sesiones pasadas) | ✅ De la demo session | ✅ Ilimitado, permanente | ✅ Ilimitado |
+| Shadowing + Remedial | ❌ | ✅ Contenido por nivel | ✅ Contenido por nivel |
+| Dashboard educativo | 📚 Contenido estatico (microLessons) | ✅ Contenido custom del transcript real | ✅ Contenido custom |
+| Resultados y estadisticas | ✅ De la demo session | ✅ Longitudinal por path | ✅ Cross-path analytics |
 
 ### Flujo de conversion — usuario nuevo
 
 1. **Usuario nuevo** — siempre sin pago inicial.
-2. **Primera sesion completa** — todos los poderes activos (GPT-4o, pronunciacion Azure, feedback completo, Skill Drill). Sin feature gating. Aplica a cada escenario de forma independiente.
-3. **Skill Drill completado** — el desbloqueo del Conversational Path ocurre siempre al completar el drill, independientemente del score. El drill no es un filtro de calidad, es el mecanismo de desbloqueo experiencial.
-4. **Momento de celebracion** — pantalla dedicada que comunica el desbloqueo, explica que es el Conversational Path, y presenta el CTA de suscripcion.
-5. **Decision de pago:**
-   - **No paga** → Dashboard con CP visible pero bloqueado. Puede ver resultados, estadisticas y contenido educativo estatico. Puede hacer la primera sesion de otros escenarios de forma gratuita. CTA persistente hacia suscripcion.
-   - **Pay-per-session ($4.99)** → Accede a una sesion adicional de Conversational Path de un escenario especifico.
-   - **Suscripcion mensual** → CP activo en todos los escenarios, drill completo, dashboard educativo custom, sesiones ilimitadas.
+2. **Demo Session completa** — todos los poderes activos (GPT-4o-mini en Arena, pronunciacion Azure, feedback completo, Skill Drill). Sin feature gating. Una demo session por escenario.
+3. **Skill Drill completado** — el usuario experimenta el ciclo completo de evaluacion y ve su score.
+4. **Momento de conversion** — pantalla dedicada que:
+   - Celebra el logro (confetti, tono positivo)
+   - Muestra el preview del Learning Path completo (4 niveles, contenido progresivo)
+   - Presenta el precio: **$24.99 por el path** (ancla: "$2.08 por sesion")
+   - Ofrece All-Access Bundle como alternativa: **$59.99 por los 5 paths** (ancla: "$12 por path")
+5. **Decision:**
+   - **No compra** → Dashboard con path visible pero bloqueado. Review Mode de la demo disponible. Puede hacer la demo de otros escenarios gratis. CTA persistente.
+   - **Compra path ($24.99)** → 4 niveles desbloqueados secuencialmente. 3 fresh sessions por nivel. Review ilimitado. Acceso permanente.
+   - **Compra All-Access ($59.99)** → 5 paths completos. Mismo modelo por path.
 
-### Acceso por escenario (usuario free)
+### Acceso por escenario
 
-El usuario free puede hacer la **primera sesion de cada escenario de forma gratuita**. Cada escenario es un gancho de conversion independiente:
-
-| Escenario | Primera sesion | Sesiones adicionales |
+| Escenario | Demo Session | Learning Path |
 |---|---|---|
-| Interview | ✅ Gratis | 💳 Pay-per-session o suscripcion |
-| Sales | ✅ Gratis | 💳 Pay-per-session o suscripcion |
-| Networking | ✅ Gratis | 💳 Pay-per-session o suscripcion |
-| Negotiation | ✅ Gratis | 💳 Pay-per-session o suscripcion |
-| C-Suite | ✅ Gratis | 💳 Pay-per-session o suscripcion |
+| Interview | ✅ Gratis (1 vez) | 🎯 $24.99 (o incluido en All-Access) |
+| Sales | ✅ Gratis (1 vez) | 🎯 $24.99 (o incluido en All-Access) |
+| Networking | ✅ Gratis (1 vez) | 🎯 $24.99 (o incluido en All-Access) |
+| Negotiation | ✅ Gratis (1 vez) | 🎯 $24.99 (o incluido en All-Access) |
+| C-Suite | ✅ Gratis (1 vez) | 🎯 $24.99 (o incluido en All-Access) |
 
-Cada vez que el usuario entra a un escenario nuevo, vive la experiencia completa con su propio Skill Drill y su propio momento de celebracion del desbloqueo. Cada escenario es una oportunidad fresca de mostrar el valor antes de pedir el pago.
+Cada demo session es un gancho de conversion independiente. El usuario vive la experiencia completa antes de que se le pida pagar.
 
-### Precios
+### Precios y productos
 
-| Producto | Precio | Descripcion |
-|---|---|---|
-| Primera sesion por escenario | $0 | Una vez por escenario, todos los poderes |
-| Pay-per-session | $4.99 | Sesion individual con Conversational Path |
-| PRO Mensual | $19.99/mes | Sesiones ilimitadas, Skill Drills, todos los escenarios |
-| PRO Anual | $13.99/mes ($167.88/año) | Todo lo del mensual con 30% de descuento |
+| Producto | Precio | Contenido | Costo real | Margen |
+|---|---|---|---|---|
+| Demo Session | $0 | 1 sesion completa por escenario | ~$0.49 | CAC |
+| **Learning Path** | **$24.99** | 4 niveles × 3 fresh + review ilimitado | ~$7.32 max | **70.7%** |
+| **All-Access Bundle** | **$59.99** | 5 paths completos | ~$36.60 max | **39.0%** |
+| Booster Pack (futuro) | $4.99 | +3 fresh sessions en cualquier nivel | ~$1.83 | **63.3%** |
 
-> **⚠️ Deuda UX activa:** `CreditUpsellModal` (modelo legacy de credit packs: 1/3/5 sesiones) sigue activo en `DashboardPage`, `DashboardHeader`, y `App.tsx`. Los usuarios que llegan al dashboard sin pasar por el flujo de sesion ven el modelo anterior. `SubscriptionModal` (PRO mensual/anual + pay-per-session) solo se muestra en `PracticeSessionPage`. Migrar los consumers restantes es prioridad para consistencia de UX.
+### Modelo de sesiones por nivel
+
+```
+POR NIVEL (×4 niveles en un path):
+├── 3 intentos FRESH (sesion completa con IA: GPT-4o, Azure, ElevenLabs)
+├── Review Mode ilimitado (replay de transcript, feedback, scores — costo $0)
+├── Remedial content (shadowing + micro-lessons)
+└── Si agota 3 intentos → Booster Pack ($4.99 × 3 sesiones extra) [futuro]
+```
+
+**¿Que es Review Mode?**
+- Ver transcript completo de cada sesion pasada
+- Revisar feedback (strengths, opportunities, before/after)
+- Revisar pillar scores y su progresion
+- Reescuchar audio TTS generado (cacheado)
+- **Costo para la plataforma: $0** (datos almacenados en KV)
 
 ### Contenido educativo — dos niveles
 
-| | Usuario free | Suscriptor |
+| | Usuario free (demo) | Path Owner |
 |---|---|---|
 | Fuente | `microLessons.ts` — contenido estatico por pillar | Material generado del drill: `modelPhrase`, `narrative`, `scoreBreakdown` del transcript real |
-| Personalizacion | Generico por pillar (ej: tips de Fluency) | Especifico a la sesion (ej: "la frase exacta que fallaste y como reformularla") |
-| CTA | "Suscribete para recursos a la medida" | — |
+| Personalizacion | Generico por pillar | Especifico a la sesion y nivel |
+| CTA | "Desbloquea tu Learning Path" | — |
 
 > **Nota:** `microLessons.ts` no se depreca. Se reposiciona como el tier gratuito del dashboard educativo.
+
+> **⚠️ Deuda UX activa:** `CreditUpsellModal` y `SubscriptionModal` (modelos legacy) deben reemplazarse por `PathPurchaseModal` que presente Learning Path ($24.99) y All-Access Bundle ($59.99).
 
 ### Tipos en codigo
 
 ```typescript
-type UserPlan = "free" | "per-session" | "subscription";
+type UserPlan = "free" | "path";
 
 type ScenarioType = "interview" | "sales" | "networking" | "negotiation" | "csuite";
 
-// Deprecados en v7.0:
-// type CreditPack = "session_1" | "session_3" | "session_5"
-// CREDIT_PACK_DETAILS
+type PurchaseType = "single_path" | "all_access" | "booster";
+
+// Deprecados en v9.0:
+// type UserPlan = "per-session" | "subscription"
+// CreditPack, CREDIT_PACK_DETAILS, SubscriptionModal, CreditUpsellModal
 ```
 
 ---
@@ -661,50 +722,84 @@ Un solo evaluador con criterios condicionales por pillar. Criterios por pillar:
 
 ---
 
-## 14. Conversational Path
+## 14. Learning Path
+
+> **Renombrado en v9.0:** "Conversational Path" → "Learning Path" para reflejar el nuevo modelo de negocio.
 
 ### Que es
 
-El Conversational Path es el learning journey estructurado de un escenario especifico. Es la secuencia de sesiones con dificultad progresiva que el usuario sigue despues de haber completado la primera sesion gratuita de ese escenario y haber completado el Skill Drill.
+El Learning Path es el journey de aprendizaje estructurado de un escenario especifico. Consiste en 4 niveles progresivos de dificultad, cada uno con hasta 3 fresh sessions, remedial content (shadowing + micro-lessons), y Skill Drill. El acceso es permanente una vez comprado.
+
+### Estructura de un Learning Path
+
+```
+Learning Path: Interview ($24.99)
+├── Nivel 1 (int-1): "Foundation" — Arena en Support mode
+│   ├── 3 fresh sessions (GPT-4o, Azure, ElevenLabs)
+│   ├── Review Mode ilimitado
+│   ├── Remedial: shadowing + micro-lessons
+│   └── Skill Drill → completa para desbloquear Nivel 2
+├── Nivel 2 (int-2): "Building Confidence" — Arena en Guidance mode
+│   ├── 3 fresh sessions
+│   ├── Review Mode ilimitado
+│   ├── Remedial: shadowing + micro-lessons
+│   └── Skill Drill → completa para desbloquear Nivel 3
+├── Nivel 3 (int-3): "Under Pressure" — Arena en Challenge mode
+│   ├── 3 fresh sessions
+│   ├── Review Mode ilimitado
+│   ├── Remedial: shadowing + micro-lessons
+│   └── Skill Drill → completa para desbloquear Nivel 4
+└── Nivel 4 (int-4): "Executive Ready" — Arena en Challenge+
+    ├── 3 fresh sessions
+    ├── Review Mode ilimitado
+    ├── Remedial: shadowing + micro-lessons
+    └── Skill Drill → certificacion de path completado
+```
 
 ### Como se desbloquea
 
-1. Usuario completa la primera sesion de un escenario (gratis, todos los poderes).
-2. Usuario completa el Skill Drill post-sesion (el score no importa para el desbloqueo).
-3. Sistema registra en `profiles.conversational_unlocked[]` el ScenarioType.
-4. Pantalla de celebracion: comunica el desbloqueo, explica el CP, presenta CTA de suscripcion.
-5. Con suscripcion activa o pago per-session: Conversational Path disponible para ese escenario.
+1. Usuario completa la Demo Session gratuita de un escenario (todos los poderes).
+2. Usuario completa el Skill Drill post-sesion.
+3. Pantalla de conversion: muestra el Learning Path completo + precio.
+4. **Compra del path ($24.99)** → Nivel 1 desbloqueado inmediatamente.
+5. Progresion secuencial: completar Skill Drill de un nivel desbloquea el siguiente.
 
-### Momento de celebracion — diseno del CTA
+### Momento de conversion — diseno del CTA
 
-Este es el momento de mayor intencion de compra de toda la app. La pantalla debe:
+Este es el momento de mayor intencion de compra. La pantalla debe:
 
-- Celebrar el logro (confetti, tono positivo — "Lo lograste")
-- Mostrar concretamente que desbloqueo el usuario (nombre del CP del escenario)
-- Explicar en 2-3 lineas que es diferente en el CP vs la sesion que acaba de completar
-- Presentar el CTA de suscripcion como el paso natural, no como un muro
-- Ofrecer tambien la opcion pay-per-session como alternativa de menor friccion
+- Celebrar el logro de la demo (confetti, tono positivo)
+- Mostrar el roadmap visual del Learning Path completo (4 niveles, que aprende en cada uno)
+- Comunicar valor concreto: "12 sesiones con IA por $24.99 — eso es $2.08 por sesion"
+- Ancla de precio: mostrar All-Access Bundle ($59.99 / 5 paths = $12/path) como alternativa
+- Un solo CTA principal: "Desbloquea tu Learning Path" (boton prominente)
+- CTA secundario: "o desbloquea los 5 paths" (link sutil)
 
-### Diferencia vs primera sesion libre
+### Diferencia vs Demo Session
 
-| | Primera sesion (free) | Conversational Path (suscripcion) |
+| | Demo Session (free) | Learning Path ($24.99) |
 |---|---|---|
-| Dificultad | Fija — Support → Guidance → Challenge | Progresiva entre sesiones |
-| Skill Drill | Completo con evaluacion IA (desbloqueo experiencial) | Completo — Diagnose → Model → Apply con score breakdown |
-| Dashboard educativo | Contenido estatico (microLessons) | Contenido custom del transcript real |
-| Continuidad | Sesion aislada | Secuencia con memoria del historial del escenario |
+| Sesiones | 1 sesion unica | 3 fresh × 4 niveles (12 total) |
+| Dificultad | Adaptiva (Support → Challenge) | Progresiva entre niveles (controlada) |
+| Arena mode | GPT-4o-mini | GPT-4o |
+| Skill Drill | Completo con evaluacion IA | Completo + desbloquea nivel siguiente |
+| Review Mode | ✅ De la demo session | ✅ Ilimitado de todas las sesiones |
+| Dashboard | Contenido estatico | Contenido custom del transcript real |
+| Continuidad | Sesion aislada | Secuencia con memoria y progresion |
+| Acceso | Una vez | Permanente |
 
 ### Estados en el dashboard por escenario
 
 ```typescript
-type ScenarioStatus =
-  | "not-started"            // Usuario nunca entro a este escenario
-  | "free-completed"         // Completo la primera sesion, CP desbloqueado pero inaccesible
-  | "conversational-active"  // Suscripcion activa o per-session pagado, CP disponible
-  | "in-progress";           // Dentro del CP, N sesiones completadas
+type PathStatus =
+  | "not-started"       // Usuario nunca entro a este escenario
+  | "demo-completed"    // Completo la demo session, path visible pero no comprado
+  | "purchased"         // Compro el path, Nivel 1 desbloqueado
+  | "in-progress"       // Avanzando en el path, N niveles completados
+  | "completed";        // Completo los 4 niveles del path
 ```
 
-La tension visual entre `free-completed` (desbloqueado pero bloqueado) y `conversational-active` en el dashboard es el motor de conversion pasivo. El usuario ve cuantos escenarios tiene "pendientes de activar" y siente el costo de oportunidad de no suscribirse.
+La tension visual entre `demo-completed` (path visible pero bloqueado) y `purchased`/`in-progress` en el dashboard es el motor de conversion pasivo. El usuario ve cuantos paths tiene pendientes y siente el costo de oportunidad de no comprar.
 
 ---
 
@@ -714,25 +809,27 @@ Ver `WORKPLAN_v4.md` para el plan detallado por fases.
 
 Resumen:
 - **Fase 0** (completada): Prototipo mock funcional, paywall system, i18n ES/PT/EN
-- **Fase 1**: Auth + Schema (Supabase) — incluye migracion de schema v7.0
+- **Fase 1**: Auth + Schema (Supabase) — incluye migracion de schema v9.0
 - **Fase 2**: Conversation Engine (GPT-4o + ElevenLabs)
 - **Fase 3**: Feedback + Pronunciation (Gemini + Azure) + Skill Drill (`/evaluate-drill`)
-- **Fase 4**: User data + Payments — suscripcion mensual + pay-per-session (Mercado Pago / Stripe)
+- **Fase 4**: User data + Payments — Learning Path per-purchase (Mercado Pago / Stripe)
 
-**Items nuevos en v7.0 que requieren implementacion:**
+**Items nuevos/actualizados en v9.0:**
 
 | Item | Fase | Prioridad |
 |---|---|---|
-| Migracion schema v7.0 (profiles, sessions, tablas de pago) | Fase 1 | P0 |
+| Migracion schema v9.0 (profiles, sessions, `path_purchases`, `path_level_progress`) | Fase 1 | P0 |
 | `SkillDrillScreen.tsx` componente | Fase 3 | P0 |
 | Edge Function `/evaluate-drill` | Fase 3 | P0 |
 | Prompt `buildDrillEvaluatorPrompt()` en `drill-evaluator-prompt.ts` | Fase 3 | P0 |
-| Pantalla de celebracion del desbloqueo del CP | Fase 3 | P1 |
-| Dashboard: estado por escenario (ScenarioStatus) | Fase 4 | P1 |
-| Dashboard: contenido educativo custom (suscriptores) | Fase 4 | P1 |
+| `PathPurchaseModal.tsx` — reemplaza SubscriptionModal + CreditUpsellModal | Fase 4 | P0 |
+| Pantalla de conversion post-demo (preview del Learning Path + CTA) | Fase 4 | P0 |
+| Dashboard: estado por escenario (`PathStatus`) | Fase 4 | P1 |
+| Dashboard: contenido educativo custom (path owners) | Fase 4 | P1 |
+| `canStartSession()` + `canStartFreshAttempt()` por escenario/nivel | Fase 4 | P0 |
+| Review Mode: pantalla de replay de sesiones pasadas (sin costo API) | Fase 4 | P1 |
 | `microLessons.ts`: refactor a datos planos sin logica de API | Fase 4 | P2 |
-| Tabla `subscriptions` + webhook de pago | Fase 4 | P0 |
-| `canStartSession()` por escenario (reemplaza validacion por creditos) | Fase 4 | P0 |
+| Booster Pack: +3 fresh sessions por nivel (upsell futuro) | Post-MVP | P2 |
 
 ---
 
@@ -751,7 +848,8 @@ Resumen:
 | `SessionReport.tsx` | ~664 | Reporte comprehensivo post-sesion con DrillResult incluido |
 | `DashboardPage.tsx` | ~431 | Dashboard con estado por escenario, contenido educativo por tier |
 | `PracticeHistoryPage.tsx` | ~371 | Lista de sesiones pasadas con before/after |
-| `CreditUpsellModal.tsx` | ~507 | [DEPRECADO en v7.0] Reemplazar por SubscriptionModal + PayPerSessionModal |
+| `CreditUpsellModal.tsx` | ~507 | [DEPRECADO en v9.0] Reemplazar por `PathPurchaseModal` |
+| `SubscriptionModal.tsx` | — | [DEPRECADO en v9.0] Reemplazar por `PathPurchaseModal` |
 | `LanguageTransitionModal.tsx` | ~123 | Modal post-auth de transicion de idioma |
 | `ErrorBoundary.tsx` | ~181 | Class component que atrapa errores de render |
 | `HowItWorksTabs.tsx` | ~512 | Tabs de "Como funciona" en Landing, i18n |
@@ -762,9 +860,10 @@ Resumen:
 
 | Archivo | Descripcion |
 |---------|-------------|
-| `session/SkillDrillScreen.tsx` | Drill de evaluacion con IA. Modalidad texto o voz por pillar. 2 intentos. Desbloqueo del CP. |
-| `ConversationalPathUnlockScreen.tsx` | Pantalla de celebracion del desbloqueo. Confetti + explicacion del CP + CTA suscripcion. |
-| `SubscriptionModal.tsx` | Reemplaza CreditUpsellModal. Plan mensual + pay-per-session como alternativa. |
+| `session/SkillDrillScreen.tsx` | Drill de evaluacion con IA. Modalidad texto o voz por pillar. 2 intentos. |
+| `PathPurchaseModal.tsx` | [NUEVO v9.0] Modal de compra de Learning Path ($24.99) y All-Access Bundle ($59.99). Preview visual del path, ancla de precio, CTA prominente. |
+| `PathConversionScreen.tsx` | [NUEVO v9.0] Pantalla post-demo que muestra preview del Learning Path + celebracion + CTA de compra. Reemplaza `ConversationalPathUnlockScreen`. |
+| `ReviewModeScreen.tsx` | [NUEVO v9.0] Replay de sesiones pasadas sin costo API (transcript, feedback, scores, audio cacheado). |
 
 ### Frontend — Shared (`/src/app/components/shared/`)
 
@@ -821,6 +920,7 @@ Resumen:
 | ~48 archivos shadcn/ui sin importar | `/src/app/components/ui/` | 0 (tree-shaking) | No urgente |
 | Archivo monolitico | `PracticeSessionPage.tsx` (1339 lineas) | Legibilidad | Refactor opcional al agregar SkillDrillScreen |
 | Archivo monolitico | `shared/index.tsx` (1254 lineas) | Legibilidad | Refactor opcional |
-| `CreditUpsellModal.tsx` | Logica de credit packs deprecada | Alta — reemplazar con SubscriptionModal | Fase 4 |
+| `CreditUpsellModal.tsx` | Logica de credit packs deprecada | Alta — reemplazar con PathPurchaseModal | Fase 4 |
+| `SubscriptionModal.tsx` | Logica de suscripcion deprecada en v9.0 | Alta — reemplazar con PathPurchaseModal | Fase 4 |
 | `microLessons.ts` | 831 lineas mezclando datos con logica de API | Media — refactorizar a datos planos | Fase 4 |
 | Hash-based routing | `App.tsx` | Funcional pero basico | Evaluar si se necesita deep linking |

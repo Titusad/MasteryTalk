@@ -271,8 +271,8 @@ function PreBriefingScreen({
                 </div>
                 {/* Title */}
                 <PageTitleBlock
-                    title="Your Conversation Script"
-                    subtitle="A structured script gives you clarity and confidence — turn your ideas into a persuasive and natural message."
+                    title="Your Game Plan"
+                    subtitle="Here's the strategy I've built for you. Read it, own it — then we'll put it to the test."
                 />
 
                 {/* 1. Narrative Structure Badge */}
@@ -286,7 +286,7 @@ function PreBriefingScreen({
                         <TrendingUp className="w-4 h-4 text-white" />
                     </div>
                     <div>
-                        <p className="text-sm text-[#45556c]" style={{ fontWeight: 500 }}>Narrative structure</p>
+                        <p className="text-sm text-[#45556c]" style={{ fontWeight: 500 }}>Your play-by-play</p>
                         <p className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
                             {narrativeStructure}
                         </p>
@@ -345,14 +345,14 @@ function PreBriefingScreen({
                         <div className="flex-1 min-w-0">
                             <p className="text-sm text-[#0f172b] truncate" style={{ fontWeight: 600 }}>
                                 {narration.isPlaying
-                                    ? `Listening — Section ${narration.activeSection} of ${scriptSections.length}`
-                                    : "Listen to Briefing"
+                                    ? `Coaching you — Section ${narration.activeSection} of ${scriptSections.length}`
+                                    : "Hear your coach walk you through it"
                                 }
                             </p>
                             <p className="text-xs text-[#62748e]">
                                 {narration.isPlaying
-                                    ? narration.isLoading ? "Loading audio..." : "Coach is speaking"
-                                    : "Your coach narrates the strategy for you"
+                                    ? narration.isLoading ? "Loading audio..." : "Listen carefully..."
+                                    : "Sit back — I'll break it down for you"
                                 }
                             </p>
                         </div>
@@ -702,10 +702,10 @@ function PreBriefingScreen({
                             className="text-2xl md:text-[28px] text-[#0f172b] mb-3"
                             style={{ fontWeight: 300, lineHeight: 1.3 }}
                         >
-                            Want to practice your conversation?
+                            Ready to put this to the test?
                         </h3>
                         <p className="text-[#45556c] text-lg max-w-md mx-auto mb-8">
-                            Put this script into practice in a realistic AI conversation to get feedback.
+                            I'm going to simulate a real conversation — you'll respond as if it's the real thing. Let's see what you've got.
                         </p>
                         <button
                             onClick={onStartSimulation}
@@ -713,14 +713,14 @@ function PreBriefingScreen({
                             style={{ fontWeight: 500 }}
                         >
                             <Play className="w-5 h-5" />
-                            Start Practice
+                            Let's do this
                             <ArrowRight className="w-5 h-5" />
                         </button>
                         <button
                             onClick={onBack}
                             className="mt-4 text-sm text-[#45556c] hover:text-[#0f172b] transition-colors mx-auto block"
                         >
-                            ← Back to strategy
+                            ← Back to game plan
                         </button>
                     </div>
                     <p className="text-sm text-[#45556c]/70">

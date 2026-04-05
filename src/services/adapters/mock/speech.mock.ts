@@ -63,7 +63,7 @@ const MOCK_USER_TRANSCRIPTIONS: Record<string, string[]> = {
     "A two-year commitment changes the equation. If you can commit to 24 months, I can include the premium tier at no additional cost. That's an 85,000 dollar value add for your team, and it gives us the long-term partnership stability we value.",
   ],
   networking: [
-    "Great to meet you! inFluentia is AI-powered communication coaching. We help LATAM professionals master executive conversations in English — not just grammar, but the communication patterns that win deals and accelerate promotions.",
+    "Great to meet you! MasteryTalk is AI-powered communication coaching. We help LATAM professionals master executive conversations in English — not just grammar, but the communication patterns that win deals and accelerate promotions.",
     "It goes way beyond language training. We simulate real business scenarios — sales pitches, board presentations, negotiations — and give real-time feedback on executive presence. Our clients see a 35% improvement in deal close rates within 90 days.",
     "Our clients track three metrics: deal close rates, promotion velocity, and self-reported confidence scores. One enterprise client replaced their 200K annual workshop program with us and saw better results in just 90 days.",
   ],

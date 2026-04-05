@@ -43,7 +43,7 @@ export function StrategyLayer({ why, approach, suggestedOpener, framework, pivot
                 </div>
                 <div className="flex-1 min-w-0">
                     <p className="text-[10px] text-[#6366f1] uppercase tracking-wider mb-1.5" style={{ fontWeight: 600 }}>
-                        {isSales ? "Why this matters" : "Why they ask this"}
+                        {isSales ? "Why this is a big deal" : "Why this comes up"}
                     </p>
                     <p className="text-sm text-[#314158] leading-relaxed">{why}</p>
                 </div>
@@ -59,7 +59,7 @@ export function StrategyLayer({ why, approach, suggestedOpener, framework, pivot
                     <div className="flex items-center gap-2 mb-3">
                         <MessageSquareQuote className="w-4 h-4 text-[#6366f1]" />
                         <p className="text-[10px] text-[#6366f1] uppercase tracking-wider" style={{ fontWeight: 600 }}>
-                            {isSales ? "Say something like…" : "You could start with something like…"}
+                            {isSales ? "Hit them with…" : "Open with something like…"}
                         </p>
                     </div>
                     <p
@@ -126,7 +126,7 @@ export function StrategyLayer({ why, approach, suggestedOpener, framework, pivot
                     </div>
                     <div className="flex-1 min-w-0">
                         <p className="text-[10px] text-[#db2777] uppercase tracking-wider mb-1.5" style={{ fontWeight: 600 }}>
-                            If they push back
+                            If they push back — here's your escape route
                         </p>
                         <p className="text-sm text-[#314158] leading-relaxed italic">{pivot}</p>
                     </div>

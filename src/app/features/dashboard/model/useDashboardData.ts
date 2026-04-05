@@ -123,13 +123,14 @@ export function useDashboardData({
       .getPracticeHistory("mock-uid")
       .then((history) => setRecentPractices(history.slice(0, 4)))
       .catch(() => {});
+    // v9.0: Credits replaced by path access — credits state kept for backward compat
     paymentService
-      .getCredits("mock-uid")
-      .then((c) => setCredits(c))
+      .getPathAccess("mock-uid")
+      .then((info) => setCredits(info.pathsPurchased.length))
       .catch(() => {});
     userService
       .getProfile("mock-uid")
-      .then((u) => setFreeSessionAvailable(!u.freeSessionUsed))
+      .then((u) => setFreeSessionAvailable(u.freeSessionsUsed.length === 0))
       .catch(() => {});
   }, [fetchRealSessions]);
 

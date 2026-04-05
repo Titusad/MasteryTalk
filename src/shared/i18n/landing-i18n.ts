@@ -112,7 +112,7 @@ export interface LandingCopy {
       features: string[];
       button: string;
     };
-    packs: {
+    paths: {
       name: string;
       sessions: number;
       price: string;
@@ -280,7 +280,7 @@ export const ES: LandingCopy = {
     headline: "Practica tus conversaciones profesionales en inglés.",
     subheadline: "Gana Contratos en USD. Trabaja Remoto. Expande tu alcance.",
     trustBadges: ["1ª sesión gratis", "Sin tarjeta", "Sin suscripción"],
-    socialProof: "ya entrenan con inFluentia PRO",
+    socialProof: "ya entrenan con MasteryTalk.pro",
     socialProofHighlight: "500+ profesionales",
   },
   widget: {
@@ -336,8 +336,8 @@ export const ES: LandingCopy = {
     },
   },
   benefits: {
-    sectionTitle: "¿Es inFluentia PRO para ti?",
-    sectionSubtitle: "inFluentia PRO no es para todos. Es para profesionales ambiciosos.",
+    sectionTitle: "¿Es MasteryTalk.pro para ti?",
+    sectionSubtitle: "MasteryTalk.pro no es para todos. Es para profesionales ambiciosos.",
     yesTitle: "Es para ti si...",
     yesList: [
       "Buscas impactar en presentaciones profesionales",
@@ -359,8 +359,8 @@ export const ES: LandingCopy = {
   },
   beforeAfter: {
     sectionTitle: "Antes y Después",
-    sectionSubtitle: "Así transforma inFluentia PRO tus conversaciones profesionales",
-    withTitle: "Con inFluentia PRO",
+    sectionSubtitle: "Así transforma MasteryTalk.pro tus conversaciones profesionales",
+    withTitle: "Con MasteryTalk.pro",
     withList: [
       "Ya lo practicaste 5 veces",
       "Conoces cada pregunta y objeción posible",
@@ -388,24 +388,23 @@ export const ES: LandingCopy = {
   },
   pricing: {
     sectionTitle: "Invierte en tu ventaja competitiva",
-    sectionSubtitle: "Practica entrevistas y ventas en inglés con IA avanzada.\n1ª sesión gratis. Luego paga solo cuando lo necesitas.",
+    sectionSubtitle: "Practica entrevistas y ventas en inglés con IA avanzada.\n1ª sesión demo gratis. Luego acceso permanente por Learning Path.",
     freeSession: {
-      title: "1ª Sesión Gratis",
+      title: "1ª Sesión Demo",
       desc: "Experimenta la sesión completa sin compromiso",
       features: ["Simulación completa con IA", "Feedback + Guión personalizado", "Feedback de sesión detallado", "Sin tarjeta de crédito"],
       button: "Empezar gratis",
     },
-    packs: [
-      { name: "1 Sesión", sessions: 1, price: "$4.99", perSession: "$4.99", button: "Comprar", features: ["Sesión completa con GPT-4o", "Feedback profundo", "Guión optimizado editable", "Shadowing con scoring"] },
-      { name: "3 Sesiones", sessions: 3, price: "$12.99", perSession: "$4.33", discount: "13%", button: "Comprar pack", features: ["Todo lo de 1 sesión", "Ahorra $2.00", "Ideal para prepararte a fondo", "Genera SR cards"] },
-      { name: "5 Sesiones", sessions: 5, price: "$19.99", perSession: "$4.00", discount: "20%", featured: true, button: "Comprar pack", features: ["Todo lo de 1 sesión", "Ahorra $5.00", "Mejor relación precio-valor", "Genera SR cards"] },
+    paths: [
+      { name: "1 Learning Path", sessions: 12, price: "$24.99", perSession: "$2.08", button: "Obtener acceso", features: ["12 sesiones únicas con GPT-4o", "4 niveles progresivos con IA adaptativa", "Acceso permanente — tuyo para siempre", "Feedback profundo + Shadowing"] },
+      { name: "All-Access Bundle", sessions: 60, price: "$59.99", perSession: "$1.00", discount: "52%", featured: true, button: "Obtener todo", features: ["Los 5 Learning Paths completos", "60 sesiones únicas en total", "Mejor relación precio-valor", "Acceso de por vida"] },
     ],
     freeTrialNote: "Prueba tu primera sesión completamente gratis — sin tarjeta, sin compromiso",
     perSessionLabel: "por sesión",
     savingsLabel: "ahorro",
     statsBar: [
       { value: "10x", desc: "más barato que coaching presencial" },
-      { value: "90%", desc: "margen para reinvertir en tu carrera" },
+      { value: "$2.08", desc: "por sesión — menos que un café" },
       { value: "24/7", desc: "entrena cuando lo necesites" },
     ],
   },
@@ -413,13 +412,13 @@ export const ES: LandingCopy = {
     sectionTitle: "Preguntas Frecuentes",
     sectionSubtitle: "Todo lo que necesitas saber antes de empezar",
     items: [
-      { q: "¿inFluentia PRO es un curso de inglés?", a: "No, cursos y apps de inglés en general ya hay muchos; si necesitas aprender las bases, te recomendamos usar uno de esos. inFluentia PRO es una herramienta que te ayuda a practicar tu comunicación, pronunciación y en general tu discurso para que te prepares antes de una reunión importante." },
-      { q: "¿Necesito un nivel mínimo de inglés?", a: "Sí, inFluentia PRO es para profesionales que ya tienen una base (B1+) y necesitan usar el inglés como herramienta de trabajo. No enseñamos a conjugar verbos, enseñamos a cerrar acuerdos." },
+      { q: "¿MasteryTalk.pro es un curso de inglés?", a: "No, cursos y apps de inglés en general ya hay muchos; si necesitas aprender las bases, te recomendamos usar uno de esos. MasteryTalk.pro es una herramienta que te ayuda a practicar tu comunicación, pronunciación y en general tu discurso para que te prepares antes de una reunión importante." },
+      { q: "¿Necesito un nivel mínimo de inglés?", a: "Sí, MasteryTalk.pro es para profesionales que ya tienen una base (B1+) y necesitan usar el inglés como herramienta de trabajo. No enseñamos a conjugar verbos, enseñamos a cerrar acuerdos." },
       { q: "¿Qué pasa con la privacidad de mis documentos?", a: "Tus notas y presentaciones se procesan de forma segura y privada. Solo se utilizan para configurar tu sesión de práctica y mejorar tu guión." },
-      { q: "¿En qué se diferencia de un profesor particular?", a: "Un profesor te corrige el inglés y te cuesta USD $25 por sesión; inFluentia PRO te ayuda a mejorar tu pronunciación y la forma de comunicarte profesionalmente para que eleves tu nivel. Además, estamos disponibles 24/7 para esa reunión de emergencia que surgió de imprevisto." },
+      { q: "¿En qué se diferencia de un profesor particular?", a: "Un profesor te corrige el inglés y te cuesta USD $25 por sesión; MasteryTalk.pro te ayuda a mejorar tu pronunciación y la forma de comunicarte profesionalmente para que eleves tu nivel. Además, estamos disponibles 24/7 para esa reunión de emergencia que surgió de imprevisto." },
       { q: "¿Puedo usarlo para entrevistas de trabajo específicas?", a: "Totalmente. Puedes subir la descripción del puesto (Job Description) y la IA actuará como el reclutador específico de esa empresa." },
       { q: "¿Cuánto tiempo necesito practicar para ver resultados?", a: "La mayoría de usuarios reportan mayor confianza después de 3-5 sesiones. Para consolidar un cambio real en tu comunicación profesional, recomendamos 90 días de práctica regular — incluso 15 minutos al día hacen la diferencia." },
-      { q: "¿Puedo cancelar en cualquier momento?", a: "No hay suscripción que cancelar. Compras créditos de sesión y los usas cuando quieras — sin compromisos mensuales, sin cargos recurrentes, sin complicaciones. Tus créditos no expiran." },
+      { q: "¿Puedo cancelar en cualquier momento?", a: "No hay suscripción que cancelar. Compras un Learning Path una vez y tienes acceso permanente — sin compromisos mensuales, sin cargos recurrentes. Tu acceso no expira nunca." },
     ],
   },
   finalCta: {
@@ -436,7 +435,7 @@ export const ES: LandingCopy = {
       { title: "Empresa", items: ["Sobre nosotros", "Blog", "Contacto"] },
       { title: "Legal", items: ["Privacidad", "Términos", "Cookies"] },
     ],
-    copyright: "© 2026 inFluentia PRO. Todos los derechos reservados.",
+    copyright: "© 2026 MasteryTalk.pro. Todos los derechos reservados.",
     dashboardLink: "Ir al dashboard",
   },
   auth: {
@@ -568,7 +567,7 @@ export const PT: LandingCopy = {
     headline: "Pratique suas conversas profissionais em inglês.",
     subheadline: "Ganhe Contratos em USD. Trabalhe Remoto. Expanda seu alcance.",
     trustBadges: ["1ª sessão grátis", "Sem cartão", "Sem assinatura"],
-    socialProof: "já treinam com inFluentia PRO",
+    socialProof: "já treinam com MasteryTalk.pro",
     socialProofHighlight: "500+ profissionais",
   },
   widget: {
@@ -624,8 +623,8 @@ export const PT: LandingCopy = {
     },
   },
   benefits: {
-    sectionTitle: "O inFluentia PRO é para você?",
-    sectionSubtitle: "inFluentia PRO não é para todos. É para profissionais ambiciosos.",
+    sectionTitle: "O MasteryTalk.pro é para você?",
+    sectionSubtitle: "MasteryTalk.pro não é para todos. É para profissionais ambiciosos.",
     yesTitle: "É para você se...",
     yesList: [
       "Quer impactar em apresentações profissionais",
@@ -647,8 +646,8 @@ export const PT: LandingCopy = {
   },
   beforeAfter: {
     sectionTitle: "Antes e Depois",
-    sectionSubtitle: "Assim o inFluentia PRO transforma suas conversas profissionais",
-    withTitle: "Com inFluentia PRO",
+    sectionSubtitle: "Assim o MasteryTalk.pro transforma suas conversas profissionais",
+    withTitle: "Com MasteryTalk.pro",
     withList: [
       "Você já praticou 10 vezes",
       "Conhece cada pergunta e objeção possível",
@@ -676,24 +675,23 @@ export const PT: LandingCopy = {
   },
   pricing: {
     sectionTitle: "Invista na sua vantagem competitiva",
-    sectionSubtitle: "Pratique entrevistas e vendas em inglês com IA avançada.\n1ª sessão grátis. Depois pague só quando precisar.",
+    sectionSubtitle: "Pratique entrevistas e vendas em inglês com IA avançada.\n1ª sessão demo grátis. Depois, acesso permanente por Learning Path.",
     freeSession: {
-      title: "1ª Sessão Grátis",
+      title: "1ª Sessão Demo",
       desc: "Experimente a sessão completa sem compromisso",
       features: ["Simulação completa com IA", "Feedback + Roteiro personalizado", "Feedback detalhado da sessão", "Sem cartão de crédito"],
       button: "Começar grátis",
     },
-    packs: [
-      { name: "1 Sessão", sessions: 1, price: "$4.99", perSession: "$4.99", button: "Comprar", features: ["Sessão completa com GPT-4o", "Feedback profundo", "Roteiro otimizado editável", "Shadowing com scoring"] },
-      { name: "3 Sessões", sessions: 3, price: "$12.99", perSession: "$4.33", discount: "13%", button: "Comprar pack", features: ["Tudo da sessão individual", "Economize $2.00", "Ideal para se preparar a fundo", "Gera SR cards"] },
-      { name: "5 Sessões", sessions: 5, price: "$19.99", perSession: "$4.00", discount: "20%", featured: true, button: "Comprar pack", features: ["Tudo da sessão individual", "Economize $5.00", "Melhor custo-benefício", "Gera SR cards"] },
+    paths: [
+      { name: "1 Learning Path", sessions: 12, price: "$24.99", perSession: "$2.08", button: "Obter acesso", features: ["12 sessões únicas com GPT-4o", "4 níveis progressivos com IA adaptativa", "Acesso permanente — seu para sempre", "Feedback profundo + Shadowing"] },
+      { name: "All-Access Bundle", sessions: 60, price: "$59.99", perSession: "$1.00", discount: "52%", featured: true, button: "Obter tudo", features: ["Os 5 Learning Paths completos", "60 sessões únicas no total", "Melhor custo-benefício", "Acesso vitalício"] },
     ],
     freeTrialNote: "Experimente sua primeira sessão completamente grátis — sem cartão, sem compromisso",
     perSessionLabel: "por sessão",
     savingsLabel: "economia",
     statsBar: [
       { value: "10x", desc: "mais barato que coaching presencial" },
-      { value: "90%", desc: "margem para reinvestir na sua carreira" },
+      { value: "$2.08", desc: "por sessão — menos que um café" },
       { value: "24/7", desc: "treine quando precisar" },
     ],
   },
@@ -701,13 +699,13 @@ export const PT: LandingCopy = {
     sectionTitle: "Perguntas Frequentes",
     sectionSubtitle: "Tudo que você precisa saber antes de começar",
     items: [
-      { q: "O inFluentia PRO é um curso de inglês?", a: "Não, cursos e apps de inglês já existem muitos; se você precisa aprender as bases, recomendamos usar um desses. O inFluentia PRO é uma ferramenta que ajuda a praticar sua comunicação, pronúncia e discurso profissional para se preparar antes de uma reunião importante." },
-      { q: "Preciso de um nível mínimo de inglês?", a: "Sim, o inFluentia PRO é para profissionais que já têm uma base (B1+) e precisam usar o inglês como ferramenta de trabalho. Não ensinamos a conjugar verbos, ensinamos a fechar negócios." },
+      { q: "O MasteryTalk.pro é um curso de inglês?", a: "Não, cursos e apps de inglês já existem muitos; se você precisa aprender as bases, recomendamos usar um desses. O MasteryTalk.pro é uma ferramenta que ajuda a praticar sua comunicação, pronúncia e discurso profissional para se preparar antes de uma reunião importante." },
+      { q: "Preciso de um nível mínimo de inglês?", a: "Sim, o MasteryTalk.pro é para profissionais que já têm uma base (B1+) e precisam usar o inglês como ferramenta de trabalho. Não ensinamos a conjugar verbos, ensinamos a fechar negócios." },
       { q: "O que acontece com a privacidade dos meus documentos?", a: "Suas notas e apresentações são processadas de forma segura e privada. São utilizadas apenas para configurar sua sessão de prática e melhorar seu roteiro." },
-      { q: "Como se diferencia de um professor particular?", a: "Um professor corrige seu inglês e custa USD $25 por sessão; o inFluentia PRO ajuda a melhorar sua pronúncia e forma de se comunicar profissionalmente para elevar seu nível. Além disso, estamos disponíveis 24/7 para aquela reunião de emergência que surgiu de improviso." },
+      { q: "Como se diferencia de um professor particular?", a: "Um professor corrige seu inglês e custa USD $25 por sessão; o MasteryTalk.pro ajuda a melhorar sua pronúncia e forma de se comunicar profissionalmente para elevar seu nível. Além disso, estamos disponíveis 24/7 para aquela reunião de emergência que surgiu de improviso." },
       { q: "Posso usar para entrevistas de trabalho específicas?", a: "Totalmente. Você pode carregar a descrição da vaga (Job Description) e a IA atuará como o recrutador específico daquela empresa." },
       { q: "Quanto tempo preciso praticar para ver resultados?", a: "A maioria dos usuários relata mais confiança após 3-5 sessões. Para consolidar uma mudança real na comunicação profissional, recomendamos 90 dias de prática regular — até 15 minutos por dia fazem diferença." },
-      { q: "Posso cancelar a qualquer momento?", a: "Não há assinatura para cancelar. Você compra créditos de sessão e usa quando quiser — sem compromissos mensais, sem cobranças recorrentes, sem complicações. Seus créditos não expiram." },
+      { q: "Posso cancelar a qualquer momento?", a: "Não há assinatura para cancelar. Você compra um Learning Path uma vez e tem acesso permanente — sem compromissos mensais, sem cobranças recorrentes. Seu acesso nunca expira." },
     ],
   },
   finalCta: {
@@ -724,7 +722,7 @@ export const PT: LandingCopy = {
       { title: "Empresa", items: ["Sobre nós", "Blog", "Contato"] },
       { title: "Legal", items: ["Privacidade", "Termos", "Cookies"] },
     ],
-    copyright: "© 2026 inFluentia PRO. Todos os direitos reservados.",
+    copyright: "© 2026 MasteryTalk.pro. Todos os direitos reservados.",
     dashboardLink: "Ir ao dashboard",
   },
   auth: {
@@ -856,7 +854,7 @@ export const EN: LandingCopy = {
     headline: "Rehearse your high-stakes conversations before they happen.",
     subheadline: "Win Contracts. Work Remotely. Expand Your Reach.",
     trustBadges: ["1st session free", "No credit card", "No subscription"],
-    socialProof: "already train with inFluentia PRO",
+    socialProof: "already train with MasteryTalk.pro",
     socialProofHighlight: "500+ professionals",
   },
   widget: {
@@ -912,8 +910,8 @@ export const EN: LandingCopy = {
     },
   },
   benefits: {
-    sectionTitle: "Is inFluentia PRO for you?",
-    sectionSubtitle: "inFluentia PRO isn't for everyone. It's for ambitious professionals.",
+    sectionTitle: "Is MasteryTalk.pro for you?",
+    sectionSubtitle: "MasteryTalk.pro isn't for everyone. It's for ambitious professionals.",
     yesTitle: "It's for you if...",
     yesList: [
       "You need to make an impact in professional presentations",
@@ -935,8 +933,8 @@ export const EN: LandingCopy = {
   },
   beforeAfter: {
     sectionTitle: "Before & After",
-    sectionSubtitle: "How inFluentia PRO transforms your professional conversations",
-    withTitle: "With inFluentia PRO",
+    sectionSubtitle: "How MasteryTalk.pro transforms your professional conversations",
+    withTitle: "With MasteryTalk.pro",
     withList: [
       "You've rehearsed it 10 times",
       "You know every possible question and objection",
@@ -964,24 +962,23 @@ export const EN: LandingCopy = {
   },
   pricing: {
     sectionTitle: "Invest in your competitive edge",
-    sectionSubtitle: "Practice interviews and sales conversations with advanced AI.\n1st session free. Then pay only when you need it.",
+    sectionSubtitle: "Practice interviews and sales conversations with advanced AI.\n1st demo session free. Then permanent access per Learning Path.",
     freeSession: {
-      title: "1st Session Free",
+      title: "1st Demo Session",
       desc: "Experience the full session with no commitment",
       features: ["Full AI simulation", "Feedback + Personalized script", "Detailed session feedback", "No credit card required"],
       button: "Start free",
     },
-    packs: [
-      { name: "1 Session", sessions: 1, price: "$4.99", perSession: "$4.99", button: "Buy", features: ["Full session with GPT-4o", "Deep feedback", "Editable optimized script", "Shadowing with scoring"] },
-      { name: "3 Sessions", sessions: 3, price: "$12.99", perSession: "$4.33", discount: "13%", button: "Buy pack", features: ["Everything in 1 session", "Save $2.00", "Ideal for thorough prep", "SR cards generated"] },
-      { name: "5 Sessions", sessions: 5, price: "$19.99", perSession: "$4.00", discount: "20%", featured: true, button: "Buy pack", features: ["Everything in 1 session", "Save $5.00", "Best value", "SR cards generated"] },
+    paths: [
+      { name: "1 Learning Path", sessions: 12, price: "$24.99", perSession: "$2.08", button: "Get access", features: ["12 unique sessions with GPT-4o", "4 progressive AI-adaptive levels", "Permanent access — yours forever", "Deep feedback + Shadowing"] },
+      { name: "All-Access Bundle", sessions: 60, price: "$59.99", perSession: "$1.00", discount: "52%", featured: true, button: "Get everything", features: ["All 5 Learning Paths", "60 unique sessions total", "Best value for your investment", "Lifetime access"] },
     ],
     freeTrialNote: "Try your first session completely free — no credit card, no commitment",
     perSessionLabel: "per session",
     savingsLabel: "savings",
     statsBar: [
       { value: "10x", desc: "cheaper than in-person coaching" },
-      { value: "90%", desc: "margin to reinvest in your career" },
+      { value: "$2.08", desc: "per session — less than a coffee" },
       { value: "24/7", desc: "train whenever you need" },
     ],
   },
@@ -989,13 +986,13 @@ export const EN: LandingCopy = {
     sectionTitle: "Frequently Asked Questions",
     sectionSubtitle: "Everything you need to know before getting started",
     items: [
-      { q: "Is inFluentia PRO an English course?", a: "No. There are plenty of English courses and apps out there; if you need to learn the basics, we recommend using one of those. inFluentia PRO is a communication training tool that helps you rehearse your delivery, pronunciation, and professional discourse before an important meeting." },
-      { q: "Do I need a minimum English level?", a: "Yes. inFluentia PRO is built for professionals who already have a solid foundation (B1+) and need English as a work tool. We don't teach verb conjugation — we teach you how to close deals." },
+      { q: "Is MasteryTalk.pro an English course?", a: "No. There are plenty of English courses and apps out there; if you need to learn the basics, we recommend using one of those. MasteryTalk.pro is a communication training tool that helps you rehearse your delivery, pronunciation, and professional discourse before an important meeting." },
+      { q: "Do I need a minimum English level?", a: "Yes. MasteryTalk.pro is built for professionals who already have a solid foundation (B1+) and need English as a work tool. We don't teach verb conjugation — we teach you how to close deals." },
       { q: "What about the privacy of my documents?", a: "Your notes and presentations are processed securely and privately. They are only used to configure your practice session and improve your script." },
-      { q: "How is it different from a private tutor?", a: "A tutor corrects your grammar at ~$25/session. inFluentia PRO trains how you communicate professionally — your presence, structure, and persuasion. Plus, we're available 24/7 for that last-minute meeting that just popped up." },
+      { q: "How is it different from a private tutor?", a: "A tutor corrects your grammar at ~$25/session. MasteryTalk.pro trains how you communicate professionally — your presence, structure, and persuasion. Plus, we're available 24/7 for that last-minute meeting that just popped up." },
       { q: "Can I use it for specific job interviews?", a: "Absolutely. You can provide the job description and the AI will act as that company's specific recruiter." },
       { q: "How long do I need to practice to see results?", a: "Most users report increased confidence after 3–5 sessions. For lasting change in professional communication, we recommend 90 days of regular practice — even 15 minutes a day makes a difference." },
-      { q: "Can I cancel anytime?", a: "There's no subscription to cancel. You buy session credits and use them whenever you want — no monthly commitments, no recurring charges, no hassle. Your credits never expire." },
+      { q: "Can I cancel anytime?", a: "There's no subscription to cancel. You buy a Learning Path once and get permanent access — no monthly commitments, no recurring charges. Your access never expires." },
     ],
   },
   finalCta: {
@@ -1012,7 +1009,7 @@ export const EN: LandingCopy = {
       { title: "Company", items: ["About Us", "Blog", "Contact"] },
       { title: "Legal", items: ["Privacy", "Terms", "Cookies"] },
     ],
-    copyright: "© 2026 inFluentia PRO. All rights reserved.",
+    copyright: "© 2026 MasteryTalk.pro. All rights reserved.",
     dashboardLink: "Go to dashboard",
   },
   auth: {

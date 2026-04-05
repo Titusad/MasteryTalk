@@ -186,9 +186,11 @@ export async function getAuthToken(): Promise<string> {
 export interface ProfileRow {
   id: string;
   market_focus: "mexico" | "colombia" | null;
-  plan: "free" | "per-session";
-  plan_status: "active" | "trial" | "expired";
-  free_session_used: boolean;
+  plan: "free" | "path";
+  /** ScenarioType[] — scenarios where demo session was used */
+  free_sessions_used: string[];
+  /** ScenarioType[] — purchased paths (permanent access) */
+  paths_purchased: string[];
   stats: {
     sessions_count?: number;
     avg_score?: number;
@@ -254,7 +256,7 @@ export interface AuditLogRow {
   created_at: string;
 }
 
-/** Credit purchase record (pay-per-session MVP) */
+/** @deprecated v9.0 — Credit pack model replaced by path_purchases */
 export interface CreditPurchaseRow {
   id: string;
   user_id: string;
@@ -267,11 +269,37 @@ export interface CreditPurchaseRow {
   created_at: string;
 }
 
-/** Credit balance (denormalized, updated by triggers) */
+/** @deprecated v9.0 — Credit balance model replaced by path access */
 export interface CreditBalanceRow {
   user_id: string;
   credits_remaining: number;
   credits_total_purchased: number;
   last_purchase_at: string | null;
   updated_at: string;
+}
+
+/** v9.0: Path purchase record */
+export interface PathPurchaseRow {
+  id: string;
+  user_id: string;
+  purchase_type: "single_path" | "all_access" | "booster";
+  scenario_type: string | null;
+  amount_usd: number;
+  payment_provider: "mercadopago" | "stripe";
+  payment_id: string | null;
+  status: "pending" | "approved" | "rejected";
+  created_at: string;
+}
+
+/** v9.0: Level progress within a Learning Path */
+export interface PathLevelProgressRow {
+  id: string;
+  user_id: string;
+  scenario_type: string;
+  level_id: string;
+  fresh_attempts: number;
+  best_session_id: string | null;
+  status: "locked" | "unlocked" | "completed";
+  completed_at: string | null;
+  created_at: string;
 }

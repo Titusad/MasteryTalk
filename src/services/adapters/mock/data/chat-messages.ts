@@ -255,7 +255,7 @@ const CHAT_MESSAGES_BY_SCENARIO: Record<string, ChatMessage[]> = {
       role: "ai",
       label: "VP of Partnerships",
       time: "17:30",
-      text: "Hey! I noticed your badge says inFluentia. I'm Sarah, VP of Partnerships at CloudScale. What's inFluentia all about? I don't think I've heard of you guys yet.",
+      text: "Hey! I noticed your badge says MasteryTalk. I'm Sarah, VP of Partnerships at CloudScale. What's MasteryTalk all about? I don't think I've heard of you guys yet.",
     },
     {
       role: "ai",
@@ -571,10 +571,10 @@ const TRY_SAYING_BY_SCENARIO: Record<string, TrySayingSuggestion[]> = {
     { trigger: ["creative", "works for me", "CFO", "paperwork", "proposal", "run the numbers"], starter: "Perfect. I'll have the updated proposal with the two-year terms and premium tier details in your inbox by end of day. I'll also include a one-page ROI summary your CFO can review quickly...", why: "Lock in momentum" },
   ],
   networking: [
-    { trigger: ["what's", "all about", "heard of you", "badge"], starter: "Great to meet you, Sarah! inFluentia is AI-powered communication coaching — we help LATAM professionals master executive conversations in English. Think of it as a personal presentation coach that's available 24/7...", why: "Value prop + memorable hook" },
+    { trigger: ["what's", "all about", "heard of you", "badge"], starter: "Great to meet you, Sarah! MasteryTalk is AI-powered communication coaching — we help LATAM professionals master executive conversations in English. Think of it as a personal presentation coach that's available 24/7...", why: "Value prop + memorable hook" },
     { trigger: ["fascinating", "tell me more", "how does", "coaching actually work", "language training"], starter: "It goes way beyond language. We simulate real business scenarios — sales pitches, board presentations, negotiations — and give real-time feedback on executive presence, not just grammar. Our clients see a 35% improvement in deal close rates...", why: "Differentiate + quantify impact" },
     { trigger: ["measuring", "impact", "workshops", "fortune", "spending"], starter: "Our clients track three metrics: deal close rates, promotion velocity, and self-reported confidence scores. One enterprise client replaced their $200K annual workshop program with us and saw better results in 90 days...", why: "ROI speaks louder than features" },
-    { trigger: ["case study", "card", "send that", "call next week", "impressive"], starter: "I'd love that. Let me send you the LATAM SaaS expansion case study by Tuesday — and I'll include a quick analysis of how inFluentia could fit your partnership team's needs. How about coffee Wednesday?", why: "Specific follow-up beats vague promises" },
+    { trigger: ["case study", "card", "send that", "call next week", "impressive"], starter: "I'd love that. Let me send you the LATAM SaaS expansion case study by Tuesday — and I'll include a quick analysis of how MasteryTalk could fit your partnership team's needs. How about coffee Wednesday?", why: "Specific follow-up beats vague promises" },
   ],
 };
 

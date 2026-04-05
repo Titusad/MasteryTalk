@@ -16,7 +16,7 @@ const PREFIX = "influentia_cache_";
 const TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 /* ── Simple hash for scenario-based keys ── */
-function simpleHash(str: string): string {
+export function simpleHash(str: string): string {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
         const chr = str.charCodeAt(i);

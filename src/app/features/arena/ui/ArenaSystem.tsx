@@ -131,24 +131,24 @@ const PHASE_CONFIG: Record<
   }
 > = {
   support: {
-    label: "Support",
-    sublabel: "AI guides you with suggestions",
+    label: "Training Wheels",
+    sublabel: "I'll be right here guiding you",
     icon: Shield,
     color: "#2563eb",
     bg: "rgba(37,99,235,0.08)",
     border: "rgba(37,99,235,0.15)",
   },
   guidance: {
-    label: "Guidance",
-    sublabel: "Less help, more strategy",
+    label: "Getting Sharper",
+    sublabel: "Less hand-holding, more you",
     icon: Zap,
     color: "#d97706",
     bg: "rgba(217,119,6,0.08)",
     border: "rgba(217,119,6,0.15)",
   },
   challenge: {
-    label: "Challenge",
-    sublabel: "Show your professional level",
+    label: "Game Day",
+    sublabel: "Show me what you've got",
     icon: Swords,
     color: "#7c3aed",
     bg: "rgba(124,58,237,0.08)",
@@ -193,12 +193,12 @@ export function PhaseIndicator({ phase }: { phase: ArenaPhase }) {
 const TRANSITION_MESSAGES: Record<ArenaPhase, { title: string; desc: string }> = {
   support: { title: "", desc: "" }, // No toast for initial phase
   guidance: {
-    title: "Your confidence is growing",
-    desc: "Stepping up the challenge — fewer hints, more strategy",
+    title: "You're leveling up",
+    desc: "Less hints this time — you're ready for it",
   },
   challenge: {
-    title: "You're ready for the real thing",
-    desc: "Full professional mode — show what you've got",
+    title: "Boss mode unlocked 🔓",
+    desc: "No safety net. Let's see the real you.",
   },
 };
 

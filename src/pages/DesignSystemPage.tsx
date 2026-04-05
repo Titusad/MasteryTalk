@@ -219,7 +219,7 @@ export function DesignSystemPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
-            inFluentia PRO{" "}
+            MasteryTalk.pro{" "}
             <span style={{ fontWeight: 600 }}>Design System</span>
           </motion.h1>
 
@@ -1671,7 +1671,7 @@ export function DesignSystemPage() {
         <div className="max-w-6xl mx-auto px-6 text-center">
           <BrandLogo />
           <p className="text-sm text-[#4B505B] mt-4">
-            Design System v3.0 — Referencia interna para inFluentia PRO
+            Design System v3.0 — Referencia interna para MasteryTalk.pro
           </p>
         </div>
       </footer>

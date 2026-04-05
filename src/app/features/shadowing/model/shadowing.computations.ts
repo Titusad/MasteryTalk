@@ -16,6 +16,10 @@ export interface ShadowingPhrase {
   originalScore: number;
   problemWords: { word: string; score: number; errorType: string }[];
   turnIndex: number;
+  /** GPT-generated: words that carry primary lexical stress (for bold rendering) */
+  stressedWords?: string[];
+  /** GPT-generated: pairs of adjacent words that should link in speech */
+  linkedPairs?: [string, string][];
 }
 
 export interface DrillResult {
@@ -61,6 +65,69 @@ export function phonemesToIpa(
     .map((p) => PHONEME_IPA[p.phoneme.toLowerCase()] || p.phoneme.toLowerCase())
     .join("");
   return `/${ipa}/`;
+}
+
+/* ── Compute stressed words (content-word heuristic) ── */
+
+const FUNCTION_WORDS = new Set([
+  "a", "an", "the", "is", "am", "are", "was", "were", "be", "been", "being",
+  "have", "has", "had", "do", "does", "did", "will", "would", "shall", "should",
+  "may", "might", "must", "can", "could", "to", "of", "in", "for", "on", "with",
+  "at", "by", "from", "as", "into", "through", "during", "before", "after",
+  "and", "but", "or", "nor", "not", "so", "yet", "both", "either", "neither",
+  "i", "me", "my", "we", "us", "our", "you", "your", "he", "him", "his",
+  "she", "her", "it", "its", "they", "them", "their", "this", "that", "these",
+  "those", "who", "whom", "which", "what", "if", "then", "than", "when",
+  "where", "how", "all", "each", "every", "some", "any", "no", "just",
+  "about", "also", "very", "much", "more", "most", "such", "even",
+]);
+
+export function computeStressedWords(sentence: string): string[] {
+  return sentence
+    .split(/\s+/)
+    .map((w) => w.replace(/[.,!?;:'"()]/g, ""))
+    .filter((w) => w.length >= 3 && !FUNCTION_WORDS.has(w.toLowerCase()));
+}
+
+/* ── Compute linked pairs (consonant→vowel at word boundaries) ── */
+
+const VOWELS = new Set(["a", "e", "i", "o", "u"]);
+
+export function computeLinkedPairs(sentence: string): [string, string][] {
+  const words = sentence.split(/\s+/).map((w) => w.replace(/[.,!?;:'"()]/g, ""));
+  const pairs: [string, string][] = [];
+  for (let i = 0; i < words.length - 1; i++) {
+    const a = words[i].toLowerCase();
+    const b = words[i + 1].toLowerCase();
+    if (!a || !b) continue;
+    const lastChar = a[a.length - 1];
+    const firstChar = b[0];
+    // Link when: consonant→vowel, same consonant, or vowel→vowel
+    const endsConsonant = !VOWELS.has(lastChar);
+    const startsVowel = VOWELS.has(firstChar);
+    if ((endsConsonant && startsVowel) || lastChar === firstChar) {
+      pairs.push([words[i], words[i + 1]]);
+    }
+  }
+  return pairs;
+}
+
+/* ── Build full phrase IPA from Azure word phonemes ── */
+
+import type { AzureWordAssessment } from "@/services/types";
+
+export function buildPhraseIpa(azureWords: AzureWordAssessment[]): string {
+  const wordIpas = azureWords
+    .filter((w) => w.phonemes && w.phonemes.length > 0 && w.errorType !== "Omission")
+    .map((w) => {
+      const raw = w.phonemes
+        .map((p) => PHONEME_IPA[p.phoneme.toLowerCase()] || p.phoneme.toLowerCase())
+        .join("");
+      return raw;
+    })
+    .filter(Boolean);
+  if (wordIpas.length === 0) return "";
+  return `/${wordIpas.join(" ")}/`;
 }
 
 /* ── Stress syllable detection ── */
@@ -168,14 +235,23 @@ export function extractShadowingPhrases(
 
     sentenceToPractice = cleanTranscription(sentenceToPractice);
 
+    const finalSentence = sentenceToPractice.trim();
+
+    // Compute rich annotations from Azure data + heuristics
+    const stressedWords = computeStressedWords(finalSentence);
+    const linkedPairs = computeLinkedPairs(finalSentence);
+    const phraseIpa = buildPhraseIpa(words);
+
     phrases.push({
       id: `shadowing-t${turn.turnIndex}`,
-      sentence: sentenceToPractice.trim(),
+      sentence: finalSentence,
       focusWord: focusWordData.word.toLowerCase(),
-      ipa,
+      ipa: phraseIpa || ipa, // prefer full phrase IPA, fallback to focus word
       originalScore: accuracyScore,
       problemWords,
       turnIndex: turn.turnIndex,
+      stressedWords,
+      linkedPairs,
     });
   }
 

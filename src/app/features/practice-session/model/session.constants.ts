@@ -6,7 +6,7 @@ import type { UserPlan } from "../../../../services/types";
 
 export const MAX_REPEATS: Record<UserPlan, number> = {
   free: 1,
-  "per-session": 2,
+  path: 3,
 };
 
 export const SCENARIO_LABELS_MAP: Record<string, string> = {

@@ -14,7 +14,7 @@ export function MiniFooter({ light = false }: { light?: boolean }) {
                     className={`text-xs ${light ? "text-white/40" : "text-[#4b5563]"
                         }`}
                 >
-                    © 2026 inFluentia PRO
+                    © 2026 MasteryTalk.pro
                 </span>
             </div>
         </footer>

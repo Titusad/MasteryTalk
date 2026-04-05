@@ -353,27 +353,105 @@ export interface SRSessionResult {
   nextInterval: string;
 }
 
-/* ── Payment ── */
+/* ── Payment — Learning Path model (v9.0) ── */
 
-/** MVP pay-per-session credit packs */
-export type CreditPack = "session_1" | "session_3" | "session_5";
+/** v9.0: Purchase types for Learning Path model */
+export type PurchaseType = "single_path" | "all_access" | "booster";
 
-export const CREDIT_PACK_DETAILS: Record<CreditPack, { sessions: number; price: number; perSession: number; discount: number }> = {
-  session_1: { sessions: 1, price: 4.99, perSession: 4.99, discount: 0 },
-  session_3: { sessions: 3, price: 12.99, perSession: 4.33, discount: 13 },
-  session_5: { sessions: 5, price: 19.99, perSession: 4.00, discount: 20 },
-};
+/** Learning Path product catalog */
+export const PATH_PRODUCTS = {
+  single_path: {
+    type: "single_path" as PurchaseType,
+    price: 24.99,
+    label: "Learning Path",
+    perSession: 2.08,
+    sessionsIncluded: 12,
+    description: "4 levels × 3 sessions + unlimited review",
+  },
+  all_access: {
+    type: "all_access" as PurchaseType,
+    price: 59.99,
+    label: "All-Access Bundle",
+    perPath: 12.00,
+    pathsIncluded: 5,
+    description: "All 5 Learning Paths — permanent access",
+  },
+  booster: {
+    type: "booster" as PurchaseType,
+    price: 4.99,
+    label: "Booster Pack",
+    sessionsIncluded: 3,
+    description: "+3 fresh sessions for any level",
+  },
+} as const;
+
+/** Details for creating a checkout */
+export interface PurchaseDetails {
+  type: PurchaseType;
+  /** ScenarioType — required for single_path, optional for all_access */
+  scenarioType?: string;
+  /** Level to boost — required for booster */
+  levelId?: string;
+}
 
 export interface CheckoutResult {
   checkoutUrl: string;
   checkoutId: string;
 }
 
+/** v9.0 replaces SubscriptionInfo — represents the user's path access state */
+export interface PathAccessInfo {
+  plan: UserPlan;
+  /** Paths the user has purchased (ScenarioType[]) */
+  pathsPurchased: string[];
+  /** Whether user has all-access bundle */
+  hasAllAccess: boolean;
+}
+
+/** Progress tracking for a single level within a path */
+export interface PathLevelProgress {
+  scenarioType: string;
+  levelId: string;
+  /** Fresh attempts consumed (max 3) */
+  freshAttempts: number;
+  /** Best session ID for review mode */
+  bestSessionId: string | null;
+  status: "locked" | "unlocked" | "completed";
+  completedAt: string | null;
+}
+
+/** Dashboard status for a scenario's Learning Path */
+export type PathStatus =
+  | "not-started"
+  | "demo-completed"
+  | "purchased"
+  | "in-progress"
+  | "completed";
+
+/** Access info for a specific level (computed from PathLevelProgress) */
+export interface PathLevelAccess {
+  scenarioType: string;
+  levelId: string;
+  freshAttempts: number;
+  freshAttemptsRemaining: number;
+  bestSessionId: string | null;
+  status: "locked" | "unlocked" | "completed";
+}
+
+// ── Deprecated v7.0 types (kept temporarily for backward compat) ──
+/** @deprecated v9.0 — use PurchaseType instead */
+export type CreditPack = "session_1" | "session_3" | "session_5";
+/** @deprecated v9.0 — use PATH_PRODUCTS instead */
+export const CREDIT_PACK_DETAILS: Record<CreditPack, { sessions: number; price: number; perSession: number; discount: number }> = {
+  session_1: { sessions: 1, price: 4.99, perSession: 4.99, discount: 0 },
+  session_3: { sessions: 3, price: 12.99, perSession: 4.33, discount: 13 },
+  session_5: { sessions: 5, price: 19.99, perSession: 4.00, discount: 20 },
+};
+/** @deprecated v9.0 — use PathAccessInfo instead */
 export interface SubscriptionInfo {
   plan: UserPlan;
   status: "active" | "cancelled" | "past_due" | "none";
   currentPeriodEnd?: string;
-  /** Number of session credits remaining (pay-per-session model) */
   creditsRemaining: number;
 }
 

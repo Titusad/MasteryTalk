@@ -29,12 +29,13 @@ const AdminDashboardPage = lazyRetry(() => import("../pages/AdminDashboardPage")
 import { LoadingScreen } from "./components/LoadingScreen";
 import { LanguageTransitionModal } from "./components/LanguageTransitionModal";
 import { authService } from "../services";
-import type { User, OnboardingProfile, ScenarioType, CreditPack, SessionSummary, TurnPronunciationData, ScriptSection, InterviewBriefingData } from "../services/types";
+import type { User, OnboardingProfile, ScenarioType, SessionSummary, TurnPronunciationData, ScriptSection, InterviewBriefingData } from "../services/types";
 import type { SetupModalResult } from "@/pages/landing/PracticeWidget";
 // AnimatePresence removed — was causing modal to linger during exit animation
 // when auth re-renders interrupted the exit. Direct unmount is bulletproof.
 import type { LandingLang } from "@/shared/i18n/landing-i18n";
-import { CreditUpsellModal } from "@/widgets/CreditUpsellModal";
+import { PathPurchaseModal } from "@/widgets/PathPurchaseModal";
+import type { PurchaseType } from "../services/types";
 import { useUsageGating } from "./hooks/useUsageGating";
 import type { MarketFocus } from "../services/prompts";
 import { projectId } from "../../utils/supabase/info";
@@ -209,8 +210,9 @@ export default function App() {
       if (optionId.includes("extra-context")) step = "extra-context";
       else if (optionId.includes("generating-script")) step = "generating-script";
       else if (optionId.includes("pre-briefing")) step = "pre-briefing";
-      else if (optionId.includes("conversation-feedback")) step = "conversation-feedback";
-      else if (optionId.includes("session-recap")) step = "session-recap";
+      else if (optionId.includes("conversation-feedback")) step = "interview-analysis";
+      else if (optionId.includes("session-recap")) step = "interview-analysis";
+      else if (optionId.includes("interview-analysis")) step = "interview-analysis";
 
       setFlowState({
         scenario: isInterview
@@ -533,8 +535,8 @@ export default function App() {
   };
 
   const handlePracticeFinish = () => {
-    // Mark free session as used when finishing a practice
-    usageGating.markFreeSessionUsed();
+    // v9.0: Mark demo session as used for this scenario
+    usageGating.markDemoSessionUsed(flowState.scenarioType || "interview");
     setPage("dashboard");
     window.location.hash = "#dashboard";
   };
@@ -750,23 +752,24 @@ export default function App() {
             />
           )}
 
-          {/* New-session paywall modal */}
-          <CreditUpsellModal
+          {/* v9.0: PathPurchaseModal for new-session paywall */}
+          <PathPurchaseModal
             open={showNewSessionPaywall}
+            scenarioType={flowState.scenarioType || "interview"}
+            paywallReason="path-required"
             onClose={() => {
               setShowNewSessionPaywall(false);
               pendingNewSessionRef.current = null;
             }}
-            onPurchaseComplete={(_pack: CreditPack, creditsAdded: number) => {
-              usageGating.addCredits(creditsAdded);
+            onPurchaseComplete={(purchaseType: PurchaseType) => {
+              usageGating.addPurchasedPath(flowState.scenarioType || "interview");
+              if (purchaseType === "all_access") {
+                usageGating.addAllAccess();
+              }
               setShowNewSessionPaywall(false);
-              // After purchase, proceed to new session
               pendingNewSessionRef.current?.();
               pendingNewSessionRef.current = null;
             }}
-            paywallReason="new-session"
-            creditsRemaining={usageGating.credits}
-            lang={landingLang}
           />
         </Suspense>
 

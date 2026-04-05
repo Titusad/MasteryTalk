@@ -9,11 +9,14 @@
 
 export type Step =
   | "key-experience"
+  | "cv-upload"
   | "extra-context"
   | "generating-script"
   | "pre-briefing"
   | "practice"
   | "analyzing"
+  | "interview-analysis"
+  | "path-conversion"
   | "conversation-feedback"
   | "skill-drill"
   | "cp-unlock"
