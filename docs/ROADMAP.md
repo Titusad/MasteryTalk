@@ -40,11 +40,17 @@
 - [x] **Sprint 4 (`widgets`):** Refactor `SessionReport`, `CreditUpsellModal`, and `InterviewBriefingScreen` to use new feature paths and ensure they compose correctly.
 - [x] **Sprint 5 (`pages` & `app` completion):** Moved hooks (`useMediaRecorder`, `useUsageGating`, `useServiceCall`) to `shared/hooks/`, utils (`sessionCache`, `spacedRepetition`, `cheatSheetPdf`) to `shared/lib/`, updated 25+ import paths across features/widgets/pages, deleted backward-compat shim `app/components/shared/`. Zero cross-layer `@/app/` violations remain.
 
-### 1.1 Landing Page Overhaul 🔄
+### 1.1 UX Audit Fixes & Accessibility ♿
+- [ ] Fix color contrast issues
+- [ ] Add missing aria-labels to interactive elements
+- [ ] Resolve any TailwindCSS class conflicts
+
+### 1.2 Landing Page Overhaul 🔄
 - [ ] Update copy to reflect current product positioning (MasteryTalk PRO, not inFluentia)
 - [ ] Restructure sections for clearer value proposition flow
 - [ ] Ensure hero CTA → demo flow is frictionless
 - [ ] Verify pricing section consistency with PRODUCT_SPEC §6
+- [ ] Fix SEO: Add OpenGraph metadata, Twitter Cards, and canonical links
 
 ### 1.2 User Dashboard Redesign 🔄
 - [ ] Reorganize dashboard layout and information hierarchy

@@ -1,24 +1,7 @@
 import { SUPABASE_URL } from "@/services/supabase";
 import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import { LandingPage } from "@/pages/landing/LandingPage";
-/* ── Stale-chunk recovery for React.lazy after Vercel deploys ──
-   On chunk 404, the URL is baked into the cached index.js — retrying
-   the same URL won't help. A page reload fetches the new index.js
-   with updated chunk hashes. The 10s cooldown prevents infinite loops. */
-function lazyRetry(factory: () => Promise<any>) {
-  return lazy(() =>
-    factory().catch((err: any) => {
-      const lastReload = Number(sessionStorage.getItem("chunk_reload_ts") || "0");
-      if (Date.now() - lastReload > 10_000) {
-        sessionStorage.setItem("chunk_reload_ts", String(Date.now()));
-        window.location.reload();
-        return new Promise(() => {}); // never resolves — reload takes over
-      }
-      throw err; // already reloaded recently — let ErrorBoundary handle it
-    })
-  );
-}
+const LandingPage = lazyRetry(() => import("@/pages/landing/LandingPage").then(m => ({ default: m.LandingPage })));
 const DesignSystemPage = lazyRetry(() => import("../pages/DesignSystemPage").then(m => ({ default: m.DesignSystemPage })));
 const PracticeSessionPage = lazyRetry(() => import("../pages/PracticeSessionPage").then(m => ({ default: m.PracticeSessionPage })));
 const DashboardPage = lazyRetry(() => import("@/features/dashboard/ui/DashboardPage").then(m => ({ default: m.DashboardPage })));

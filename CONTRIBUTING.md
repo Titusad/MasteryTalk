@@ -42,6 +42,7 @@ app → pages → widgets → features → entities → shared
 - Las capas superiores importan de las inferiores. **Nunca al revés.**
 - `features/` nunca importa de otros `features/`.
 - `shared/` tiene **cero** dependencias de capas superiores.
+- **Rendimiento SPA:** Todas las Páginas (capa `pages/` de nivel superior expuestas en `App.tsx`) deben importarse **estrictamente** usando `React.lazy()` (o el helper `lazyRetry` actual) para mantener el Code Splitting. Nunca usar imports estáticos para rutas enteras.
 
 ### Regla de oro para migraciones
 

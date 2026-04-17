@@ -13,6 +13,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 vi.mock("../../../supabase", () => ({
   getAuthToken: vi.fn().mockResolvedValue("mock-jwt-token-123"),
+  SUPABASE_URL: "https://test.supabase.co",
 }));
 
 vi.mock("../../../../../../utils/supabase/info", () => ({

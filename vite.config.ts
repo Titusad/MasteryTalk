@@ -30,7 +30,7 @@ export default defineConfig({
   // ── Test configuration ──
   test: {
     globals: true,
-    environment: 'happy-dom',
+    environment: 'node',
     include: ['src/**/__tests__/**/*.test.{ts,tsx}'],
     setupFiles: [],
   },
