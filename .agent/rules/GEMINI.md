@@ -118,17 +118,18 @@ When user's prompt is NOT in English:
 - **Performance**: Measure first. Adhere to 2025 standards (Core Web Vitals).
 - **Infra/Safety**: 5-Phase Deployment. Verify secrets security.
 
-### 📁 File Dependency Awareness
+### File Dependency Awareness
 
 **Before modifying ANY file:**
 
-1. Check `CODEBASE.md` → File Dependencies
-2. Identify dependent files
-3. Update ALL affected files together
+1. Check `CONTRIBUTING.md` → Architecture & conventions
+2. Check `docs/DESIGN_SYSTEM.md` → UI rules (if UI change)
+3. Identify dependent files
+4. Update ALL affected files together
 
-### 🗺️ System Map Read
+### System Map Read
 
-> 🔴 **MANDATORY:** Read `ARCHITECTURE.md` at session start to understand Agents, Skills, and Scripts.
+> **MANDATORY:** At session start, read `CONTRIBUTING.md` and `ARCHITECTURE.md` to understand project structure, conventions, and documentation links.
 
 **Path Awareness:**
 
@@ -264,10 +265,14 @@ When user's prompt is NOT in English:
 - **Test**: `playwright_runner.py`, `test_runner.py`
 ---
 
-## 🏗️ PROJECT CONTEXT
+## PROJECT CONTEXT
 > **MANDATORY:** Read `.agent/skills/masterytalk-context/SKILL.md` before
 > ANY task in this project. It contains P0-level rules that override
 > skill defaults: Component Registry, Design System, Business Model,
-> Confirmation Protocol,and FSD Architecture
-
-
+> Confirmation Protocol, and FSD Architecture.
+>
+> **Also read:**
+> - `CONTRIBUTING.md` — Working rules, Git conventions, session protocol
+> - `docs/DESIGN_SYSTEM.md` — Visual design rules
+> - `docs/PRODUCT_SPEC.md` — Product specification
+> - `docs/ROADMAP.md` — Current priorities

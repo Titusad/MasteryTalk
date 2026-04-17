@@ -1,6 +1,21 @@
-# Ignore
+# Dependencies
 node_modules/
+
+# Environment
+.env
+.env.local
+.env.*.local
+supabase/.env.local
+
+# Build
+dist/
+
+# Agent temp
 .temp_ag_kit/
-antigravity-doc
-tests
-others
+
+# OS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/

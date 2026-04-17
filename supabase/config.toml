@@ -1,0 +1,11 @@
+project_id = "zkuryztcwmazspscomiu"
+
+# Edge Function: JWT verification is disabled at the Kong gateway level because
+# Supabase now issues ES256 (asymmetric) JWTs for user sessions, while Kong only
+# validates HS256. The function performs its own auth verification internally via
+# supabase.auth.getUser() in the getAuthUser() helper, which supports ES256 natively.
+[functions.make-server-08b8658d]
+verify_jwt = false
+
+[functions.evaluate-drill]
+verify_jwt = false
