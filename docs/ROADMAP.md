@@ -40,6 +40,13 @@
 - [x] **Sprint 4 (`widgets`):** Refactor `SessionReport`, `CreditUpsellModal`, and `InterviewBriefingScreen` to use new feature paths and ensure they compose correctly.
 - [x] **Sprint 5 (`pages` & `app` completion):** Moved hooks (`useMediaRecorder`, `useUsageGating`, `useServiceCall`) to `shared/hooks/`, utils (`sessionCache`, `spacedRepetition`, `cheatSheetPdf`) to `shared/lib/`, updated 25+ import paths across features/widgets/pages, deleted backward-compat shim `app/components/shared/`. Zero cross-layer `@/app/` violations remain.
 
+### 1.0.1 Recovery & UI Consolidation 🚨
+> **Goal:** Fix critical regressions post-FSD and unify fragmented UI components before progressing.
+- [ ] **Hotfix:** Restore Practice Session Flow (Stepper missing, progression broken).
+- [ ] **Component Inventory:** Audit and consolidate scattered Layouts.
+- [ ] **Component Inventory:** Consolidate 4+ Headers into a single polymorhphic `AppHeader`.
+- [ ] **Deep QA:** Manual localhost QA to catch any remaining phantom bugs.
+
 ### 1.1 UX Audit Fixes & Accessibility ♿
 - [x] Fix color contrast issues
 - [x] Add missing aria-labels to interactive elements
@@ -60,6 +67,11 @@
 - [ ] Ensure purchased vs locked states are visually clear
 
 ### 1.3 Stripe → Live Mode
+- [ ] **Debug todos los journeys de pago (test mode):**
+  - Verificar que `STRIPE_SECRET_KEY`, `STRIPE_PRICE_FIRST_PATH`, `STRIPE_PRICE_PATH`, `STRIPE_WEBHOOK_SECRET` estén seteados en Supabase Secrets
+  - Journey A: `PathConversionScreen` existe pero `setStep("path-conversion")` nunca se llama — CTA post-demo no funciona
+  - Journey B/D: `POST /create-checkout` falla — revisar logs de Edge Function
+  - Journey C: `handlePurchaseComplete` en `DashboardPage` no refresca `authUser.pathsPurchased` — ownedPaths queda stale hasta recarga
 - [ ] Activate Stripe account (complete identity verification if pending)
 - [ ] Create **live** products + prices mirroring test ones ($4.99 / $16.99)
 - [ ] Set live secrets in Supabase: `STRIPE_SECRET_KEY`, `STRIPE_PRICE_FIRST_PATH`, `STRIPE_PRICE_PATH`

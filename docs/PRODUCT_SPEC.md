@@ -144,11 +144,89 @@ Journey D: Demo Session → Paywall → Modal (first purchase) → Stripe → Da
 
 ### §5.3 Post-Purchase Flow
 
-1. Stripe redirects to `/#/dashboard?payment=success&type={type}&scenario={scenario}`
-2. `PaymentSuccessHandler` waits for `authReady === true` before processing
-3. Shows success toast notification
-4. Refreshes user profile to update `pathsPurchased`
-5. Cleans URL to `/#/dashboard`
+1. Stripe redirects to `{origin}/#/dashboard?payment=success&session_id={CHECKOUT_SESSION_ID}&type={type}&scenario={scenario}`
+2. `PaymentSuccessHandler` (`src/shared/ui/PaymentSuccessHandler.tsx`) waits for `authReady === true` before processing
+3. Shows success toast notification (auto-dismiss 6s)
+4. Calls `onPaymentConfirmed()` → refreshes user profile from Supabase → updates `authUser.pathsPurchased`
+5. Syncs `usageGating.addPurchasedPath()` for each path in the refreshed profile
+6. Cleans URL to `/#/dashboard`
+
+> **Source of truth for `ownedPaths`:** Always `authUser.pathsPurchased` (from Supabase profile).
+> Never rely on `usageGating.purchasedPaths` (localStorage) for Mode A/B detection — it can be stale.
+
+### §5.4 Stripe Checkout Configuration
+
+**Frontend → Edge Function call:**
+
+```typescript
+// POST /create-checkout
+{
+  purchaseType: "first_path" | "path",
+  scenarioType: "interview" | "meeting" | "presentation"
+}
+// Returns: { checkoutUrl: string, checkoutId: string }
+```
+
+**Checkout Session settings (Edge Function):**
+
+| Setting | Value |
+|---------|-------|
+| `mode` | `"payment"` (one-time, no subscription) |
+| `payment_method_types` | `["card"]` |
+| `expires_at` | 30 minutes from creation |
+| `customer_email` | Pre-filled from `user.email` |
+| `success_url` | `{origin}/#/dashboard?payment=success&session_id={CHECKOUT_SESSION_ID}&type={purchaseType}&scenario={scenarioType}` |
+| `cancel_url` | `{origin}/#/dashboard?payment=cancelled` |
+
+**Metadata attached to the session (required by webhook):**
+
+```typescript
+metadata: {
+  userId: string,       // Supabase user UID
+  purchaseType: string, // "first_path" | "path"
+  scenarioType: string, // "interview" | "meeting" | "presentation"
+}
+```
+
+> ⚠️ If any metadata field is missing, the webhook logs a warning and returns 200
+> without updating the profile. The user pays but gets no access — silent failure.
+
+### §5.5 Webhook Contract
+
+**Endpoint:** `POST /make-server-08b8658d/webhook/stripe`
+**Auth:** None — validated via Stripe HMAC signature (`stripe-signature` header + `STRIPE_WEBHOOK_SECRET`)
+
+**Events handled:**
+
+| Event | Action |
+|-------|--------|
+| `checkout.session.completed` | Updates profile: adds `scenarioType` to `paths_purchased`, sets `plan = "path"` |
+| `checkout.session.expired` | Logged, no action |
+| All others | Acknowledged (200), not processed |
+
+**Profile update on `checkout.session.completed`:**
+
+1. Reads profile from Deno KV (`profile:{userId}`)
+2. Adds `scenarioType` to `paths_purchased` (idempotent — no duplicates)
+3. Sets `plan = "path"`, `plan_status = "active"`
+4. Writes back to Deno KV
+5. Also updates Supabase `profiles` table (non-blocking — failure logged but not fatal)
+6. Records purchase in KV (`purchase:{session.id}`)
+7. Sends confirmation email (fire-and-forget)
+
+> **Resilience note:** Deno KV is updated first. Supabase DB update is non-blocking.
+> If Supabase fails, KV is the fallback source. `GET /profile` reads from KV first.
+
+### §5.6 Entry Points to PathPurchaseModal
+
+All four entry points must pass `ownedPaths={authUser?.pathsPurchased ?? []}`:
+
+| Entry Point | File | Trigger |
+|-------------|------|---------|
+| Landing Pricing CTA (auth) | `App.tsx` → `showNewSessionPaywall` | `onPricingPurchase()` → `setShowNewSessionPaywall(true)` |
+| Landing Pricing CTA (no auth) | `LandingPage.tsx` → sessionStorage intent | `handlePricingClick()` → saves `influentia_purchase_intent` → post-OAuth → `setShowNewSessionPaywall(true)` |
+| Dashboard header badge | `DashboardPage.tsx` → `upsellOpen` | `onOpenUpsell()` |
+| In-session paywall | `PracticeSessionPage.tsx` → `paywallOpen` | `handlePaywallTriggered("path-required" \| "attempts-exhausted")` |
 
 ---
 

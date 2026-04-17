@@ -180,11 +180,12 @@ Esperar confirmación explícita antes de proceder.
 
 > **⚠️ REGLA CRÍTICA:** NUNCA asumas que una tarea está terminada sin actualizar los documentos y pedir permiso. La infracción de este protocolo es una falla severa.
 
-1. **Actualizar el ROADMAP:** Si se completó un hito, abre `ROADMAP.md` y marca la tarea con `[x]` INMEDIATAMENTE después de escribir el código.
-2. **Verificar:** Confirma que el código compila y los tests pasan (`pnpm run dev`).
-3. **Solicitar Autorización:** Muestra un resumen y pregunta explícitamente al usuario si tienes permiso para hacer commit en Git.
-4. **Pausa Obligatoria:** NO EJECUTES `git add`, `git commit` ni `git push` hasta que el usuario te responda con una afirmación explícita (ej. "Procede", "Haz el commit", "Sí").
-5. **Ejecutar Git:** Tras la autorización, haz commit usando Conventional Commits y push a `main`.
+1. **Test y Comprobación Manual (REGLA CRÍTICA):** Cuando consideres que la tarea terminó (especialmente en UI o Front), solicita PRIMERO al usuario que haga una prueba manual en su entorno (`localhost`). No des la tarea por completada hasta que el usuario confirme que funciona correctamente.
+2. **Actualizar el ROADMAP:** Tras recibir confirmación de que la prueba es exitosa, abre `ROADMAP.md` y marca la tarea con `[x]`.
+3. **Verificar Compilación:** Asegúrate de que no existen errores y los tests corren (`pnpm run dev`).
+4. **Solicitar Autorización:** Muestra un resumen de los cambios y pregunta si tienes permiso para hacer commit en Git.
+5. **Pausa Obligatoria:** NO EJECUTES comandos Git (`git add`, `git commit`, `git push`) hasta recibir el *Sí* explícito del usuario.
+6. **Ejecutar Git:** Haz commit usando Conventional Commits y push a `main`.
 ---
 
 ## Changelog
