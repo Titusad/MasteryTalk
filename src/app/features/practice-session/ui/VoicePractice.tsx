@@ -17,9 +17,9 @@ import {
   RecordButton,
   RecordingTimer,
   PastelBlobs,
-  SessionProgressBar,
   ServiceErrorBanner,
 } from "@/shared/ui";
+import { SessionProgressBar } from "@/widgets/SessionProgressBar";
 import {
   realConversationService,
   realSpeechService,

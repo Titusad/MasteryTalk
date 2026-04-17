@@ -8,8 +8,8 @@
 
 import { motion } from "motion/react";
 import { Check } from "lucide-react";
-import type { Step } from "@/entities/session";
-import { useProgressionLevel } from "@/app/components/shared/ProgressionContext";
+import type { Step } from "@/shared/types/session";
+import { useProgressionLevel } from "@/shared/lib/ProgressionContext";
 
 /* ── Phase definitions ── */
 

@@ -37,8 +37,8 @@ import {
     PastelBlobs,
     PageTitleBlock,
     ProficiencyGauge,
-    SessionProgressBar,
 } from "@/shared/ui";
+import { SessionProgressBar } from "@/widgets/SessionProgressBar";
 import type {
     ScenarioType,
     TurnPronunciationData,

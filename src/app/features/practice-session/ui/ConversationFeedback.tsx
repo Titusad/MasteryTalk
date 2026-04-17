@@ -26,7 +26,8 @@ import {
   PolarAngleAxis,
   Radar,
 } from "recharts";
-import { PastelBlobs, MiniFooter, PageTitleBlock, ProficiencyGauge, FeedbackAccordion, SessionProgressBar } from "@/shared/ui";
+import { PastelBlobs, MiniFooter, PageTitleBlock, ProficiencyGauge, FeedbackAccordion } from "@/shared/ui";
+import { SessionProgressBar } from "@/widgets/SessionProgressBar";
 import {
   getBeforeAfterForScenario,
   getStrengthsForScenario,

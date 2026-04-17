@@ -9,7 +9,7 @@ import {
 import { motion } from "motion/react";
 import { PastelBlobs, MiniFooter } from "@/app/components/shared";
 import type { ScenarioType, OnboardingProfile } from "@/services/types";
-import { SessionProgressBar } from "@/shared/ui/SessionProgressBar";
+import { SessionProgressBar } from "@/widgets/SessionProgressBar";
 
 /* ═══════════════════════════════════════════════════════════
    EXTRA CONTEXT FIELD DATA — "The Opportunity"

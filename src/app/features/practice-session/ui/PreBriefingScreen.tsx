@@ -23,7 +23,7 @@ import {
     PageTitleBlock,
 } from "@/app/components/shared";
 import type { ScenarioType, ScriptSection } from "@/services/types";
-import { SessionProgressBar } from "@/shared/ui/SessionProgressBar";
+import { SessionProgressBar } from "@/widgets/SessionProgressBar";
 import { ShadowingModal } from "@/app/features/practice-session/ui/ShadowingModal";
 import type { ShadowingPhrase } from "@/app/features/shadowing/model/shadowing.computations";
 

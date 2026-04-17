@@ -26,7 +26,7 @@ import type { InterviewBriefingData } from "@/services/types";
 import type { ScenarioType } from "@/services/types";
 import { BriefingStepperCarousel } from "@/app/features/practice-session/ui/briefing/BriefingStepperCarousel";
 import { ReadinessScore } from "@/app/features/practice-session/ui/briefing/ReadinessScore";
-import { SessionProgressBar } from "@/app/components/SessionProgressBar";
+import { SessionProgressBar } from "@/widgets/SessionProgressBar";
 
 /* ── Minimum cards to unlock practice early ── */
 const MIN_CARDS_FOR_SKIP = 3;
