@@ -21,7 +21,7 @@ import {
   ServiceError,
   toServiceError,
   type RecoveryStrategy,
-} from "../../services/errors";
+} from "@/services/errors";
 
 /* ── Config ── */
 const DEFAULT_MAX_RETRIES = 2;

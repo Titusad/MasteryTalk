@@ -17,8 +17,8 @@ import { motion, AnimatePresence } from "motion/react";
 import type { ScriptHighlight } from "@/services/types";
 import { realSpeechService } from "@/services";
 import { useBriefingTTS } from "./useBriefingTTS";
-import { useMediaRecorder } from "@/app/hooks/useMediaRecorder";
-import { RecordingWaveformBars, RecordingTimer } from "@/app/components/shared";
+import { useMediaRecorder } from "@/shared/hooks/useMediaRecorder";
+import { RecordingWaveformBars, RecordingTimer } from "@/shared/ui";
 
 type PhraseStep = "idle" | "listened" | "recording" | "processing" | "done";
 

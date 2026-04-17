@@ -53,7 +53,7 @@ import type {
 } from "@/services/types";
 import type { RealFeedbackData } from "@/entities/feedback";
 import type { CVMatchResult } from "@/services/cvMatchService";
-import { downloadSessionReportPdf } from "@/app/utils/cheatSheetPdf";
+import { downloadSessionReportPdf } from "@/shared/lib/cheatSheetPdf";
 
 /* ── Feature Module Imports ── */
 import {

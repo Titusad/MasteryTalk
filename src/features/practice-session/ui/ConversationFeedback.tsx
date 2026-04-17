@@ -41,7 +41,7 @@ import type {
 } from "@/services/types";
 import { PronunciationTab } from "./PronunciationTab";
 
-import type { PaywallReason } from "@/app/hooks/useUsageGating";
+import type { PaywallReason } from "@/shared/hooks/useUsageGating";
 import { type RealFeedbackData } from "@/entities/feedback";
 
 /* Re-export for backward compat — Sprint 3 will update all consumers */

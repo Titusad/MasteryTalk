@@ -38,7 +38,7 @@
 - [x] **Sprint 2 (`entities`):** Extract types and models from `app/services/types.ts` to `entities/`.
 - [x] **Sprint 3 (`features`):** Move `app/features/*` to root `features/` directory (arena, practice-session, progression, etc).
 - [x] **Sprint 4 (`widgets`):** Refactor `SessionReport`, `CreditUpsellModal`, and `InterviewBriefingScreen` to use new feature paths and ensure they compose correctly.
-- [ ] **Sprint 5 (`pages`):** Move `app/pages/*` to `pages/`, update `App.tsx` routing, and complete the FSD migration.
+- [x] **Sprint 5 (`pages` & `app` completion):** Moved hooks (`useMediaRecorder`, `useUsageGating`, `useServiceCall`) to `shared/hooks/`, utils (`sessionCache`, `spacedRepetition`, `cheatSheetPdf`) to `shared/lib/`, updated 25+ import paths across features/widgets/pages, deleted backward-compat shim `app/components/shared/`. Zero cross-layer `@/app/` violations remain.
 
 ### 1.1 Landing Page Overhaul 🔄
 - [ ] Update copy to reflect current product positioning (MasteryTalk PRO, not inFluentia)

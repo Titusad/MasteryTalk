@@ -11,7 +11,7 @@ import { getLevelDefinition } from "@/features/dashboard/model/progression-paths
 import { ProgressionProvider } from "@/shared/lib/ProgressionContext";
 import { ServiceErrorBanner } from "@/shared/ui";
 import { getBeforeAfterForScenario, getStrengthsForScenario } from "@/services/scenario-data";
-import { useMediaRecorder } from "@/app/hooks/useMediaRecorder";
+import { useMediaRecorder } from "@/shared/hooks/useMediaRecorder";
 import { projectId, publicAnonKey } from "@/../utils/supabase/info";
 import { getAuthToken } from "@/services/supabase";
 import type {
@@ -31,9 +31,9 @@ import { type RealFeedbackData, type RepeatInfo } from "@/features/practice-sess
 import { InterviewAnalysis } from "@/features/practice-session/ui/InterviewAnalysis";
 import { PathConversionScreen } from "@/features/skill-drill/ui/PathConversionScreen";
 import { PathPurchaseModal } from "@/widgets/PathPurchaseModal";
-import { useUsageGating } from "@/app/hooks/useUsageGating";
-import type { PaywallReason } from "@/app/hooks/useUsageGating";
-import { createSRPhrase, flagPhrasesForReview } from "@/app/utils/spacedRepetition";
+import { useUsageGating } from "@/shared/hooks/useUsageGating";
+import type { PaywallReason } from "@/shared/hooks/useUsageGating";
+import { createSRPhrase, flagPhrasesForReview } from "@/shared/lib/spacedRepetition";
 import type { InterviewBriefingData, OnboardingProfile } from "@/services/types";
 import {
   scenarioKey,
@@ -47,9 +47,9 @@ import {
   improvedScriptCache,
   pronDataCache,
   cleanupExpiredCache,
-} from "@/app/utils/sessionCache";
+} from "@/shared/lib/sessionCache";
 import { detectLanguageBackground } from "@/services/locale-detect";
-import { downloadSessionReportPdf } from "@/app/utils/cheatSheetPdf";
+import { downloadSessionReportPdf } from "@/shared/lib/cheatSheetPdf";
 import { analyzeCvMatch, type CVMatchResult } from "@/services/cvMatchService";
 
 /** Detect locale once at module level — stable across renders */

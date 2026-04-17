@@ -26,7 +26,7 @@ import {
 } from "@/services";
 import { toServiceError } from "@/services/errors";
 import type { ServiceError } from "@/services/errors";
-import { useMediaRecorder } from "@/app/hooks/useMediaRecorder";
+import { useMediaRecorder } from "@/shared/hooks/useMediaRecorder";
 import { projectId } from "@/../utils/supabase/info";
 import { getAuthToken } from "@/services/supabase";
 import type {

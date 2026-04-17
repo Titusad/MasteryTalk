@@ -21,7 +21,7 @@ import {
     MiniFooter,
     HighlightWithTooltip,
     PageTitleBlock,
-} from "@/app/components/shared";
+} from "@/shared/ui";
 import type { ScenarioType, ScriptSection } from "@/services/types";
 import { SessionProgressBar } from "@/widgets/SessionProgressBar";
 import { ShadowingModal } from "@/features/practice-session/ui/ShadowingModal";

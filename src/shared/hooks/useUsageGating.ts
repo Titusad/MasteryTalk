@@ -14,7 +14,7 @@
  */
 
 import { useState, useCallback, useEffect } from "react";
-import type { UserPlan } from "../../services/types";
+import type { UserPlan } from "@/services/types";
 
 /* ── Paywall Reason Type ── */
 

@@ -26,7 +26,7 @@ import {
 import { AppModal } from "@/shared/ui/AppModal";
 import { PATH_PRODUCTS } from "@/services/types";
 import type { PurchaseType } from "@/services/types";
-import type { PaywallReason } from "@/app/hooks/useUsageGating";
+import type { PaywallReason } from "@/shared/hooks/useUsageGating";
 import { paymentService } from "@/services";
 
 /* ── Scenario display info ── */

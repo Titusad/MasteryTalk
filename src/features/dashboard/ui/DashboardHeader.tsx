@@ -8,7 +8,7 @@ import {
   BookOpen,
   Sparkles,
 } from "lucide-react";
-import { BrandLogo } from "@/app/components/shared";
+import { BrandLogo } from "@/shared/ui";
 import { authService } from "@/services";
 import type { LandingLang } from "@/shared/i18n/landing-i18n";
 

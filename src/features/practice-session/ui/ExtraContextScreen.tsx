@@ -7,7 +7,7 @@ import {
     Loader2,
 } from "lucide-react";
 import { motion } from "motion/react";
-import { PastelBlobs, MiniFooter } from "@/app/components/shared";
+import { PastelBlobs, MiniFooter } from "@/shared/ui";
 import type { ScenarioType, OnboardingProfile } from "@/services/types";
 import { SessionProgressBar } from "@/widgets/SessionProgressBar";
 

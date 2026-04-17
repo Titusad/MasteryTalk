@@ -8,7 +8,7 @@ import {
   FileText,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { PastelBlobs, MiniFooter } from "@/app/components/shared";
+import { PastelBlobs, MiniFooter } from "@/shared/ui";
 import { userService } from "@/services";
 import type { PracticeHistoryItem, ScenarioType } from "@/services/types";
 import { SessionReport } from "@/widgets/SessionReport";

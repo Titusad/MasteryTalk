@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { BrandLogo } from "./shared";
+import { BrandLogo } from "@/shared/ui";
 
 export function LoadingScreen({ scenario }: { scenario: string }) {
   const [step, setStep] = useState(0);

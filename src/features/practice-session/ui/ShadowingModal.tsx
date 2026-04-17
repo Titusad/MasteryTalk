@@ -30,14 +30,14 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import type { TurnPronunciationData, BeforeAfterComparison } from "@/services/types";
 import { realSpeechService } from "@/services";
-import { shadowingScoresCache } from "@/app/utils/sessionCache";
+import { shadowingScoresCache } from "@/shared/lib/sessionCache";
 import {
     createSRPhrase,
     flagPhrasesForReview,
     updatePhraseAfterReview,
     saveSRPhrases,
-} from "@/app/utils/spacedRepetition";
-import type { SpacedRepetitionPhrase } from "@/app/utils/spacedRepetition";
+} from "@/shared/lib/spacedRepetition";
+import type { SpacedRepetitionPhrase } from "@/shared/lib/spacedRepetition";
 
 /* ── Feature Module Imports ── */
 import {
@@ -307,7 +307,7 @@ export function ShadowingModal({
             });
             // Fetch full phrase list, merge updated, then save
             try {
-                const { fetchSRPhrases: fetchAll } = await import("@/app/utils/spacedRepetition");
+                const { fetchSRPhrases: fetchAll } = await import("@/shared/lib/spacedRepetition");
                 const allPhrases = await fetchAll();
                 const updatedIds = new Set(updated.map((p: SpacedRepetitionPhrase) => p.id));
                 const merged = [

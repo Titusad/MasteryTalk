@@ -12,7 +12,7 @@ import {
     ChevronDown,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { PastelBlobs, MiniFooter } from "@/app/components/shared";
+import { PastelBlobs, MiniFooter } from "@/shared/ui";
 import { projectId } from "@/../utils/supabase/info";
 import { getAuthToken } from "@/services/supabase";
 import type { ScenarioType, OnboardingProfile } from "@/services/types";

@@ -18,9 +18,9 @@
  * ==============================================================
  */
 
-import type { InterviewBriefingData } from "../../services/types";
-import type { TurnPronunciationData } from "../../services/types";
-import type { CVMatchResult } from "../../services/cvMatchService";
+import type { InterviewBriefingData } from "@/services/types";
+import type { TurnPronunciationData } from "@/services/types";
+import type { CVMatchResult } from "@/services/cvMatchService";
 
 /* ── Color constants ── */
 const DARK = "#0f172a";

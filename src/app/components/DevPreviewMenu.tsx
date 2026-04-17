@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Wrench, ChevronDown, MonitorPlay } from "lucide-react";
-import type { Step } from "./shared/session-types";
+import type { Step } from "@/entities/session";
 import type {
     Strength,
     Opportunity,
@@ -12,7 +12,7 @@ import type {
     ScriptSection,
     InterviewBriefingData,
 } from "../../services/types";
-import { downloadSessionReportPdf } from "../utils/cheatSheetPdf";
+import { downloadSessionReportPdf } from "@/shared/lib/cheatSheetPdf";
 
 /* ═══════════════════════════════════════════════════════════
    DEV PREVIEW MENU — Floating dropdown for rapid UI testing

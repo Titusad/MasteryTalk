@@ -20,8 +20,8 @@ import {
     RotateCcw,
 } from "lucide-react";
 import { realSpeechService } from "@/services";
-import { useMediaRecorder } from "@/app/hooks/useMediaRecorder";
-import { RecordingWaveformBars, RecordingTimer } from "@/app/components/shared";
+import { useMediaRecorder } from "@/shared/hooks/useMediaRecorder";
+import { RecordingWaveformBars, RecordingTimer } from "@/shared/ui";
 
 interface AnswerCardProps {
     question: string;

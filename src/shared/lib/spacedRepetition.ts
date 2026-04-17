@@ -24,8 +24,8 @@ import { SUPABASE_URL } from "@/services/supabase";
  * ==============================================================
  */
 
-import { projectId } from "../../../utils/supabase/info";
-import { getAuthToken } from "../../services/supabase";
+import { projectId } from "@/../utils/supabase/info";
+import { getAuthToken } from "@/services/supabase";
 
 
 /* -- Types -- */

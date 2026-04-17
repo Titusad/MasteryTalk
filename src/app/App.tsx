@@ -31,19 +31,19 @@ const PrivacyPage = lazyRetry(() => import("../pages/legal/PrivacyPage").then(m 
 
 import { LoadingScreen } from "./components/LoadingScreen";
 import { LanguageTransitionModal } from "./components/LanguageTransitionModal";
-import type { User, OnboardingProfile, ScenarioType, SessionSummary, TurnPronunciationData, ScriptSection, InterviewBriefingData } from "../services/types";
+import type { User, OnboardingProfile, ScenarioType, SessionSummary, TurnPronunciationData, ScriptSection, InterviewBriefingData } from "@/services/types";
 import type { SetupModalResult } from "@/pages/landing/PracticeWidget";
 // AnimatePresence removed — was causing modal to linger during exit animation
 // when auth re-renders interrupted the exit. Direct unmount is bulletproof.
 import type { LandingLang } from "@/shared/i18n/landing-i18n";
 import { PathPurchaseModal } from "@/widgets/PathPurchaseModal";
 import type { PurchaseType } from "../services/types";
-import { useUsageGating } from "./hooks/useUsageGating";
+import { useUsageGating } from "@/shared/hooks/useUsageGating";
 import { PaymentSuccessHandler } from "@/shared/ui/PaymentSuccessHandler";
 import type { MarketFocus } from "../services/prompts";
 import { projectId } from "../../utils/supabase/info";
 import { DevPreviewMenu, getDevMockData } from "./components/DevPreviewMenu";
-import type { Step } from "./components/shared/session-types";
+import type { Step } from "@/entities/session";
 import type { RealFeedbackData } from "@/features/practice-session/ui/ConversationFeedback";
 import { useHashRouter } from "./hooks/useHashRouter";
 import type { Page } from "./hooks/useHashRouter";
