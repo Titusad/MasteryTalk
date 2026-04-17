@@ -37,25 +37,25 @@ const SCENARIO_OPTIONS: {
   desc: string;
   icon: React.ReactNode;
 }[] = [
-  {
-    id: "interview",
-    label: "Job Interview",
-    desc: "Prepare for key questions",
-    icon: <Briefcase className="w-5 h-5" />,
-  },
-  {
-    id: "meeting",
-    label: "Remote Meetings",
-    desc: "Lead international meetings",
-    icon: <Users className="w-5 h-5" />,
-  },
-  {
-    id: "presentation",
-    label: "Presentations",
-    desc: "Deliver impactful presentations",
-    icon: <Presentation className="w-5 h-5" />,
-  },
-];
+    {
+      id: "interview",
+      label: "Job Interview",
+      desc: "Prepare for key questions",
+      icon: <Briefcase className="w-5 h-5" />,
+    },
+    {
+      id: "meeting",
+      label: "Remote Meetings",
+      desc: "Lead international meetings",
+      icon: <Users className="w-5 h-5" />,
+    },
+    {
+      id: "presentation",
+      label: "Presentations",
+      desc: "Deliver impactful presentations",
+      icon: <Presentation className="w-5 h-5" />,
+    },
+  ];
 
 const SCENARIO_LABELS: Record<string, string> = {
   interview: "Job Interview",
@@ -119,10 +119,12 @@ export function PathPurchaseModal({
       if (result.checkoutUrl) {
         window.location.href = result.checkoutUrl;
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("[PathPurchaseModal] Checkout error:", err);
+      const backendError = err?.cause?.message || err?.message || "";
       setError(
-        "No pudimos iniciar el proceso de pago. Intenta de nuevo en unos segundos.",
+        `We couldn't process your payment. Please, try again later. ${backendError ? `(Error: ${backendError})` : ""
+        }`,
       );
       setIsProcessing(false);
     }
@@ -145,7 +147,7 @@ export function PathPurchaseModal({
           {isFirstPurchase ? (
             <>
               <h2 className="text-xl font-medium text-[#0f172b] mb-1">
-                Continue the {targetLabel} Path 🎯
+                Continue the {targetLabel} Path
               </h2>
               <p className="text-sm text-[#62748e]">
                 {paywallReason === "path-required"
@@ -156,7 +158,7 @@ export function PathPurchaseModal({
           ) : (
             <>
               <h2 className="text-xl font-medium text-[#0f172b] mb-1">
-                Choose your next path 🚀
+                Choose your next path
               </h2>
               <p className="text-sm text-[#62748e]">
                 Expand your training — unlock a new Learning Path.
@@ -181,21 +183,19 @@ export function PathPurchaseModal({
                   key={scenario.id}
                   onClick={() => !isOwned && setSelectedPath(scenario.id)}
                   disabled={isOwned}
-                  className={`text-left p-3 rounded-xl border-2 transition-all duration-200 ${
-                    isOwned
+                  className={`text-left p-3 rounded-xl border-2 transition-all duration-200 ${isOwned
                       ? "border-[#e2e8f0] bg-[#f8fafc] opacity-50 cursor-not-allowed"
                       : isSelected
-                      ? "border-[#0f172b] bg-[#f8fafc] shadow-sm"
-                      : "border-[#e2e8f0] bg-white hover:border-[#94a3b8] cursor-pointer"
-                  }`}
+                        ? "border-[#0f172b] bg-[#f8fafc] shadow-sm"
+                        : "border-[#e2e8f0] bg-white hover:border-[#94a3b8] cursor-pointer"
+                    }`}
                 >
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-2 ${
-                    isOwned
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-2 ${isOwned
                       ? "bg-[#22c55e]/10 text-[#22c55e]"
                       : isSelected
-                      ? "bg-[#0f172b] text-white"
-                      : "bg-[#f1f5f9] text-[#62748e]"
-                  }`}>
+                        ? "bg-[#0f172b] text-white"
+                        : "bg-[#f1f5f9] text-[#62748e]"
+                    }`}>
                     {isOwned ? <Check className="w-4 h-4" /> : scenario.icon}
                   </div>
                   <p className="text-sm font-medium text-[#0f172b]">{scenario.label}</p>

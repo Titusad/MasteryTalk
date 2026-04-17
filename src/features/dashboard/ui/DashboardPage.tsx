@@ -47,6 +47,8 @@ interface DashboardPageProps {
   onProfileUpdate?: (profile: OnboardingProfile) => void;
   lang?: LandingLang;
   onNavigateToLibrary?: () => void;
+  /** Paths already purchased by the user — used for Mode A/B detection in PathPurchaseModal */
+  ownedPaths?: string[];
 }
 
 /* ═══════════════════════════ DASHBOARD ═══════════════════════════ */
@@ -60,6 +62,7 @@ export function DashboardPage({
   onStartNewPractice,
   lang = "en",
   onNavigateToLibrary,
+  ownedPaths = [],
 }: DashboardPageProps) {
   /* ─── Shared Data Hook ─── */
   const data = useDashboardData({
@@ -244,6 +247,7 @@ export function DashboardPage({
         onClose={() => setUpsellOpen(false)}
         scenarioType="interview"
         paywallReason="path-required"
+        ownedPaths={ownedPaths}
         onPurchaseComplete={handlePurchaseComplete}
       />
     </div>

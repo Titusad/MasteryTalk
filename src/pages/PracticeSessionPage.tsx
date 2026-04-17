@@ -56,7 +56,6 @@ import { analyzeCvMatch, type CVMatchResult } from "@/services/cvMatchService";
 const _detectedLocale = detectLanguageBackground();
 
 /* ── Sub-screens extracted to session/ ── */
-import { PreBriefingScreen } from "@/features/practice-session/ui/PreBriefingScreen";
 import { CVUploadScreen } from "@/features/practice-session/ui/CVUploadScreen";
 import { ExtraContextScreen } from "@/features/practice-session/ui/ExtraContextScreen";
 import { KeyExperienceScreen } from "@/features/practice-session/ui/KeyExperienceScreen";
@@ -78,6 +77,8 @@ interface PracticeSessionPageProps {
   onFinish: () => void;
   onNewPractice?: () => void;
   userPlan?: UserPlan;
+  /** Paths already purchased — used for Mode A/B detection in PathPurchaseModal */
+  ownedPaths?: string[];
   /** User profile for persisting key experience, role, company */
   userProfile?: OnboardingProfile | null;
   onProfileUpdate?: (profile: OnboardingProfile) => void;
@@ -132,6 +133,7 @@ export function PracticeSessionPage({
   onFinish,
   onNewPractice,
   userPlan,
+  ownedPaths = [],
   userProfile,
   onProfileUpdate,
   devInitialStep,
@@ -1060,15 +1062,15 @@ export function PracticeSessionPage({
                 scenario={scenario}
               />
             )}
-            {step === "pre-briefing" && generatedScript && scenarioType === "sales" && (
+            {step === "pre-briefing" && generatedScript && scenarioType !== "interview" && (
               <InterviewBriefingScreen
                 interlocutor={interlocutor}
                 briefingData={scriptSectionsToBriefingData(generatedScript)}
                 onStartSimulation={(userDrafts) => {
-                  // Package sales briefing data for session
-                  const salesBriefing = scriptSectionsToBriefingData(generatedScript);
+                  // Package sales/meeting/presentation briefing data for session
+                  const genericBriefing = scriptSectionsToBriefingData(generatedScript);
                   const briefingPayload: SessionConfig["interviewBriefing"] = {
-                    anticipatedQuestions: salesBriefing.anticipatedQuestions.map((q) => ({
+                    anticipatedQuestions: genericBriefing.anticipatedQuestions.map((q) => ({
                       id: q.id,
                       question: q.question,
                       approach: q.approach,
@@ -1087,16 +1089,6 @@ export function PracticeSessionPage({
                 onBack={() => setStep("extra-context")}
                 scenario={scenario}
                 scenarioType={scenarioType}
-              />
-            )}
-            {step === "pre-briefing" && generatedScript && scenarioType !== "interview" && scenarioType !== "sales" && (
-              <PreBriefingScreen
-                scenarioType={scenarioType}
-                interlocutor={interlocutor}
-                onStartSimulation={() => setStep("practice")}
-                onBack={() => setStep("extra-context")}
-                generatedSections={generatedScript}
-                preparationToolkit={preparationToolkit}
               />
             )}
             {step === "practice" && !sessionId && !serviceError && (
@@ -1204,6 +1196,7 @@ export function PracticeSessionPage({
         onClose={() => { setPaywallOpen(false); setPaywallReason(null); }}
         scenarioType={scenarioType || "interview"}
         paywallReason={paywallReason ?? "path-required"}
+        ownedPaths={ownedPaths}
         onPurchaseComplete={handlePurchaseComplete}
       />
     </div>

@@ -651,6 +651,7 @@ export default function App() {
               onFinish={handlePracticeFinish}
               onNewPractice={handleNewPractice}
               userPlan={authUser?.plan}
+              ownedPaths={authUser?.pathsPurchased ?? []}
               userProfile={userProfile}
               onProfileUpdate={handleProfileUpdate}
               devInitialStep={devPreview?.step}
@@ -687,6 +688,7 @@ export default function App() {
               onProfileUpdate={handleProfileUpdate}
               lang={landingLang}
               onNavigateToLibrary={handleNavigateToLibrary}
+              ownedPaths={authUser?.pathsPurchased ?? []}
             />
           )}
           {page === "library" && (
@@ -776,7 +778,7 @@ export default function App() {
             open={showNewSessionPaywall}
             scenarioType={flowState.scenarioType || "interview"}
             paywallReason="path-required"
-            ownedPaths={usageGating.purchasedPaths}
+            ownedPaths={authUser?.pathsPurchased ?? []}
             onClose={() => {
               setShowNewSessionPaywall(false);
               pendingNewSessionRef.current = null;
@@ -797,6 +799,8 @@ export default function App() {
               import("../services").then(({ userService }) => {
                 userService.getProfile("current").then((u) => {
                   setAuthUser((prev) => prev ? { ...prev, plan: u.plan, pathsPurchased: u.pathsPurchased } : prev);
+                  // Sync purchased paths to localStorage so usageGating reflects reality
+                  u.pathsPurchased?.forEach((path: string) => usageGating.addPurchasedPath(path));
                 }).catch(() => {});
               });
             }}

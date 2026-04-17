@@ -10,8 +10,8 @@
  *  Environment variables (set via `supabase secrets set`):
  *  - STRIPE_SECRET_KEY        → sk_test_... or sk_live_...
  *  - STRIPE_WEBHOOK_SECRET    → whsec_...
- *  - STRIPE_PRICE_TRIAL       → price_... (Trial $3.99)
- *  - STRIPE_PRICE_PATH        → price_... (Path $16.99)
+ *  - STRIPE_PRICE_FIRST_PATH  → price_... (First Path $4.99)
+ *  - STRIPE_PRICE_PATH        → price_... (Additional Path $16.99)
  * ══════════════════════════════════════════════════════════════
  */
 import Stripe from "npm:stripe@17";

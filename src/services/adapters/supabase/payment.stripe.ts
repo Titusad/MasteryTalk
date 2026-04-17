@@ -57,7 +57,9 @@ export class StripePaymentService implements IPaymentService {
             cause: new Error(body.error),
           });
         }
-        throw new PaymentError("CHECKOUT_CREATION_FAILED");
+        throw new PaymentError("CHECKOUT_CREATION_FAILED", {
+          cause: new Error(body.error || body.message || res.statusText || "Unknown Checkout Error")
+        });
       }
 
       const data = await res.json();
