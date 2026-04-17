@@ -702,5 +702,54 @@ GET  /sessions/count        ← total de sesiones del usuario (para Dashboard ad
 
 ---
 
-*v1.2 — Marzo 2026*
-*Cambios: naming Quick Prep / Conversational Path · design system completo con 4 escalas · modelo de negocio actualizado (GPT-4o en todas las sesiones, suscripción trimestral, paywall triggers correctos)*
+---
+
+## 15. Estado actual del proyecto (2026-03-27)
+
+### ✅ Completado y estable
+
+| Área | Estado | Notas |
+|------|--------|-------|
+| FSD Architecture | ✅ 90%+ | `app/components/` legacy es el único residuo |
+| AppHeader + AppModal | ✅ | Canónicos en `src/shared/ui/` |
+| Design tokens | ✅ | Centralizados en `shared/design-tokens.ts` |
+| Auth security | ✅ | `getAuthToken()` en todos los Edge Function calls — `publicAnonKey` eliminado de 11 archivos |
+| Service adapters | ✅ | 6 adapters reales (auth, conversation, speech, feedback, user, SR) |
+| Test coverage | ✅ 36 tests | Vitest + happy-dom: SR logic (22), Auth flow (7), Feedback adapter (7) |
+| Error handling | ✅ | FeedbackError, retry/backoff, timeouts |
+| Edge Functions | ✅ | TTS, STT, Feedback, Briefing, Pronunciation |
+
+### ⚠️ Pendiente — próximas sesiones
+
+| Prioridad | Tarea | Notas |
+|-----------|-------|-------|
+| 🔴 Alta | **SupabasePaymentService** | Payment flow es 100% mock — sin esto no hay revenue |
+| 🔴 Alta | **Loading skeletons** | Dashboard y Library sin skeletons |
+| 🔴 Alta | **Fases UX 1-4** | Quick Prep/Conversational Path widget, ConversationalPathOffer, Extra Context, Dashboard adaptivo |
+| 🟡 Media | **E2E tests** | Playwright: onboarding → practice → feedback |
+| 🟡 Media | **Mobile responsiveness** | Revisar todos los flujos en mobile |
+| 🟡 Media | **Supabase CLI migrations** | Schema no está versionado |
+| 🟢 Baja | **WCAG accessibility** | Sin auditoría a11y actual |
+| 🟢 Baja | **Strip console.log** | 123 statements en producción — agregar vite-plugin-remove-console |
+
+### 🔴 Issues TypeScript conocidos (pre-existentes, no tocar sin plan)
+
+```
+PracticeSessionPage.tsx:584,941,947  — params implicitly any
+PracticeWidget.tsx:412-454           — disabled/badge props missing on ScenarioOption
+LibraryPage.tsx:23,253               — LessonModal import (componente pendiente de crear)
+CreditUpsellModal.tsx:263            — Expected 2 args, got 1
+```
+
+### Usos legítimos de `publicAnonKey` (NO son bugs — no tocar)
+
+```
+auth.supabase.ts       — apikey header estándar Supabase
+session-api.ts         — apikey header estándar Supabase
+PracticeHistoryPage.tsx — apikey header estándar Supabase REST
+```
+
+---
+
+*v1.3 — 2026-03-27*
+*Cambios: estado actual del proyecto post Security Hardening + Foundational Tests session · issues conocidos documentados · próximas tareas priorizadas*

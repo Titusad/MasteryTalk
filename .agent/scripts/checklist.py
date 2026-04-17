@@ -87,7 +87,7 @@ def run_script(name: str, script_path: Path, project_path: str, url: Optional[st
     print_step(f"Running: {name}")
     
     # Build command
-    cmd = ["python", str(script_path), project_path]
+    cmd = [sys.executable, str(script_path), project_path]
     if url and ("lighthouse" in script_path.name.lower() or "playwright" in script_path.name.lower()):
         cmd.append(url)
     
@@ -187,10 +187,13 @@ Examples:
     
     results = []
     
+    # Base directory of the Antigravity Kit (parent of .agent)
+    kit_root = Path(__file__).resolve().parent.parent.parent
+    
     # Run core checks
     print_header("📋 CORE CHECKS")
     for name, script_path, required in CORE_CHECKS:
-        script = project_path / script_path
+        script = kit_root / script_path
         result = run_script(name, script, str(project_path))
         results.append(result)
         
@@ -204,7 +207,7 @@ Examples:
     if args.url and not args.skip_performance:
         print_header("⚡ PERFORMANCE CHECKS")
         for name, script_path, required in PERFORMANCE_CHECKS:
-            script = project_path / script_path
+            script = kit_root / script_path
             result = run_script(name, script, str(project_path), args.url)
             results.append(result)
     
