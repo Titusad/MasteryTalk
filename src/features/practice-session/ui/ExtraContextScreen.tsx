@@ -9,7 +9,6 @@ import {
 import { motion } from "motion/react";
 import { PastelBlobs, MiniFooter } from "@/shared/ui";
 import type { ScenarioType, OnboardingProfile } from "@/services/types";
-import { SessionProgressBar } from "@/widgets/SessionProgressBar";
 
 /* ═══════════════════════════════════════════════════════════
    EXTRA CONTEXT FIELD DATA — "The Opportunity"
@@ -195,9 +194,7 @@ function ExtraContextScreen({
             <PastelBlobs />
 
             <main className="relative w-full max-w-[768px] mx-auto px-6 pt-6 pb-20">
-                <div className="w-full mb-5">
-                    <SessionProgressBar currentStep="extra-context" />
-                </div>
+
                 <motion.div
                     className="text-center mb-10"
                     initial={{ opacity: 0, y: 16 }}

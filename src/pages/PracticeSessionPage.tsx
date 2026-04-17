@@ -797,6 +797,7 @@ export function PracticeSessionPage({
         userName={userName}
         onLogout={onLogout}
         onNavigateToAccount={onNavigateToAccount}
+        progressBarSlot={<SessionProgressBar currentStep={step} />}
       />
 
       {/* Step content (animated transitions) */}

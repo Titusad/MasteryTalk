@@ -16,7 +16,6 @@ import { PastelBlobs, MiniFooter } from "@/shared/ui";
 import { projectId } from "@/../utils/supabase/info";
 import { getAuthToken } from "@/services/supabase";
 import type { ScenarioType, OnboardingProfile } from "@/services/types";
-import { SessionProgressBar } from "@/widgets/SessionProgressBar";
 
 /* ═══════════════════════════════════════════════════════════
    CV UPLOAD SCREEN — "About You"
@@ -255,9 +254,7 @@ function CVUploadScreen({
             <PastelBlobs />
 
             <main className="relative w-full max-w-[768px] mx-auto px-6 pt-6 pb-20">
-                <div className="w-full mb-5">
-                    <SessionProgressBar currentStep="cv-upload" />
-                </div>
+
                 <motion.div
                     className="text-center mb-10"
                     initial={{ opacity: 0, y: 16 }}

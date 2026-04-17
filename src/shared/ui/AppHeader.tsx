@@ -49,7 +49,7 @@ export function AppHeader({
   const bg = isMinimal ? "bg-white" : "bg-white/90 backdrop-blur-md";
 
   return (
-    <header className={`sticky top-0 z-50 ${bg} border-b border-[#e2e8f0] shrink-0`}>
+    <header className={`z-50 ${bg} border-b border-[#e2e8f0] shrink-0`}>
       {/* Top bar — always h-14 */}
       <div aria-label="AppHeader" className={`${maxW} mx-auto flex items-center justify-between px-6 md:px-8 h-14`}>
 
@@ -100,8 +100,10 @@ export function AppHeader({
 
       {/* Progress bar row — session variant only */}
       {variant === "session" && progressBarSlot && (
-        <div className={`${maxW} mx-auto px-6 md:px-8`}>
-          {progressBarSlot}
+        <div className={`${maxW} mx-auto px-6 md:px-8 flex justify-center`}>
+          <div className="w-full max-w-[40%]">
+            {progressBarSlot}
+          </div>
         </div>
       )}
     </header>

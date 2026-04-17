@@ -26,7 +26,6 @@ import type { InterviewBriefingData } from "@/services/types";
 import type { ScenarioType } from "@/services/types";
 import { BriefingStepperCarousel } from "@/features/practice-session/ui/briefing/BriefingStepperCarousel";
 import { ReadinessScore } from "@/features/practice-session/ui/briefing/ReadinessScore";
-import { SessionProgressBar } from "@/widgets/SessionProgressBar";
 
 /* ── Minimum cards to unlock practice early ── */
 const MIN_CARDS_FOR_SKIP = 3;
@@ -92,9 +91,7 @@ export function InterviewBriefingScreen({
             <PastelBlobs />
 
             <main className="relative w-full max-w-[800px] mx-auto px-4 sm:px-6 pt-6 pb-20">
-                <div className="w-full mb-5">
-                    <SessionProgressBar currentStep="pre-briefing" />
-                </div>
+
                 {/* Header */}
                 <PageTitleBlock
                     title={scenarioType === "sales" ? "Sales Preparation" : "Interview Preparation"}
