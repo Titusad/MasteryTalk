@@ -43,7 +43,7 @@ function LanguageSwitcher({ lang, onChange }: { lang: LandingLang; onChange: (l:
   const current = LANG_OPTIONS.find((o) => o.code === lang) || LANG_OPTIONS[0];
 
   return (
-    <div ref={ref} className="relative">
+    <div aria-label=\"LandingPage" ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
         className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs border border-[#e2e8f0] bg-white hover:bg-[#f8fafc] transition-all"

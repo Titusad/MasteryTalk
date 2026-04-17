@@ -51,7 +51,7 @@ export function AppHeader({
   return (
     <header className={`sticky top-0 z-50 ${bg} border-b border-[#e2e8f0] shrink-0`}>
       {/* Top bar — always h-14 */}
-      <div className={`${maxW} mx-auto flex items-center justify-between px-6 md:px-8 h-14`}>
+      <div aria-label=\"AppHeader" className={`${maxW} mx-auto flex items-center justify-between px-6 md:px-8 h-14`}>
 
         {/* Left: logo + optional back button */}
         <div className="flex items-center gap-4">

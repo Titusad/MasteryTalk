@@ -150,7 +150,7 @@ const PHASE_CONFIG: Record<
     label: "Game Day",
     sublabel: "Show me what you've got",
     icon: Swords,
-    color: "#7c3aed",
+    color: "#0f172b",
     bg: "rgba(124,58,237,0.08)",
     border: "rgba(124,58,237,0.15)",
   },

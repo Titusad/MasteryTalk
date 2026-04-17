@@ -585,7 +585,7 @@ export default function App() {
 
   if (isInitializing) {
     return (
-      <div className="w-full min-h-screen flex items-center justify-center bg-[#f8fafc]">
+      <div aria-label=\"App" className="w-full min-h-screen flex items-center justify-center bg-[#f8fafc]">
         <div className="w-8 h-8 rounded-full border-2 border-[#0f172b] border-t-transparent animate-spin" />
       </div>
     );

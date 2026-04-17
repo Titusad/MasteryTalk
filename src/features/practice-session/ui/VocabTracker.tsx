@@ -64,7 +64,7 @@ const TREND_CONFIG = {
 const CATEGORY_COLORS: Record<string, string> = {
     Technical: "#6366f1",
     Business: "#0ea5e9",
-    Leadership: "#8b5cf6",
+    Leadership: "#14b8a6",
     Communication: "#ec4899",
 };
 

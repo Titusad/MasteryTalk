@@ -70,7 +70,7 @@ export function RecentSessionsList({
           {allRecent.slice(0, 4).map((practice, i) => (
             <motion.div
               key={`session-${i}`}
-              className="rounded-xl px-4 py-3 border border-[#e2e8f0] hover:border-[#c4b5fd] transition-all cursor-pointer group"
+              className="rounded-xl px-4 py-3 border border-[#e2e8f0] hover:border-[#cbd5e1] transition-all cursor-pointer group"
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.28 + i * 0.05, duration: 0.3 }}

@@ -70,7 +70,7 @@ function DSSection({
   bg?: string;
 }) {
   return (
-    <section id={id} className={`py-16 md:py-20 ${bg}`}>
+    <section aria-label=\"DesignSystemPage" id={id} className={`py-16 md:py-20 ${bg}`}>
       <div className="max-w-6xl mx-auto px-6">
         <div className="flex items-center gap-3 mb-2">
           <div className="w-9 h-9 rounded-xl bg-[#2d2d2d] flex items-center justify-center shrink-0">
@@ -855,7 +855,7 @@ export function DesignSystemPage() {
             <TokenRow token="active" value="bg-[#eff6ff] / border-[#bfdbfe] / text-[#2563eb]" />
             <TokenRow token="success" value="bg-[#f0fdf4] / border-[#bbf7d0] / text-[#15803d]" />
             <TokenRow token="recording" value="bg-[#fef2f2] / border-[#fecaca] / text-[#dc2626]" />
-            <TokenRow token="analyzing" value="bg-[#f5f3ff] / border-[#ddd6fe] / text-[#6366f1]" />
+            <TokenRow token="analyzing" value="bg-[#f5f3ff] / border-[#ccfbf1] / text-[#6366f1]" />
           </div>
         </div>
 
@@ -1075,7 +1075,7 @@ export function DesignSystemPage() {
           <div className="space-y-2 text-sm">
             <TokenRow token="support" value="bg azul (#2563eb) / Shield icon" />
             <TokenRow token="guidance" value="bg ámbar (#d97706) / Zap icon" />
-            <TokenRow token="challenge" value="bg púrpura (#7c3aed) / Swords icon" />
+            <TokenRow token="challenge" value="bg púrpura (#0f172b) / Swords icon" />
             <TokenRow token="rounded-full" value="Pill shape consistente" />
           </div>
         </div>
@@ -1131,7 +1131,7 @@ export function DesignSystemPage() {
                 phase: "challenge" as const,
                 title: "You're ready for the real thing",
                 desc: "Full professional mode — show what you've got",
-                color: "#7c3aed",
+                color: "#0f172b",
                 bg: "rgba(124,58,237,0.08)",
                 border: "rgba(124,58,237,0.15)",
               },

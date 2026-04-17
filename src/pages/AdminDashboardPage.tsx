@@ -144,7 +144,7 @@ const PILLAR_COLORS: Record<string, string> = {
   Fluency: "#22c55e",
   Pronunciation: "#f59e0b",
   "Professional Tone": "#ec4899",
-  Persuasion: "#8b5cf6",
+  Persuasion: "#14b8a6",
 };
 
 /* ─── Sort helper ─── */

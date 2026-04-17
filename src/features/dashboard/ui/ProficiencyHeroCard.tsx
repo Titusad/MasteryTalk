@@ -40,7 +40,7 @@ export function ProficiencyHeroCard({
   const areas = computeFocusAreas(radarData);
 
   return (
-    <motion.div
+    <motion.div aria-label=\"ProficiencyHeroCard"
       className="bg-gradient-to-br from-[#0f172b] to-[#1e293b] rounded-2xl shadow-lg p-5 md:p-6 mb-6 relative overflow-hidden"
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}

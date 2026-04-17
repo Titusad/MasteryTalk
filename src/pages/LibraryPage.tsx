@@ -29,7 +29,7 @@ const PILLAR_META: Record<string, { color: string; emoji: string }> = {
   Fluency: { color: "#22c55e", emoji: "🎯" },
   Pronunciation: { color: "#f59e0b", emoji: "🔊" },
   "Professional Tone": { color: "#ec4899", emoji: "👔" },
-  Persuasion: { color: "#8b5cf6", emoji: "🏗️" },
+  Persuasion: { color: "#14b8a6", emoji: "🏗️" },
 };
 
 const ALL_PILLARS = Object.keys(PILLAR_META);

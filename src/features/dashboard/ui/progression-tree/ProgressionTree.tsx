@@ -141,7 +141,7 @@ export function ProgressionTree({ onStartLevel, onDrillComplete }: ProgressionTr
 
   return (
     <>
-      <motion.div
+      <motion.div aria-label=\"ProgressionTree"
         className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden"
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}

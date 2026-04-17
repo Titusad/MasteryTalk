@@ -95,7 +95,7 @@ export function DashboardPage({
   };
 
   return (
-    <div
+    <div aria-label=\"DashboardPage"
       className="w-full min-h-full flex flex-col bg-[#f8fafc] relative overflow-hidden"
       style={{ fontFamily: "'Inter', sans-serif" }}
     >

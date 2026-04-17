@@ -15,7 +15,7 @@ const BADGE_STYLES: Record<StageBadgeVariant, string> = {
     warning: "bg-[#fff7ed] border-[#fed7aa] text-[#c2410c]",
     success: "bg-[#f0fdf4] border-[#bbf7d0] text-[#15803d]",
     recording: "bg-[#fef2f2] border-[#fecaca] text-[#dc2626]",
-    analyzing: "bg-[#f5f3ff] border-[#ddd6fe] text-[#6366f1]",
+    analyzing: "bg-[#f5f3ff] border-[#ccfbf1] text-[#6366f1]",
 };
 
 export function StageBadge({

@@ -68,7 +68,7 @@ const PILLAR_NAMES = [
 const PILLAR_COLORS: Record<string, { icon: string; bg: string; text: string }> = {
     Pronunciation: { icon: "🗣️", bg: "rgba(239,68,68,0.12)", text: "#ef4444" },
     Fluency: { icon: "🌊", bg: "rgba(14,165,233,0.12)", text: "#0ea5e9" },
-    "Professional Tone": { icon: "🕴️", bg: "rgba(139,92,246,0.12)", text: "#8b5cf6" },
+    "Professional Tone": { icon: "🕴️", bg: "rgba(139,92,246,0.12)", text: "#14b8a6" },
     Grammar: { icon: "📐", bg: "rgba(59,130,246,0.12)", text: "#3b82f6" },
     Vocabulary: { icon: "📚", bg: "rgba(16,185,129,0.12)", text: "#10b981" },
 };

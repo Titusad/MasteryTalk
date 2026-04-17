@@ -83,8 +83,8 @@ export function LevelNode({ level, status, config, isLast, isExpanded = false, o
           className={`flex-1 rounded-xl p-4 transition-all duration-200 ${
             status === "locked"
               ? "bg-[#f8fafc] opacity-60"
-              : "bg-white border border-[#e2e8f0] hover:border-[#c4b5fd] hover:shadow-sm cursor-pointer"
-          } ${isExpanded ? "border-[#c4b5fd] shadow-md ring-2 ring-[#c4b5fd]/20" : ""}`}
+              : "bg-white border border-[#e2e8f0] hover:border-[#cbd5e1] hover:shadow-sm cursor-pointer"
+          } ${isExpanded ? "border-[#cbd5e1] shadow-md ring-2 ring-[#cbd5e1]/20" : ""}`}
           onClick={onClick}
         >
           <div className="flex items-start justify-between mb-1">

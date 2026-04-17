@@ -30,7 +30,7 @@ export function StrategyLayer({ why, approach, suggestedOpener, framework, pivot
     const [frameworkOpen, setFrameworkOpen] = useState(false);
 
     return (
-        <div className="space-y-5 p-5 md:p-6">
+        <div aria-label=\"StrategyLayer" className="space-y-5 p-5 md:p-6">
             {/* Why they ask */}
             <motion.div
                 className="flex items-start gap-4"

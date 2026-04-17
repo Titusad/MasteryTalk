@@ -130,7 +130,7 @@ export function PathPurchaseModal({
 
   return (
     <AppModal open={open} onClose={onClose} size="lg">
-      <div className="p-6 md:p-8">
+      <div aria-label=\"PathPurchaseModal" className="p-6 md:p-8">
         {/* ── Header ── */}
         <motion.div
           className="text-center mb-6"

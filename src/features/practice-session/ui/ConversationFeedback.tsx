@@ -93,7 +93,7 @@ const CONTENT_QUALITY_COLORS: Record<
   Structure: {
     icon: "🏗️",
     bg: "rgba(168,85,247,0.12)",
-    text: "#a855f7",
+    text: "#14b8a6",
   },
   Examples: {
     icon: "📊",
@@ -114,7 +114,7 @@ const LANGUAGE_PILLAR_COLORS: Record<
   Vocabulary: { icon: "📚", bg: "rgba(16,185,129,0.12)", text: "#10b981" },
   Grammar: { icon: "📐", bg: "rgba(59,130,246,0.12)", text: "#3b82f6" },
   Fluency: { icon: "🌊", bg: "rgba(14,165,233,0.12)", text: "#0ea5e9" },
-  "Professional Tone": { icon: "🕴️", bg: "rgba(139,92,246,0.12)", text: "#8b5cf6" },
+  "Professional Tone": { icon: "🕴️", bg: "rgba(139,92,246,0.12)", text: "#14b8a6" },
   Persuasion: { icon: "🎯", bg: "rgba(245,158,11,0.12)", text: "#f59e0b" },
 };
 
@@ -253,7 +253,7 @@ function ConversationFeedback({
   const allInsights = [...languageInsights, ...contentInsights];
 
   return (
-    <div
+    <div aria-label=\"ConversationFeedback"
       className="w-full min-h-full flex flex-col bg-[#f0f4f8] relative overflow-hidden"
       style={{ fontFamily: "'Inter', sans-serif" }}
     >

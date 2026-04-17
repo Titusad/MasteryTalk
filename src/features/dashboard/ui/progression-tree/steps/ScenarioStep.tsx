@@ -9,7 +9,7 @@ interface Props {
 
 export function ScenarioStep({ data, footer }: Props) {
   return (
-    <motion.div
+    <motion.div aria-label=\"ScenarioStep"
       className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col overflow-hidden"
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}

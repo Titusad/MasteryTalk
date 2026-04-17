@@ -1223,7 +1223,7 @@ const CONTENT_QUALITY_COLORS: Record<
   Structure: {
     icon: "🏗️",
     bg: "rgba(168,85,247,0.12)",
-    text: "#a855f7",
+    text: "#14b8a6",
   },
   Examples: {
     icon: "📊",

@@ -392,7 +392,7 @@ function ShadowingDrill({ phrase, onScoreUpdate }: { phrase: string; onScoreUpda
                     onClick={playNativeAudio}
                     className={`w-full py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm cursor-pointer ${isPlaying
                             ? "bg-[#0f172b] text-white"
-                            : "bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white hover:from-[#4f46e5] hover:to-[#7c3aed]"
+                            : "bg-gradient-to-r from-[#6366f1] to-[#14b8a6] text-white hover:from-[#4f46e5] hover:to-[#0f172b]"
                         }`}
                     style={{ fontWeight: 500 }}
                 >
@@ -734,12 +734,12 @@ export function PronunciationTab({
                 <div className="border-t border-white/10 pt-6 mt-2">
                     {/* Actionable tip */}
                     <div className="bg-white/5 border border-white/10 rounded-xl p-5 mb-5 flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-full bg-[#8b5cf6]/20 flex items-center justify-center shrink-0">
-                            <Zap className="w-4 h-4 text-[#a78bfa]" />
+                        <div className="w-8 h-8 rounded-full bg-[#14b8a6]/20 flex items-center justify-center shrink-0">
+                            <Zap className="w-4 h-4 text-[#2dd4bf]" />
                         </div>
                         <div>
                             <p
-                                className="text-[10px] uppercase tracking-wider text-[#a78bfa] mb-1"
+                                className="text-[10px] uppercase tracking-wider text-[#2dd4bf] mb-1"
                                 style={{ fontWeight: 600 }}
                             >
                                 Coach's Tip
@@ -783,7 +783,7 @@ export function PronunciationTab({
             >
                 {/* Section header */}
                 <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#6366f1] to-[#8b5cf6] flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#6366f1] to-[#14b8a6] flex items-center justify-center shrink-0">
                         <Headphones className="w-5 h-5 text-white" />
                     </div>
                     <div>
@@ -868,7 +868,7 @@ export function PronunciationTab({
                                 setInitialShadowingIndex(0);
                                 setShowShadowingModal(true);
                             }}
-                            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white text-sm hover:from-[#4f46e5] hover:to-[#7c3aed] transition-all shadow-md shadow-[#6366f1]/20 cursor-pointer flex items-center justify-center gap-2"
+                            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#14b8a6] text-white text-sm hover:from-[#4f46e5] hover:to-[#0f172b] transition-all shadow-md shadow-[#6366f1]/20 cursor-pointer flex items-center justify-center gap-2"
                             style={{ fontWeight: 600 }}
                             whileHover={{ scale: 1.01 }}
                             whileTap={{ scale: 0.99 }}

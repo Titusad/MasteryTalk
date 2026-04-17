@@ -54,7 +54,7 @@ export function PhraseCard({
   const words = sentence.split(/\s+/);
 
   return (
-    <div className="rounded-2xl border border-[#e2e8f0] bg-[#fafbfc] p-5 md:p-6">
+    <div aria-label=\"PhraseCard" className="rounded-2xl border border-[#e2e8f0] bg-[#fafbfc] p-5 md:p-6">
       <p
         className="text-lg md:text-xl leading-relaxed text-[#1e293b]"
         style={{ fontWeight: 400 }}

@@ -9,7 +9,7 @@ interface Props {
 
 export function ComparisonStep({ data, footer }: Props) {
   return (
-    <motion.div
+    <motion.div aria-label=\"ComparisonStep"
       className="bg-white rounded-2xl border border-[#6366f1]/20 shadow-md shadow-[#6366f1]/5 overflow-hidden"
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}

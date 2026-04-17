@@ -85,7 +85,7 @@ export function InterviewBriefingScreen({
     }, [onStartSimulation]);
 
     return (
-        <div
+        <div aria-label=\"InterviewBriefingScreen"
             className="w-full min-h-full flex flex-col bg-[#f0f4f8] relative overflow-hidden"
             style={{ fontFamily: "'Inter', sans-serif" }}
         >

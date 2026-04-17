@@ -29,10 +29,11 @@ export function BeforeAfterCard({ data, dc }: BeforeAfterCardProps) {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.22 }}
+      aria-label="Before and after comparison"
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Award className="w-4 h-4 text-[#8b5cf6]" />
+          <Award className="w-4 h-4 text-[#14b8a6]" />
           <h3
             className="text-sm text-[#0f172b]"
             style={{ fontWeight: 600 }}
@@ -76,9 +77,9 @@ export function BeforeAfterCard({ data, dc }: BeforeAfterCardProps) {
       </div>
       {data.technique && (
         <div className="mt-3 flex items-start gap-2">
-          <div className="w-1 h-1 rounded-full bg-[#8b5cf6] mt-1.5 shrink-0" />
+          <div className="w-1 h-1 rounded-full bg-[#14b8a6] mt-1.5 shrink-0" />
           <p className="text-[11px] text-[#62748e] leading-relaxed">
-            <span style={{ fontWeight: 600, color: "#8b5cf6" }}>
+            <span style={{ fontWeight: 600, color: "#14b8a6" }}>
               {dc.improvement.technique}:
             </span>{" "}
             {data.technique}

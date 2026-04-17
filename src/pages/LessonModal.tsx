@@ -172,8 +172,8 @@ export function LessonModal({ lessons, currentIndex, onClose, onNavigate, onComp
                 {/* Practice Prompt */}
                 <section className="bg-[#faf5ff] border border-[#e9d5ff] rounded-2xl p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <Target className="w-4 h-4 text-[#7c3aed]" />
-                    <p className="text-xs text-[#7c3aed] uppercase tracking-wider" style={{ fontWeight: 600 }}>
+                    <Target className="w-4 h-4 text-[#0f172b]" />
+                    <p className="text-xs text-[#0f172b] uppercase tracking-wider" style={{ fontWeight: 600 }}>
                       Practice Prompt
                     </p>
                   </div>

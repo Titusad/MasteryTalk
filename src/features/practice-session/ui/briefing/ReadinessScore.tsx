@@ -36,7 +36,7 @@ export function ReadinessScore({
                 particleCount: 80,
                 spread: 70,
                 origin: { y: 0.6, x: 0.5 },
-                colors: ["#6366f1", "#8b5cf6", "#22c55e", "#f59e0b", "#ec4899"],
+                colors: ["#6366f1", "#14b8a6", "#22c55e", "#f59e0b", "#ec4899"],
             });
         };
         fire();
@@ -51,7 +51,7 @@ export function ReadinessScore({
     const ringColor = score >= 80 ? "#22c55e" : score >= 60 ? "#f59e0b" : "#6366f1";
 
     return (
-        <motion.div
+        <motion.div aria-label=\"ReadinessScore"
             className="flex flex-col items-center gap-6 py-8"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}

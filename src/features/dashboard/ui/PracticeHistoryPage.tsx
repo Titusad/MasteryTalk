@@ -135,7 +135,7 @@ export function PracticeHistoryPage({
   const totalSessions = practices.length;
 
   return (
-    <div
+    <div aria-label=\"PracticeHistoryPage"
       className="w-full min-h-full flex flex-col bg-[#f8fafc] relative overflow-hidden"
       style={{ fontFamily: "'Inter', sans-serif" }}
     >
@@ -226,7 +226,7 @@ export function PracticeHistoryPage({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: i * 0.05 }}
                     className={`w-full bg-white rounded-2xl border text-left transition-all ${isExpanded
-                        ? "border-[#c4b5fd] shadow-sm"
+                        ? "border-[#cbd5e1] shadow-sm"
                         : "border-[#e2e8f0] hover:border-[#cad5e2]"
                       }`}
                   >

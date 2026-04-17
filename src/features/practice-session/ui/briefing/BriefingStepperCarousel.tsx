@@ -132,7 +132,7 @@ export function BriefingStepperCarousel({
                 <div className="w-full h-2 bg-[#f1f5f9] rounded-full overflow-hidden">
                     <motion.div
                         className="h-full rounded-full"
-                        style={{ background: "linear-gradient(90deg, #6366f1, #8b5cf6)" }}
+                        style={{ background: "linear-gradient(90deg, #6366f1, #14b8a6)" }}
                         initial={{ width: 0 }}
                         animate={{ width: `${progress}%` }}
                         transition={{ duration: 0.5, ease: "easeOut" }}
