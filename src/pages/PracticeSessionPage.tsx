@@ -8,7 +8,7 @@ import type { ServiceError } from "@/services/errors";
 import type { RemedialContent } from "@/services/types";
 
 import { getLevelDefinition } from "@/app/features/dashboard/model/progression-paths";
-import { ProgressionProvider } from "@/shared/ui";
+import { ProgressionProvider } from "@/shared/lib/ProgressionContext";
 import { ServiceErrorBanner } from "@/shared/ui";
 import { getBeforeAfterForScenario, getStrengthsForScenario } from "@/services/scenario-data";
 import { useMediaRecorder } from "@/app/hooks/useMediaRecorder";
@@ -23,9 +23,9 @@ import type {
   TurnPronunciationData,
   SessionConfig,
 } from "@/services/types";
-import { SessionProgressBar } from "@/shared/ui";
+import { SessionProgressBar } from "@/widgets/SessionProgressBar";
 import { InterviewBriefingScreen } from "@/widgets/InterviewBriefingScreen";
-import type { Step } from "@/shared/ui";
+import type { Step } from "@/entities/session";
 import { VoicePractice } from "@/app/features/practice-session/ui/VoicePractice";
 import { type RealFeedbackData, type RepeatInfo } from "@/app/features/practice-session/ui/ConversationFeedback";
 import { InterviewAnalysis } from "@/app/features/practice-session/ui/InterviewAnalysis";
@@ -792,7 +792,6 @@ export function PracticeSessionPage({
     <div className="size-full flex flex-col" style={{ fontFamily: "'Inter', sans-serif" }}>
       <AppHeader
         variant="session"
-        showProgressBar={false}
         userName={userName}
         onLogout={onLogout}
         onNavigateToAccount={onNavigateToAccount}

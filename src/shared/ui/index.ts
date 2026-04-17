@@ -21,7 +21,7 @@ export { SmoothHeight } from "./SmoothHeight";
 export { HighlightWithTooltip } from "./HighlightTooltip";
 export { RecordButton, RecordingWaveformBars, RecordingTimer } from "./RecordButton";
 export { AnalyzingScreen } from "./AnalyzingScreen";
-export { SessionProgressBar } from "./SessionProgressBar";
+// SessionProgressBar lives in src/widgets/SessionProgressBar — import directly from there
 export { ServiceErrorBanner, PaymentPendingBanner } from "./ServiceErrorBanner";
 
 // ── Layout helpers ────────────────────────────────────────────
@@ -38,9 +38,7 @@ export { SubtleTextLink } from "./SubtleTextLink";
 export { highlightEnglish, renderStressedPhrase, stripStressMarkers } from "./TextHelpers";
 export { PricingCard } from "./PricingCard";
 
-// ── Session utilities ─────────────────────────────────────────
-export { ProgressionProvider, useProgressionLevel } from "@/app/components/shared/ProgressionContext";
-export type { Step } from "@/entities/session";
+// ── Session utilities — consumed directly from @/shared/lib/ProgressionContext and @/entities/session
 
 // ── Feedback components ───────────────────────────────────────
 export { ProficiencyGauge } from "./ProficiencyGauge";

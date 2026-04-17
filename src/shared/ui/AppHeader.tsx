@@ -13,18 +13,14 @@
 import { ArrowLeft, LogOut } from "lucide-react";
 import type React from "react";
 import { BrandLogo } from "./BrandLogo";
-import { SessionProgressBar } from "./SessionProgressBar";
-import type { Step } from "@/shared/ui";
 
 export interface AppHeaderProps {
   variant?: "app" | "session" | "minimal";
   showBackButton?: boolean;
   backLabel?: string;
   onBack?: () => void;
-  /** Only active when variant="session" */
-  showProgressBar?: boolean;
-  /** Required when showProgressBar=true */
-  currentStep?: Step;
+  /** Rendered below the top bar when variant="session" (e.g. <SessionProgressBar />) */
+  progressBarSlot?: React.ReactNode;
   /** User display name — initials derived automatically */
   userName?: string;
   onLogout?: () => void;
@@ -38,8 +34,7 @@ export function AppHeader({
   showBackButton = false,
   backLabel = "Back",
   onBack,
-  showProgressBar = false,
-  currentStep,
+  progressBarSlot,
   userName,
   onLogout,
   onNavigateToAccount,
@@ -104,9 +99,9 @@ export function AppHeader({
       </div>
 
       {/* Progress bar row — session variant only */}
-      {variant === "session" && showProgressBar && currentStep && (
+      {variant === "session" && progressBarSlot && (
         <div className={`${maxW} mx-auto px-6 md:px-8`}>
-          <SessionProgressBar currentStep={currentStep} />
+          {progressBarSlot}
         </div>
       )}
     </header>
