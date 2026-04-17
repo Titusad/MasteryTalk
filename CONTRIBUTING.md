@@ -178,9 +178,10 @@ Esperar confirmación explícita antes de proceder.
 ### Al finalizar una tarea
 
 1. Verificar que compila (`pnpm run dev`)
-2. Commit con Conventional Commits
-3. Push a main
-4. Actualizar `ROADMAP.md` si se completó un item
+2. Preguntar por autorización para proceder con git
+3. Commit con Conventional Commits
+4. Push a main
+5. Actualizar `ROADMAP.md` si se completó un item
 
 ---
 
