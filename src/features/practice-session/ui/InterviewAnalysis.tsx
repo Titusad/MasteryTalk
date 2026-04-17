@@ -47,12 +47,12 @@ import type {
     Opportunity,
 } from "@/services/types";
 import type { RealFeedbackData } from "./ConversationFeedback";
-import { ShadowingModal } from "@/app/features/practice-session/ui/ShadowingModal";
-import type { ShadowingPhrase } from "@/app/features/shadowing/model";
+import { ShadowingModal } from "@/features/practice-session/ui/ShadowingModal";
+import type { ShadowingPhrase } from "@/features/shadowing/model";
 import {
     computeStressedWords,
     computeLinkedPairs,
-} from "@/app/features/shadowing/model/shadowing.computations";
+} from "@/features/shadowing/model/shadowing.computations";
 
 /* ── Constants ── */
 const PROGRESSION_THRESHOLD = 75;

@@ -1,18 +1,7 @@
 /**
- * ProgressionContext — Session-level context for progression level info.
- * Avoids prop-drilling through 7+ sub-components.
+ * ProgressionContext — BACKWARD COMPAT re-export.
+ *
+ * Sprint 1 FSD: Source of truth moved to src/shared/lib/ProgressionContext.tsx.
+ * This file remains so existing imports from @/app/components/shared/ don't break.
  */
-
-import { createContext, useContext } from "react";
-
-interface ProgressionContextValue {
-  levelTitle: string | null;
-}
-
-const ProgressionContext = createContext<ProgressionContextValue>({ levelTitle: null });
-
-export const ProgressionProvider = ProgressionContext.Provider;
-
-export function useProgressionLevel(): string | null {
-  return useContext(ProgressionContext).levelTitle;
-}
+export { ProgressionProvider, useProgressionLevel } from "@/shared/lib/ProgressionContext";

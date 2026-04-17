@@ -8,8 +8,8 @@ import {
   BookOpen,
   Sparkles,
 } from "lucide-react";
-import { BrandLogo } from "../../../components/shared";
-import { authService } from "../../../../services";
+import { BrandLogo } from "@/app/components/shared";
+import { authService } from "@/services";
 import type { LandingLang } from "@/shared/i18n/landing-i18n";
 
 interface DashboardHeaderProps {

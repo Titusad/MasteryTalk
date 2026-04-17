@@ -8,7 +8,7 @@ import { Info, Target } from "lucide-react";
 import { ProficiencyRing } from "./ProficiencyRing";
 import { PILLAR_COLORS, type RadarDataPoint } from "../model/dashboard.constants";
 import { computeFocusAreas } from "../model/dashboard.computations";
-import type { PersistedSession } from "../../../../services/adapters/supabase/dashboard.supabase";
+import type { PersistedSession } from "@/services/adapters/supabase/dashboard.supabase";
 
 interface ProficiencyHeroCardProps {
   proficiencyScore: number;

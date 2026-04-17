@@ -5,8 +5,8 @@
  *  100% reusable in React Native.
  * ══════════════════════════════════════════════════════════════
  */
-import type { PersistedSession } from "../../../../services/adapters/supabase/dashboard.supabase";
-import type { PracticeHistoryItem } from "../../../../services/types";
+import type { PersistedSession } from "@/services/adapters/supabase/dashboard.supabase";
+import type { PracticeHistoryItem } from "@/services/types";
 import {
   PILLAR_NAMES,
   PILLAR_TIPS,

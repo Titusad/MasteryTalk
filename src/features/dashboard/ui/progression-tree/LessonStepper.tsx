@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
-import type { StructuredLesson, LessonStep } from "../../../../../services/types";
+import type { StructuredLesson, LessonStep } from "@/services/types";
 import { fetchLessonContent } from "../../model/progression.api";
 
 import { ConceptStep } from "./steps/ConceptStep";

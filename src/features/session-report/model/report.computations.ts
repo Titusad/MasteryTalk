@@ -4,7 +4,7 @@
  *  No React, no DOM — 100% reusable in React Native.
  * ══════════════════════════════════════════════════════════════
  */
-import type { TurnPronunciationData } from "../../../../services/types";
+import type { TurnPronunciationData } from "@/services/types";
 
 /* ── Scenario labels ── */
 export const SCENARIO_LABELS_MAP: Record<string, string> = {

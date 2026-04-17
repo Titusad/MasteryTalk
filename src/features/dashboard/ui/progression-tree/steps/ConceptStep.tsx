@@ -1,6 +1,6 @@
 import { BookOpen, Lightbulb } from "lucide-react";
 import { motion } from "motion/react";
-import type { LessonConceptStep } from "../../../../../../services/types";
+import type { LessonConceptStep } from "@/services/types";
 
 interface Props {
   data: LessonConceptStep;

@@ -7,7 +7,7 @@ import { toServiceError } from "@/services/errors";
 import type { ServiceError } from "@/services/errors";
 import type { RemedialContent } from "@/services/types";
 
-import { getLevelDefinition } from "@/app/features/dashboard/model/progression-paths";
+import { getLevelDefinition } from "@/features/dashboard/model/progression-paths";
 import { ProgressionProvider } from "@/shared/lib/ProgressionContext";
 import { ServiceErrorBanner } from "@/shared/ui";
 import { getBeforeAfterForScenario, getStrengthsForScenario } from "@/services/scenario-data";
@@ -26,10 +26,10 @@ import type {
 import { SessionProgressBar } from "@/widgets/SessionProgressBar";
 import { InterviewBriefingScreen } from "@/widgets/InterviewBriefingScreen";
 import type { Step } from "@/entities/session";
-import { VoicePractice } from "@/app/features/practice-session/ui/VoicePractice";
-import { type RealFeedbackData, type RepeatInfo } from "@/app/features/practice-session/ui/ConversationFeedback";
-import { InterviewAnalysis } from "@/app/features/practice-session/ui/InterviewAnalysis";
-import { PathConversionScreen } from "@/app/features/skill-drill/ui/PathConversionScreen";
+import { VoicePractice } from "@/features/practice-session/ui/VoicePractice";
+import { type RealFeedbackData, type RepeatInfo } from "@/features/practice-session/ui/ConversationFeedback";
+import { InterviewAnalysis } from "@/features/practice-session/ui/InterviewAnalysis";
+import { PathConversionScreen } from "@/features/skill-drill/ui/PathConversionScreen";
 import { PathPurchaseModal } from "@/widgets/PathPurchaseModal";
 import { useUsageGating } from "@/app/hooks/useUsageGating";
 import type { PaywallReason } from "@/app/hooks/useUsageGating";
@@ -56,12 +56,12 @@ import { analyzeCvMatch, type CVMatchResult } from "@/services/cvMatchService";
 const _detectedLocale = detectLanguageBackground();
 
 /* ── Sub-screens extracted to session/ ── */
-import { PreBriefingScreen } from "@/app/features/practice-session/ui/PreBriefingScreen";
-import { CVUploadScreen } from "@/app/features/practice-session/ui/CVUploadScreen";
-import { ExtraContextScreen } from "@/app/features/practice-session/ui/ExtraContextScreen";
-import { KeyExperienceScreen } from "@/app/features/practice-session/ui/KeyExperienceScreen";
-import { PreSessionBrief } from "@/app/features/practice-session/ui/PreSessionBrief";
-import { scriptSectionsToBriefingData } from "@/app/features/practice-session/ui/briefing/salesAdapter";
+import { PreBriefingScreen } from "@/features/practice-session/ui/PreBriefingScreen";
+import { CVUploadScreen } from "@/features/practice-session/ui/CVUploadScreen";
+import { ExtraContextScreen } from "@/features/practice-session/ui/ExtraContextScreen";
+import { KeyExperienceScreen } from "@/features/practice-session/ui/KeyExperienceScreen";
+import { PreSessionBrief } from "@/features/practice-session/ui/PreSessionBrief";
+import { scriptSectionsToBriefingData } from "@/features/practice-session/ui/briefing/salesAdapter";
 
 /* ═══════════════════════════════════════════════════════════
    TYPES & DATA (MVP-simplified)
@@ -101,7 +101,7 @@ interface PracticeSessionPageProps {
   onNavigateToAccount?: () => void;
 }
 
-import { MAX_REPEATS, SCENARIO_LABELS_MAP } from "@/app/features/practice-session/model/session.constants";
+import { MAX_REPEATS, SCENARIO_LABELS_MAP } from "@/features/practice-session/model/session.constants";
 import {
   generateInterviewBriefing,
   generateScript,
@@ -114,8 +114,8 @@ import {
   completeProgressionLevel,
   completeRemedial,
   personalizePatterns,
-} from "@/app/features/practice-session/model/session-api";
-import type { PersonalizedPatterns } from "@/app/features/practice-session/model/session-api";
+} from "@/features/practice-session/model/session-api";
+import type { PersonalizedPatterns } from "@/features/practice-session/model/session-api";
 
 /* ═══════════════════════════════════════════════════════════
    MAIN ORCHESTRATOR (MVP-simplified flow)

@@ -16,7 +16,7 @@ import type {
   TurnPronunciationData,
   SessionConfig,
 } from "@/services/types";
-import type { RealFeedbackData } from "@/app/features/practice-session/ui/ConversationFeedback";
+import type { RealFeedbackData } from "@/features/practice-session/ui/ConversationFeedback";
 
 const BASE_URL = `${SUPABASE_URL}/functions/v1/make-server-08b8658d`;
 const TIMEOUT_MS = 40_000;

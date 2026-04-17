@@ -2,7 +2,7 @@ import { SUPABASE_URL } from "@/services/supabase";
 import { useState, useRef, useEffect } from "react";
 import { Mic, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { PROGRESSION_PATHS, VISIBLE_PATHS, getLevelState, getDefaultProgressionState } from "@/app/features/dashboard/model/progression-paths";
+import { PROGRESSION_PATHS, VISIBLE_PATHS, getLevelState, getDefaultProgressionState } from "@/features/dashboard/model/progression-paths";
 import type { ProgressionState, ScenarioType } from "@/services/types";
 
 import { projectId } from "@/../utils/supabase/info";

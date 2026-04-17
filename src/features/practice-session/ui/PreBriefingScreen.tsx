@@ -24,8 +24,8 @@ import {
 } from "@/app/components/shared";
 import type { ScenarioType, ScriptSection } from "@/services/types";
 import { SessionProgressBar } from "@/widgets/SessionProgressBar";
-import { ShadowingModal } from "@/app/features/practice-session/ui/ShadowingModal";
-import type { ShadowingPhrase } from "@/app/features/shadowing/model/shadowing.computations";
+import { ShadowingModal } from "@/features/practice-session/ui/ShadowingModal";
+import type { ShadowingPhrase } from "@/features/shadowing/model/shadowing.computations";
 
 /* ── Coaching Cue Formatter ──
    Detects coaching directives at the start of paragraph text

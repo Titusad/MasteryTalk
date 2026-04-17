@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git commit *)",
+      "Bash(git mv *)",
+      "Bash(git -C /Users/dave/masterytalk mv src/app/features/arena src/features/arena)",
+      "Bash(git -C /Users/dave/masterytalk status --short src/app/features/)",
+      "Bash(git -C /Users/dave/masterytalk ls-files src/app/features/)",
+      "Bash(git -C /Users/dave/masterytalk add -A)",
+      "Bash(git -C /Users/dave/masterytalk commit -m ' *)"
+    ]
+  }
+}

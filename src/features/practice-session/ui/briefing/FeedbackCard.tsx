@@ -23,12 +23,12 @@ import {
 } from "lucide-react";
 import { projectId } from "@/../utils/supabase/info";
 import { getAuthToken } from "@/services/supabase";
-import { ShadowingModal } from "@/app/features/practice-session/ui/ShadowingModal";
-import type { ShadowingPhrase } from "@/app/features/shadowing/model";
+import { ShadowingModal } from "@/features/practice-session/ui/ShadowingModal";
+import type { ShadowingPhrase } from "@/features/shadowing/model";
 import {
     computeStressedWords,
     computeLinkedPairs,
-} from "@/app/features/shadowing/model/shadowing.computations";
+} from "@/features/shadowing/model/shadowing.computations";
 
 interface ShadowingPhraseRaw {
     sentence: string;

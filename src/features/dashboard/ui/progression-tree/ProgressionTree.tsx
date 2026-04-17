@@ -8,7 +8,7 @@ import {
   VISIBLE_PATHS,
   getDefaultProgressionState,
   getLevelState,
-} from "@/app/features/dashboard/model/progression-paths";
+} from "@/features/dashboard/model/progression-paths";
 import type { ProgressionState, LevelStatus, ScenarioType } from "@/services/types";
 import { projectId } from "@/../utils/supabase/info";
 import { getAuthToken } from "@/services/supabase";

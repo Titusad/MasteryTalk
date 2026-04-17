@@ -2,7 +2,7 @@
  * Practice Session — Constants (Shared Layer)
  * No React, no DOM — 100% reusable in React Native.
  */
-import type { UserPlan } from "../../../../services/types";
+import type { UserPlan } from "@/services/types";
 
 export const MAX_REPEATS: Record<UserPlan, number> = {
   free: 1,

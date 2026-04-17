@@ -4,7 +4,7 @@
  */
 import { motion } from "motion/react";
 import { MessageCircleQuestion } from "lucide-react";
-import type { PersistedSession } from "../../../../services/adapters/supabase/dashboard.supabase";
+import type { PersistedSession } from "@/services/adapters/supabase/dashboard.supabase";
 
 interface InterviewPrepCardProps {
   persistedSessions: PersistedSession[];

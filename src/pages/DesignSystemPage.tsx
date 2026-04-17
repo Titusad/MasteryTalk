@@ -46,7 +46,7 @@ import {
 import {
   PhaseIndicator,
   ArenaProgressBar,
-} from "@/app/features/arena/ui/ArenaSystem";
+} from "@/features/arena/ui/ArenaSystem";
 import { ServiceErrorBanner } from "@/shared/ui";
 import { ServiceError } from "@/services/errors";
 

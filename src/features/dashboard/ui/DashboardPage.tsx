@@ -14,10 +14,10 @@
  */
 import { useState } from "react";
 import { Zap, Trophy, BarChart3 } from "lucide-react";
-import { PastelBlobs, MiniFooter } from "../../../components/shared";
+import { PastelBlobs, MiniFooter } from "@/app/components/shared";
 import type { LandingLang } from "@/shared/i18n/landing-i18n";
 import { PathPurchaseModal } from "@/widgets/PathPurchaseModal";
-import type { PurchaseType, OnboardingProfile } from "../../../../services/types";
+import type { PurchaseType, OnboardingProfile } from "@/services/types";
 
 /* ── Feature Module Imports ── */
 import { useDashboardData } from "../model";

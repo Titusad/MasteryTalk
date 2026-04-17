@@ -27,7 +27,7 @@ import { useState, useCallback, useMemo } from "react";
 import type {
   LevelMethodology,
   BriefLocale,
-} from "@/app/features/dashboard/model/progression-paths";
+} from "@/features/dashboard/model/progression-paths";
 import { useBriefLocale } from "../hooks/useBriefLocale";
 
 /* ── Locale display config ── */

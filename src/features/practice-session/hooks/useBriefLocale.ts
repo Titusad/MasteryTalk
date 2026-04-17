@@ -7,7 +7,7 @@
  */
 
 import { useState, useCallback } from "react";
-import type { BriefLocale } from "@/app/features/dashboard/model/progression-paths";
+import type { BriefLocale } from "@/features/dashboard/model/progression-paths";
 
 const STORAGE_KEY = "mastery_brief_locale";
 const DEFAULT_LOCALE: BriefLocale = "en";

@@ -1,7 +1,7 @@
 import { SUPABASE_URL } from "@/services/supabase";
-import { getAuthToken } from "../../../../services/supabase";
-import { projectId } from "../../../../../utils/supabase/info";
-import type { RemedialContent, StructuredLesson } from "../../../../services/types";
+import { getAuthToken } from "@/services/supabase";
+import { projectId } from "@/../utils/supabase/info";
+import type { RemedialContent, StructuredLesson } from "@/services/types";
 
 const BASE = `${SUPABASE_URL}/functions/v1/make-server-08b8658d`;
 

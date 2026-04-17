@@ -21,8 +21,8 @@ function lazyRetry(factory: () => Promise<any>) {
 }
 const DesignSystemPage = lazyRetry(() => import("../pages/DesignSystemPage").then(m => ({ default: m.DesignSystemPage })));
 const PracticeSessionPage = lazyRetry(() => import("../pages/PracticeSessionPage").then(m => ({ default: m.PracticeSessionPage })));
-const DashboardPage = lazyRetry(() => import("./features/dashboard/ui/DashboardPage").then(m => ({ default: m.DashboardPage })));
-const PracticeHistoryPage = lazyRetry(() => import("./features/dashboard/ui/PracticeHistoryPage").then(m => ({ default: m.PracticeHistoryPage })));
+const DashboardPage = lazyRetry(() => import("@/features/dashboard/ui/DashboardPage").then(m => ({ default: m.DashboardPage })));
+const PracticeHistoryPage = lazyRetry(() => import("@/features/dashboard/ui/PracticeHistoryPage").then(m => ({ default: m.PracticeHistoryPage })));
 const AccountPage = lazyRetry(() => import("../pages/AccountPage").then(m => ({ default: m.AccountPage })));
 const LibraryPage = lazyRetry(() => import("../pages/LibraryPage").then(m => ({ default: m.LibraryPage })));
 const AdminDashboardPage = lazyRetry(() => import("../pages/AdminDashboardPage").then(m => ({ default: m.AdminDashboardPage })));
@@ -44,7 +44,7 @@ import type { MarketFocus } from "../services/prompts";
 import { projectId } from "../../utils/supabase/info";
 import { DevPreviewMenu, getDevMockData } from "./components/DevPreviewMenu";
 import type { Step } from "./components/shared/session-types";
-import type { RealFeedbackData } from "./features/practice-session/ui/ConversationFeedback";
+import type { RealFeedbackData } from "@/features/practice-session/ui/ConversationFeedback";
 import { useHashRouter } from "./hooks/useHashRouter";
 import type { Page } from "./hooks/useHashRouter";
 import { useAuthFlow } from "./hooks/useAuthFlow";

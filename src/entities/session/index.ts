@@ -7,22 +7,9 @@
 
 /* ── Session flow step ── */
 
-export type Step =
-  | "key-experience"
-  | "cv-upload"
-  | "extra-context"
-  | "pre-brief"
-  | "generating-script"
-  | "pre-briefing"
-  | "practice"
-  | "analyzing"
-  | "interview-analysis"
-  | "path-conversion"
-  | "conversation-feedback"
-  | "skill-drill"
-  | "cp-unlock"
-  | "remedial"
-  | "session-recap";
+// Sprint 1 FSD: Step is defined in shared/types/session (cross-cutting type).
+// Re-exported here for backward compatibility.
+export type { Step } from "@/shared/types/session";
 
 /* ── Session mode (Quick Prep vs Conversational Path) ── */
 

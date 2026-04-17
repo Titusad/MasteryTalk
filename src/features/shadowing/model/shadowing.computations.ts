@@ -4,7 +4,7 @@
  *  No React, no DOM — 100% reusable in React Native.
  * ══════════════════════════════════════════════════════════════
  */
-import type { TurnPronunciationData, BeforeAfterComparison } from "../../../../services/types";
+import type { TurnPronunciationData, BeforeAfterComparison } from "@/services/types";
 
 /* ── Types ── */
 

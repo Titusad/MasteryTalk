@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import { Mic, Square, CheckCircle2 } from "lucide-react";
 import { motion } from "motion/react";
-import type { LessonExerciseStep } from "../../../../../../services/types";
+import type { LessonExerciseStep } from "@/services/types";
 
 interface Props {
   data: LessonExerciseStep;

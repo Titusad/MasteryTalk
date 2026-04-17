@@ -61,8 +61,8 @@ import {
   computePronScores,
   computeProblemWords,
   computePronTip,
-} from "@/app/features/session-report/model";
-import { ReportSection, ProficiencyGauge } from "@/app/features/session-report/ui";
+} from "@/features/session-report/model";
+import { ReportSection, ProficiencyGauge } from "@/features/session-report/ui";
 
 /* Constants and helpers now imported from features/session-report/model */
 

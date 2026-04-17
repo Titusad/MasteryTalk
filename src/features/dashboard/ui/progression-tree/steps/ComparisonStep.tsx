@@ -1,6 +1,6 @@
 import { ArrowLeftRight } from "lucide-react";
 import { motion } from "motion/react";
-import type { LessonComparisonStep } from "../../../../../../services/types";
+import type { LessonComparisonStep } from "@/services/types";
 
 interface Props {
   data: LessonComparisonStep;

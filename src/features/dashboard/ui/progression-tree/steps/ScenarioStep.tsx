@@ -1,6 +1,6 @@
 import { Target } from "lucide-react";
 import { motion } from "motion/react";
-import type { LessonScenarioStep } from "../../../../../../services/types";
+import type { LessonScenarioStep } from "@/services/types";
 
 interface Props {
   data: LessonScenarioStep;

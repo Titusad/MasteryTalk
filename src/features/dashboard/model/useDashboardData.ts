@@ -8,14 +8,14 @@
  * ══════════════════════════════════════════════════════════════
  */
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { userService, paymentService } from "../../../../services";
-import type { PracticeHistoryItem } from "../../../../services/types";
-import { fetchSessions } from "../../../../services/adapters/supabase/dashboard.supabase";
-import type { PersistedSession } from "../../../../services/adapters/supabase/dashboard.supabase";
+import { userService, paymentService } from "@/services";
+import type { PracticeHistoryItem } from "@/services/types";
+import { fetchSessions } from "@/services/adapters/supabase/dashboard.supabase";
+import type { PersistedSession } from "@/services/adapters/supabase/dashboard.supabase";
 import {
   getRecommendedLessons,
   syncLessonProgress,
-} from "../../../../services/microLessons";
+} from "@/services/microLessons";
 import type { RadarDataPoint } from "./dashboard.constants";
 import {
   computeRadarFromSessions,
