@@ -42,48 +42,18 @@ import type {
 import { PronunciationTab } from "./PronunciationTab";
 
 import type { PaywallReason } from "@/app/hooks/useUsageGating";
+import { type RealFeedbackData } from "@/entities/feedback";
 
-/* Re-export shared types */
+/* Re-export for backward compat — Sprint 3 will update all consumers */
+export type { RealFeedbackData };
+
 export interface RepeatInfo {
-  /** Current attempt number (1-based) */
   attempt: number;
-  /** Maximum attempts allowed for this scenario */
   maxAttempts: number;
-  /** Whether the user can practice again */
   canRepeat: boolean;
 }
 
 export type { PaywallReason };
-
-/* ── Real Feedback Data from /analyze-feedback ── */
-export interface RealFeedbackData {
-  strengths: Strength[];
-  opportunities: Opportunity[];
-  beforeAfter: BeforeAfterComparison[];
-  pillarScores?: Record<string, number> | null;
-  professionalProficiency?: number | null;
-  contentScores?: Record<string, number> | null;
-  interviewReadinessScore?: number | null;
-  preparationUtilization?: {
-    score: number;
-    verdict: string;
-    insights: Array<{
-      aspect: string;
-      observation: string;
-      rating: "strong" | "partial" | "missed";
-    }>;
-  } | null;
-  contentInsights?: Array<{
-    dimension: string;
-    observation: string;
-    tip: string;
-  }> | null;
-  languageInsights?: Array<{
-    dimension: string;
-    observation: string;
-    tip: string;
-  }> | null;
-}
 
 /* ── Data Constants ── */
 const SCENARIO_LABELS_MAP: Record<string, string> = {

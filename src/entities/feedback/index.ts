@@ -93,12 +93,29 @@ export interface SessionFeedbackResult {
 export interface RealFeedbackData {
   strengths: Strength[];
   opportunities: Opportunity[];
-  beforeAfter?: BeforeAfterComparison[];
-  pillarScores?: Record<string, number>;
-  professionalProficiency?: number;
-  contentScores?: ContentQualityScores;
-  interviewReadinessScore?: number;
-  preparationUtilization?: SessionFeedbackResult["preparationUtilization"];
-  contentInsights?: ContentInsight[];
+  beforeAfter: BeforeAfterComparison[];
+  pillarScores?: Record<string, number> | null;
+  professionalProficiency?: number | null;
+  contentScores?: Record<string, number> | null;
+  interviewReadinessScore?: number | null;
+  preparationUtilization?: {
+    score: number;
+    verdict: string;
+    insights: Array<{
+      aspect: string;
+      observation: string;
+      rating: "strong" | "partial" | "missed";
+    }>;
+  } | null;
+  contentInsights?: Array<{
+    dimension: string;
+    observation: string;
+    tip: string;
+  }> | null;
+  languageInsights?: Array<{
+    dimension: string;
+    observation: string;
+    tip: string;
+  }> | null;
 }
 
