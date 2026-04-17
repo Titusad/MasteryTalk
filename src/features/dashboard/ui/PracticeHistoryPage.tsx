@@ -135,7 +135,7 @@ export function PracticeHistoryPage({
   const totalSessions = practices.length;
 
   return (
-    <div aria-label=\"PracticeHistoryPage"
+    <div aria-label="PracticeHistoryPage"
       className="w-full min-h-full flex flex-col bg-[#f8fafc] relative overflow-hidden"
       style={{ fontFamily: "'Inter', sans-serif" }}
     >

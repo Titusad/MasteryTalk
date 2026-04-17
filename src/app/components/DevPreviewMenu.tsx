@@ -484,7 +484,7 @@ export function DevPreviewMenu({ onNavigate }: DevPreviewMenuProps) {
     };
 
     return (
-        <div aria-label=\"DevPreviewMenu" ref={menuRef} className="fixed top-3 right-3 z-[9999]" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <div aria-label="DevPreviewMenu" ref={menuRef} className="fixed top-3 right-3 z-[9999]" style={{ fontFamily: "'Inter', sans-serif" }}>
             <button
                 onClick={() => setOpen(!open)}
                 className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs shadow-lg border transition-all"

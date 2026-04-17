@@ -29,7 +29,7 @@ export function PricingCard({
     const dark = featured;
 
     return (
-        <div aria-label=\"PricingCard"
+        <div aria-label="PricingCard"
             className={`relative rounded-3xl p-8 h-full flex flex-col ${bg} ${featured ? "shadow-xl md:-mt-4 md:mb-[-16px]" : "border border-gray-200"
                 }`}
         >

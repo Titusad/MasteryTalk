@@ -26,7 +26,7 @@ export function QuestionCard({
     onNext,
 }: QuestionCardProps) {
     return (
-        <motion.div aria-label=\"QuestionCard"
+        <motion.div aria-label="QuestionCard"
             className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}

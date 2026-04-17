@@ -70,7 +70,7 @@ function DSSection({
   bg?: string;
 }) {
   return (
-    <section aria-label=\"DesignSystemPage" id={id} className={`py-16 md:py-20 ${bg}`}>
+    <section aria-label="DesignSystemPage" id={id} className={`py-16 md:py-20 ${bg}`}>
       <div className="max-w-6xl mx-auto px-6">
         <div className="flex items-center gap-3 mb-2">
           <div className="w-9 h-9 rounded-xl bg-[#2d2d2d] flex items-center justify-center shrink-0">

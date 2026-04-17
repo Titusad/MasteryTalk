@@ -48,7 +48,7 @@ export function AppModal({
   return (
     <AnimatePresence>
       {open && (
-        <motion.div aria-label=\"AppModal"
+        <motion.div aria-label="AppModal"
           className="fixed inset-0 z-[200] flex items-center justify-center p-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

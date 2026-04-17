@@ -253,7 +253,7 @@ function ConversationFeedback({
   const allInsights = [...languageInsights, ...contentInsights];
 
   return (
-    <div aria-label=\"ConversationFeedback"
+    <div aria-label="ConversationFeedback"
       className="w-full min-h-full flex flex-col bg-[#f0f4f8] relative overflow-hidden"
       style={{ fontFamily: "'Inter', sans-serif" }}
     >

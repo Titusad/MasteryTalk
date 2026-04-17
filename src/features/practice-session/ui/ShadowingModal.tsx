@@ -365,7 +365,7 @@ export function ShadowingModal({
     /* ── Completion screen ── */
     if (isComplete) {
         return createPortal(
-            <div aria-label=\"ShadowingModal" className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+            <div aria-label="ShadowingModal" className="fixed inset-0 z-[200] flex items-center justify-center p-4">
                 {/* Backdrop */}
                 <motion.div
                     className="absolute inset-0 bg-black/40 backdrop-blur-md"

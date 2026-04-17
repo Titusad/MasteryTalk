@@ -85,7 +85,7 @@ export function PaymentSuccessHandler({
   return (
     <AnimatePresence>
       {visible && (
-        <motion.div aria-label=\"PaymentSuccessHandler"
+        <motion.div aria-label="PaymentSuccessHandler"
           className="fixed top-4 right-4 z-50 max-w-sm"
           initial={{ opacity: 0, y: -20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}

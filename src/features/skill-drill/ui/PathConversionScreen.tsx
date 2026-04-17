@@ -166,7 +166,7 @@ export function PathConversionScreen({
   }, []);
 
   return (
-    <div aria-label=\"PathConversionScreen" className="w-full min-h-[calc(100dvh-4rem)] bg-[#0f172b] flex flex-col items-center justify-center px-4 py-8">
+    <div aria-label="PathConversionScreen" className="w-full min-h-[calc(100dvh-4rem)] bg-[#0f172b] flex flex-col items-center justify-center px-4 py-8">
       {/* ── Hero icon ── */}
       <motion.div
         className="mb-6"
