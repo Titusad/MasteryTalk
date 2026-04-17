@@ -1,6 +1,6 @@
 ---
 
-## 🏗️ PROJECT CONTEXT: inFluentia PRO
+## 🏗️ PROJECT CONTEXT: MasteryTalk PRO
 
 > This section overrides generic defaults for this specific project.
 > Rules here are P0-level — they take precedence over skill defaults.
@@ -10,7 +10,7 @@
 
 ### Product
 
-**inFluentia PRO** — AI-powered executive English communication simulator
+**MasteryTalk PRO** — AI-powered executive English communication simulator
 for nearshoring professionals in Latin America (Mexico and Colombia).
 
 **Two modes (canonical naming — always use these exact terms):**
@@ -154,6 +154,18 @@ className="bg-[#0f172b] rounded-2xl p-6"
 
 ---
 
+### 🚫 STRICT UI BANS (Emojis & Icons)
+
+> **MANDATORY**: The AI tends to hallucinate emojis and arbitrary icons when creating buttons and headers. **DO NOT DO THIS.**
+
+1. **NO EMOJIS (`🚀`, `✨`, `🔥`, `💡`, etc.)**
+   - Emojis are strictly forbidden in UI text, buttons, alerts, and system prompts.
+2. **NO ARBITRARY ICONS**
+   - Only use `lucide-react`. Do not import random SVGs or font-awesome.
+   - Do not add an icon to a button unless explicitly requested by the user.
+
+---
+
 ### Design System Scales
 
 #### Typography — allowed values only
@@ -259,4 +271,4 @@ Move first → verify it compiles → then refactor.
 
 ---
 
-*inFluentia PRO project context — v1.0 — March 2026*
+*MasteryTalk PRO project context — v1.0 — March 2026*

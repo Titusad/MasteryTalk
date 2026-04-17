@@ -256,7 +256,7 @@ When user's prompt is NOT in English:
 ---
 
 ## 🏗️ PROJECT CONTEXT
-> **MANDATORY:** Read `.agent/skills/influentia-context/SKILL.md` before
+> **MANDATORY:** Read `.agent/skills/masterytalk-context/SKILL.md` before
 > ANY task in this project. It contains P0-level rules that override
 > skill defaults: Component Registry, Design System, Business Model,
 > Confirmation Protocol,and FSD Architecture
