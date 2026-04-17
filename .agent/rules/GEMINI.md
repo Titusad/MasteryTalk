@@ -92,6 +92,15 @@ When auto-applying an agent, inform the user:
 
 ## TIER 0: UNIVERSAL RULES (Always Active)
 
+### 🛑 Task Persistence (Strict Anti-Pivot Rule)
+
+**MANDATORY:** Never abandon, postpone, or pivot away from a current task (e.g., debugging an error, fixing a command, setting up a config) before it is 100% resolved, UNLESS the user explicitly requests to move on. 
+
+- **Do NOT** suggest leaving a task for later.
+- **Do NOT** pivot the conversation to a different topic or file while an error is unresolved.
+- If a command or process fails, your ONLY priority is to help the user fix that error until it succeeds. 
+- You must be relentless in completing the active task.
+
 ### 🌐 Language Handling
 
 When user's prompt is NOT in English:
