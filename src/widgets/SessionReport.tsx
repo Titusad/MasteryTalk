@@ -51,6 +51,7 @@ import type {
   TurnPronunciationData,
   InterviewBriefingData,
 } from "@/services/types";
+import type { RealFeedbackData } from "@/entities/feedback";
 import type { CVMatchResult } from "@/services/cvMatchService";
 import { downloadSessionReportPdf } from "@/app/utils/cheatSheetPdf";
 
@@ -63,40 +64,6 @@ import {
   computePronTip,
 } from "@/features/session-report/model";
 import { ReportSection, ProficiencyGauge } from "@/features/session-report/ui";
-
-/* Constants and helpers now imported from features/session-report/model */
-
-/* ReportSection now imported from features/session-report/ui */
-
-/* ═══════════════════════════════════════════════════════════════
-   Real Feedback Data (from /analyze-feedback) — kept for prop compat
-   ═══════════════════════════════════════════════════════════════ */
-interface RealFeedbackData {
-  strengths: Strength[];
-  opportunities: Opportunity[];
-  beforeAfter: BeforeAfterComparison[];
-  pillarScores?: Record<string, number> | null;
-  professionalProficiency?: number | null;
-  contentScores?: Record<string, number> | null;
-  interviewReadinessScore?: number | null;
-  contentInsights?: Array<{
-    dimension: string;
-    observation: string;
-    tip: string;
-  }> | null;
-  /** Preparation Utilization — interview + briefing only */
-  preparationUtilization?: {
-    score: number;
-    verdict: string;
-    insights: Array<{
-      aspect: string;
-      observation: string;
-      rating: "strong" | "partial" | "missed";
-    }>;
-  } | null;
-}
-
-/* ProficiencyGauge and helpers now imported from features/session-report/ui + model */
 
 /* ═══════════════════════════════════════════════════════════════
    MAIN COMPONENT: SessionReport
