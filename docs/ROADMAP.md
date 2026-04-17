@@ -35,7 +35,7 @@
 
 ### 1.0 FSD Architecture Alignment (Full Migration) 🏗️
 - [x] **Sprint 1 (`shared`):** Move `SessionProgressBar.tsx` to `widgets`, remove domain exports from `shared/ui/index.ts`, and ensure `shared` has zero dependencies on upper layers.
-- [ ] **Sprint 2 (`entities`):** Extract types and models from `app/services/types.ts` to `entities/`.
+- [x] **Sprint 2 (`entities`):** Extract types and models from `app/services/types.ts` to `entities/`.
 - [ ] **Sprint 3 (`features`):** Move `app/features/*` to root `features/` directory (arena, practice-session, progression, etc).
 - [ ] **Sprint 4 (`widgets`):** Refactor `SessionReport`, `CreditUpsellModal`, and `InterviewBriefingScreen` to use new feature paths and ensure they compose correctly.
 - [ ] **Sprint 5 (`pages`):** Move `app/pages/*` to `pages/`, update `App.tsx` routing, and complete the FSD migration.
