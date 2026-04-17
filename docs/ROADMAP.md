@@ -41,9 +41,10 @@
 - [x] **Sprint 5 (`pages` & `app` completion):** Moved hooks (`useMediaRecorder`, `useUsageGating`, `useServiceCall`) to `shared/hooks/`, utils (`sessionCache`, `spacedRepetition`, `cheatSheetPdf`) to `shared/lib/`, updated 25+ import paths across features/widgets/pages, deleted backward-compat shim `app/components/shared/`. Zero cross-layer `@/app/` violations remain.
 
 ### 1.1 UX Audit Fixes & Accessibility ♿
-- [ ] Fix color contrast issues
-- [ ] Add missing aria-labels to interactive elements
-- [ ] Resolve any TailwindCSS class conflicts
+- [x] Fix color contrast issues
+- [x] Add missing aria-labels to interactive elements
+- [x] Resolve any TailwindCSS class conflicts
+- [x] Clean up dead code and unused components across features
 
 ### 1.2 Landing Page Overhaul 🔄
 - [ ] Update copy to reflect current product positioning (MasteryTalk PRO, not inFluentia)

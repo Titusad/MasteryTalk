@@ -176,14 +176,15 @@ Impacto en otros componentes:
 
 Esperar confirmación explícita antes de proceder.
 
-### Al finalizar una tarea
+### Al finalizar una tarea (PROTOCOLO ESTRICTO)
 
-1. Verificar que compila (`pnpm run dev`)
-2. Preguntar por autorización para proceder con git
-3. Commit con Conventional Commits
-4. Push a main
-5. Actualizar `ROADMAP.md` si se completó un item
+> **⚠️ REGLA CRÍTICA:** NUNCA asumas que una tarea está terminada sin actualizar los documentos y pedir permiso. La infracción de este protocolo es una falla severa.
 
+1. **Actualizar el ROADMAP:** Si se completó un hito, abre `ROADMAP.md` y marca la tarea con `[x]` INMEDIATAMENTE después de escribir el código.
+2. **Verificar:** Confirma que el código compila y los tests pasan (`pnpm run dev`).
+3. **Solicitar Autorización:** Muestra un resumen y pregunta explícitamente al usuario si tienes permiso para hacer commit en Git.
+4. **Pausa Obligatoria:** NO EJECUTES `git add`, `git commit` ni `git push` hasta que el usuario te responda con una afirmación explícita (ej. "Procede", "Haz el commit", "Sí").
+5. **Ejecutar Git:** Tras la autorización, haz commit usando Conventional Commits y push a `main`.
 ---
 
 ## Changelog
