@@ -43,25 +43,14 @@ import { useUsageGating } from "@/shared/hooks/useUsageGating";
 import { PaymentSuccessHandler } from "@/shared/ui/PaymentSuccessHandler";
 import type { MarketFocus } from "../services/prompts";
 import { projectId } from "../../utils/supabase/info";
-import { DevPreviewMenu, getDevMockData } from "./components/DevPreviewMenu";
-import type { Step } from "@/entities/session";
-import type { RealFeedbackData } from "@/features/practice-session/ui/ConversationFeedback";
+
 import { useHashRouter } from "./hooks/useHashRouter";
 import type { Page } from "./hooks/useHashRouter";
 import { useAuthFlow } from "./hooks/useAuthFlow";
 import type { FlowState } from "./hooks/useAuthFlow";
 import { authService } from "../services";
 
-/* ─── Dev Preview state ─── */
-interface DevPreviewState {
-  step?: Step;
-  scenarioType?: ScenarioType;
-  mockFeedback?: RealFeedbackData | null;
-  mockSummary?: SessionSummary | null;
-  mockPronData?: TurnPronunciationData[];
-  mockScript?: ScriptSection[] | null;
-  mockInterviewBriefing?: InterviewBriefingData | null;
-}
+
 
 export default function App() {
   /* ─── Admin email whitelist (from env, not exposed in source) ─── */
@@ -153,86 +142,7 @@ export default function App() {
     return null;
   });
 
-  /* ─── Dev Preview state ─── */
-  const [devPreview, setDevPreview] = useState<DevPreviewState | null>(null);
 
-  const handleDevNavigate = (optionId: string) => {
-    // Reset dev preview
-    setDevPreview(null);
-
-    // Pages
-    if (optionId === "landing") {
-      setPage("landing");
-      window.location.hash = "";
-      return;
-    }
-    if (optionId === "dashboard") {
-      setFlowState({
-        scenario: "Sales pitch: Producto B2B SaaS para LATAM",
-        interlocutor: "decision_maker",
-        scenarioType: "sales" as ScenarioType,
-      });
-      setPage("dashboard");
-      window.location.hash = "#dashboard";
-      return;
-    }
-    if (optionId === "practice-history") {
-      setFlowState({
-        scenario: "Sales pitch: Producto B2B SaaS para LATAM",
-        interlocutor: "decision_maker",
-        scenarioType: "sales" as ScenarioType,
-      });
-      setPage("practice-history");
-      window.location.hash = "#practice-history";
-      return;
-    }
-
-    // Practice Session steps (ps:*)
-    if (optionId.startsWith("ps:")) {
-      const isInterview = optionId.includes("interview");
-      const mockData = getDevMockData(isInterview);
-      const sType: ScenarioType = isInterview ? "interview" : "sales";
-
-      // Determine the step from the option ID
-      let step: Step = "extra-context";
-      if (optionId.includes("extra-context")) step = "extra-context";
-      else if (optionId.includes("generating-script")) step = "generating-script";
-      else if (optionId.includes("pre-briefing")) step = "pre-briefing";
-      else if (optionId.includes("conversation-feedback")) step = "interview-analysis";
-      else if (optionId.includes("session-recap")) step = "interview-analysis";
-      else if (optionId.includes("interview-analysis")) step = "interview-analysis";
-
-      setFlowState({
-        scenario: isInterview
-          ? "Technical Interview: Senior Frontend Developer at Toptal"
-          : "Sales pitch: Producto B2B SaaS para LATAM",
-        interlocutor: isInterview ? "recruiter" : "decision_maker",
-        scenarioType: sType,
-      });
-
-      setDevPreview({
-        step,
-        scenarioType: sType,
-        mockFeedback: {
-          strengths: mockData.feedback.strengths,
-          opportunities: mockData.feedback.opportunities,
-          beforeAfter: mockData.feedback.beforeAfter,
-          pillarScores: mockData.feedback.pillarScores,
-          professionalProficiency: mockData.feedback.professionalProficiency,
-          contentScores: mockData.feedback.contentScores,
-          interviewReadinessScore: mockData.feedback.interviewReadinessScore,
-          contentInsights: mockData.feedback.contentInsights,
-        },
-        mockSummary: mockData.summary,
-        mockPronData: mockData.pronData,
-        mockScript: mockData.script,
-        mockInterviewBriefing: mockData.interviewBriefing,
-      });
-
-      setPage("practice-session");
-      window.location.hash = "#practice-session";
-    }
-  };
 
   const handleLangChange = (lang: LandingLang) => {
     setLandingLang(lang);
@@ -650,16 +560,20 @@ export default function App() {
               marketFocus={marketFocus}
               onFinish={handlePracticeFinish}
               onNewPractice={handleNewPractice}
+              onSwitchLevel={(scenario: string, scenarioType: ScenarioType, levelId: string, interlocutor: string) => {
+                setFlowState({
+                  scenario,
+                  interlocutor,
+                  scenarioType,
+                  progressionLevelId: levelId,
+                  progressionPathId: scenarioType,
+                });
+              }}
               userPlan={authUser?.plan}
               ownedPaths={authUser?.pathsPurchased ?? []}
               userProfile={userProfile}
               onProfileUpdate={handleProfileUpdate}
-              devInitialStep={devPreview?.step}
-              devMockFeedback={devPreview?.mockFeedback}
-              devMockSummary={devPreview?.mockSummary}
-              devMockPronData={devPreview?.mockPronData}
-              devMockScript={devPreview?.mockScript}
-              devMockInterviewBriefing={devPreview?.mockInterviewBriefing}
+
               userName={authUser?.displayName}
               onLogout={() => {
                 authService.signOut().catch(() => {});
@@ -807,10 +721,7 @@ export default function App() {
           />
         </Suspense>
 
-        {/* Dev Preview Menu — floating dropdown for rapid UI testing (admin only) */}
-        {authUser && ADMIN_EMAILS.includes(authUser.email?.toLowerCase() || "") && (
-          <DevPreviewMenu onNavigate={handleDevNavigate} />
-        )}
+
       </div>
     </ErrorBoundary>
   );

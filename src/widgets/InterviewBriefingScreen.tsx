@@ -19,7 +19,6 @@ import {
     ArrowLeft,
 } from "lucide-react";
 import {
-    PastelBlobs,
     PageTitleBlock,
 } from "@/shared/ui";
 import type { InterviewBriefingData } from "@/services/types";
@@ -88,7 +87,7 @@ export function InterviewBriefingScreen({
             className="w-full min-h-full flex flex-col bg-[#f0f4f8] relative overflow-hidden"
             style={{ fontFamily: "'Inter', sans-serif" }}
         >
-            <PastelBlobs />
+
 
             <main className="relative w-full max-w-[800px] mx-auto px-4 sm:px-6 pt-6 pb-20">
 

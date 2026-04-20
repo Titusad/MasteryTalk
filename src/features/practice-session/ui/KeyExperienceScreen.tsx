@@ -11,7 +11,7 @@ import {
     Briefcase,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { PastelBlobs, MiniFooter } from "@/shared/ui";
+
 import { projectId } from "@/../utils/supabase/info";
 import { getAuthToken } from "@/services/supabase";
 import type { OnboardingProfile } from "@/services/types";
@@ -85,7 +85,7 @@ function KeyExperienceScreen({
             className="w-full min-h-full flex flex-col bg-[#f0f4f8] relative overflow-hidden"
             style={{ fontFamily: "'Inter', sans-serif" }}
         >
-            <PastelBlobs />
+
 
             <main className="relative w-full max-w-[768px] mx-auto px-6 pt-6 pb-20">
                 <div className="w-full mb-5">
@@ -273,7 +273,6 @@ function KeyExperienceScreen({
                     )}
                 </motion.div>
             </main>
-            <MiniFooter />
         </div>
     );
 }

@@ -6,3 +6,4 @@ export * from "./dashboard.constants";
 export * from "./dashboard.computations";
 export { useDashboardData } from "./useDashboardData";
 export type { UseDashboardDataProps, DashboardData } from "./useDashboardData";
+export { useProgressionState } from "./useProgressionState";

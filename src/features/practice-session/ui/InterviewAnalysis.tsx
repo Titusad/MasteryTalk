@@ -34,7 +34,6 @@ import {
     Headphones,
 } from "lucide-react";
 import {
-    PastelBlobs,
     PageTitleBlock,
     ProficiencyGauge,
 } from "@/shared/ui";
@@ -203,11 +202,11 @@ export function InterviewAnalysis({
             className="w-full min-h-full flex flex-col bg-[#f0f4f8] relative overflow-hidden"
             style={{ fontFamily: "'Inter', sans-serif" }}
         >
-            <PastelBlobs />
+
 
             <main className="relative max-w-[800px] mx-auto px-4 sm:px-6 pt-6 pb-20">
                 <div className="w-full mb-5">
-                    <SessionProgressBar currentStep="interview-analysis" />
+                    <SessionProgressBar currentStep="session-analysis" />
                 </div>
 
                 {/* ═══ HERO ═══ */}

@@ -73,6 +73,13 @@ Agent activated → Check frontmatter "skills:" → Read SKILL.md (INDEX) → Re
 - Do NOT pivot to a different topic while an error is unresolved.
 - If a command fails, priority is to fix the error until success. Be relentless.
 
+### ⛔ Task Completion & Roadmap Protocol (Wait for Human)
+**CRITICAL MANDATORY:** A task is NEVER finished until the human actively confirms it (e.g., via manual QA).
+- **NEVER** assume a task is complete by yourself.
+- **NEVER** proactively dictate, push, or pivot to the "Next Task" on the roadmap on your own.
+- When you finish a task, **STOP**. Inform the user, ask them to test/verify it, and **WAIT**.
+- You may ONLY transition to the next roadmap item if the user explicitly says "Next", "Proceed", or confirms the current task is 100% verified. Violating this rule is a severe hallucination of autonomy.
+
 ### 🌐 Language Handling
 When prompt is NOT English: 1. Internally translate. 2. Respond in user's language. 3. Code comments remain English.
 

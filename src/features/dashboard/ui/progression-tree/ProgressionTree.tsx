@@ -1,21 +1,21 @@
 import { SUPABASE_URL } from "@/services/supabase";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Lock, Unlock, BookOpen, CheckCircle2 } from "lucide-react";
 
 import {
   PROGRESSION_PATHS,
   VISIBLE_PATHS,
-  getDefaultProgressionState,
   getLevelState,
 } from "@/features/dashboard/model/progression-paths";
-import type { ProgressionState, LevelStatus, ScenarioType } from "@/services/types";
+import { useProgressionState } from "@/features/dashboard/model/useProgressionState";
+import type { LevelStatus, ScenarioType } from "@/services/types";
 import { projectId } from "@/../utils/supabase/info";
 import { getAuthToken } from "@/services/supabase";
 
 import { LevelNode } from "./LevelNode";
 
-const STATUS_CONFIG: Record<
+export const STATUS_CONFIG: Record<
   LevelStatus,
   { icon: any; label: string; color: string; bg: string; border: string }
 > = {
@@ -61,48 +61,13 @@ interface ProgressionTreeProps {
 
 export function ProgressionTree({ onStartLevel, onDrillComplete }: ProgressionTreeProps) {
   const [activeTab, setActiveTab] = useState<ScenarioType>("interview");
-  const [state, setState] = useState<ProgressionState>(getDefaultProgressionState);
-  const [loading, setLoading] = useState(true);
-
-
-
-  const fetchState = useCallback(async () => {
-    try {
-      const token = await getAuthToken();
-      if (!token) return;
-
-      const res = await fetch(
-        `${SUPABASE_URL}/functions/v1/make-server-08b8658d/progression`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
-      if (res.ok) {
-        const data = await res.json();
-        // Merge with defaults to backfill newly added paths
-        const defaults = getDefaultProgressionState();
-        const merged = { ...defaults, ...data };
-        for (const key of Object.keys(defaults) as (keyof typeof defaults)[]) {
-          if (key === "activeGoal") continue;
-          if (!data[key]) {
-            (merged as any)[key] = defaults[key];
-          }
-        }
-        setState(merged as ProgressionState);
-        if (merged.activeGoal) {
-          setActiveTab(merged.activeGoal as ScenarioType);
-        }
-      }
-    } catch (err) {
-      console.error("[ProgressionTree] Failed to fetch state:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const { state, loading, refetch: fetchState } = useProgressionState();
 
   useEffect(() => {
-    fetchState();
-  }, [fetchState]);
+    if (state.activeGoal) {
+      setActiveTab(state.activeGoal as ScenarioType);
+    }
+  }, [state.activeGoal]);
 
   const activePath = PROGRESSION_PATHS.find((p) => p.id === activeTab)!;
 

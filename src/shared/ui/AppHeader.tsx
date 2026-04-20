@@ -21,6 +21,8 @@ export interface AppHeaderProps {
   onBack?: () => void;
   /** Rendered below the top bar when variant="session" (e.g. <SessionProgressBar />) */
   progressBarSlot?: React.ReactNode;
+  /** Extra content rendered in the left area (e.g. mobile menu toggle) */
+  leftSlot?: React.ReactNode;
   /** User display name — initials derived automatically */
   userName?: string;
   onLogout?: () => void;
@@ -35,6 +37,7 @@ export function AppHeader({
   backLabel = "Back",
   onBack,
   progressBarSlot,
+  leftSlot,
   userName,
   onLogout,
   onNavigateToAccount,
@@ -45,16 +48,16 @@ export function AppHeader({
     : "U";
 
   const isMinimal = variant === "minimal";
-  const maxW = isMinimal ? "max-w-[860px]" : "max-w-[1440px]";
   const bg = isMinimal ? "bg-white" : "bg-white/90 backdrop-blur-md";
 
   return (
     <header className={`z-50 ${bg} border-b border-[#e2e8f0] shrink-0`}>
       {/* Top bar — always h-14 */}
-      <div aria-label="AppHeader" className={`${maxW} mx-auto flex items-center justify-between px-6 md:px-8 h-14`}>
+      <div aria-label="AppHeader" className="flex items-center justify-between px-6 md:px-8 h-14">
 
-        {/* Left: logo + optional back button */}
+        {/* Left: logo + optional back button + leftSlot */}
         <div className="flex items-center gap-4">
+          {leftSlot}
           <BrandLogo />
           {showBackButton && onBack && (
             <button
@@ -100,7 +103,7 @@ export function AppHeader({
 
       {/* Progress bar row — session variant only */}
       {variant === "session" && progressBarSlot && (
-        <div className={`${maxW} mx-auto px-6 md:px-8 flex justify-center`}>
+        <div className="px-6 md:px-8 flex justify-center">
           <div className="w-full max-w-[40%]">
             {progressBarSlot}
           </div>

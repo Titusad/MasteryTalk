@@ -62,14 +62,14 @@ export function QuestionCard({
             </div>
 
             {/* Next */}
-            <div className="px-6 py-4 border-t border-[#f1f5f9] flex justify-end">
+            <div className="px-6 py-6 border-t border-[#f1f5f9] flex justify-center">
                 <button
                     onClick={onNext}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm bg-[#0f172b] text-white hover:bg-[#1d293d] transition-colors shadow-sm"
+                    className="flex items-center gap-3 px-10 py-5 rounded-full text-xl bg-[#0f172b] text-white hover:bg-[#1d293d] transition-colors shadow-[0px_10px_15px_rgba(0,0,0,0.1)]"
                     style={{ fontWeight: 500 }}
                 >
                     See the Strategy
-                    <ArrowRight className="w-4 h-4" />
+                    <ArrowRight className="w-6 h-6" />
                 </button>
             </div>
         </motion.div>

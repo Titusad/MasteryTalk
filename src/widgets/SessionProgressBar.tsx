@@ -33,7 +33,7 @@ const PHASES: Phase[] = [
   {
     id: "feedback",
     label: "Feedback",
-    steps: ["analyzing", "interview-analysis"],
+    steps: ["analyzing", "session-analysis"],
   },
 ];
 

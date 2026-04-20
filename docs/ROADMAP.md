@@ -1,6 +1,6 @@
 # MasteryTalk PRO — Roadmap
 
-> **Last updated:** 2026-04-17
+> **Last updated:** 2026-04-20
 > **Spec reference:** [`PRODUCT_SPEC.md`](./PRODUCT_SPEC.md)
 > **Rule:** New items go here FIRST → spec update if needed → then code.
 
@@ -42,9 +42,13 @@
 
 ### 1.0.1 Recovery & UI Consolidation 🚨
 > **Goal:** Fix critical regressions post-FSD and unify fragmented UI components before progressing.
-- [ ] **Hotfix:** Restore Practice Session Flow (Stepper missing, progression broken).
-- [ ] **Component Inventory:** Audit and consolidate scattered Layouts.
-- [ ] **Component Inventory:** Consolidate 4+ Headers into a single polymorhphic `AppHeader`.
+- [x] **Hotfix:** Restore Practice Session Flow (Stepper missing, progression broken).
+- [x] **Hotfix:** update PracticeSessionPage.tsx layout — unified navigation buttons (large CTA), standardized wrappers (`bg-[#f0f4f8]`, `max-w-[768px]`), aligned PreSessionBrief to design system.
+- [x] **Cleanup:** Remove 5 legacy Step values (`conversation-feedback`, `skill-drill`, `cp-unlock`, `remedial`, `session-recap`) — replaced by unified `session-analysis`.
+- [x] **Cleanup:** Rename `interview-analysis` → `session-analysis` (scenario-agnostic naming).
+- [x] **Cleanup:** Delete `DevPreviewMenu.tsx` and all dev preview plumbing (props, state, handlers) from App.tsx and PracticeSessionPage.tsx.
+- [x] **Component Inventory:** Audit and consolidate scattered Layouts — mapped full component tree (10 active steps documented).
+- [ ] **Component Inventory:** Consolidate 4+ Headers into a single polymorphic `AppHeader`.
 - [ ] **Deep QA:** Manual localhost QA to catch any remaining phantom bugs.
 
 ### 1.1 UX Audit Fixes & Accessibility ♿

@@ -26,7 +26,7 @@ import {
   PolarAngleAxis,
   Radar,
 } from "recharts";
-import { PastelBlobs, MiniFooter, PageTitleBlock, ProficiencyGauge, FeedbackAccordion } from "@/shared/ui";
+import { PageTitleBlock, ProficiencyGauge, FeedbackAccordion } from "@/shared/ui";
 import { SessionProgressBar } from "@/widgets/SessionProgressBar";
 import {
   getBeforeAfterForScenario,
@@ -257,11 +257,11 @@ function ConversationFeedback({
       className="w-full min-h-full flex flex-col bg-[#f0f4f8] relative overflow-hidden"
       style={{ fontFamily: "'Inter', sans-serif" }}
     >
-      <PastelBlobs />
+
 
       <main className="relative max-w-[800px] mx-auto px-6 pt-6 pb-20">
         <div className="w-full mb-5">
-          <SessionProgressBar currentStep="conversation-feedback" />
+          <SessionProgressBar currentStep="session-analysis" />
         </div>
         {/* ═══ HERO ═══ */}
         <PageTitleBlock
@@ -1245,7 +1245,6 @@ function ConversationFeedback({
           </button>
         </motion.div>
       </main>
-      <MiniFooter />
     </div>
   );
 }

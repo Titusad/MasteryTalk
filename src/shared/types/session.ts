@@ -15,10 +15,5 @@ export type Step =
   | "pre-briefing"
   | "practice"
   | "analyzing"
-  | "interview-analysis"
-  | "path-conversion"
-  | "conversation-feedback"
-  | "skill-drill"
-  | "cp-unlock"
-  | "remedial"
-  | "session-recap";
+  | "session-analysis"
+  | "path-conversion";

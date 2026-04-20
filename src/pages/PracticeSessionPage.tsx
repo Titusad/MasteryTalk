@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { AppHeader } from "@/shared/ui";
+import { Menu, AlertTriangle } from "lucide-react";
+import { AppHeader, MiniFooter } from "@/shared/ui";
 import { AnalyzingScreen } from "@/shared/ui";
+import { PracticeSideNav } from "@/widgets/PracticeSideNav";
 import { realConversationService } from "@/services";
 import { toServiceError } from "@/services/errors";
 import type { ServiceError } from "@/services/errors";
@@ -76,24 +78,15 @@ interface PracticeSessionPageProps {
   marketFocus?: string | null;
   onFinish: () => void;
   onNewPractice?: () => void;
+  /** Switch to a different level within the same path (called from SideNav) */
+  onSwitchLevel?: (scenario: string, scenarioType: ScenarioType, levelId: string, interlocutor: string) => void;
   userPlan?: UserPlan;
   /** Paths already purchased — used for Mode A/B detection in PathPurchaseModal */
   ownedPaths?: string[];
   /** User profile for persisting key experience, role, company */
   userProfile?: OnboardingProfile | null;
   onProfileUpdate?: (profile: OnboardingProfile) => void;
-  /** Dev Preview: jump directly to a specific step with mock data */
-  devInitialStep?: Step;
-  /** Dev Preview: pre-loaded mock feedback data */
-  devMockFeedback?: RealFeedbackData | null;
-  /** Dev Preview: pre-loaded mock session summary */
-  devMockSummary?: SessionSummary | null;
-  /** Dev Preview: pre-loaded mock pronunciation data */
-  devMockPronData?: TurnPronunciationData[];
-  /** Dev Preview: pre-loaded mock script sections */
-  devMockScript?: ScriptSection[] | null;
-  /** Dev Preview: pre-loaded mock interview briefing */
-  devMockInterviewBriefing?: InterviewBriefingData | null;
+
   /** Logged in user name for header */
   userName?: string;
   /** Callback to handle logout from header */
@@ -121,8 +114,11 @@ import type { PersonalizedPatterns } from "@/features/practice-session/model/ses
 /* ═══════════════════════════════════════════════════════════
    MAIN ORCHESTRATOR (MVP-simplified flow)
    cv-upload → extra-context → generating-script → pre-briefing →
-   practice → analyzing → interview-analysis → Dashboard
+   practice → analyzing → session-analysis → Dashboard
    ═══════════════════════════════════════════════════════════ */
+/** Steps where switching level is safe (no AI-generated data to lose) */
+const SAFE_STEPS: Step[] = ["cv-upload", "extra-context", "key-experience"];
+
 export function PracticeSessionPage({
   scenario,
   interlocutor,
@@ -132,21 +128,26 @@ export function PracticeSessionPage({
   progressionPathId,
   onFinish,
   onNewPractice,
+  onSwitchLevel,
   userPlan,
   ownedPaths = [],
   userProfile,
   onProfileUpdate,
-  devInitialStep,
-  devMockFeedback,
-  devMockSummary,
-  devMockPronData,
-  devMockScript,
-  devMockInterviewBriefing,
+
   userName,
   onLogout,
   onNavigateToAccount,
 }: PracticeSessionPageProps) {
-  const isDevPreview = !!devInitialStep;
+
+
+  /* ── SideNav drawer (mobile) + confirmation modal state ── */
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [pendingSwitch, setPendingSwitch] = useState<{
+    scenario: string;
+    scenarioType: ScenarioType;
+    levelId: string;
+    interlocutor: string;
+  } | null>(null);
 
   /* Recover session state from browser history if navigating Back/Forward */
   const initialHistoryState = useMemo(() => {
@@ -159,7 +160,6 @@ export function PracticeSessionPage({
   /* Determine initial step: skip key-experience screen as per user request */
   const needsKeyExperience = false;
   const [step, setStep] = useState<Step>(() => {
-    if (devInitialStep) return devInitialStep;
     if (initialHistoryState?.step) return initialHistoryState.step;
     return "cv-upload";
   });
@@ -192,41 +192,35 @@ export function PracticeSessionPage({
 
   /* Session initialization via conversationService (declared early so callbacks below can reference it) */
   const [sessionId, setSessionId] = useState<string | null>(() => {
-    if (isDevPreview) return "dev-preview-session";
     if (initialHistoryState?.sessionId) return initialHistoryState.sessionId;
     return null;
   });
 
   /* Real AI-generated feedback from /analyze-feedback */
   const [realFeedback, setRealFeedback] = useState<RealFeedbackData | null>(() => {
-    if (devMockFeedback) return devMockFeedback;
     if (initialHistoryState?.sessionId) {
       return feedbackCache.get(initialHistoryState.sessionId) || null;
     }
     return null;
   });
   const [feedbackStatus, setFeedbackStatus] = useState<"idle" | "loading" | "ready" | "error">(() => {
-    if (isDevPreview) return "ready";
-    if (initialHistoryState?.step === "conversation-feedback" || initialHistoryState?.step === "session-recap" || initialHistoryState?.step === "interview-analysis") return "ready";
+    if (initialHistoryState?.step === "session-analysis") return "ready";
     return "idle";
   });
   const [feedbackAnimDone, setFeedbackAnimDone] = useState(() => {
-    if (isDevPreview) return true;
-    if (initialHistoryState?.step === "conversation-feedback" || initialHistoryState?.step === "session-recap" || initialHistoryState?.step === "interview-analysis") return true;
+    if (initialHistoryState?.step === "session-analysis") return true;
     return false;
   });
 
   /* Real AI-generated session summary from /generate-summary */
   const [sessionSummary, setSessionSummary] = useState<SessionSummary | null>(() => {
-    if (devMockSummary) return devMockSummary;
     if (initialHistoryState?.sessionId) {
       return summaryCache.get(initialHistoryState.sessionId) || null;
     }
     return null;
   });
   const [summaryStatus, setSummaryStatus] = useState<"idle" | "loading" | "ready" | "error">(() => {
-    if (isDevPreview) return "ready";
-    if (initialHistoryState?.step === "session-recap" || initialHistoryState?.step === "interview-analysis") return "ready";
+    if (initialHistoryState?.step === "session-analysis") return "ready";
     return "idle";
   });
 
@@ -238,14 +232,12 @@ export function PracticeSessionPage({
     return null;
   });
   const [improvedScriptStatus, setImprovedScriptStatus] = useState<"idle" | "loading" | "ready" | "error">(() => {
-    if (isDevPreview) return "ready";
-    if (initialHistoryState?.step === "session-recap" || initialHistoryState?.step === "interview-analysis") return "ready";
+    if (initialHistoryState?.step === "session-analysis") return "ready";
     return "idle";
   });
 
   /* Azure pronunciation assessment data accumulated during the session */
   const [sessionPronData, setSessionPronData] = useState<TurnPronunciationData[]>(() => {
-    if (devMockPronData) return devMockPronData;
     if (initialHistoryState?.sessionId) {
       return pronDataCache.get(initialHistoryState.sessionId) || [];
     }
@@ -306,16 +298,16 @@ export function PracticeSessionPage({
   }, [step, sessionId]);
 
   /* AI-generated pre-briefing script (NO mock fallback — real AI or error+retry) */
-  const [generatedScript, setGeneratedScript] = useState<ScriptSection[] | null>(() => devMockScript ?? scriptCache.get(sKey));
+  const [generatedScript, setGeneratedScript] = useState<ScriptSection[] | null>(() => scriptCache.get(sKey));
   const [scriptGenStatus, setScriptGenStatus] = useState<"idle" | "loading" | "ready" | "error">(() =>
-    isDevPreview ? "ready" : (scenarioType === "interview" ? interviewBriefingCache.get(sKey) : scriptCache.get(sKey)) ? "ready" : "idle"
+    (scenarioType === "interview" ? interviewBriefingCache.get(sKey) : scriptCache.get(sKey)) ? "ready" : "idle"
   );
   const [scriptGenError, setScriptGenError] = useState<string | null>(null);
-  const [animationDone, setAnimationDone] = useState(isDevPreview);
+  const [animationDone, setAnimationDone] = useState(false);
 
   /* AI-generated interview briefing (card-per-question format, interviews only) */
   const [interviewBriefing, setInterviewBriefing] = useState<InterviewBriefingData | null>(
-    () => devMockInterviewBriefing ?? (scenarioType === "interview" ? interviewBriefingCache.get(sKey) : null)
+    () => scenarioType === "interview" ? interviewBriefingCache.get(sKey) : null
   );
 
   /**
@@ -464,13 +456,11 @@ export function PracticeSessionPage({
 
   /* ── Auto-transition: only when BOTH animation AND API are done ── */
   useEffect(() => {
-    // In dev preview mode for generating-script, don't auto-transition (let user see the animation)
-    if (isDevPreview && devInitialStep === "generating-script") return;
     const contentReady = generatedScript || interviewBriefing;
     if (step === "generating-script" && scriptGenStatus === "ready" && contentReady) {
       setStep("pre-briefing");
     }
-  }, [step, scriptGenStatus, generatedScript, interviewBriefing, isDevPreview, devInitialStep]);
+  }, [step, scriptGenStatus, generatedScript, interviewBriefing]);
 
   /* ── Feedback analysis: call /analyze-feedback when entering "analyzing" step ──
    * Can be called early (when conversation ends) to pre-warm while the user is
@@ -532,7 +522,7 @@ export function PracticeSessionPage({
   /* ── Persist completed session to backend (fire-and-forget) ── */
   const sessionSavedRef = useRef(false);
   const saveSessionToBackend = useCallback(async () => {
-    if (sessionSavedRef.current || !sessionId || isDevPreview) return;
+    if (sessionSavedRef.current || !sessionId) return;
     sessionSavedRef.current = true;
 
     const duration = `${Math.max(1, Math.round((Date.now() - sessionStartRef.current) / 60000))} min`;
@@ -595,9 +585,9 @@ export function PracticeSessionPage({
     }
   }, [sessionId, scenario, interlocutor, scenarioType, realFeedback, sessionSummary, sessionPronData, interviewBriefing, progressionLevelId, progressionPathId]);
 
-  /* ── Auto-save session when entering interview-analysis with data ── */
+  /* ── Auto-save session when entering session-analysis with data ── */
   useEffect(() => {
-    if ((step === "session-recap" || step === "interview-analysis") && sessionId && !sessionSavedRef.current) {
+    if (step === "session-analysis" && sessionId && !sessionSavedRef.current) {
       if (
         (feedbackStatus === "ready" || feedbackStatus === "error") &&
         (summaryStatus === "ready" || summaryStatus === "error")
@@ -643,8 +633,8 @@ export function PracticeSessionPage({
   useEffect(() => {
     if (step !== "analyzing" || !feedbackAnimDone) return;
     if (feedbackStatus === "ready" || feedbackStatus === "error") {
-      // New flow: go to interview-analysis (replaces conversation-feedback → skill-drill → cp-unlock → session-recap)
-      setStep("interview-analysis");
+      // Unified post-session analysis step
+      setStep("session-analysis");
       // Fire session save + progression completion now (no longer gated behind skill drill)
       fireSummaryGeneration();
       if (progressionLevelId && progressionPathId && realFeedback) {
@@ -716,8 +706,7 @@ export function PracticeSessionPage({
   }, [canRepeat]);
 
   useEffect(() => {
-    // In dev preview mode, skip real session preparation
-    if (isDevPreview) return;
+
     // For interview scenarios, defer until briefingForSession is ready (Gap A+B)
     // This ensures anticipated questions + user drafts are injected into the prompt.
     // On repeat (sessionVersion > 0), briefingForSession is already set so it fires immediately.
@@ -745,7 +734,7 @@ export function PracticeSessionPage({
         }
       });
     return () => { cancelled = true; };
-  }, [scenario, interlocutor, scenarioType, mergedGuidedFields, sessionVersion, isDevPreview, briefingForSession]);
+  }, [scenario, interlocutor, scenarioType, mergedGuidedFields, sessionVersion, briefingForSession]);
 
   /* Retry handler */
   const handleRetry = useCallback(() => {
@@ -789,6 +778,23 @@ export function PracticeSessionPage({
     ? `${pathLabels[progressionPathId || ""] || progressionPathId} - Level ${progressionLevelDef.level}: ${progressionLevelDef.title}`
     : null;
 
+  const handleSideNavLevelSwitch = useCallback((s: string, st: ScenarioType, lid: string, interl: string) => {
+    if (lid === progressionLevelId) return; // Already on this level
+    setDrawerOpen(false);
+    if (SAFE_STEPS.includes(step)) {
+      onSwitchLevel?.(s, st, lid, interl);
+    } else {
+      setPendingSwitch({ scenario: s, scenarioType: st, levelId: lid, interlocutor: interl });
+    }
+  }, [step, progressionLevelId, onSwitchLevel]);
+
+  const confirmSwitch = useCallback(() => {
+    if (pendingSwitch && onSwitchLevel) {
+      onSwitchLevel(pendingSwitch.scenario, pendingSwitch.scenarioType, pendingSwitch.levelId, pendingSwitch.interlocutor);
+    }
+    setPendingSwitch(null);
+  }, [pendingSwitch, onSwitchLevel]);
+
   return (
     <ProgressionProvider value={{ levelTitle: progressionLevelTitle }}>
     <div aria-label="PracticeSessionPage" className="size-full flex flex-col" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -797,20 +803,46 @@ export function PracticeSessionPage({
         userName={userName}
         onLogout={onLogout}
         onNavigateToAccount={onNavigateToAccount}
-        progressBarSlot={<SessionProgressBar currentStep={step} />}
+        leftSlot={
+          <button
+            onClick={() => setDrawerOpen(true)}
+            className="lg:hidden w-8 h-8 rounded-full flex items-center justify-center text-[#45556c] hover:bg-[#f1f5f9] transition-colors"
+            title="Open practice path"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+        }
       />
 
-      {/* Step content (animated transitions) */}
-      <div ref={stepContainerRef} className="flex-1 relative min-h-0 overflow-y-auto">
+      {/* Main layout: SideNav + Content */}
+      <div className="flex-1 flex min-h-0">
+        {/* SideNav */}
+        {progressionPathId && (
+          <PracticeSideNav
+            activePathId={progressionPathId}
+            activeLevelId={progressionLevelId}
+            onLevelSwitch={handleSideNavLevelSwitch}
+            isDrawerOpen={drawerOpen}
+            onDrawerClose={() => setDrawerOpen(false)}
+          />
+        )}
+
+        {/* Step content (animated transitions) */}
+        <div ref={stepContainerRef} className="flex-1 relative min-h-0 overflow-y-auto">
         <AnimatePresence mode="wait">
           <motion.div
             key={`${step}-${sessionVersion}`}
-            className="w-full min-h-full"
+            className="w-full min-h-full bg-[#f0f4f8]"
             initial={{ opacity: 0, filter: "blur(4px)" }}
             animate={{ opacity: 1, filter: "blur(0px)" }}
             exit={{ opacity: 0, filter: "blur(4px)" }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
           >
+            {/* Stepper — rendered once here, not inside each sub-screen */}
+            <div className="w-full max-w-md mx-auto px-6 pt-4">
+              <SessionProgressBar currentStep={step} />
+            </div>
+
             {/* Global error banner */}
             {serviceError && (
               <div className="fixed top-16 left-0 right-0 z-[100] p-4 max-w-xl mx-auto">
@@ -952,30 +984,28 @@ export function PracticeSessionPage({
               const levelDef = getLevelDefinition(progressionPathId, progressionLevelId);
               if (!levelDef?.methodology) return null;
               return (
-                <div className="w-full min-h-[calc(100dvh-4rem)] bg-gradient-to-b from-[#f8fafc] to-white flex items-start justify-center px-4 py-8 md:py-12">
-                  <PreSessionBrief
-                    levelTitle={levelDef.title}
-                    methodology={levelDef.methodology}
-                    anchorPhrases={levelDef.anchorPhrases}
-                    personalizedPattern={personalizedPattern}
-                    patternLoading={patternLoading}
-                    onReady={() => {
-                      // Script may already be ready (cached or fast gen) — go to pre-briefing
-                      if (scriptGenStatus === "ready") {
-                        setStep("pre-briefing");
-                      } else {
-                        setStep("generating-script");
-                      }
-                    }}
-                    onSkip={() => {
-                      if (scriptGenStatus === "ready") {
-                        setStep("pre-briefing");
-                      } else {
-                        setStep("generating-script");
-                      }
-                    }}
-                  />
-                </div>
+                <PreSessionBrief
+                  levelTitle={levelDef.title}
+                  methodology={levelDef.methodology}
+                  anchorPhrases={levelDef.anchorPhrases}
+                  personalizedPattern={personalizedPattern}
+                  patternLoading={patternLoading}
+                  onReady={() => {
+                    // Script may already be ready (cached or fast gen) — go to pre-briefing
+                    if (scriptGenStatus === "ready") {
+                      setStep("pre-briefing");
+                    } else {
+                      setStep("generating-script");
+                    }
+                  }}
+                  onSkip={() => {
+                    if (scriptGenStatus === "ready") {
+                      setStep("pre-briefing");
+                    } else {
+                      setStep("generating-script");
+                    }
+                  }}
+                />
               );
             })()}
 
@@ -1135,7 +1165,7 @@ export function PracticeSessionPage({
                 onComplete={() => setFeedbackAnimDone(true)}
               />
             )}
-            {step === "interview-analysis" && (
+            {step === "session-analysis" && (
               <InterviewAnalysis
                 scenarioType={scenarioType}
                 realFeedback={realFeedback}
@@ -1189,7 +1219,11 @@ export function PracticeSessionPage({
             )}
           </motion.div>
         </AnimatePresence>
-      </div>
+        </div>
+      </div>{/* end flex row */}
+
+      {/* Footer — rendered once at layout level */}
+      <MiniFooter />
 
       {/* ── Paywall Modal (v9.0 — Learning Path) ── */}
       <PathPurchaseModal
@@ -1200,6 +1234,45 @@ export function PracticeSessionPage({
         ownedPaths={ownedPaths}
         onPurchaseComplete={handlePurchaseComplete}
       />
+
+      {/* ── Level Switch Confirmation Modal ── */}
+      {pendingSwitch && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" onClick={() => setPendingSwitch(null)} />
+          <motion.div
+            className="relative z-10 bg-white rounded-2xl shadow-2xl p-6 mx-4 max-w-sm w-full"
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-5 h-5 text-amber-500" />
+              </div>
+              <div>
+                <h3 className="text-[15px] font-bold text-[#0f172b]">Switch level?</h3>
+                <p className="text-sm text-[#62748e] mt-0.5">
+                  You have an active session in progress. Switching will reset your current progress.
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setPendingSwitch(null)}
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-[#45556c] bg-[#f1f5f9] hover:bg-[#e2e8f0] transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmSwitch}
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-[#6366f1] hover:bg-[#4f46e5] transition-colors"
+              >
+                Continue
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
     </ProgressionProvider>
   );

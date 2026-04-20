@@ -16,7 +16,6 @@ import { motion, AnimatePresence } from "motion/react";
 import {
   RecordButton,
   RecordingTimer,
-  PastelBlobs,
   ServiceErrorBanner,
 } from "@/shared/ui";
 import { SessionProgressBar } from "@/widgets/SessionProgressBar";
@@ -635,7 +634,7 @@ function VoicePractice({
         ref={chatScrollAreaRef}
         className="flex-1 bg-[#f8fafc] overflow-y-auto relative scroll-smooth"
       >
-        <PastelBlobs />
+
         <div
           className="relative max-w-[700px] mx-auto px-6 py-8 space-y-6"
           style={{ overflowAnchor: "none" }}
