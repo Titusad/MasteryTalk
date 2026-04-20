@@ -1,6 +1,6 @@
 /**
  * ══════════════════════════════════════════════════════════════
- *  inFluentia PRO — AnalyzingScreen
+ *  MasteryTalk PRO — AnalyzingScreen
  *  Full-screen dark transition loader with progress bar,
  *  sequential step indicators, and motivational affirmations.
  *

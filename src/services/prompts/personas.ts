@@ -1,6 +1,6 @@
 /**
  * ══════════════════════════════════════════════════════════════
- *  inFluentia PRO — Interlocutor Personas (Block 2)
+ *  MasteryTalk PRO — Interlocutor Personas (Block 2)
  *
  *  10 scenario-specific personas:
  *    Interview: recruiter, sme, hiring_manager, hr

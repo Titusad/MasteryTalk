@@ -57,12 +57,15 @@
 - [x] Resolve any TailwindCSS class conflicts
 - [x] Clean up dead code and unused components across features
 
-### 1.2 Landing Page Overhaul 🔄
-- [ ] Update copy to reflect current product positioning (MasteryTalk PRO, not inFluentia)
-- [ ] Restructure sections for clearer value proposition flow
-- [ ] Ensure hero CTA → demo flow is frictionless
-- [ ] Verify pricing section consistency with PRODUCT_SPEC §6
-- [ ] Fix SEO: Add OpenGraph metadata, Twitter Cards, and canonical links
+### 1.2 Landing Page Overhaul ✅
+- [x] Update copy to reflect current product positioning (MasteryTalk PRO, not inFluentia)
+- [x] Restructure sections for clearer value proposition flow (v4: 11 sections, 3 new, 1 removed)
+- [x] Ensure hero CTA → demo flow is frictionless (single "Probar gratis" CTA)
+- [x] Verify pricing section consistency with PRODUCT_SPEC §6 (2 cards: $4.99 / $16.99)
+- [x] Fix SEO: Add OpenGraph metadata, Twitter Cards, and canonical links
+- [x] Internal branding cleanup: `influentia_*` → `masterytalk_*` storage keys (8 keys + migration utility)
+- [x] Bulk rename `inFluentia PRO` → `MasteryTalk PRO` in 25+ file headers and console logs
+- [x] PRODUCT_SPEC v1.1 sync (§6, §7.1, §5.6)
 
 ### 1.2 User Dashboard Redesign 🔄
 - [ ] Reorganize dashboard layout and information hierarchy

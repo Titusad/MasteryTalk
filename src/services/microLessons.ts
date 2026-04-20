@@ -1,7 +1,7 @@
 import { SUPABASE_URL } from "@/services/supabase";
 /**
  * ══════════════════════════════════════════════════════════════
- *  inFluentia PRO — Micro-Lessons API & Completion Tracking
+ *  MasteryTalk PRO — Micro-Lessons API & Completion Tracking
  *
  *  Data lives in ./microLessonsData.ts (pure static content).
  *  This file exports query helpers + backend sync logic.
@@ -35,7 +35,7 @@ export function getRecommendedLessons(
 }
 
 /* ═══ Completion tracking (localStorage cache + backend sync) ═══ */
-const COMPLETED_KEY = "influentia_completed_lessons";
+const COMPLETED_KEY = "masterytalk_completed_lessons";
 
 function getCompletedSet(): Set<string> {
   try {

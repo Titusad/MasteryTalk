@@ -1,6 +1,6 @@
 /**
  * ══════════════════════════════════════════════════════════════
- *  inFluentia PRO — Supabase Client Singleton
+ *  MasteryTalk PRO — Supabase Client Singleton
  *
  *  Single instance used by all Supabase adapters.
  *  Uses the ANON key (public, safe for client-side).
@@ -89,9 +89,9 @@ if (SUPABASE_URL && SUPABASE_ANON_KEY) {
       },
     });
     _setupSessionCache(_client);
-    console.log("[inFluentia] Supabase client created eagerly at module load");
+    console.log("[MasteryTalk] Supabase client created eagerly at module load");
   } catch (err) {
-    console.error("[inFluentia] Supabase client creation failed:", err);
+    console.error("[MasteryTalk] Supabase client creation failed:", err);
     _client = null;
   }
 }
@@ -105,7 +105,7 @@ export function getSupabaseClient(): SupabaseClient {
 
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
     throw new Error(
-      "[inFluentia] Supabase credentials not found.\n" +
+      "[MasteryTalk] Supabase credentials not found.\n" +
       "Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file.\n" +
       "See /src/services/supabase.ts for setup instructions."
     );

@@ -1,6 +1,6 @@
 /**
  * ══════════════════════════════════════════════════════════════
- *  inFluentia PRO — Session Report (Final Report after feedback)
+ *  MasteryTalk PRO — Session Report (Final Report after feedback)
  *
  *  This is the FULL REPORT page shown after the user clicks
  *  "Generate Report" in Session Feedback. Contains:

@@ -1,6 +1,6 @@
 /**
  * ══════════════════════════════════════════════════════════════
- *  inFluentia PRO — Analyst Prompts (Gemini 1.5 Flash)
+ *  MasteryTalk PRO — Analyst Prompts (Gemini 1.5 Flash)
  *
  *  System prompts for the "coach after the game":
  *  - analyze-feedback: Screen 6 (Session Feedback)

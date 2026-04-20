@@ -1,6 +1,6 @@
 /**
  * ══════════════════════════════════════════════════════════════
- *  inFluentia PRO — Lesson Modal
+ *  MasteryTalk PRO — Lesson Modal
  *
  *  Displays a MicroLesson inside a fullscreen modal overlay.
  *  Supports navigation between lessons, completion tracking,

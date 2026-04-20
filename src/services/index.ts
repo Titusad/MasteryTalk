@@ -1,6 +1,6 @@
 /**
  * ══════════════════════════════════════════════════════════════
- *  inFluentia PRO — Service Registry (Auto-Detect Mode)
+ *  MasteryTalk PRO — Service Registry (Auto-Detect Mode)
  *
  *  Auth: Uses SupabaseAuthService when Supabase is configured,
  *        falls back to MockAuthService otherwise.
@@ -48,7 +48,7 @@ const useSupabase = isSupabaseConfigured();
 const FORCE_MOCK_AUTH = false; // Google OAuth is configured in Supabase dashboard
 
 console.log(
-  `[inFluentia] Service Layer initialized — ${useSupabase && !FORCE_MOCK_AUTH ? "PRODUCTION MODE (Supabase auth)" : "PROTOTYPE MODE (all mocks)"
+  `[MasteryTalk] Service Layer initialized — ${useSupabase && !FORCE_MOCK_AUTH ? "PRODUCTION MODE (Supabase auth)" : "PROTOTYPE MODE (all mocks)"
   }`
 );
 

@@ -1,6 +1,6 @@
 /**
  * ══════════════════════════════════════════════════════════════
- *  inFluentia PRO — Prompt Assembler
+ *  MasteryTalk PRO — Prompt Assembler
  *
  *  Stitches the 7+ blocks into a single system prompt.
  *  This is the core logic that prepare-session uses.

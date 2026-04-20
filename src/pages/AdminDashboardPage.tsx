@@ -1,7 +1,7 @@
 import { SUPABASE_URL } from "@/services/supabase";
 /**
  * ══════════════════════════════════════════════════════════════
- *  inFluentia PRO — Admin Dashboard (Internal)
+ *  MasteryTalk PRO — Admin Dashboard (Internal)
  *
  *  Three sections:
  *  1. Platform KPIs (cards + sessions/day chart)

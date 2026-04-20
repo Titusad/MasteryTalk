@@ -1,6 +1,6 @@
 /**
  * ==============================================================
- *  inFluentia PRO - Shadowing Modal
+ *  MasteryTalk PRO - Shadowing Modal
  *
  *  Full-screen modal overlay for pronunciation shadowing practice.
  *  Flow: Listen -> Record -> Compare (per phrase), then Summary.

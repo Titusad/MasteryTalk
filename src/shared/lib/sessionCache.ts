@@ -1,6 +1,6 @@
 /**
  * ==============================================================
- *  inFluentia PRO - Session Cache (localStorage)
+ *  MasteryTalk PRO - Session Cache (localStorage)
  *
  *  Persists AI-generated content to localStorage so it survives
  *  page refreshes. Keyed by scenario signature (pre-session) or
@@ -12,7 +12,7 @@
  * ==============================================================
  */
 
-const PREFIX = "influentia_cache_";
+const PREFIX = "masterytalk_cache_";
 const TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 /* ── Simple hash for scenario-based keys ── */

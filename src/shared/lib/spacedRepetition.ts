@@ -1,7 +1,7 @@
 import { SUPABASE_URL } from "@/services/supabase";
 /**
  * ==============================================================
- *  inFluentia PRO - Spaced Repetition System
+ *  MasteryTalk PRO - Spaced Repetition System
  *
  *  Leitner-based scheduling for pronunciation phrases that the
  *  user struggled with during shadowing practice (< 70% after 3

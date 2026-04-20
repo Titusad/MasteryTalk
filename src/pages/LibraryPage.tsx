@@ -1,6 +1,6 @@
 /**
  * ══════════════════════════════════════════════════════════════
- *  inFluentia PRO — Lesson Library Page
+ *  MasteryTalk PRO — Lesson Library Page
  *
  *  Shows all available micro-lessons grouped by pillar.
  *  Accessible from the Dashboard header "Library" link.

@@ -1,6 +1,6 @@
 /**
  * ══════════════════════════════════════════════════════════════
- *  inFluentia PRO — Silent Locale Detection
+ *  MasteryTalk PRO — Silent Locale Detection
  *
  *  Replaces the old "Market Focus" onboarding question with
  *  automatic, privacy-friendly detection based on browser signals.

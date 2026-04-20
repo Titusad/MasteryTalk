@@ -6,10 +6,11 @@ import {
   ArrowRight,
   Sparkles,
   ChevronDown,
-  Zap,
-  Gift,
   Globe,
   LogOut,
+  Mic,
+  Target,
+  FileText,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { PracticeWidget } from "./PracticeWidget";
@@ -135,7 +136,7 @@ export function LandingPage({
       onPricingPurchase?.();
     } else {
       // Flag the purchase intent so App.tsx can open the modal after auth
-      sessionStorage.setItem("influentia_purchase_intent", "true");
+      sessionStorage.setItem("masterytalk_purchase_intent", "true");
       openAuth("registro");
     }
   };
@@ -187,7 +188,7 @@ export function LandingPage({
                   <button className="bg-[#2d2d2d] text-white text-sm px-6 py-2.5 rounded-full hover:bg-[#1a1a1a] transition-colors" onClick={() => {
                     document.querySelector('#hero')?.scrollIntoView({ behavior: 'smooth' });
                   }}>
-                    {copy.nav.register}
+                    {copy.nav.cta}
                   </button>
                 </>
               )}
@@ -219,7 +220,7 @@ export function LandingPage({
                   </button>
                 </>
               ) : (
-                <button className="w-full bg-[#2d2d2d] text-white py-3 rounded-full mt-2" style={{ fontWeight: 500 }} onClick={() => { setMobileMenuOpen(false); document.querySelector('#hero')?.scrollIntoView({ behavior: 'smooth' }); }}>{copy.nav.register}</button>
+                <button className="w-full bg-[#2d2d2d] text-white py-3 rounded-full mt-2" style={{ fontWeight: 500 }} onClick={() => { setMobileMenuOpen(false); document.querySelector('#hero')?.scrollIntoView({ behavior: 'smooth' }); }}>{copy.nav.cta}</button>
               )}
             </div>
           )}
@@ -275,38 +276,10 @@ export function LandingPage({
               <div className="relative z-10 max-w-5xl mx-auto px-6">
                 <PracticeWidget onAuthComplete={onAuthComplete} />
 
-                {/* Trust badges */}
-                <div className="flex flex-wrap items-center justify-center gap-5 mt-6">
-                  {copy.hero.trustBadges.map((t) => (
-                    <span key={t} className="flex items-center gap-2 text-sm text-[#4B505B]">
-                      <CheckIcon />
-                      {t}
-                    </span>
-                  ))}
-                </div>
-
-                {/* Social proof */}
-                <div className="flex items-center justify-center gap-3 mt-6">
-                  <div className="flex -space-x-2">
-                    {[
-                      { bg: "#6366f1", letter: "M" },
-                      { bg: "#0ea5e9", letter: "A" },
-                      { bg: "#10b981", letter: "S" },
-                      { bg: "#f59e0b", letter: "L" },
-                    ].map((a, i) => (
-                      <div
-                        key={i}
-                        className="w-7 h-7 rounded-full border-2 border-[#f0f4f8] flex items-center justify-center text-white text-[10px]"
-                        style={{ backgroundColor: a.bg, fontWeight: 700 }}
-                      >
-                        {a.letter}
-                      </div>
-                    ))}
-                  </div>
-                  <p className="text-sm text-[#4B505B]">
-                    <span className="text-gray-900" style={{ fontWeight: 600 }}>{copy.hero.socialProofHighlight}</span> {copy.hero.socialProof}
-                  </p>
-                </div>
+                {/* Microcopy */}
+                <p className="text-center text-sm text-[#4B505B] mt-6">
+                  {copy.widget.microcopy}
+                </p>
               </div>
             </section>
 
@@ -319,17 +292,35 @@ export function LandingPage({
               </div>
             </section>
 
-            {/* ───── FOR YOU ───── */}
-            <section id="benefits" className="py-20 md:py-28 bg-[#f0f4f8]">
+            {/* ───── DIFFERENTIATORS ───── */}
+            <section className="py-20 md:py-28 bg-[#f0f4f8]">
               <div className="max-w-6xl mx-auto px-6">
-                <SectionHeading title={copy.benefits.sectionTitle} subtitle={copy.benefits.sectionSubtitle} />
-                <div className="grid md:grid-cols-2 gap-6 mb-12">
-                  <div className="bg-white rounded-3xl p-8 border border-gray-200">
+                <SectionHeading title={copy.differentiators.sectionTitle} />
+                <div className="grid md:grid-cols-2 gap-6">
+                  {copy.differentiators.items.map((item, i) => (
+                    <div key={item.title} className="bg-white rounded-3xl p-8 border border-gray-200">
+                      <div className="w-10 h-10 rounded-full bg-[#0f172b] flex items-center justify-center mb-5">
+                        <span className="text-white text-sm" style={{ fontWeight: 700 }}>{i + 1}</span>
+                      </div>
+                      <h3 className="text-lg text-gray-900 mb-3" style={{ fontWeight: 600 }}>{item.title}</h3>
+                      <p className="text-[#4B505B] leading-relaxed">{item.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            {/* ───── FOR YOU / BENEFITS ───── */}
+            <section id="benefits" className="relative py-20 md:py-28 bg-white">
+              <DotPattern />
+              <div className="relative z-10 max-w-6xl mx-auto px-6">
+                <SectionHeading title={copy.benefits.sectionTitle} />
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="bg-[#DBEDDF] rounded-3xl p-8">
                     <div className="flex items-center gap-3 mb-6">
                       <div className="w-10 h-10 rounded-full bg-[#00C950] flex items-center justify-center">
                         <Check className="w-5 h-5 text-white" strokeWidth={3} />
                       </div>
-                      <h3 className="text-xl text-gray-900" style={{ fontWeight: 600 }}>{copy.benefits.yesTitle}</h3>
                     </div>
                     <div className="space-y-4">
                       {copy.benefits.yesList.map((item) => (
@@ -337,12 +328,11 @@ export function LandingPage({
                       ))}
                     </div>
                   </div>
-                  <div className="bg-white rounded-3xl p-8 border border-gray-200">
+                  <div className="bg-[#f0f4f8] rounded-3xl p-8 border border-gray-200">
                     <div className="flex items-center gap-3 mb-6">
                       <div className="w-10 h-10 rounded-full bg-[#cad5e2] flex items-center justify-center">
                         <X className="w-5 h-5 text-[#45556C]" strokeWidth={3} />
                       </div>
-                      <h3 className="text-xl text-gray-900" style={{ fontWeight: 600 }}>{copy.benefits.noTitle}</h3>
                     </div>
                     <div className="space-y-4">
                       {copy.benefits.noList.map((item) => (
@@ -351,37 +341,14 @@ export function LandingPage({
                     </div>
                   </div>
                 </div>
-                <div
-                  className="bg-white rounded-2xl p-6 border border-[#50C87833] text-center"
-                  style={{ background: "linear-gradient(90deg, rgba(80,200,120,0.06), rgba(0,184,219,0.06), rgba(80,200,120,0.06))" }}
-                >
-                  <p className="text-gray-600">
-                    <span className="text-[#50C878]" style={{ fontWeight: 600 }}>{copy.benefits.levelLabel}</span>{" "}
-                    {copy.benefits.levelDesc}
-                  </p>
-                </div>
               </div>
             </section>
 
             {/* ───── BEFORE & AFTER ───── */}
-            <section className="relative py-20 md:py-28 bg-white">
-              <DotPattern />
-              <div className="relative z-10 max-w-6xl mx-auto px-6">
-                <SectionHeading title={copy.beforeAfter.sectionTitle} subtitle={copy.beforeAfter.sectionSubtitle} />
+            <section className="py-20 md:py-28 bg-[#f0f4f8]">
+              <div className="max-w-6xl mx-auto px-6">
+                <SectionHeading title={copy.beforeAfter.sectionTitle} />
                 <div className="grid md:grid-cols-2 gap-6">
-                  <div className="bg-[#DBEDDF] rounded-3xl p-8">
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="w-10 h-10 rounded-full bg-[#2d2d2d] flex items-center justify-center">
-                        <Check className="w-5 h-5 text-white" strokeWidth={2.5} />
-                      </div>
-                      <h3 className="text-xl text-gray-900" style={{ fontWeight: 600 }}>{copy.beforeAfter.withTitle}</h3>
-                    </div>
-                    <div className="space-y-4">
-                      {copy.beforeAfter.withList.map((item) => (
-                        <div key={item} className="flex items-start gap-3"><CheckIcon /><p className="text-gray-600">{item}</p></div>
-                      ))}
-                    </div>
-                  </div>
                   <div className="bg-[#FFE9C7] rounded-3xl p-8">
                     <div className="flex items-center gap-3 mb-6">
                       <div className="w-10 h-10 rounded-full bg-[#2d2d2d] flex items-center justify-center">
@@ -395,20 +362,57 @@ export function LandingPage({
                       ))}
                     </div>
                   </div>
+                  <div className="bg-[#DBEDDF] rounded-3xl p-8">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-10 h-10 rounded-full bg-[#2d2d2d] flex items-center justify-center">
+                        <Check className="w-5 h-5 text-white" strokeWidth={2.5} />
+                      </div>
+                      <h3 className="text-xl text-gray-900" style={{ fontWeight: 600 }}>{copy.beforeAfter.withTitle}</h3>
+                    </div>
+                    <div className="space-y-4">
+                      {copy.beforeAfter.withList.map((item) => (
+                        <div key={item} className="flex items-start gap-3"><CheckIcon /><p className="text-gray-600">{item}</p></div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
             </section>
 
-            {/* ───── IMPACT ───── */}
+            {/* ───── SESSION TAKEAWAYS ───── */}
+            <section className="relative py-20 md:py-28 bg-white">
+              <DotPattern />
+              <div className="relative z-10 max-w-6xl mx-auto px-6">
+                <SectionHeading title={copy.sessionTakeaways.sectionTitle} />
+                <div className="grid md:grid-cols-3 gap-6">
+                  {copy.sessionTakeaways.items.map((item, i) => {
+                    const icons = [Mic, Target, FileText];
+                    const colors = ["#E1D5F8", "#D9ECF0", "#DBEDDF"];
+                    const Icon = icons[i];
+                    return (
+                      <div key={item.metric} className="rounded-3xl p-8" style={{ backgroundColor: colors[i] }}>
+                        <div className="w-12 h-12 rounded-full bg-[#2d2d2d] flex items-center justify-center mb-5">
+                          <Icon className="w-5 h-5 text-white" />
+                        </div>
+                        <p className="text-2xl text-[#2d2d2d] mb-2" style={{ fontWeight: 700 }}>{item.metric}</p>
+                        <p className="text-[#4B505B]">{item.desc}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </section>
+
+            {/* ───── ROUTES ───── */}
             <section className="py-20 md:py-28 bg-[#f0f4f8]">
               <div className="max-w-6xl mx-auto px-6">
-                <SectionHeading title={copy.impact.sectionTitle} subtitle={copy.impact.sectionSubtitle} />
+                <SectionHeading title={copy.routes.sectionTitle} />
+                <p className="text-center text-[#4B505B] max-w-2xl mx-auto mb-12 -mt-6">{copy.routes.subtitle}</p>
                 <div className="grid md:grid-cols-3 gap-6">
-                  {copy.impact.cards.map((card, i) => (
-                    <div key={card.stat} className={`${["bg-[#E1D5F8]", "bg-[#D9ECF0]", "bg-[#E1D5F8]"][i]} rounded-3xl p-8`}>
-                      <p className="text-6xl text-[#2d2d2d] mb-4" style={{ fontWeight: 800 }}>{card.stat}</p>
-                      <p className="text-lg text-gray-900 mb-1" style={{ fontWeight: 500 }}>{card.label}</p>
-                      <p className="text-[#4B505B]">{card.desc}</p>
+                  {copy.routes.items.map((route) => (
+                    <div key={route.name} className="bg-white rounded-3xl p-8 border border-gray-200 hover:shadow-md transition-shadow">
+                      <h3 className="text-lg text-gray-900 mb-3" style={{ fontWeight: 600 }}>{route.name}</h3>
+                      <p className="text-[#4B505B] leading-relaxed">{route.hook}</p>
                     </div>
                   ))}
                 </div>
@@ -418,129 +422,69 @@ export function LandingPage({
             {/* ───── PRICING ───── */}
             <section id="pricing" className="relative py-20 md:py-28 bg-white">
               <DotPattern />
-              <div className="relative z-10 max-w-6xl mx-auto px-6">
-                <SectionHeading title={copy.pricing.sectionTitle} subtitle={copy.pricing.sectionSubtitle} />
-
-                {/* Free session banner */}
-                <div
-                  className="rounded-2xl px-6 py-4 md:px-8 md:py-5 mb-10 max-w-5xl mx-auto border border-[#50C878]/20"
-                  style={{ background: "linear-gradient(135deg, rgba(80,200,120,0.08), rgba(0,211,243,0.06))" }}
-                >
-                  <div className="flex flex-col items-center text-center gap-2.5">
-                    {/* Row 1: Title */}
-                    <h3 className="text-lg text-gray-900" style={{ fontWeight: 600 }}>{copy.pricing.freeSession.title}</h3>
-                    {/* Row 2: Description */}
-                    <p className="text-sm text-[#4B505B]">{copy.pricing.freeSession.desc}</p>
-                    {/* Row 3: Icon + Features */}
-                    <div className="flex items-center justify-center gap-4 flex-wrap">
-                      <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg, #00D3F3, #50C878)" }}>
-                        <Gift className="w-4.5 h-4.5 text-white" />
-                      </div>
-                      {copy.pricing.freeSession.features.map((f) => (
-                        <span key={f} className="flex items-center gap-1.5 text-xs text-[#4B505B]">
-                          <CheckIcon color="#50C878" />
-                          {f}
-                        </span>
-                      ))}
-                    </div>
-                    {/* Row 4: CTA */}
-                    <button
-                      className="px-6 py-2.5 rounded-full text-sm text-white transition-colors mt-0.5"
-                      style={{ fontWeight: 500, background: "linear-gradient(135deg, #00D3F3, #50C878)" }}
-                      onClick={() => openAuth("registro", "cta")}
-                    >
-                      {copy.pricing.freeSession.button}
-                      <ArrowRight className="w-4 h-4 inline ml-1.5" />
-                    </button>
-                  </div>
+              <div className="relative z-10 max-w-4xl mx-auto px-6">
+                <div className="text-center mb-4">
+                  <h2 className="text-3xl md:text-4xl text-gray-900 mb-2" style={{ fontWeight: 700 }}>{copy.pricing.headline}</h2>
+                  <p className="text-xl text-gray-900" style={{ fontWeight: 400 }}>{copy.pricing.headlineSub}</p>
                 </div>
+                <p className="text-center text-[#4B505B] mb-12">{copy.pricing.subtitle}</p>
 
-                {/* Learning Path card */}
-                <div className="flex justify-center mb-10">
-                  {copy.pricing.paths.map((path) => {
-                    const isFeatured = path.featured;
+                {/* Pricing cards */}
+                <div className="grid md:grid-cols-2 gap-6 mb-10 max-w-3xl mx-auto">
+                  {copy.pricing.cards.map((card, i) => {
+                    const isFeatured = i === 0;
                     return (
                       <div
-                        key={path.sessions}
-                        className={`relative rounded-2xl p-5 md:p-6 flex flex-col transition-shadow w-full max-w-md ${isFeatured
+                        key={card.price}
+                        className={`relative rounded-2xl p-6 md:p-8 flex flex-col transition-shadow ${
+                          isFeatured
                             ? "bg-[#2d2d2d] shadow-xl ring-2 ring-[#50C878]/30"
                             : "bg-white border border-gray-200 hover:shadow-md"
-                          }`}
+                        }`}
                       >
-                        {/* Badge */}
-                        {path.discount && (
-                          <div className={`absolute -top-2.5 right-4 px-2.5 py-1 rounded-full text-[10px] ${isFeatured
-                              ? "bg-[#50C878] text-white"
-                              : "bg-[#f0f4f8] text-[#2d2d2d] border border-gray-200"
-                            }`} style={{ fontWeight: 600 }}>
-                            -{path.discount}
-                          </div>
-                        )}
-
-                        {/* Path name */}
-                        <p className={`text-sm mb-1 ${isFeatured ? "text-gray-400" : "text-[#4B505B]"}`} style={{ fontWeight: 500 }}>
-                          {path.name}
-                        </p>
-
-                        {/* Sessions count */}
-                        <p className={`text-[10px] mb-3 ${isFeatured ? "text-gray-500" : "text-[#94a3b8]"}`} style={{ fontWeight: 500 }}>
-                          {path.sessions} sessions
-                        </p>
-
                         {/* Price */}
-                        <div className="mb-1">
-                          <span className={`text-3xl md:text-4xl ${isFeatured ? "text-white" : "text-[#2d2d2d]"}`} style={{ fontWeight: 800 }}>
-                            {path.price}
+                        <div className="mb-2">
+                          <span className={`text-4xl md:text-5xl ${isFeatured ? "text-white" : "text-[#2d2d2d]"}`} style={{ fontWeight: 800 }}>
+                            {card.price}
                           </span>
-                          <span className={`text-xs ml-1 ${isFeatured ? "text-gray-400" : "text-[#4B505B]"}`}>USD</span>
                         </div>
 
-                        {/* Per-session */}
-                        <div className={`flex items-center gap-1.5 mb-5 ${isFeatured ? "text-emerald-300" : "text-[#4B505B]"}`}>
-                          <Zap className="w-3 h-3" />
-                          <span className="text-xs" style={{ fontWeight: 500 }}>
-                            {path.perSession} {copy.pricing.perSessionLabel}
-                          </span>
-                        </div>
+                        {/* Label + sublabel */}
+                        <p className={`text-sm mb-1 ${isFeatured ? "text-white" : "text-gray-900"}`} style={{ fontWeight: 600 }}>
+                          {card.label}
+                        </p>
+                        <p className={`text-xs mb-4 ${isFeatured ? "text-gray-400" : "text-[#4B505B]"}`}>
+                          {card.sublabel}
+                        </p>
+
+                        {/* Note */}
+                        <p className={`text-xs mb-6 ${isFeatured ? "text-emerald-300" : "text-[#4B505B]"}`} style={{ fontWeight: 500 }}>
+                          {card.note}
+                        </p>
 
                         {/* CTA */}
                         <button
-                          className={`w-full py-2.5 rounded-full text-sm mb-5 transition-colors ${isFeatured
+                          className={`w-full py-3 rounded-full text-sm transition-colors mt-auto ${
+                            isFeatured
                               ? "bg-white text-[#2d2d2d] hover:bg-gray-100 shadow-lg"
                               : "border-2 border-[#2d2d2d] text-gray-900 hover:bg-gray-50"
-                            }`}
+                          }`}
                           style={{ fontWeight: 500 }}
                           onClick={handlePricingClick}
                         >
-                          {path.button}
+                          {card.cta}
                         </button>
-
-                        {/* Features */}
-                        <div className={`border-t pt-4 space-y-2.5 mt-auto ${isFeatured ? "border-white/20" : "border-gray-200/60"}`}>
-                          {path.features.map((f) => (
-                            <div key={f} className="flex items-start gap-2">
-                              <CheckIcon color={isFeatured ? "#ffffff" : "#2d2d2d"} />
-                              <p className={`text-xs ${isFeatured ? "text-gray-300" : "text-gray-600"}`}>{f}</p>
-                            </div>
-                          ))}
-                        </div>
                       </div>
                     );
                   })}
                 </div>
 
-                <p className="text-center text-[#4B505B] text-sm mb-10">
-                  <span style={{ fontWeight: 500 }}>{copy.pricing.freeTrialNote}</span>
-                </p>
-                <div className="bg-[#f0f4f8] rounded-3xl p-10 md:p-14">
-                  <div className="grid grid-cols-3 gap-10 text-center">
-                    {copy.pricing.statsBar.map((s) => (
-                      <div key={s.value}>
-                        <p className="text-4xl md:text-5xl text-[#2d2d2d] mb-3" style={{ fontWeight: 800 }}>{s.value}</p>
-                        <p className="text-base text-[#4B505B]">{s.desc}</p>
-                      </div>
-                    ))}
-                  </div>
+                {/* Demo reinforcement */}
+                <div
+                  className="rounded-2xl px-6 py-4 text-center border border-[#50C878]/20 max-w-3xl mx-auto"
+                  style={{ background: "linear-gradient(135deg, rgba(80,200,120,0.08), rgba(0,211,243,0.06))" }}
+                >
+                  <p className="text-sm text-[#4B505B]" style={{ fontWeight: 500 }}>{copy.pricing.demoLine}</p>
                 </div>
               </div>
             </section>
@@ -548,7 +492,7 @@ export function LandingPage({
             {/* ───── FAQ ───── */}
             <section className="py-20 md:py-28 bg-[#f0f4f8]">
               <div className="max-w-3xl mx-auto px-6">
-                <SectionHeading title={copy.faq.sectionTitle} subtitle={copy.faq.sectionSubtitle} />
+                <SectionHeading title={copy.faq.sectionTitle} />
                 <div className="space-y-3">
                   {copy.faq.items.map((faq, i) => (
                     <div

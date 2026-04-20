@@ -1,6 +1,6 @@
 /**
  * ══════════════════════════════════════════════════════════════
- *  inFluentia PRO — Regional Context (Block 3)
+ *  MasteryTalk PRO — Regional Context (Block 3)
  *
  *  Mexico, Colombia, Brazil, and Global fallback.
  *  Reference: /docs/SYSTEM_PROMPTS.md §4

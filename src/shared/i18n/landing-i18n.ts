@@ -1,9 +1,10 @@
 /**
- * ══════════════════════════════════════════════════════════════
- *  Landing Page i18n — ES (Spanish) and PT (Portuguese)
- *  All pre-login UI copy lives here for easy maintenance.
- * ══════════════════════════════════════════════════════════════
- */
+* ══════════════════════════════════════════════════════════════
+*  MasteryTalk PRO — Landing Page i18n
+*  All pre-login UI copy lives here for easy maintenance.
+*  v4 — Direct, colloquial tone for LATAM professionals
+* ══════════════════════════════════════════════════════════════
+*/
 
 export type LandingLang = "es" | "pt" | "en";
 
@@ -14,34 +15,32 @@ export interface LandingCopy {
     benefits: string;
     pricing: string;
     login: string;
-    register: string;
+    cta: string;
   };
   /* ── Hero ── */
   hero: {
     badge: string;
     headline: string;
     subheadline: string;
-    trustBadges: string[];
-    socialProof: string;
-    socialProofHighlight: string;
   };
   /* ── Practice Widget ── */
   widget: {
-    heading: string;
-    subheading: string;
+    instruction: string;
+    microcopy: string;
     interviewLabel: string;
-    interviewDesc: string;
+    interviewHook: string;
     meetingLabel: string;
-    meetingDesc: string;
+    meetingHook: string;
     presentationLabel: string;
-    presentationDesc: string;
+    presentationHook: string;
+    cardCta: string;
   };
   /* ── How It Works ── */
   howItWorks: {
     sectionTitle: string;
     steps: { title: string; desc: string }[];
   };
-  /* ── How It Works Screens (mockup UI text) ── */
+  /* ── How It Works Screens (mockup UI text — used by HowItWorksTabs) ── */
   screens: {
     setup: {
       title: string;
@@ -78,61 +77,53 @@ export interface LandingCopy {
       cta: string;
     };
   };
+  /* ── Differentiators ── */
+  differentiators: {
+    sectionTitle: string;
+    items: { title: string; desc: string }[];
+  };
   /* ── For You / Benefits ── */
   benefits: {
     sectionTitle: string;
-    sectionSubtitle: string;
-    yesTitle: string;
     yesList: string[];
-    noTitle: string;
     noList: string[];
-    levelLabel: string;
-    levelDesc: string;
   };
   /* ── Before & After ── */
   beforeAfter: {
     sectionTitle: string;
-    sectionSubtitle: string;
-    withTitle: string;
-    withList: string[];
     withoutTitle: string;
     withoutList: string[];
+    withTitle: string;
+    withList: string[];
   };
-  /* ── Impact ── */
-  impact: {
+  /* ── Session Takeaways (replaces Impact) ── */
+  sessionTakeaways: {
     sectionTitle: string;
-    sectionSubtitle: string;
-    cards: { stat: string; label: string; desc: string }[];
+    items: { metric: string; desc: string }[];
+  };
+  /* ── Routes ── */
+  routes: {
+    sectionTitle: string;
+    subtitle: string;
+    items: { name: string; hook: string }[];
   };
   /* ── Pricing ── */
   pricing: {
-    sectionTitle: string;
-    sectionSubtitle: string;
-    freeSession: {
-      title: string;
-      desc: string;
-      features: string[];
-      button: string;
-    };
-    paths: {
-      name: string;
-      sessions: number;
+    headline: string;
+    headlineSub: string;
+    subtitle: string;
+    cards: {
       price: string;
-      perSession: string;
-      discount?: string;
-      featured?: boolean;
-      button: string;
-      features: string[];
+      label: string;
+      sublabel: string;
+      note: string;
+      cta: string;
     }[];
-    freeTrialNote: string;
-    perSessionLabel: string;
-    savingsLabel: string;
-    statsBar: { value: string; desc: string }[];
+    demoLine: string;
   };
   /* ── FAQ ── */
   faq: {
     sectionTitle: string;
-    sectionSubtitle: string;
     items: { q: string; a: string }[];
   };
   /* ── Final CTA ── */
@@ -275,32 +266,30 @@ export const ES: LandingCopy = {
     benefits: "Beneficios",
     pricing: "Precio",
     login: "Iniciar sesión",
-    register: "Registrarme",
+    cta: "Probar gratis",
   },
   hero: {
-    badge: "Entrenamiento de comunicación profesional en inglés.",
+    badge: "✶ Práctica conversacional para profesionales en inglés.",
     headline: "Practica tus conversaciones profesionales en inglés.",
-    subheadline: "Gana Contratos en USD. Trabaja Remoto. Expande tu alcance.",
-    trustBadges: ["1ª sesión gratis", "Sin tarjeta", "Sin suscripción"],
-    socialProof: "ya entrenan con MasteryTalk.pro",
-    socialProofHighlight: "500+ profesionales",
+    subheadline: "Gana contratos. Trabaja remoto. Conviértete en el profesional que comunica al nivel que piensa.",
   },
   widget: {
-    heading: "Empieza ahora:",
-    subheading: "Elige el escenario que quieres practicar",
+    instruction: "Elige la conversación que quieres ganar.",
+    microcopy: "Gratis · Sin tarjeta · Sin suscripción",
     interviewLabel: "Entrevista de trabajo",
-    interviewDesc: "Prepárate para responder preguntas clave en tu próxima entrevista",
+    interviewHook: "Consigue el trabajo. Defiende tu valor. Sin titubear.",
     meetingLabel: "Reuniones remotas",
-    meetingDesc: "Domina tus reuniones en inglés con equipos internacionales",
+    meetingHook: "Participa, lidera y cierra. No solo estés presente.",
     presentationLabel: "Presentaciones",
-    presentationDesc: "Practica tu próxima presentación profesional en inglés",
+    presentationHook: "Que te escuchen, no solo que te entiendan.",
+    cardCta: "Empezar →",
   },
   howItWorks: {
-    sectionTitle: "Cómo funciona",
+    sectionTitle: "Tres pasos. Una conversación que ya no te preocupa.",
     steps: [
-      { title: "Preparación", desc: "Elige escenario, define contexto y recibe tu guión personalizado con pilares de valor y tips clave." },
-      { title: "Práctica", desc: "Simula tu conversación con IA que asume un rol realista mientras hablas por voz." },
-      { title: "Feedback", desc: "Análisis en 3 dimensiones, correcciones clave, power phrases y feedback de sesión completo." },
+      { title: "Recibe tu brief. Entra con estructura.", desc: "Antes de hablar recibes el framework, ejemplos reales de respuestas débiles vs. fuertes y tu plantilla de anclaje. No improvisas — llegas preparado." },
+      { title: "Habla. Con alguien que no te perdona.", desc: "La IA asume el rol que tú defines — entrevistador, cliente, líder de equipo. Responde como lo haría en la vida real. Te cuestiona, te presiona, no valida todo lo que dices." },
+      { title: "Feedback real. PDF listo para usar.", desc: "Sabrás dónde perdiste fluidez, qué pronunciación corregir y qué frases reemplazar. Con ejemplos de cómo debería sonar. Descárgalo y tenlo a mano antes de la conversación real." },
     ],
   },
   screens: {
@@ -339,97 +328,90 @@ export const ES: LandingCopy = {
       cta: "Finalizar y generar informe",
     },
   },
+  differentiators: {
+    sectionTitle: "No es un curso de inglés. Es práctica conversacional profesional.",
+    items: [
+      { title: "Aprendes frameworks reales practicando, no estudiando.", desc: "Cada sesión incluye un brief con técnicas de comunicación profesional y correcciones en contexto — no en un examen. Con cada sesión, tu inglés profesional se vuelve más preciso, más fluido, más tuyo." },
+      { title: "Tu contexto, tu conversación.", desc: "Tú defines el escenario — tu rol, tu industria, tu situación. La IA construye la sesión alrededor de eso. No un guión genérico. Tu conversación." },
+      { title: "Feedback de fluidez y pronunciación — en PDF descargable.", desc: "Sabrás exactamente dónde te trabaste y qué pronunciación corregir. Con ejemplos de cómo debería sonar. Descárgalo. Tenlo abierto antes de tu próxima conversación real." },
+      { title: "El amigo que te daría el mejor feedback no siempre está disponible.", desc: "MasteryTalk.pro sí. A las 2am antes de tu entrevista, una hora antes de tu presentación, o el domingo antes de esa reunión del lunes. Sin agendar. Sin depender de nadie." },
+    ],
+  },
   benefits: {
-    sectionTitle: "¿Es MasteryTalk.pro para ti?",
-    sectionSubtitle: "MasteryTalk.pro no es para todos. Es para profesionales ambiciosos.",
-    yesTitle: "Es para ti si...",
+    sectionTitle: "Para el que usa inglés en su trabajo — o quiere hacerlo.",
     yesList: [
-      "Buscas impactar en presentaciones profesionales",
-      "Necesitas negociar salarios o contratos",
-      "Lideras reuniones con equipos internacionales",
-      "Cierras ventas complejas en inglés",
-      "Participas en entrevistas",
+      "Tienes entrevistas con empresas que pagan en USD",
+      "Participas o lideras reuniones con equipos internacionales",
+      "Presentas proyectos a clientes en inglés",
+      "Buscas trabajo y no quieres que tu comunicación te reste puntos",
+      "Sabes inglés pero en conversaciones reales no te expresas al nivel que eres",
     ],
-    noTitle: "No es para ti si...",
     noList: [
-      "Eres un hablante no nativo y estás aprendiendo inglés desde cero",
-      "Buscas clases de gramática básica",
-      "Prefieres solo leer o escribir en inglés",
-      "No tienes escenarios profesionales",
-      "No usas inglés en el trabajo",
+      "Aprendes inglés desde cero",
+      "Buscas un curso de gramática o vocabulario",
+      "No usas ni planeas usar inglés en tu carrera",
     ],
-    levelLabel: "Nivel recomendado:",
-    levelDesc: "B1+ (Intermedio). Ya puedes mantener conversaciones básicas, ahora necesitas dominarlas.",
   },
   beforeAfter: {
-    sectionTitle: "Antes y Después",
-    sectionSubtitle: "Así transforma MasteryTalk.pro tus conversaciones profesionales",
+    sectionTitle: "Practicar existe. Practicar bien, es otra cosa.",
+    withoutTitle: "Práctica pasiva",
+    withoutList: [
+      "Practicas en el espejo. Nadie te cuestiona.",
+      "Tu amigo dice \"estuvo bien\" y ya",
+      "No sabes dónde falló tu fluidez ni qué frases sonaron débiles",
+      "Llegas a la conversación real sin haber sentido presión",
+    ],
     withTitle: "Con MasteryTalk.pro",
     withList: [
-      "Ya lo practicaste 5 veces",
-      "Conoces cada pregunta y objeción posible",
-      "Hablas con seguridad",
-      "Negocias y demuestras lo que vales",
-      "Ganas presencia ejecutiva",
-    ],
-    withoutTitle: "Sin preparación",
-    withoutList: [
-      "Improvisas tu pitch",
-      "Esperas que no te hagan preguntas difíciles",
-      "Hablas con inseguridad",
-      "Pierdes oportunidad de impactar",
-      "Pierdes presencia",
+      "El interlocutor te cuestiona, te presiona, no te da respuestas fáciles",
+      "Sabes qué decir cuando silencian la sala",
+      "Feedback de fluidez y pronunciación con ejemplos concretos",
+      "Entras pensando en ganar, no en sobrevivir",
     ],
   },
-  impact: {
-    sectionTitle: "Impacto Real en tu Carrera",
-    sectionSubtitle: "Resultados medibles que transforman trayectorias profesionales",
-    cards: [
-      { stat: "3x", label: "más oportunidades", desc: "de liderazgo internacional" },
-      { stat: "89%", label: "de usuarios sienten más seguridad", desc: "al hablar en situaciones críticas" },
-      { stat: "$15K+", label: "incremento salarial promedio", desc: "estimado (Nearshoring 2026)" },
+  sessionTakeaways: {
+    sectionTitle: "Lo que te llevas de cada sesión.",
+    items: [
+      { metric: "Fluidez", desc: "Sabes dónde te trabaste y cómo no volver a hacerlo." },
+      { metric: "Pronunciación", desc: "Qué corregir y cómo debería sonar." },
+      { metric: "PDF", desc: "Tu informe descargable para estudiar o tener a mano." },
+    ],
+  },
+  routes: {
+    sectionTitle: "Elige la ruta que necesitas ahora.",
+    subtitle: "Tú defines el contexto. La conversación se adapta a ti. La compras una vez — es tuya para siempre.",
+    items: [
+      { name: "Entrevista de trabajo", hook: "Consigue el trabajo. Defiende tu valor. Sin titubear." },
+      { name: "Reuniones remotas", hook: "Participa, lidera y cierra. No solo estés presente." },
+      { name: "Presentaciones", hook: "Que te escuchen, no solo que te entiendan." },
     ],
   },
   pricing: {
-    sectionTitle: "Invierte en tu ventaja competitiva",
-    sectionSubtitle: "Practica entrevistas y reuniones en inglés con IA avanzada.\n1ª sesión demo gratis. Luego acceso permanente por Learning Path.",
-    freeSession: {
-      title: "1ª Sesión Demo",
-      desc: "Experimenta la sesión completa sin compromiso",
-      features: ["Simulación completa con IA", "Feedback + Guión personalizado", "Feedback de sesión detallado", "Sin tarjeta de crédito"],
-      button: "Empezar gratis",
-    },
-    paths: [
-      { name: "1 Learning Path", sessions: 18, price: "$4.99", perSession: "$0.28", button: "Obtener acceso", features: ["Acceso completo a 1 Learning Path", "Hasta 18 sesiones únicas con GPT-4o", "6 niveles progresivos con IA adaptativa", "Acceso permanente — tuyo para siempre"] },
+    headline: "Sin suscripciones. Sin cobros sorpresa.",
+    headlineSub: "Compras una ruta, es tuya para siempre.",
+    subtitle: "Prueba gratis primero. Si lo que vives en la primera sesión no vale $4.99, no compres nada.",
+    cards: [
+      { price: "$4.99", label: "Primera ruta", sublabel: "Acceso permanente", note: "Precio especial de lanzamiento. Sube cuando salgamos de beta.", cta: "Obtener acceso" },
+      { price: "$16.99", label: "Rutas adicionales", sublabel: "Acceso permanente", note: "Compra la que necesitas, cuando la necesitas.", cta: "Agregar ruta" },
     ],
-    freeTrialNote: "Precio beta por tiempo limitado — paths adicionales a $16.99",
-    perSessionLabel: "por sesión",
-    savingsLabel: "ahorro",
-    statsBar: [
-      { value: "10x", desc: "más barato que coaching presencial" },
-      { value: "$0.28", desc: "por sesión — menos que un café" },
-      { value: "24/7", desc: "entrena cuando lo necesites" },
-    ],
+    demoLine: "Primera sesión completamente gratis — sin tarjeta, sin compromiso. Vívela antes de decidir.",
   },
   faq: {
     sectionTitle: "Preguntas Frecuentes",
-    sectionSubtitle: "Todo lo que necesitas saber antes de empezar",
     items: [
-      { q: "¿MasteryTalk.pro es un curso de inglés?", a: "No, cursos y apps de inglés en general ya hay muchos; si necesitas aprender las bases, te recomendamos usar uno de esos. MasteryTalk.pro es una herramienta que te ayuda a practicar tu comunicación, pronunciación y en general tu discurso para que te prepares antes de una reunión importante." },
-      { q: "¿Necesito un nivel mínimo de inglés?", a: "Sí, MasteryTalk.pro es para profesionales que ya tienen una base (B1+) y necesitan usar el inglés como herramienta de trabajo. No enseñamos a conjugar verbos, enseñamos a cerrar acuerdos." },
-      { q: "¿Qué pasa con la privacidad de mis documentos?", a: "Tus notas y presentaciones se procesan de forma segura y privada. Solo se utilizan para configurar tu sesión de práctica y mejorar tu guión." },
-      { q: "¿En qué se diferencia de un profesor particular?", a: "Un profesor te corrige el inglés y te cuesta USD $25 por sesión; MasteryTalk.pro te ayuda a mejorar tu pronunciación y la forma de comunicarte profesionalmente para que eleves tu nivel. Además, estamos disponibles 24/7 para esa reunión de emergencia que surgió de imprevisto." },
-      { q: "¿Puedo usarlo para entrevistas de trabajo específicas?", a: "Totalmente. Puedes subir la descripción del puesto (Job Description) y la IA actuará como el reclutador específico de esa empresa." },
-      { q: "¿Cuánto tiempo necesito practicar para ver resultados?", a: "La mayoría de usuarios reportan mayor confianza después de 3-5 sesiones. Para consolidar un cambio real en tu comunicación profesional, recomendamos 90 días de práctica regular — incluso 15 minutos al día hacen la diferencia." },
-      { q: "¿Puedo cancelar en cualquier momento?", a: "No hay suscripción que cancelar. Compras un Learning Path una vez y tienes acceso permanente — sin compromisos mensuales, sin cargos recurrentes. Tu acceso no expira nunca." },
+      { q: "¿Esto es diferente a Duolingo o un curso de inglés?", a: "No es un curso de gramática. Aprendes comunicación profesional practicando conversaciones reales — con frameworks, con correcciones, pero siempre en contexto. Si ya sabes inglés pero en conversaciones reales no llegas al nivel que eres, esto es para ti." },
+      { q: "¿La conversación se adapta a mi industria o rol?", a: "Sí. Tú defines el contexto — tu rol, tu empresa, el tipo de conversación. La IA construye la sesión alrededor de tu situación. No un escenario genérico. El tuyo." },
+      { q: "¿Hay suscripción o cobro mensual?", a: "No. Compras una ruta una vez y es tuya para siempre. Sin renovaciones, sin cancelaciones, sin sorpresas." },
+      { q: "¿Qué incluye el informe de cada sesión?", a: "Dónde perdiste fluidez, qué pronunciación trabajar y qué frases reemplazar — con ejemplos de cómo debería sonar. Lo descargas en PDF y lo tienes a mano antes de tu próxima conversación real." },
+      { q: "¿Funciona si todavía no trabajo en inglés pero quiero hacerlo?", a: "Sí. Si buscas trabajo en empresas que operan en inglés, practicar las conversaciones antes de tenerlas es exactamente lo que te da ventaja sobre otros candidatos." },
     ],
   },
   finalCta: {
     headline1: "Tu próxima conversación importante",
     headline2: "puede cambiar todo.",
-    subline: "Entrena. Domina. Gana",
-    button: "Probar gratis",
-    badges: ["Sin tarjeta de crédito", "1ª sesión gratis", "Sin suscripción"],
+    subline: "Una sesión a la vez. Un nivel más cada vez.",
+    button: "Practica tu primera conversación gratis",
+    badges: ["Sin tarjeta", "Sin suscripción", "Primeros slots beta"],
   },
   footer: {
     tagline: "El coach de comunicación profesional con IA para líderes latinoamericanos.",
@@ -563,32 +545,30 @@ export const PT: LandingCopy = {
     benefits: "Benefícios",
     pricing: "Preço",
     login: "Entrar",
-    register: "Criar conta",
+    cta: "Experimentar grátis",
   },
   hero: {
-    badge: "Treinamento de comunicação profissional em inglês.",
+    badge: "✶ Prática conversacional para profissionais em inglês.",
     headline: "Pratique suas conversas profissionais em inglês.",
-    subheadline: "Ganhe Contratos em USD. Trabalhe Remoto. Expanda seu alcance.",
-    trustBadges: ["1ª sessão grátis", "Sem cartão", "Sem assinatura"],
-    socialProof: "já treinam com MasteryTalk.pro",
-    socialProofHighlight: "500+ profissionais",
+    subheadline: "Ganhe contratos. Trabalhe remoto. Torne-se o profissional que se comunica no nível em que pensa.",
   },
   widget: {
-    heading: "Comece agora:",
-    subheading: "Escolha o cenário que deseja praticar",
+    instruction: "Escolha a conversa que você quer vencer.",
+    microcopy: "Grátis · Sem cartão · Sem assinatura",
     interviewLabel: "Entrevista de emprego",
-    interviewDesc: "Prepare-se para responder perguntas-chave na sua próxima entrevista",
+    interviewHook: "Conquiste a vaga. Defenda seu valor. Sem hesitar.",
     meetingLabel: "Reuniões remotas",
-    meetingDesc: "Domine suas reuniões em inglês com equipes internacionais",
+    meetingHook: "Participe, lidere e feche. Não fique só de presença.",
     presentationLabel: "Apresentações",
-    presentationDesc: "Pratique sua próxima apresentação profissional em inglês",
+    presentationHook: "Que te ouçam, não apenas que te entendam.",
+    cardCta: "Começar →",
   },
   howItWorks: {
-    sectionTitle: "Como funciona",
+    sectionTitle: "Três passos. Uma conversa que não te preocupa mais.",
     steps: [
-      { title: "Preparação", desc: "Escolha cenário, defina contexto e receba seu roteiro personalizado com pilares de valor e dicas-chave." },
-      { title: "Prática", desc: "Simule sua conversa com IA que assume um papel realista enquanto você fala por voz." },
-      { title: "Feedback", desc: "Análise em 3 dimensões, correções-chave, power phrases e feedback de sessão completo." },
+      { title: "Receba seu brief. Entre com estrutura.", desc: "Antes de falar, você recebe o framework, exemplos reais de respostas fracas vs. fortes e seu template de ancoragem. Não improvisa — chega preparado." },
+      { title: "Fale. Com alguém que não te perdoa.", desc: "A IA assume o papel que você define — entrevistador, cliente, líder de equipe. Responde como faria na vida real. Te questiona, te pressiona, não valida tudo." },
+      { title: "Feedback real. PDF pronto para usar.", desc: "Vai saber onde perdeu fluência, qual pronúncia corrigir e quais frases substituir. Com exemplos de como deveria soar. Baixe e tenha em mãos antes da conversa real." },
     ],
   },
   screens: {
@@ -627,97 +607,90 @@ export const PT: LandingCopy = {
       cta: "Finalizar e gerar relatório",
     },
   },
+  differentiators: {
+    sectionTitle: "Não é um curso de inglês. É prática conversacional profissional.",
+    items: [
+      { title: "Aprenda frameworks reais praticando, não estudando.", desc: "Cada sessão inclui um brief com técnicas de comunicação profissional e correções em contexto — não em uma prova. A cada sessão, seu inglês profissional fica mais preciso, mais fluido, mais seu." },
+      { title: "Seu contexto, sua conversa.", desc: "Você define o cenário — seu cargo, sua indústria, sua situação. A IA constrói a sessão ao redor disso. Não um roteiro genérico. Sua conversa." },
+      { title: "Feedback de fluência e pronúncia — em PDF para baixar.", desc: "Vai saber exatamente onde travou e qual pronúncia corrigir. Com exemplos de como deveria soar. Baixe. Tenha aberto antes da sua próxima conversa real." },
+      { title: "O amigo que te daria o melhor feedback nem sempre está disponível.", desc: "MasteryTalk.pro sim. Às 2h da manhã antes da entrevista, uma hora antes da apresentação, ou no domingo antes daquela reunião de segunda. Sem agendar. Sem depender de ninguém." },
+    ],
+  },
   benefits: {
-    sectionTitle: "O MasteryTalk.pro é para você?",
-    sectionSubtitle: "MasteryTalk.pro não é para todos. É para profissionais ambiciosos.",
-    yesTitle: "É para você se...",
+    sectionTitle: "Para quem usa inglês no trabalho — ou quer usar.",
     yesList: [
-      "Quer impactar em apresentações profissionais",
-      "Precisa negociar salários ou contratos",
-      "Lidera reuniões com equipes internacionais",
-      "Fecha vendas complexas em inglês",
-      "Participa de entrevistas",
+      "Tem entrevistas com empresas que pagam em USD",
+      "Participa ou lidera reuniões com equipes internacionais",
+      "Apresenta projetos a clientes em inglês",
+      "Busca trabalho e não quer que sua comunicação tire pontos",
+      "Sabe inglês mas em conversas reais não se expressa no nível que é",
     ],
-    noTitle: "Não é para você se...",
     noList: [
-      "Você é um falante não nativo e está aprendendo inglês do zero",
-      "Busca aulas de gramática básica",
-      "Prefere apenas ler ou escrever em inglês",
-      "Não tem cenários profissionais",
-      "Não usa inglês no trabalho",
+      "Está aprendendo inglês do zero",
+      "Busca um curso de gramática ou vocabulário",
+      "Não usa nem planeja usar inglês na carreira",
     ],
-    levelLabel: "Nível recomendado:",
-    levelDesc: "B1+ (Intermediário). Você já consegue manter conversas básicas, agora precisa dominá-las.",
   },
   beforeAfter: {
-    sectionTitle: "Antes e Depois",
-    sectionSubtitle: "Assim o MasteryTalk.pro transforma suas conversas profissionais",
+    sectionTitle: "Praticar existe. Praticar bem, é outra coisa.",
+    withoutTitle: "Prática passiva",
+    withoutList: [
+      "Pratica no espelho. Ninguém te questiona.",
+      "Seu amigo diz \"foi bem\" e pronto",
+      "Não sabe onde falhou a fluência nem quais frases soaram fracas",
+      "Chega na conversa real sem ter sentido pressão",
+    ],
     withTitle: "Com MasteryTalk.pro",
     withList: [
-      "Você já praticou 10 vezes",
-      "Conhece cada pergunta e objeção possível",
-      "Fala com segurança",
-      "Negocia e demonstra seu valor",
-      "Ganha presença executiva",
-    ],
-    withoutTitle: "Sem preparação",
-    withoutList: [
-      "Improvisa seu pitch",
-      "Torce para não receberem perguntas difíceis",
-      "Fala com insegurança",
-      "Perde oportunidade de impactar",
-      "Perde presença",
+      "O interlocutor te questiona, te pressiona, não te dá respostas fáceis",
+      "Sabe o que dizer quando silenciam a sala",
+      "Feedback de fluência e pronúncia com exemplos concretos",
+      "Entra pensando em vencer, não em sobreviver",
     ],
   },
-  impact: {
-    sectionTitle: "Impacto Real na sua Carreira",
-    sectionSubtitle: "Resultados mensuráveis que transformam trajetórias profissionais",
-    cards: [
-      { stat: "3x", label: "mais oportunidades", desc: "de liderança internacional" },
-      { stat: "89%", label: "dos usuários sentem mais segurança", desc: "ao falar em situações críticas" },
-      { stat: "$15K+", label: "aumento salarial médio", desc: "estimado (Nearshoring 2026)" },
+  sessionTakeaways: {
+    sectionTitle: "O que você leva de cada sessão.",
+    items: [
+      { metric: "Fluência", desc: "Sabe onde travou e como não repetir." },
+      { metric: "Pronúncia", desc: "O que corrigir e como deveria soar." },
+      { metric: "PDF", desc: "Seu relatório para baixar e ter em mãos." },
+    ],
+  },
+  routes: {
+    sectionTitle: "Escolha a rota que precisa agora.",
+    subtitle: "Você define o contexto. A conversa se adapta a você. Compra uma vez — é sua para sempre.",
+    items: [
+      { name: "Entrevista de emprego", hook: "Conquiste a vaga. Defenda seu valor. Sem hesitar." },
+      { name: "Reuniões remotas", hook: "Participe, lidere e feche. Não fique só de presença." },
+      { name: "Apresentações", hook: "Que te ouçam, não apenas que te entendam." },
     ],
   },
   pricing: {
-    sectionTitle: "Invista na sua vantagem competitiva",
-    sectionSubtitle: "Pratique entrevistas e reuniões em inglês com IA avançada.\n1ª sessão demo grátis. Depois, acesso permanente por Learning Path.",
-    freeSession: {
-      title: "1ª Sessão Demo",
-      desc: "Experimente a sessão completa sem compromisso",
-      features: ["Simulação completa com IA", "Feedback + Roteiro personalizado", "Feedback detalhado da sessão", "Sem cartão de crédito"],
-      button: "Começar grátis",
-    },
-    paths: [
-      { name: "1 Learning Path", sessions: 18, price: "$4.99", perSession: "$0.28", button: "Obter acesso", features: ["Acesso completo a 1 Learning Path", "Até 18 sessões únicas com GPT-4o", "6 níveis progressivos com IA adaptativa", "Acesso permanente — seu para sempre"] },
+    headline: "Sem assinaturas. Sem cobranças surpresa.",
+    headlineSub: "Compra uma rota, é sua para sempre.",
+    subtitle: "Experimente grátis primeiro. Se o que viver na primeira sessão não vale $4.99, não compre nada.",
+    cards: [
+      { price: "$4.99", label: "Primeira rota", sublabel: "Acesso permanente", note: "Preço especial de lançamento. Sobe quando sairmos do beta.", cta: "Obter acesso" },
+      { price: "$16.99", label: "Rotas adicionais", sublabel: "Acesso permanente", note: "Compre a que precisa, quando precisa.", cta: "Adicionar rota" },
     ],
-    freeTrialNote: "Preço beta por tempo limitado — paths adicionais a $16.99",
-    perSessionLabel: "por sessão",
-    savingsLabel: "economia",
-    statsBar: [
-      { value: "10x", desc: "mais barato que coaching presencial" },
-      { value: "$0.28", desc: "por sessão — menos que um café" },
-      { value: "24/7", desc: "treine quando precisar" },
-    ],
+    demoLine: "Primeira sessão completamente grátis — sem cartão, sem compromisso. Viva antes de decidir.",
   },
   faq: {
     sectionTitle: "Perguntas Frequentes",
-    sectionSubtitle: "Tudo que você precisa saber antes de começar",
     items: [
-      { q: "O MasteryTalk.pro é um curso de inglês?", a: "Não, cursos e apps de inglês já existem muitos; se você precisa aprender as bases, recomendamos usar um desses. O MasteryTalk.pro é uma ferramenta que ajuda a praticar sua comunicação, pronúncia e discurso profissional para se preparar antes de uma reunião importante." },
-      { q: "Preciso de um nível mínimo de inglês?", a: "Sim, o MasteryTalk.pro é para profissionais que já têm uma base (B1+) e precisam usar o inglês como ferramenta de trabalho. Não ensinamos a conjugar verbos, ensinamos a fechar negócios." },
-      { q: "O que acontece com a privacidade dos meus documentos?", a: "Suas notas e apresentações são processadas de forma segura e privada. São utilizadas apenas para configurar sua sessão de prática e melhorar seu roteiro." },
-      { q: "Como se diferencia de um professor particular?", a: "Um professor corrige seu inglês e custa USD $25 por sessão; o MasteryTalk.pro ajuda a melhorar sua pronúncia e forma de se comunicar profissionalmente para elevar seu nível. Além disso, estamos disponíveis 24/7 para aquela reunião de emergência que surgiu de improviso." },
-      { q: "Posso usar para entrevistas de trabalho específicas?", a: "Totalmente. Você pode carregar a descrição da vaga (Job Description) e a IA atuará como o recrutador específico daquela empresa." },
-      { q: "Quanto tempo preciso praticar para ver resultados?", a: "A maioria dos usuários relata mais confiança após 3-5 sessões. Para consolidar uma mudança real na comunicação profissional, recomendamos 90 dias de prática regular — até 15 minutos por dia fazem diferença." },
-      { q: "Posso cancelar a qualquer momento?", a: "Não há assinatura para cancelar. Você compra um Learning Path uma vez e tem acesso permanente — sem compromissos mensais, sem cobranças recorrentes. Seu acesso nunca expira." },
+      { q: "Isso é diferente do Duolingo ou de um curso de inglês?", a: "Não é um curso de gramática. Você aprende comunicação profissional praticando conversas reais — com frameworks, com correções, mas sempre em contexto. Se já sabe inglês mas em conversas reais não chega ao nível que é, isto é para você." },
+      { q: "A conversa se adapta à minha indústria ou cargo?", a: "Sim. Você define o contexto — seu cargo, sua empresa, o tipo de conversa. A IA constrói a sessão ao redor da sua situação. Não um cenário genérico. O seu." },
+      { q: "Tem assinatura ou cobrança mensal?", a: "Não. Compra uma rota uma vez e é sua para sempre. Sem renovações, sem cancelamentos, sem surpresas." },
+      { q: "O que inclui o relatório de cada sessão?", a: "Onde perdeu fluência, qual pronúncia trabalhar e quais frases substituir — com exemplos de como deveria soar. Baixe em PDF e tenha em mãos antes da sua próxima conversa real." },
+      { q: "Funciona se ainda não trabalho em inglês mas quero?", a: "Sim. Se busca trabalho em empresas que operam em inglês, praticar as conversas antes de tê-las é exatamente o que te dá vantagem sobre outros candidatos." },
     ],
   },
   finalCta: {
     headline1: "Sua próxima conversa importante",
     headline2: "pode mudar tudo.",
-    subline: "Treine. Domine. Vença",
-    button: "Experimentar grátis",
-    badges: ["Sem cartão de crédito", "1ª sessão grátis", "Sem assinatura"],
+    subline: "Uma sessão de cada vez. Um nível a mais cada vez.",
+    button: "Pratique sua primeira conversa grátis",
+    badges: ["Sem cartão", "Sem assinatura", "Primeiros slots beta"],
   },
   footer: {
     tagline: "O coach de comunicação profissional com IA para líderes latino-americanos.",
@@ -806,10 +779,10 @@ export const PT: LandingCopy = {
       emptyNoSessions: "Complete práticas para ver seu progresso",
     },
     quickStart: {
-      title: "Início rápido",
+      title: "Começar rápido",
       salesLabel: "Pitch de vendas",
       salesDesc: "Pratique como apresentar seu produto ou serviço a um cliente potencial",
-      interviewLabel: "Entrevista de trabalho",
+      interviewLabel: "Entrevista de emprego",
       interviewDesc: "Prepare-se para responder perguntas-chave na sua próxima entrevista",
     },
     improvement: {
@@ -821,7 +794,7 @@ export const PT: LandingCopy = {
     recentSessions: {
       title: "Sessões recentes",
       viewAll: "Ver todas",
-      empty: "Não há sessões recentes",
+      empty: "Sem sessões recentes",
     },
     recommended: {
       title: "Recomendações",
@@ -832,11 +805,11 @@ export const PT: LandingCopy = {
       startSession: "Começar prática",
       descFocus: "Seu {pillar} está em {score}% — vamos fortalecê-lo com uma sessão focada.",
       descPracticed: "Com base nas suas sessões, recomendamos focar em pronúncia e gramática.",
-      descNew: "Comece com um cenário popular para profissionais de nearshoring na América Latina.",
+      descNew: "Comece com um cenário popular para profissionais de nearshoring na LATAM.",
       scenarioInterview: "Entrevista de emprego",
       scenarioSales: "Pitch de vendas SaaS B2B",
       scenarioInterviewDesc: "Pratique respostas STAR e fortaleça seu posicionamento profissional em inglês.",
-      scenarioSalesDesc: "Pratique um pitch convincente em inglês para o mercado americano.",
+      scenarioSalesDesc: "Pratique um pitch convincente em inglês para o mercado US.",
       tagInterview: "Entrevista",
       tagSales: "Vendas",
       duration: "~8 min",
@@ -851,32 +824,30 @@ export const EN: LandingCopy = {
     benefits: "Benefits",
     pricing: "Pricing",
     login: "Sign In",
-    register: "Get Started",
+    cta: "Try free",
   },
   hero: {
-    badge: "AI-powered professional communication training.",
-    headline: "Rehearse your high-stakes conversations before they happen.",
-    subheadline: "Win Contracts. Work Remotely. Expand Your Reach.",
-    trustBadges: ["1st session free", "No credit card", "No subscription"],
-    socialProof: "already train with MasteryTalk.pro",
-    socialProofHighlight: "500+ professionals",
+    badge: "✶ Conversational practice for professionals in English.",
+    headline: "Rehearse your high-stakes conversations in English.",
+    subheadline: "Win contracts. Work remotely. Become the professional who communicates at the level they think.",
   },
   widget: {
-    heading: "Start now:",
-    subheading: "Choose the scenario you want to practice",
+    instruction: "Choose the conversation you want to win.",
+    microcopy: "Free · No credit card · No subscription",
     interviewLabel: "Job Interview",
-    interviewDesc: "Prepare to answer key questions in your next interview",
+    interviewHook: "Get the job. Defend your value. No hesitation.",
     meetingLabel: "Remote Meetings",
-    meetingDesc: "Master your meetings in English with international teams",
+    meetingHook: "Participate, lead, and close. Don't just show up.",
     presentationLabel: "Presentations",
-    presentationDesc: "Practice your next professional presentation in English",
+    presentationHook: "Be heard, not just understood.",
+    cardCta: "Start →",
   },
   howItWorks: {
-    sectionTitle: "How It Works",
+    sectionTitle: "Three steps. One conversation you no longer dread.",
     steps: [
-      { title: "Preparation", desc: "Choose a scenario, define context, and receive a personalized script with value pillars and key tips." },
-      { title: "Practice", desc: "Simulate your conversation with AI that takes on a realistic role while you speak by voice." },
-      { title: "Feedback", desc: "3-dimension analysis, key corrections, power phrases, and a complete session feedback." },
+      { title: "Get your brief. Walk in with structure.", desc: "Before you speak, you get the framework, real examples of weak vs. strong answers, and your anchoring template. No improvising — you arrive prepared." },
+      { title: "Speak. With someone who won't go easy.", desc: "The AI takes on the role you define — interviewer, client, team lead. It responds like it would in real life. It challenges you, pushes back, doesn't validate everything." },
+      { title: "Real feedback. PDF ready to use.", desc: "You'll know where you lost fluency, what pronunciation to fix, and which phrases to replace. With examples of how it should sound. Download it and keep it handy before the real conversation." },
     ],
   },
   screens: {
@@ -915,97 +886,90 @@ export const EN: LandingCopy = {
       cta: "Finish & Generate Report",
     },
   },
+  differentiators: {
+    sectionTitle: "It's not an English course. It's professional conversational practice.",
+    items: [
+      { title: "Learn real frameworks by practicing, not studying.", desc: "Every session includes a brief with professional communication techniques and corrections in context — not on an exam. With each session, your professional English gets sharper, more fluent, more yours." },
+      { title: "Your context, your conversation.", desc: "You define the scenario — your role, your industry, your situation. The AI builds the session around that. Not a generic script. Your conversation." },
+      { title: "Fluency and pronunciation feedback — in a downloadable PDF.", desc: "You'll know exactly where you stumbled and what pronunciation to fix. With examples of how it should sound. Download it. Have it open before your next real conversation." },
+      { title: "The friend who'd give you the best feedback isn't always available.", desc: "MasteryTalk.pro is. At 2am before your interview, an hour before your presentation, or Sunday night before Monday's meeting. No scheduling. No depending on anyone." },
+    ],
+  },
   benefits: {
-    sectionTitle: "Is MasteryTalk.pro for you?",
-    sectionSubtitle: "MasteryTalk.pro isn't for everyone. It's for ambitious professionals.",
-    yesTitle: "It's for you if...",
+    sectionTitle: "For those who use English at work — or want to.",
     yesList: [
-      "You need to make an impact in professional presentations",
-      "You negotiate salaries or contracts",
-      "You lead meetings with international teams",
-      "You close complex deals in English",
-      "You're preparing for interviews at global companies",
+      "You have interviews with companies that pay in USD",
+      "You participate in or lead meetings with international teams",
+      "You present projects to clients in English",
+      "You're job hunting and don't want communication holding you back",
+      "You know English but in real conversations you don't express yourself at your level",
     ],
-    noTitle: "It's not for you if...",
     noList: [
-      "You are a non native speaker and you are learning english from scratch",
-      "You're looking for basic grammar lessons",
-      "You only read or write in English",
-      "You don't have professional scenarios to practice",
-      "You don't use English at work",
+      "You're learning English from scratch",
+      "You're looking for a grammar or vocabulary course",
+      "You don't use and don't plan to use English in your career",
     ],
-    levelLabel: "Recommended level:",
-    levelDesc: "B1+ (Intermediate). You can hold basic conversations — now you need to command them.",
   },
   beforeAfter: {
-    sectionTitle: "Before & After",
-    sectionSubtitle: "How MasteryTalk.pro transforms your professional conversations",
+    sectionTitle: "Practicing exists. Practicing well is something else.",
+    withoutTitle: "Passive practice",
+    withoutList: [
+      "You practice in the mirror. Nobody challenges you.",
+      "Your friend says \"it was fine\" and that's it",
+      "You don't know where fluency failed or which phrases sounded weak",
+      "You walk into the real conversation without having felt pressure",
+    ],
     withTitle: "With MasteryTalk.pro",
     withList: [
-      "You've rehearsed it 10 times",
-      "You know every possible question and objection",
-      "You speak with confidence",
-      "You negotiate and demonstrate your value",
-      "You project executive presence",
-    ],
-    withoutTitle: "Without preparation",
-    withoutList: [
-      "You improvise your pitch",
-      "You hope they won't ask tough questions",
-      "You speak with uncertainty",
-      "You miss the chance to make an impact",
-      "You lose presence",
+      "The counterpart challenges you, pushes back, doesn't give easy answers",
+      "You know what to say when the room goes silent",
+      "Fluency and pronunciation feedback with concrete examples",
+      "You walk in thinking about winning, not surviving",
     ],
   },
-  impact: {
-    sectionTitle: "Real Career Impact",
-    sectionSubtitle: "Measurable results that transform professional trajectories",
-    cards: [
-      { stat: "3x", label: "more opportunities", desc: "for international leadership roles" },
-      { stat: "89%", label: "of users feel more confident", desc: "speaking in high-stakes situations" },
-      { stat: "$15K+", label: "average salary increase", desc: "estimated (Nearshoring 2026)" },
+  sessionTakeaways: {
+    sectionTitle: "What you take from every session.",
+    items: [
+      { metric: "Fluency", desc: "Know where you stumbled and how to not do it again." },
+      { metric: "Pronunciation", desc: "What to fix and how it should sound." },
+      { metric: "PDF", desc: "Your downloadable report to study or keep handy." },
+    ],
+  },
+  routes: {
+    sectionTitle: "Choose the path you need right now.",
+    subtitle: "You define the context. The conversation adapts to you. Buy it once — it's yours forever.",
+    items: [
+      { name: "Job Interview", hook: "Get the job. Defend your value. No hesitation." },
+      { name: "Remote Meetings", hook: "Participate, lead, and close. Don't just show up." },
+      { name: "Presentations", hook: "Be heard, not just understood." },
     ],
   },
   pricing: {
-    sectionTitle: "Invest in your competitive edge",
-    sectionSubtitle: "Practice interviews and meetings with advanced AI.\n1st demo session free. Then permanent access per Learning Path.",
-    freeSession: {
-      title: "1st Demo Session",
-      desc: "Experience the full session with no commitment",
-      features: ["Full AI simulation", "Feedback + Personalized script", "Detailed session feedback", "No credit card required"],
-      button: "Start free",
-    },
-    paths: [
-      { name: "1 Learning Path", sessions: 18, price: "$4.99", perSession: "$0.28", button: "Get access", features: ["Full access to 1 Learning Path", "Up to 18 unique sessions with GPT-4o", "6 progressive AI-adaptive levels", "Permanent access — yours forever"] },
+    headline: "No subscriptions. No surprise charges.",
+    headlineSub: "Buy a path, it's yours forever.",
+    subtitle: "Try free first. If what you experience in the first session isn't worth $4.99, don't buy anything.",
+    cards: [
+      { price: "$4.99", label: "First path", sublabel: "Permanent access", note: "Special launch price. Goes up when we leave beta.", cta: "Get access" },
+      { price: "$16.99", label: "Additional paths", sublabel: "Permanent access", note: "Buy the one you need, when you need it.", cta: "Add path" },
     ],
-    freeTrialNote: "Beta price for a limited time — additional paths at $16.99",
-    perSessionLabel: "per session",
-    savingsLabel: "savings",
-    statsBar: [
-      { value: "10x", desc: "cheaper than in-person coaching" },
-      { value: "$0.28", desc: "per session — less than a coffee" },
-      { value: "24/7", desc: "train whenever you need" },
-    ],
+    demoLine: "First session completely free — no credit card, no commitment. Experience it before you decide.",
   },
   faq: {
     sectionTitle: "Frequently Asked Questions",
-    sectionSubtitle: "Everything you need to know before getting started",
     items: [
-      { q: "Is MasteryTalk.pro an English course?", a: "No. There are plenty of English courses and apps out there; if you need to learn the basics, we recommend using one of those. MasteryTalk.pro is a communication training tool that helps you rehearse your delivery, pronunciation, and professional discourse before an important meeting." },
-      { q: "Do I need a minimum English level?", a: "Yes. MasteryTalk.pro is built for professionals who already have a solid foundation (B1+) and need English as a work tool. We don't teach verb conjugation — we teach you how to close deals." },
-      { q: "What about the privacy of my documents?", a: "Your notes and presentations are processed securely and privately. They are only used to configure your practice session and improve your script." },
-      { q: "How is it different from a private tutor?", a: "A tutor corrects your grammar at ~$25/session. MasteryTalk.pro trains how you communicate professionally — your presence, structure, and persuasion. Plus, we're available 24/7 for that last-minute meeting that just popped up." },
-      { q: "Can I use it for specific job interviews?", a: "Absolutely. You can provide the job description and the AI will act as that company's specific recruiter." },
-      { q: "How long do I need to practice to see results?", a: "Most users report increased confidence after 3–5 sessions. For lasting change in professional communication, we recommend 90 days of regular practice — even 15 minutes a day makes a difference." },
-      { q: "Can I cancel anytime?", a: "There's no subscription to cancel. You buy a Learning Path once and get permanent access — no monthly commitments, no recurring charges. Your access never expires." },
+      { q: "Is this different from Duolingo or an English course?", a: "It's not a grammar course. You learn professional communication by practicing real conversations — with frameworks, with corrections, but always in context. If you already know English but in real conversations you don't reach your level, this is for you." },
+      { q: "Does the conversation adapt to my industry or role?", a: "Yes. You define the context — your role, your company, the type of conversation. The AI builds the session around your situation. Not a generic scenario. Yours." },
+      { q: "Is there a subscription or monthly charge?", a: "No. You buy a path once and it's yours forever. No renewals, no cancellations, no surprises." },
+      { q: "What does each session report include?", a: "Where you lost fluency, what pronunciation to work on, and which phrases to replace — with examples of how it should sound. Download it as PDF and keep it handy before your next real conversation." },
+      { q: "Does it work if I don't work in English yet but want to?", a: "Yes. If you're looking for work at companies that operate in English, practicing the conversations before having them is exactly what gives you an edge over other candidates." },
     ],
   },
   finalCta: {
     headline1: "Your next important conversation",
     headline2: "could change everything.",
-    subline: "Train. Command. Win",
-    button: "Try free",
-    badges: ["No credit card", "1st session free", "No subscription"],
+    subline: "One session at a time. One level up each time.",
+    button: "Practice your first conversation free",
+    badges: ["No credit card", "No subscription", "Early beta slots"],
   },
   footer: {
     tagline: "The AI-powered professional communication coach for ambitious leaders.",
@@ -1065,12 +1029,12 @@ export const EN: LandingCopy = {
     greetingAfternoon: "Good afternoon!",
     greetingEvening: "Good evening!",
     subtitleWithData: "Here's your progress so far",
-    subtitleEmpty: "You haven't started any sessions yet",
+    subtitleEmpty: "Complete your first practice to see your progress",
     history: "Session history",
     proficiency: {
       title: "English proficiency",
       descWithData: "Your English level has improved significantly",
-      descEmpty: "You haven't started any sessions yet",
+      descEmpty: "Complete your first practice to measure your level",
       cefrTitle: "CEFR level",
       cefrDisclaimer: "Based on your session progress",
     },
@@ -1083,15 +1047,15 @@ export const EN: LandingCopy = {
     radar: {
       title: "Skill radar",
       descWithData: "Visualize your strengths and areas for improvement",
-      descEmpty: "You haven't started any sessions yet",
+      descEmpty: "Practice your first session to see your skills",
     },
     progress: {
       title: "Progress",
       descMultiple: "You've completed multiple sessions",
       descSingle: "You've completed one session",
-      descEmpty: "You haven't started any sessions yet",
-      emptyOneSessions: "Start your first session to see your progress",
-      emptyNoSessions: "Start sessions to see your progress",
+      descEmpty: "Your progress will appear here after your first practice",
+      emptyOneSessions: "Complete your first practice to see your progress",
+      emptyNoSessions: "Complete practices to see your progress",
     },
     quickStart: {
       title: "Quick start",
@@ -1118,7 +1082,7 @@ export const EN: LandingCopy = {
       defaultHint: "Practice more",
       firstHint: "Start with",
       startSession: "Start session",
-      descFocus: "Your {pillar} is at {score}% — let's focus on it with a targeted session.",
+      descFocus: "Your {pillar} is at {score}% — let's strengthen it with a focused session.",
       descPracticed: "Based on your sessions, we recommend focusing on pronunciation and grammar.",
       descNew: "Start with a popular scenario for nearshoring professionals in LATAM.",
       scenarioInterview: "Job interview",

@@ -1,6 +1,6 @@
 /**
  * ══════════════════════════════════════════════════════════════
- *  inFluentia PRO — Voice Mapping (ElevenLabs)
+ *  MasteryTalk PRO — Voice Mapping (ElevenLabs)
  *
  *  Maps interlocutor → ElevenLabs voice ID for TTS consistency.
  *  10 interlocutors: 4 interview + 4 sales + 2 meeting.

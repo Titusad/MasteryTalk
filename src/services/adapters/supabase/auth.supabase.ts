@@ -85,23 +85,23 @@ export class SupabaseAuthService implements IAuthService {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log(`[inFluentia Auth] onAuthStateChange: event=${event}, user=${session?.user?.email ?? "null"}`);
+      console.log(`[MasteryTalk Auth] onAuthStateChange: event=${event}, user=${session?.user?.email ?? "null"}`);
 
       if (session?.user) {
         try {
           const profile = await this.fetchOrCreateProfile(session.user);
           this.currentUser = mapToUser(session.user, profile);
-          console.log(`[inFluentia Auth] User loaded: ${this.currentUser.displayName} (${this.currentUser.plan})`);
+          console.log(`[MasteryTalk Auth] User loaded: ${this.currentUser.displayName} (${this.currentUser.plan})`);
 
           // Fire-and-forget: ensure server-side profile exists too
           if (event === "SIGNED_IN") {
             this.ensureServerProfile().catch((err) =>
-              console.warn("[inFluentia Auth] ensure-profile server call failed (non-blocking):", err)
+              console.warn("[MasteryTalk Auth] ensure-profile server call failed (non-blocking):", err)
             );
           }
         } catch (err) {
           // All profile fetching/creation failed — use auth data only
-          console.warn("[inFluentia Auth] Profile fetch/create failed, using auth-only user:", err);
+          console.warn("[MasteryTalk Auth] Profile fetch/create failed, using auth-only user:", err);
           this.currentUser = {
             uid: session.user.id,
             displayName:
@@ -147,11 +147,11 @@ export class SupabaseAuthService implements IAuthService {
         msg.includes("42p01");
 
       if (isTableMissing) {
-        console.log("[inFluentia Auth] Profiles table not found — using synthetic profile (fast path)");
+        console.log("[MasteryTalk Auth] Profiles table not found — using synthetic profile (fast path)");
         return this.syntheticProfile(authUser.id);
       }
 
-      console.log("[inFluentia Auth] Profile not found, attempting upsert...");
+      console.log("[MasteryTalk Auth] Profile not found, attempting upsert...");
     }
 
     // Attempt 2: Try to upsert directly (table exists but row doesn't)
@@ -173,15 +173,15 @@ export class SupabaseAuthService implements IAuthService {
         .single();
 
       if (data && !error) {
-        console.log("[inFluentia Auth] Profile created via upsert");
+        console.log("[MasteryTalk Auth] Profile created via upsert");
         return data as ProfileRow;
       }
     } catch (upsertErr) {
-      console.warn("[inFluentia Auth] Upsert failed:", upsertErr);
+      console.warn("[MasteryTalk Auth] Upsert failed:", upsertErr);
     }
 
     // Fallback: synthetic profile
-    console.log("[inFluentia Auth] Using synthetic profile (fallback)");
+    console.log("[MasteryTalk Auth] Using synthetic profile (fallback)");
     return this.syntheticProfile(authUser.id);
   }
 
@@ -368,6 +368,6 @@ export class SupabaseAuthService implements IAuthService {
     }
 
     const result = await response.json();
-    console.log("[inFluentia Auth] Server profile ensured:", result.status);
+    console.log("[MasteryTalk Auth] Server profile ensured:", result.status);
   }
 }

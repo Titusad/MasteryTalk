@@ -1,6 +1,6 @@
 /**
  * ══════════════════════════════════════════════════════════════
- *  inFluentia PRO — Service Layer: Error Protocol
+ *  MasteryTalk PRO — Service Layer: Error Protocol
  *
  *  Typed error classes for every service domain.
  *  Each error carries:

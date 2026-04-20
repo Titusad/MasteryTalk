@@ -1,6 +1,6 @@
 /**
  * ══════════════════════════════════════════════════════════════
- *  inFluentia PRO — Design Tokens (centralised reference)
+ *  MasteryTalk PRO — Design Tokens (centralised reference)
  * ══════════════════════════════════════════════════════════════
  */
 

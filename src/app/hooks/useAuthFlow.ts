@@ -16,8 +16,8 @@ import type { Page } from "./useHashRouter";
 import type { ScenarioType } from "@/services/types";
 
 /* Session storage keys for OAuth redirect recovery */
-const OAUTH_PENDING_KEY = "influentia_oauth_pending";
-const PENDING_SETUP_KEY = "influentia_pending_setup";
+const OAUTH_PENDING_KEY = "masterytalk_oauth_pending";
+const PENDING_SETUP_KEY = "masterytalk_pending_setup";
 
 export interface FlowState {
   scenario: string;
@@ -77,7 +77,7 @@ export function useAuthFlow(options: UseAuthFlowOptions) {
                 progressionLevelId: setup.progressionLevelId || (sType === "interview" ? "int-1" : "sal-1"),
               });
 
-              const savedLang = localStorage.getItem("influentia_lang") || "es";
+              const savedLang = localStorage.getItem("masterytalk_lang") || "es";
               pendingNavigationRef.current = () => {
                 setPage("practice-session");
                 window.location.hash = "#practice-session";
@@ -90,7 +90,7 @@ export function useAuthFlow(options: UseAuthFlowOptions) {
                 setShowLangModal(true);
               }
             } catch (err) {
-              console.warn("[inFluentia] Failed to parse pending setup:", err);
+              console.warn("[MasteryTalk] Failed to parse pending setup:", err);
               setPage("dashboard");
               window.location.hash = "#dashboard";
             }
@@ -124,7 +124,7 @@ export function useAuthFlow(options: UseAuthFlowOptions) {
                 guidedFields: setup.guidedFields,
               });
 
-              const savedLang = localStorage.getItem("influentia_lang") || "es";
+              const savedLang = localStorage.getItem("masterytalk_lang") || "es";
               pendingNavigationRef.current = () => {
                 setPage("practice-session");
                 window.location.hash = "#practice-session";

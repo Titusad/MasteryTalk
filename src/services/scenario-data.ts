@@ -1,6 +1,6 @@
 /**
  * ══════════════════════════════════════════════════════════════
- *  inFluentia PRO — Scenario Data Facade
+ *  MasteryTalk PRO — Scenario Data Facade
  *
  *  Public API for scenario-specific mock data consumed by UI.
  *  In mock mode: delegates to hardcoded data in adapters/mock/data/.

@@ -50,6 +50,10 @@ import type { Page } from "./hooks/useHashRouter";
 import { useAuthFlow } from "./hooks/useAuthFlow";
 import type { FlowState } from "./hooks/useAuthFlow";
 import { authService } from "../services";
+import { runStorageMigration } from "@/shared/lib/storageMigration";
+
+/* Run once on load — migrates old influentia_* keys */
+runStorageMigration();
 
 
 
@@ -58,8 +62,8 @@ export default function App() {
   const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || "").split(",").map((e: string) => e.trim().toLowerCase()).filter(Boolean);
 
   /* ─── DEV MODE: sessionStorage keys for OAuth redirect recovery ─── */
-  const OAUTH_PENDING_KEY = "influentia_oauth_pending";
-  const PENDING_SETUP_KEY = "influentia_pending_setup";
+  const OAUTH_PENDING_KEY = "masterytalk_oauth_pending";
+  const PENDING_SETUP_KEY = "masterytalk_pending_setup";
 
   const [page, setPage] = useState<Page>(() => {
     const hash = window.location.hash;
@@ -106,7 +110,7 @@ export default function App() {
   const [userProfile, setUserProfile] = useState<OnboardingProfile | null>(
     () => {
       try {
-        const saved = localStorage.getItem("influentia_profile");
+        const saved = localStorage.getItem("masterytalk_profile");
         return saved ? JSON.parse(saved) : null;
       } catch {
         return null;
@@ -128,7 +132,7 @@ export default function App() {
   const langModalDismissedRef = useRef(false); // Guard: prevent double-fire of onContinue
   const [landingLang, setLandingLang] = useState<LandingLang>(() => {
     try {
-      const saved = localStorage.getItem("influentia_lang");
+      const saved = localStorage.getItem("masterytalk_lang");
       if (saved === "es" || saved === "pt" || saved === "en") return saved;
     } catch { /* ignore */ }
     return "es";
@@ -137,7 +141,7 @@ export default function App() {
   /* ─── Market focus (region) — persisted in localStorage ─── */
   const [marketFocus, setMarketFocus] = useState<MarketFocus | null>(() => {
     try {
-      const saved = localStorage.getItem("influentia_market_focus");
+      const saved = localStorage.getItem("masterytalk_market_focus");
       if (saved === "mexico" || saved === "colombia" || saved === "brazil") return saved;
     } catch { /* ignore */ }
     return null;
@@ -148,7 +152,7 @@ export default function App() {
   const handleLangChange = (lang: LandingLang) => {
     setLandingLang(lang);
     try {
-      localStorage.setItem("influentia_lang", lang);
+      localStorage.setItem("masterytalk_lang", lang);
     } catch { /* ignore */ }
   };
 
@@ -157,11 +161,11 @@ export default function App() {
    * DEV MODE: Forces a clean start every time.
    *
    * Flow A — Fresh visit (no OAuth return):
-   *   1. No `influentia_oauth_pending` flag → sign out stale session
+   *   1. No `masterytalk_oauth_pending` flag → sign out stale session
    *   2. Auth listener fires with null → stays on landing
    *
    * Flow B — Returning from Google OAuth redirect:
-   *   1. `influentia_oauth_pending` flag exists → DON'T sign out
+   *   1. `masterytalk_oauth_pending` flag exists → DON'T sign out
    *   2. Supabase detects session from URL fragment
    *   3. Auth listener fires with user → reads setup from sessionStorage
    *   4. Shows Language Modal → navigates to Practice Session
@@ -205,7 +209,7 @@ export default function App() {
               });
 
               // Show language modal (or skip for EN users)
-              const savedLang = localStorage.getItem("influentia_lang") || "es";
+              const savedLang = localStorage.getItem("masterytalk_lang") || "es";
               pendingNavigationRef.current = () => {
                 setPage("practice-session");
                 window.location.hash = "#practice-session";
@@ -220,7 +224,7 @@ export default function App() {
                 console.log("[DEBUG] setShowLangModal(true) at Flow B (OAuth return)");
               }
             } catch (err) {
-              console.warn("[inFluentia] Failed to parse pending setup:", err);
+              console.warn("[MasteryTalk] Failed to parse pending setup:", err);
               setPage("dashboard");
               window.location.hash = "#dashboard";
             }
@@ -256,7 +260,7 @@ export default function App() {
                 guidedFields: setup.guidedFields,
               });
 
-              const savedLang = localStorage.getItem("influentia_lang") || "es";
+              const savedLang = localStorage.getItem("masterytalk_lang") || "es";
               pendingNavigationRef.current = () => {
                 setPage("practice-session");
                 window.location.hash = "#practice-session";
@@ -281,9 +285,9 @@ export default function App() {
           // This ensures returning users don't stay on the landing page.
           if (!window.location.hash || window.location.hash === "#" || window.location.hash === "#/") {
             // Check if user arrived via pricing CTA — show purchase modal on dashboard
-            const hasPurchaseIntent = sessionStorage.getItem("influentia_purchase_intent") === "true";
+            const hasPurchaseIntent = sessionStorage.getItem("masterytalk_purchase_intent") === "true";
             if (hasPurchaseIntent) {
-              sessionStorage.removeItem("influentia_purchase_intent");
+              sessionStorage.removeItem("masterytalk_purchase_intent");
             }
             setPage("dashboard");
             window.location.hash = "#dashboard";
@@ -416,7 +420,7 @@ export default function App() {
   const handleProfileUpdate = (profile: OnboardingProfile) => {
     setUserProfile(profile);
     try {
-      localStorage.setItem("influentia_profile", JSON.stringify(profile));
+      localStorage.setItem("masterytalk_profile", JSON.stringify(profile));
     } catch { /* ignore */ }
 
     // Sync CV-related fields to backend KV store (fire-and-forget)
@@ -677,7 +681,7 @@ export default function App() {
                 } else {
                   // Fallback: if ref was lost (race condition), navigate to practice-session
                   // (the modal only shows after a practice setup, so this is the expected destination)
-                  console.warn("[inFluentia] pendingNavigationRef was null — fallback to practice-session");
+                  console.warn("[MasteryTalk] pendingNavigationRef was null — fallback to practice-session");
                   setPage("practice-session");
                   window.location.hash = "#practice-session";
                 }

@@ -30,8 +30,8 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     this.setState({ errorInfo });
-    console.error("[inFluentia ErrorBoundary] Caught error:", error);
-    console.error("[inFluentia ErrorBoundary] Component stack:", errorInfo.componentStack);
+    console.error("[MasteryTalk ErrorBoundary] Caught error:", error);
+    console.error("[MasteryTalk ErrorBoundary] Component stack:", errorInfo.componentStack);
   }
 
   render() {

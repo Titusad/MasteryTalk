@@ -1,6 +1,6 @@
 /**
  * ======================================================================
- *  inFluentia PRO -- TTS Synchronization & Voice Delivery Spec
+ *  MasteryTalk PRO -- TTS Synchronization & Voice Delivery Spec
  *
  *  Production instructions for synchronizing AI text with ElevenLabs
  *  streaming TTS audio. This file serves as:

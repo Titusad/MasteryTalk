@@ -1,6 +1,6 @@
 /**
  * ══════════════════════════════════════════════════════════════
- *  inFluentia PRO — Micro-Lessons Library
+ *  MasteryTalk PRO — Micro-Lessons Library
  *
  *  Static content for personalized skill development.
  *  Lessons are shown based on the user's weakest pillars.

@@ -1,6 +1,6 @@
 /**
  * ==============================================================
- *  inFluentia PRO — Comprehensive Session Report PDF Generator
+ *  MasteryTalk PRO — Comprehensive Session Report PDF Generator
  *
  *  Generates a complete PDF combining:
  *  Part 1 — Interview Preparation (briefing data)

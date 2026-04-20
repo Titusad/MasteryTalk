@@ -4,7 +4,7 @@
 > Any code change MUST be consistent with this spec.
 > If the spec needs to change, update THIS FILE FIRST → get approval → then code.
 >
-> Last updated: 2026-04-17 (Beta v11.0)
+> Last updated: 2026-04-20 (Beta v11.1 — Landing Page Overhaul)
 
 ---
 
@@ -224,7 +224,7 @@ All four entry points must pass `ownedPaths={authUser?.pathsPurchased ?? []}`:
 | Entry Point | File | Trigger |
 |-------------|------|---------|
 | Landing Pricing CTA (auth) | `App.tsx` → `showNewSessionPaywall` | `onPricingPurchase()` → `setShowNewSessionPaywall(true)` |
-| Landing Pricing CTA (no auth) | `LandingPage.tsx` → sessionStorage intent | `handlePricingClick()` → saves `influentia_purchase_intent` → post-OAuth → `setShowNewSessionPaywall(true)` |
+| Landing Pricing CTA (no auth) | `LandingPage.tsx` → sessionStorage intent | `handlePricingClick()` → saves `masterytalk_purchase_intent` → post-OAuth → `setShowNewSessionPaywall(true)` |
 | Dashboard header badge | `DashboardPage.tsx` → `upsellOpen` | `onOpenUpsell()` |
 | In-session paywall | `PracticeSessionPage.tsx` → `paywallOpen` | `handlePaywallTriggered("path-required" \| "attempts-exhausted")` |
 
@@ -232,15 +232,37 @@ All four entry points must pass `ownedPaths={authUser?.pathsPurchased ?? []}`:
 
 ## §6 — Landing Page
 
-### §6.1 Pricing Section
+### §6.1 Section Structure (v4)
 
-- **1 card** centered (max-w-md)
-- Price: **$4.99** (beta price for first path)
-- Note below: "Precio beta por tiempo limitado — paths adicionales a $16.99"
-- Features: Full access to 1 Learning Path, 18 sessions, 6 levels, permanent access
-- Demo session does NOT appear in pricing — lives only in hero CTA
+| # | Section | Anchor | Key Elements |
+|---|---------|--------|--------------|
+| 1 | Hero | `#hero` | Badge pill, headline, subheadline |
+| 2 | Practice Widget | — | 3 scenario cards (interview, meeting, presentation) + microcopy |
+| 3 | How It Works | `#how` | 3-step tabs with interactive mockups |
+| 4 | Diferenciadores | — | 4 numbered cards in 2×2 grid |
+| 5 | ¿Es para ti? | `#benefits` | Yes/No column lists |
+| 6 | Before & After | — | Passive practice vs MasteryTalk columns |
+| 7 | Session Takeaways | — | 3 metric cards (Fluency, Pronunciation, PDF) |
+| 8 | Rutas disponibles | — | 3 route cards with hooks |
+| 9 | Pricing | `#pricing` | 2 pricing cards (see §6.2) |
+| 10 | FAQ | — | 5 accordion items |
+| 11 | Final CTA | — | Headline + single CTA button |
 
-### §6.2 Supported Languages
+### §6.2 Pricing Section
+
+- **2 cards** side-by-side (max-w-3xl)
+- Card 1: **$4.99** — primera ruta, acceso permanente (dark featured card)
+- Card 2: **$16.99** — rutas adicionales, acceso permanente (white card)
+- Demo reinforcement line below cards: "Primera sesión completamente gratis"
+- Demo session does NOT appear in pricing cards — lives in hero widget microcopy
+
+### §6.3 Nav
+
+- 3 anchor links: How It Works, Benefits, Pricing
+- "Iniciar sesión" as ghost text link
+- **Single CTA button:** "Probar gratis" (scrolls to hero widget)
+
+### §6.4 Supported Languages
 
 | Code | Landing | Dashboard |
 |------|---------|-----------|
@@ -264,13 +286,12 @@ type Step =
   | "pre-briefing"
   | "practice"
   | "analyzing"
-  | "interview-analysis"
-  | "path-conversion"
-  | "conversation-feedback"
-  | "skill-drill"
-  | "cp-unlock"
-  | "remedial"
-  | "session-recap";
+  | "session-analysis"
+  | "path-conversion";
+```
+
+> **Retired steps** (removed from codebase):
+> `conversation-feedback`, `skill-drill`, `cp-unlock`, `remedial`, `session-recap`, `interview-analysis`
 ```
 
 ### §7.2 Arena System (Progressive Scaffolding)
@@ -397,6 +418,7 @@ Learning Path: [Scenario] ($4.99 first / $16.99 additional)
 | Version | Date | Changes |
 |---------|------|---------|
 | v1.0 | 2026-04-17 | Initial spec — retroactive documentation of beta state |
+| v1.1 | 2026-04-20 | Landing page overhaul (v4 copy), §6 restructured, §7.1 steps cleaned, storage keys rebranded |
 
 ### What this spec does NOT cover (yet)
 - Detailed prompt engineering (system prompts, evaluator prompts)

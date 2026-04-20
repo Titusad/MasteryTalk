@@ -1,6 +1,6 @@
 /**
  * ==============================================================
- *  inFluentia PRO — Interview Preparation Screen (Stepper Edition)
+ *  MasteryTalk PRO — Interview Preparation Screen (Stepper Edition)
  *
  *  New 4-step per-question mastery flow:
  *    Step 1: See the question

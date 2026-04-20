@@ -1,6 +1,6 @@
 /**
  * ══════════════════════════════════════════════════════════════
- *  inFluentia PRO — System Prompt Templates (Block 1, 6, 7)
+ *  MasteryTalk PRO — System Prompt Templates (Block 1, 6, 7)
  *
  *  Immutable core blocks that define AI behavior.
  *  Reference: /docs/SYSTEM_PROMPTS.md §2, §7, §8

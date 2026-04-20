@@ -1,6 +1,6 @@
 /**
  * ==============================================================
- *  inFluentia PRO - Pronunciation Tab (Session Feedback Tab 2)
+ *  MasteryTalk PRO - Pronunciation Tab (Session Feedback Tab 2)
  *
  *  Three sections:
  *  1. Pronunciation Replay Overview - session scores (Accuracy, Fluency, Intonation & Flow)

@@ -1,6 +1,6 @@
 /**
  * ══════════════════════════════════════════════════════════════
- *  inFluentia PRO — Prompts Module
+ *  MasteryTalk PRO — Prompts Module
  *
  *  Public API for the prompt engineering system.
  *  Import from here in services and Edge Functions.

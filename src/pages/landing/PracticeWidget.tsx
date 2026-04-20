@@ -140,13 +140,13 @@ function PracticeSetupModal({
     try {
       // DEV MODE: Persist setup in sessionStorage so it survives OAuth redirect
       try {
-        sessionStorage.setItem("influentia_pending_setup", JSON.stringify({
+        sessionStorage.setItem("masterytalk_pending_setup", JSON.stringify({
           scenario,
           scenarioType: selectedScenario,
           interlocutor: selectedInterlocutor,
           guidedFields: { ...guidedValues },
         }));
-        sessionStorage.setItem("influentia_oauth_pending", "true");
+        sessionStorage.setItem("masterytalk_oauth_pending", "true");
       } catch { /* ignore */ }
 
       await authService.signIn(provider);
@@ -155,8 +155,8 @@ function PracticeSetupModal({
     } catch (err) {
       setLoadingProvider(null);
       try {
-        sessionStorage.removeItem("influentia_pending_setup");
-        sessionStorage.removeItem("influentia_oauth_pending");
+        sessionStorage.removeItem("masterytalk_pending_setup");
+        sessionStorage.removeItem("masterytalk_oauth_pending");
       } catch { /* ignore */ }
       if (isAuthError(err)) {
         setInlineError(err.userMessage);
@@ -393,14 +393,11 @@ export function PracticeWidget({
         />
         <div className="relative bg-white rounded-3xl p-8 md:p-10 shadow-sm border border-gray-100">
           <h2
-            className="text-center text-[#0f172b] text-xl md:text-2xl mb-2"
+            className="text-center text-[#0f172b] text-xl md:text-2xl mb-6"
             style={{ fontWeight: 300 }}
           >
-            {copy.widget.heading}
+            {copy.widget.instruction}
           </h2>
-          <p className="text-center text-[#62748e] text-sm mb-8">
-            {copy.widget.subheading}
-          </p>
 
           {/* Scenario CTA cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -408,21 +405,21 @@ export function PracticeWidget({
               {
                 id: "interview" as ScenarioType,
                 label: copy.widget.interviewLabel,
-                description: copy.widget.interviewDesc,
+                description: copy.widget.interviewHook,
                 icon: Mic,
                 scenarioText: copy.widget.interviewLabel,
               },
               {
                 id: "meeting" as ScenarioType,
                 label: copy.widget.meetingLabel,
-                description: copy.widget.meetingDesc,
+                description: copy.widget.meetingHook,
                 icon: Target,
                 scenarioText: copy.widget.meetingLabel,
               },
               {
                 id: "presentation" as ScenarioType,
                 label: copy.widget.presentationLabel,
-                description: copy.widget.presentationDesc,
+                description: copy.widget.presentationHook,
                 icon: Sparkles,
                 scenarioText: copy.widget.presentationLabel,
               },
