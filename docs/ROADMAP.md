@@ -49,7 +49,7 @@
 - [x] **Cleanup:** Delete `DevPreviewMenu.tsx` and all dev preview plumbing (props, state, handlers) from App.tsx and PracticeSessionPage.tsx.
 - [x] **Component Inventory:** Audit and consolidate scattered Layouts — mapped full component tree (10 active steps documented).
 - [x] **Component Inventory:** Consolidate 4+ Headers into a single polymorphic `AppHeader` (3 variants: `public`, `dashboard`, `session`). Persistent dashboard layout in App.tsx. Exit confirmation on Practice Session.
-- [ ] **Deep QA:** Manual localhost QA to catch any remaining phantom bugs.
+- [x] **Deep QA:** Automated verification — 12/12 tests pass (header variants, deleted files, no stale code, persistent layout, exit confirm).
 
 ### 1.1 UX Audit Fixes & Accessibility ♿
 - [x] Fix color contrast issues
