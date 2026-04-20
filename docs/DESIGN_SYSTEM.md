@@ -4,7 +4,7 @@
 > Any new component or UI change MUST comply with this document.
 > If the design system needs to change, update THIS FILE FIRST → get approval → then code.
 >
-> Last updated: 2026-04-17
+> Last updated: 2026-04-20
 
 ---
 
@@ -149,22 +149,39 @@
 
 **Location:** `src/shared/ui/AppHeader.tsx`
 
-One component for all internal app headers.
+One polymorphic component for **all** app headers. Three variants:
 
 ```typescript
 interface AppHeaderProps {
-  variant: 'app' | 'session' | 'minimal';
+  variant: 'public' | 'dashboard' | 'session';
+
+  // public variant: back navigation for legal/static pages
   showBackButton?: boolean;
   backLabel?: string;
   onBack?: () => void;
-  showProgressBar?: boolean;
-  currentStep?: number;
-  userName?: string;
+
+  // dashboard variant: persistent across Dashboard/Account/History/Library
+  onNavigateToDashboard?: () => void;  // Shows "← Dashboard" link (only on sub-pages)
+  onLogoClick?: () => void;            // Logo → landing page
+  userName?: string;                   // Avatar initials derived automatically
   onLogout?: () => void;
   onNavigateToAccount?: () => void;
+  onNavigateToHistory?: () => void;
+  onNavigateToLibrary?: () => void;
   rightSlot?: React.ReactNode;
+
+  // session variant: minimal header during practice
+  leftSlot?: React.ReactNode;          // e.g. mobile menu toggle
+  onGoToDashboard?: () => void;        // Caller handles exit confirmation
 }
 ```
+
+**Architecture rules:**
+- **Dashboard header is persistent** — rendered ONCE in `App.tsx`, wrapping Dashboard/Account/History/Library pages. Never re-mounts during navigation.
+- **`← Dashboard` link** only appears on sub-pages (Account, History, Library), not on Dashboard itself.
+- **Logo click** always navigates to the landing page (where logged-in state is shown).
+- **Session exit** requires caller-side confirmation dialog ("Leave session? Progress will be lost.").
+- **Full-width** — no `max-w` constraints on dashboard or landing headers.
 
 Landing page header is a special marketing case — lives in `LandingPage.tsx`.
 
@@ -223,7 +240,7 @@ className="bg-[#0f172b] rounded-2xl p-6"
 
 ### §6.5 Shared Components (never reimplement)
 
-`BrandLogo` · `PastelBlobs` · `MiniFooter` · `AnalyzingScreen` · `RecordButton` · `RecordingWaveformBars` · `RecordingTimer` · `SessionProgressBar` · `ServiceErrorBanner` · `SmoothHeight` · `DotPattern`
+`BrandLogo` · `PastelBlobs` · `MiniFooter` · `AppHeader` · `AnalyzingScreen` · `RecordButton` · `RecordingWaveformBars` · `RecordingTimer` · `SessionProgressBar` · `ServiceErrorBanner` · `SmoothHeight` · `DotPattern`
 
 ---
 
@@ -273,4 +290,5 @@ HEADER:     AppHeader from shared/ui
 
 | Version | Date | Changes |
 |---------|------|---------|
+| v1.1 | 2026-04-20 | §6.1 AppHeader rewritten — 3 polymorphic variants (public/dashboard/session), persistent layout, full-width headers, exit confirmation |
 | v1.0 | 2026-04-17 | Initial — consolidated from SKILL.md + Guidelines.md |
