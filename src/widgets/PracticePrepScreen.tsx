@@ -1,6 +1,6 @@
 /**
  * ==============================================================
- *  MasteryTalk PRO — Interview Preparation Screen (Stepper Edition)
+ *  MasteryTalk PRO — Practice Preparation Screen (Stepper Edition)
  *
  *  New 4-step per-question mastery flow:
  *    Step 1: See the question
@@ -39,7 +39,7 @@ const INTERLOCUTOR_LABELS: Record<string, { label: string; emoji: string }> = {
     senior_stakeholder: { label: "Senior Stakeholder", emoji: "🏛️" },
 };
 
-interface InterviewBriefingScreenProps {
+interface PracticePrepScreenProps {
     interlocutor: string;
     briefingData: InterviewBriefingData;
     /** Now receives user drafts keyed by question id */
@@ -50,14 +50,14 @@ interface InterviewBriefingScreenProps {
 }
 
 /* ── Main Screen ── */
-export function InterviewBriefingScreen({
+export function PracticePrepScreen({
     interlocutor,
     briefingData,
     onStartSimulation,
     onBack,
     scenario,
     scenarioType,
-}: InterviewBriefingScreenProps) {
+}: PracticePrepScreenProps) {
     const [allDone, setAllDone] = useState(false);
     const [actualCompleted, setActualCompleted] = useState(0);
 
@@ -83,7 +83,7 @@ export function InterviewBriefingScreen({
     }, [onStartSimulation]);
 
     return (
-        <div aria-label="InterviewBriefingScreen"
+        <div aria-label="PracticePrepScreen"
             className="w-full min-h-full flex flex-col bg-[#f0f4f8] relative overflow-hidden"
             style={{ fontFamily: "'Inter', sans-serif" }}
         >

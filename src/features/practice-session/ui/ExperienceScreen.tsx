@@ -18,14 +18,14 @@ import { getAuthToken } from "@/services/supabase";
 import type { ScenarioType, OnboardingProfile } from "@/services/types";
 
 /* ═══════════════════════════════════════════════════════════
-   CV UPLOAD SCREEN — "About You"
+   EXPERIENCE SCREEN — "About You"
    
    Focused single-action screen for uploading a CV (interview)
-   or sales deck (sales). Extracted from ExtraContextScreen
+   or sales deck (sales). Extracted from ContextScreen
    to reduce cognitive load.
    ═══════════════════════════════════════════════════════════ */
 
-interface CVUploadScreenProps {
+interface ExperienceScreenProps {
     scenarioType?: ScenarioType;
     onContinue: (cvData: { cvSummary?: string; manualExperience?: string }) => void;
     onBack?: () => void;
@@ -33,18 +33,18 @@ interface CVUploadScreenProps {
     onProfileUpdate?: (profile: OnboardingProfile) => void;
 }
 
-function CVUploadScreen({
+function ExperienceScreen({
     scenarioType,
     onContinue,
     onBack,
     userProfile,
     onProfileUpdate,
-}: CVUploadScreenProps) {
+}: ExperienceScreenProps) {
     const isInterview = scenarioType === "interview";
     const isSales = scenarioType === "sales";
     const isPresentation = scenarioType === "presentation";
     const hasDocUpload = isInterview || isSales || isPresentation;
-    const storageKey = `influ_cv_upload_${scenarioType || "default"}`;
+    const storageKey = `masterytalk_cv_upload_${scenarioType || "default"}`;
 
     /* ── Dynamic copy per scenario type ── */
     const copyMap: Record<string, { heading: string; subtitle: string; uploadLabel: string; uploadDrag: string; uploadReading: string; uploadDone: string; manualFallback: string; manualPlaceholder: string }> = {
@@ -119,7 +119,7 @@ function CVUploadScreen({
             try {
                 const saved = sessionStorage.getItem(storageKey);
                 if (saved && JSON.parse(saved).cvSummary) return JSON.parse(saved).cvSummary;
-            } catch (e) {}
+            } catch (e) { }
         }
         return isInterview ? (userProfile?.cvSummary ?? "") : isSales ? (userProfile?.deckSummary ?? "") : "";
     })();
@@ -129,7 +129,7 @@ function CVUploadScreen({
             try {
                 const saved = sessionStorage.getItem(storageKey);
                 if (saved && JSON.parse(saved).cvFileName) return JSON.parse(saved).cvFileName;
-            } catch (e) {}
+            } catch (e) { }
         }
         return isInterview ? (userProfile?.cvFileName ?? "") : isSales ? (userProfile?.deckFileName ?? "") : "";
     })();
@@ -148,7 +148,7 @@ function CVUploadScreen({
             try {
                 const saved = sessionStorage.getItem(storageKey);
                 if (saved && JSON.parse(saved).manualExperience) return JSON.parse(saved).manualExperience;
-            } catch (e) {}
+            } catch (e) { }
         }
         return "";
     });
@@ -207,7 +207,7 @@ function CVUploadScreen({
                 });
             }
         } catch (err: any) {
-            console.error("[CVUploadScreen] CV processing failed:", err);
+            console.error("[ExperienceScreen] CV processing failed:", err);
             setCvStatus("error");
             setCvError(err.message || "Failed to process CV");
         }
@@ -313,8 +313,8 @@ function CVUploadScreen({
                                 onDrop={handleDrop}
                                 onClick={() => fileInputRef.current?.click()}
                                 className={`w-full border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${isDragging
-                                        ? "border-[#6366f1] bg-[#eef2ff]"
-                                        : "border-[#e2e8f0] bg-[#f8fafc] hover:border-[#c7d2e0] hover:bg-[#f1f5f9]"
+                                    ? "border-[#6366f1] bg-[#eef2ff]"
+                                    : "border-[#e2e8f0] bg-[#f8fafc] hover:border-[#c7d2e0] hover:bg-[#f1f5f9]"
                                     }`}
                             >
                                 <Upload className={`w-8 h-8 mx-auto mb-3 ${isDragging ? "text-[#6366f1]" : "text-[#94a3b8]"}`} />
@@ -459,8 +459,8 @@ function CVUploadScreen({
                         onClick={handleContinue}
                         disabled={!hasContent || cvStatus === "uploading"}
                         className={`flex items-center gap-3 px-10 py-5 rounded-full text-xl shadow-[0px_10px_15px_rgba(0,0,0,0.1)] transition-all ${hasContent && cvStatus !== "uploading"
-                                ? "bg-[#0f172b] text-white hover:bg-[#1d293d] cursor-pointer"
-                                : "bg-[#e2e8f0] text-[#94a3b8] cursor-not-allowed"
+                            ? "bg-[#0f172b] text-white hover:bg-[#1d293d] cursor-pointer"
+                            : "bg-[#e2e8f0] text-[#94a3b8] cursor-not-allowed"
                             }`}
                         style={{ fontWeight: 500 }}
                     >
@@ -493,4 +493,7 @@ function CVUploadScreen({
     );
 }
 
-export { CVUploadScreen };
+export { ExperienceScreen };
+
+/** @deprecated Use ExperienceScreen instead */
+export { ExperienceScreen as CVUploadScreen };

@@ -26,12 +26,12 @@ import type {
   SessionConfig,
 } from "@/services/types";
 import { SessionProgressBar } from "@/widgets/SessionProgressBar";
-import { InterviewBriefingScreen } from "@/widgets/InterviewBriefingScreen";
+import { PracticePrepScreen } from "@/widgets/PracticePrepScreen";
 import type { Step } from "@/entities/session";
 import { VoicePractice } from "@/features/practice-session/ui/VoicePractice";
 import { type RealFeedbackData, type RepeatInfo } from "@/features/practice-session/ui/ConversationFeedback";
-import { InterviewAnalysis } from "@/features/practice-session/ui/InterviewAnalysis";
-import { PathConversionScreen } from "@/features/skill-drill/ui/PathConversionScreen";
+import { FeedbackScreen } from "@/features/practice-session/ui/FeedbackScreen";
+import { UpsellScreen } from "@/features/skill-drill/ui/UpsellScreen";
 import { PathPurchaseModal } from "@/widgets/PathPurchaseModal";
 import { useUsageGating } from "@/shared/hooks/useUsageGating";
 import type { PaywallReason } from "@/shared/hooks/useUsageGating";
@@ -58,10 +58,9 @@ import { analyzeCvMatch, type CVMatchResult } from "@/services/cvMatchService";
 const _detectedLocale = detectLanguageBackground();
 
 /* ── Sub-screens extracted to session/ ── */
-import { CVUploadScreen } from "@/features/practice-session/ui/CVUploadScreen";
-import { ExtraContextScreen } from "@/features/practice-session/ui/ExtraContextScreen";
-import { KeyExperienceScreen } from "@/features/practice-session/ui/KeyExperienceScreen";
-import { PreSessionBrief } from "@/features/practice-session/ui/PreSessionBrief";
+import { ExperienceScreen } from "@/features/practice-session/ui/ExperienceScreen";
+import { ContextScreen } from "@/features/practice-session/ui/ContextScreen";
+import { StrategyScreen } from "@/features/practice-session/ui/StrategyScreen";
 import { scriptSectionsToBriefingData } from "@/features/practice-session/ui/briefing/salesAdapter";
 
 /* ═══════════════════════════════════════════════════════════
@@ -109,11 +108,11 @@ import type { PersonalizedPatterns } from "@/features/practice-session/model/ses
 
 /* ═══════════════════════════════════════════════════════════
    MAIN ORCHESTRATOR (MVP-simplified flow)
-   cv-upload → extra-context → generating-script → pre-briefing →
-   practice → analyzing → session-analysis → Dashboard
+   experience → context → generating → strategy →
+   practice-prep → practice → analyzing → feedback → Dashboard
    ═══════════════════════════════════════════════════════════ */
 /** Steps where switching level is safe (no AI-generated data to lose) */
-const SAFE_STEPS: Step[] = ["cv-upload", "extra-context", "key-experience"];
+const SAFE_STEPS: Step[] = ["experience", "context"];
 
 export function PracticeSessionPage({
   scenario,
@@ -151,11 +150,9 @@ export function PracticeSessionPage({
     return null;
   }, []);
 
-  /* Determine initial step: skip key-experience screen as per user request */
-  const needsKeyExperience = false;
   const [step, setStep] = useState<Step>(() => {
     if (initialHistoryState?.step) return initialHistoryState.step;
-    return "cv-upload";
+    return "experience";
   });
 
   /* ── Scenario cache key for pre-session data (script, toolkit) ── */
@@ -167,7 +164,7 @@ export function PracticeSessionPage({
   /* ── Cleanup expired cache entries on mount ── */
   useEffect(() => { cleanupExpiredCache(); }, []);
 
-  /* Merge setup guidedFields with ExtraContextScreen data
+  /* Merge setup guidedFields with ContextScreen data
      IMPORTANT: useMemo with serialized deps prevents infinite re-render loop.
      Without this, { ...guidedFields, ...extraContext } creates a NEW object
      every render → useEffect sees mergedGuidedFields as "changed" → cancels
@@ -198,11 +195,11 @@ export function PracticeSessionPage({
     return null;
   });
   const [feedbackStatus, setFeedbackStatus] = useState<"idle" | "loading" | "ready" | "error">(() => {
-    if (initialHistoryState?.step === "session-analysis") return "ready";
+    if (initialHistoryState?.step === "feedback") return "ready";
     return "idle";
   });
   const [feedbackAnimDone, setFeedbackAnimDone] = useState(() => {
-    if (initialHistoryState?.step === "session-analysis") return true;
+    if (initialHistoryState?.step === "feedback") return true;
     return false;
   });
 
@@ -214,7 +211,7 @@ export function PracticeSessionPage({
     return null;
   });
   const [summaryStatus, setSummaryStatus] = useState<"idle" | "loading" | "ready" | "error">(() => {
-    if (initialHistoryState?.step === "session-analysis") return "ready";
+    if (initialHistoryState?.step === "feedback") return "ready";
     return "idle";
   });
 
@@ -226,7 +223,7 @@ export function PracticeSessionPage({
     return null;
   });
   const [improvedScriptStatus, setImprovedScriptStatus] = useState<"idle" | "loading" | "ready" | "error">(() => {
-    if (initialHistoryState?.step === "session-analysis") return "ready";
+    if (initialHistoryState?.step === "feedback") return "ready";
     return "idle";
   });
 
@@ -451,8 +448,8 @@ export function PracticeSessionPage({
   /* ── Auto-transition: only when BOTH animation AND API are done ── */
   useEffect(() => {
     const contentReady = generatedScript || interviewBriefing;
-    if (step === "generating-script" && scriptGenStatus === "ready" && contentReady) {
-      setStep("pre-briefing");
+    if (step === "generating" && scriptGenStatus === "ready" && contentReady) {
+      setStep("practice-prep");
     }
   }, [step, scriptGenStatus, generatedScript, interviewBriefing]);
 
@@ -581,7 +578,7 @@ export function PracticeSessionPage({
 
   /* ── Auto-save session when entering session-analysis with data ── */
   useEffect(() => {
-    if (step === "session-analysis" && sessionId && !sessionSavedRef.current) {
+    if (step === "feedback" && sessionId && !sessionSavedRef.current) {
       if (
         (feedbackStatus === "ready" || feedbackStatus === "error") &&
         (summaryStatus === "ready" || summaryStatus === "error")
@@ -628,7 +625,7 @@ export function PracticeSessionPage({
     if (step !== "analyzing" || !feedbackAnimDone) return;
     if (feedbackStatus === "ready" || feedbackStatus === "error") {
       // Unified post-session analysis step
-      setStep("session-analysis");
+      setStep("feedback");
       // Fire session save + progression completion now (no longer gated behind skill drill)
       fireSummaryGeneration();
       if (progressionLevelId && progressionPathId && realFeedback) {
@@ -879,30 +876,22 @@ export function PracticeSessionPage({
               </div>
             )}
 
-            {step === "key-experience" && (
-              <KeyExperienceScreen
-                guidedFields={guidedFields}
-                userProfile={userProfile}
-                onProfileUpdate={onProfileUpdate}
-                onContinue={() => setStep("cv-upload")}
-                onBack={onFinish}
-              />
-            )}
-            {step === "cv-upload" && (
-              <CVUploadScreen
+
+            {step === "experience" && (
+              <ExperienceScreen
                 scenarioType={scenarioType}
                 userProfile={userProfile}
                 onProfileUpdate={onProfileUpdate}
                 onContinue={(cvData) => {
                   // Store CV data for later merging with extra-context
                   setExtraContext((prev) => ({ ...prev, ...cvData }));
-                  setStep("extra-context");
+                  setStep("context");
                 }}
                 onBack={onFinish}
               />
             )}
-            {step === "extra-context" && (
-              <ExtraContextScreen
+            {step === "context" && (
+              <ContextScreen
                 scenarioType={scenarioType}
                 userProfile={userProfile}
                 onProfileUpdate={onProfileUpdate}
@@ -958,11 +947,11 @@ export function PracticeSessionPage({
                       if (progressionPathId && progressionLevelId) {
                         const levelDef = getLevelDefinition(progressionPathId, progressionLevelId);
                         if (levelDef?.methodology) {
-                          setStep("pre-brief");
+                          setStep("strategy");
                           return;
                         }
                       }
-                      setStep("pre-briefing");
+                      setStep("practice-prep");
                       return;
                     }
                   } else {
@@ -978,11 +967,11 @@ export function PracticeSessionPage({
                       if (progressionPathId && progressionLevelId) {
                         const levelDef = getLevelDefinition(progressionPathId, progressionLevelId);
                         if (levelDef?.methodology) {
-                          setStep("pre-brief");
+                          setStep("strategy");
                           return;
                         }
                       }
-                      setStep("pre-briefing");
+                      setStep("practice-prep");
                       return;
                     }
                   }
@@ -991,24 +980,24 @@ export function PracticeSessionPage({
                   if (progressionPathId && progressionLevelId) {
                     const levelDef = getLevelDefinition(progressionPathId, progressionLevelId);
                     if (levelDef?.methodology) {
-                      setStep("pre-brief");
+                      setStep("strategy");
                       fireScriptGeneration(enriched);
                       return;
                     }
                   }
-                  setStep("generating-script");
+                  setStep("generating");
                   fireScriptGeneration(enriched);
                 }}
-                onBack={() => setStep("cv-upload")}
+                onBack={() => setStep("experience")}
               />
             )}
 
             {/* Pre-Session Brief — methodology/framework step (Conversational Path only) */}
-            {step === "pre-brief" && progressionPathId && progressionLevelId && (() => {
+            {step === "strategy" && progressionPathId && progressionLevelId && (() => {
               const levelDef = getLevelDefinition(progressionPathId, progressionLevelId);
               if (!levelDef?.methodology) return null;
               return (
-                <PreSessionBrief
+                <StrategyScreen
                   levelTitle={levelDef.title}
                   methodology={levelDef.methodology}
                   anchorPhrases={levelDef.anchorPhrases}
@@ -1017,28 +1006,28 @@ export function PracticeSessionPage({
                   onReady={() => {
                     // Script may already be ready (cached or fast gen) — go to pre-briefing
                     if (scriptGenStatus === "ready") {
-                      setStep("pre-briefing");
+                      setStep("practice-prep");
                     } else {
-                      setStep("generating-script");
+                      setStep("generating");
                     }
                   }}
                   onSkip={() => {
                     if (scriptGenStatus === "ready") {
-                      setStep("pre-briefing");
+                      setStep("practice-prep");
                     } else {
-                      setStep("generating-script");
+                      setStep("generating");
                     }
                   }}
                 />
               );
             })()}
 
-            {step === "generating-script" && (
+            {step === "generating" && (
               <>
                 {/* Animated loader — waits for API before transitioning */}
                 {scriptGenStatus !== "error" && (
                   <AnalyzingScreen
-                    variant="generating-script"
+                    variant="generating"
                     canComplete={scriptGenStatus === "ready"}
                     onComplete={() => setAnimationDone(true)}
                   />
@@ -1070,7 +1059,7 @@ export function PracticeSessionPage({
                     <div className="flex gap-3 mt-2">
                       <button
                         onClick={() => {
-                          setStep("extra-context");
+                          setStep("context");
                           setScriptGenStatus("idle");
                         }}
                         className="px-5 py-2.5 rounded-lg text-sm font-medium text-[#94a3b8] bg-[#1e293b] hover:bg-[#334155] transition-colors"
@@ -1089,8 +1078,8 @@ export function PracticeSessionPage({
               </>
             )}
 
-            {step === "pre-briefing" && interviewBriefing && scenarioType === "interview" && (
-              <InterviewBriefingScreen
+            {step === "practice-prep" && interviewBriefing && scenarioType === "interview" && (
+              <PracticePrepScreen
                 interlocutor={interlocutor}
                 briefingData={interviewBriefing}
                 onStartSimulation={(userDrafts) => {
@@ -1113,12 +1102,12 @@ export function PracticeSessionPage({
                   }
                   setStep("practice");
                 }}
-                onBack={() => setStep("extra-context")}
+                onBack={() => setStep("context")}
                 scenario={scenario}
               />
             )}
-            {step === "pre-briefing" && generatedScript && scenarioType !== "interview" && (
-              <InterviewBriefingScreen
+            {step === "practice-prep" && generatedScript && scenarioType !== "interview" && (
+              <PracticePrepScreen
                 interlocutor={interlocutor}
                 briefingData={scriptSectionsToBriefingData(generatedScript)}
                 onStartSimulation={(userDrafts) => {
@@ -1141,7 +1130,7 @@ export function PracticeSessionPage({
                   }
                   setStep("practice");
                 }}
-                onBack={() => setStep("extra-context")}
+                onBack={() => setStep("context")}
                 scenario={scenario}
                 scenarioType={scenarioType}
               />
@@ -1189,8 +1178,8 @@ export function PracticeSessionPage({
                 onComplete={() => setFeedbackAnimDone(true)}
               />
             )}
-            {step === "session-analysis" && (
-              <InterviewAnalysis
+            {step === "feedback" && (
+              <FeedbackScreen
                 scenarioType={scenarioType}
                 realFeedback={realFeedback}
                 pronunciationData={sessionPronData}
@@ -1224,7 +1213,7 @@ export function PracticeSessionPage({
                     improvedScript: improvedScript,
                     cvMatchData: (cvMatchStatus === "success" && cvMatchData) ? cvMatchData : null,
                   }).catch((err) => {
-                    console.error("[InterviewAnalysis] PDF generation failed:", err);
+                    console.error("[FeedbackScreen] PDF generation failed:", err);
                   });
                 }}
                 onFinish={() => {
@@ -1233,8 +1222,8 @@ export function PracticeSessionPage({
                 canRetryFree={canRepeat}
               />
             )}
-            {step === "path-conversion" && (
-              <PathConversionScreen
+            {step === "upsell" && (
+              <UpsellScreen
                 scenarioType={scenarioType}
                 proficiencyScore={realFeedback?.professionalProficiency ?? undefined}
                 onPurchasePath={() => handlePaywallTriggered("path-required")}

@@ -164,7 +164,7 @@ export function SessionReport({
       <main className={`relative max-w-[800px] mx-auto px-6 ${embedded ? "pt-0 pb-8" : "pt-10 pb-20"}`}>
         {!embedded && (
           <div className="w-full mb-10 pt-4">
-            <SessionProgressBar currentStep="session-analysis" />
+            <SessionProgressBar currentStep="feedback" />
           </div>
         )}
         {/* ═══════════════════════════════════════════════

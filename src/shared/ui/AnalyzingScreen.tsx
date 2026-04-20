@@ -71,7 +71,7 @@ const ANALYSIS_CONFIGS: Record<string, AnalysisConfig> = {
             "The most successful professionals aren\u2019t the ones who never make mistakes \u2014 they\u2019re the ones who practice more.",
         ],
     },
-    "generating-script": {
+    generating: {
         title: "Generating your personalized script",
         subtitle: "Our AI is building your narrative strategy",
         steps: [
@@ -95,7 +95,7 @@ export function AnalyzingScreen({
     onComplete,
     canComplete = true,
 }: {
-    variant?: "feedback" | "script" | "results" | "generating-script";
+    variant?: "feedback" | "script" | "results" | "generating";
     onComplete: () => void;
     canComplete?: boolean;
 }) {

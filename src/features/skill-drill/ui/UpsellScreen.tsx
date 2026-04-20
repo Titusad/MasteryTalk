@@ -1,6 +1,6 @@
 /**
  * ══════════════════════════════════════════════════════════════
- *  PathConversionScreen — v9.0 Learning Path Conversion Screen
+ *  UpsellScreen — v9.0 Learning Path Conversion Screen
  *
  *  Replaces ConversationalPathUnlockScreen (v8.1).
  *  Shown after the demo session ends. This is the highest-intent
@@ -118,7 +118,7 @@ const FALLBACK_COPY = SCENARIO_COPY.interview;
    COMPONENT
    ══════════════════════════════════════════════════════════════ */
 
-export interface PathConversionScreenProps {
+export interface UpsellScreenProps {
   /** Scenario type for contextual copy */
   scenarioType?: string;
   /** Proficiency score from the demo session */
@@ -135,12 +135,12 @@ const ICON_MAP = {
   zap: Zap,
 };
 
-export function PathConversionScreen({
+export function UpsellScreen({
   scenarioType = "interview",
   proficiencyScore,
   onPurchasePath,
   onContinue,
-}: PathConversionScreenProps) {
+}: UpsellScreenProps) {
   const confettiRef = useRef(false);
   const copy = SCENARIO_COPY[scenarioType] ?? FALLBACK_COPY;
   const product = PATH_PRODUCTS.first_path;
@@ -166,7 +166,7 @@ export function PathConversionScreen({
   }, []);
 
   return (
-    <div aria-label="PathConversionScreen" className="w-full min-h-[calc(100dvh-4rem)] bg-[#0f172b] flex flex-col items-center justify-center px-4 py-8">
+    <div aria-label="UpsellScreen" className="w-full min-h-[calc(100dvh-4rem)] bg-[#0f172b] flex flex-col items-center justify-center px-4 py-8">
       {/* ── Hero icon ── */}
       <motion.div
         className="mb-6"

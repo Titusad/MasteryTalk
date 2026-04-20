@@ -278,21 +278,19 @@ All four entry points must pass `ownedPaths={authUser?.pathsPurchased ?? []}`:
 
 ```typescript
 type Step =
-  | "key-experience"
-  | "cv-upload"
-  | "extra-context"
-  | "pre-brief"
-  | "generating-script"
-  | "pre-briefing"
-  | "practice"
-  | "analyzing"
-  | "session-analysis"
-  | "path-conversion";
+  | "experience"      // Professional background (CV upload or manual)
+  | "context"         // Situation-specific context (JD, agenda, etc.)
+  | "strategy"        // Methodology & framework preview
+  | "generating"      // Dynamic loader (script generation)
+  | "practice-prep"   // Interactive briefing before practice
+  | "practice"        // Voice practice with AI
+  | "analyzing"       // Dynamic loader (post-practice analysis)
+  | "feedback"        // Results & performance analysis
+  | "upsell";         // Path purchase / conversion
 ```
 
 > **Retired steps** (removed from codebase):
-> `conversation-feedback`, `skill-drill`, `cp-unlock`, `remedial`, `session-recap`, `interview-analysis`
-```
+> `key-experience`, `cv-upload`, `extra-context`, `pre-brief`, `generating-script`, `pre-briefing`, `session-analysis`, `path-conversion`, `conversation-feedback`, `skill-drill`, `cp-unlock`, `remedial`, `session-recap`, `interview-analysis`
 
 ### §7.2 Arena System (Progressive Scaffolding)
 

@@ -11,9 +11,9 @@ import { motion } from "motion/react";
 import type { ScenarioType, OnboardingProfile } from "@/services/types";
 
 /* ═══════════════════════════════════════════════════════════
-   EXTRA CONTEXT FIELD DATA — "The Opportunity"
+   CONTEXT FIELD DATA — "The Opportunity"
    
-   After CV/About You is complete, this screen captures the
+   After Experience is complete, this screen captures the
    specific job/prospect context. Interview = JD, Sales = prospect.
    ═══════════════════════════════════════════════════════════ */
 
@@ -42,22 +42,6 @@ const EXTRA_CONTEXT_FIELDS: Record<
                 "Must lead cross-functional teams of 8-12 people",
                 "Key KPIs: retention, NPS, quarterly revenue targets",
                 "Reports to VP of Product, US-based company",
-            ],
-        },
-    ],
-    sales: [
-        {
-            label: "Prospect / company information",
-            placeholder:
-                "Company name, industry, size, decision-makers, known pain points or priorities...",
-            hint: "The more specific you are, the more realistic the objections and pushback will be",
-            pasteHint:
-                "Check their LinkedIn, Crunchbase, or recent press releases for context",
-            suggestions: [
-                "Mid-market fintech, 200 employees, Series B",
-                "Currently using a competitor (Salesforce/HubSpot)",
-                "Pain point: manual reporting taking 10+ hours/week",
-                "Decision-maker is the CFO, budget cycle ends Q4",
             ],
         },
     ],
@@ -93,48 +77,16 @@ const EXTRA_CONTEXT_FIELDS: Record<
             ],
         },
     ],
-    client: [
-        {
-            label: "Client & project context",
-            placeholder:
-                "What service do you provide? Who's the client? What's the current situation?",
-            hint: "The AI will act as your client — the more context, the more realistic the pushback and expectations",
-            pasteHint:
-                "Tip: Include the project phase, any recent issues, or the client's communication style",
-            suggestions: [
-                "Web dev agency — client is a VP of Marketing at a fintech, we're 2 weeks behind schedule",
-                "Consulting engagement, deliverable review with the CFO",
-                "Managed services — client wants to reduce scope but keep the same SLA",
-                "Design project — presenting 3 concepts to a difficult stakeholder",
-            ],
-        },
-    ],
-    csuite: [
-        {
-            label: "Executive context",
-            placeholder:
-                "Who are you speaking with? What's your role? What do you need from them?",
-            hint: "The AI will role-play as a senior executive — they'll challenge your logic, ask for data, and test your strategic thinking",
-            pasteHint:
-                "Tip: Include the executive's title, their known priorities, and any internal politics to navigate",
-            suggestions: [
-                "Presenting a $200K budget request for cloud migration to the CTO",
-                "Quarterly review with the CEO — need to explain why my team missed targets",
-                "Proposing a new hire to the VP of Eng — headcount is frozen",
-                "Pitching a process change to the COO — previous attempts were rejected",
-            ],
-        },
-    ],
 };
 
 /* ═══════════════════════════════════════════════════════════
-   EXTRA CONTEXT SCREEN — "The Opportunity"
+   CONTEXT SCREEN — "The Opportunity"
    
    Now focused solely on capturing the job/prospect context.
-   CV upload has been extracted to CVUploadScreen.
+   CV upload has been extracted to ExperienceScreen.
    ═══════════════════════════════════════════════════════════ */
 
-function ExtraContextScreen({
+function ContextScreen({
     scenarioType,
     onContinue,
     onBack,
@@ -149,9 +101,7 @@ function ExtraContextScreen({
     onProfileUpdate?: (profile: OnboardingProfile) => void;
 }) {
     const fields = scenarioType ? EXTRA_CONTEXT_FIELDS[scenarioType] ?? [] : [];
-    const storageKey = `influ_extra_ctx_${scenarioType || "default"}`;
-    const isInterview = scenarioType === "interview";
-    const isSales = scenarioType === "sales";
+    const storageKey = `masterytalk_extra_ctx_${scenarioType || "default"}`;
 
     const [values, setValues] = useState<Record<string, string>>(() => {
         if (typeof window !== "undefined") {
@@ -333,4 +283,7 @@ function ExtraContextScreen({
     );
 }
 
-export { ExtraContextScreen };
+export { ContextScreen };
+
+/** @deprecated Use ContextScreen instead */
+export { ContextScreen as ExtraContextScreen };

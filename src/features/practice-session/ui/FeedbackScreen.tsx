@@ -1,6 +1,6 @@
 /**
  * ==============================================================
- *  InterviewAnalysis — Single comprehensive post-practice screen
+ *  FeedbackScreen — Single comprehensive post-practice screen
  *
  *  Replaces 4 old screens (ConversationFeedback, SkillDrill,
  *  ConversationalPathUnlock, SessionReport) with one focused view.
@@ -75,7 +75,7 @@ const PILLAR_COLORS: Record<string, { icon: string; bg: string; text: string }> 
 type ShadowState = "idle" | "done";
 
 /* ── Props ── */
-interface InterviewAnalysisProps {
+interface FeedbackScreenProps {
     scenarioType?: ScenarioType;
     realFeedback?: RealFeedbackData | null;
     pronunciationData?: TurnPronunciationData[];
@@ -86,7 +86,7 @@ interface InterviewAnalysisProps {
     canRetryFree?: boolean;
 }
 
-export function InterviewAnalysis({
+export function FeedbackScreen({
     scenarioType,
     realFeedback,
     pronunciationData = [],
@@ -94,7 +94,7 @@ export function InterviewAnalysis({
     onDownloadPdf,
     onFinish,
     canRetryFree = true,
-}: InterviewAnalysisProps) {
+}: FeedbackScreenProps) {
     const [insightsOpen, setInsightsOpen] = useState(false);
     const isInterview = scenarioType === "interview";
 
@@ -206,7 +206,7 @@ export function InterviewAnalysis({
 
             <main className="relative max-w-[800px] mx-auto px-4 sm:px-6 pt-6 pb-20">
                 <div className="w-full mb-5">
-                    <SessionProgressBar currentStep="session-analysis" />
+                    <SessionProgressBar currentStep="feedback" />
                 </div>
 
                 {/* ═══ HERO ═══ */}

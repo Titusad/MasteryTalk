@@ -261,7 +261,7 @@ function ConversationFeedback({
 
       <main className="relative max-w-[800px] mx-auto px-6 pt-6 pb-20">
         <div className="w-full mb-5">
-          <SessionProgressBar currentStep="session-analysis" />
+          <SessionProgressBar currentStep="feedback" />
         </div>
         {/* ═══ HERO ═══ */}
         <PageTitleBlock

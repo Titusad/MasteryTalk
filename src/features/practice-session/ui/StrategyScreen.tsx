@@ -1,6 +1,6 @@
 /**
  * ══════════════════════════════════════════════════════════════
- *  PreSessionBrief — Educational methodology step before practice
+ *  StrategyScreen — Educational methodology step before practice
  *
  *  Shows the framework/methodology for the current level.
  *  Always displayed but skippable ("I already know this").
@@ -42,7 +42,7 @@ const LOCALE_META: Record<BriefLocale, { flag: string; label: string }> = {
 
 /* ── Props ── */
 
-interface PreSessionBriefProps {
+interface StrategyScreenProps {
   levelTitle: string;
   methodology: LevelMethodology;
   anchorPhrases?: string[];
@@ -52,7 +52,7 @@ interface PreSessionBriefProps {
   onSkip: () => void;
 }
 
-export function PreSessionBrief({
+export function StrategyScreen({
   levelTitle,
   methodology,
   anchorPhrases,
@@ -60,7 +60,7 @@ export function PreSessionBrief({
   patternLoading,
   onReady,
   onSkip,
-}: PreSessionBriefProps) {
+}: StrategyScreenProps) {
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const [briefLocale, setBriefLocale] = useBriefLocale();
   const [showLocalePicker, setShowLocalePicker] = useState(false);

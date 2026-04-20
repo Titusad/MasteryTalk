@@ -7,13 +7,12 @@
  */
 
 export type Step =
-  | "key-experience"
-  | "cv-upload"
-  | "extra-context"
-  | "pre-brief"
-  | "generating-script"
-  | "pre-briefing"
+  | "experience"
+  | "context"
+  | "strategy"
+  | "generating"
+  | "practice-prep"
   | "practice"
   | "analyzing"
-  | "session-analysis"
-  | "path-conversion";
+  | "feedback"
+  | "upsell";
