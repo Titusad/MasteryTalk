@@ -48,7 +48,7 @@
 - [x] **Cleanup:** Rename `interview-analysis` → `session-analysis` (scenario-agnostic naming).
 - [x] **Cleanup:** Delete `DevPreviewMenu.tsx` and all dev preview plumbing (props, state, handlers) from App.tsx and PracticeSessionPage.tsx.
 - [x] **Component Inventory:** Audit and consolidate scattered Layouts — mapped full component tree (10 active steps documented).
-- [ ] **Component Inventory:** Consolidate 4+ Headers into a single polymorphic `AppHeader`.
+- [x] **Component Inventory:** Consolidate 4+ Headers into a single polymorphic `AppHeader` (3 variants: `public`, `dashboard`, `session`). Persistent dashboard layout in App.tsx. Exit confirmation on Practice Session.
 - [ ] **Deep QA:** Manual localhost QA to catch any remaining phantom bugs.
 
 ### 1.1 UX Audit Fixes & Accessibility ♿

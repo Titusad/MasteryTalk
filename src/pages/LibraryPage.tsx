@@ -12,12 +12,11 @@ import {
   BookOpen,
   Clock,
   ChevronRight,
-  ArrowLeft,
   Search,
   CheckCircle2,
 } from "lucide-react";
 import { motion } from "motion/react";
-import { BrandLogo, MiniFooter } from "@/shared/ui";
+import { MiniFooter } from "@/shared/ui";
 import { MICRO_LESSONS, isLessonComplete, syncLessonProgress } from "@/services/microLessons";
 import type { MicroLesson } from "@/services/microLessons";
 import { LessonModal } from "./LessonModal";
@@ -35,11 +34,9 @@ const PILLAR_META: Record<string, { color: string; emoji: string }> = {
 const ALL_PILLARS = Object.keys(PILLAR_META);
 
 /* ─── Props ─── */
-interface LibraryPageProps {
-  onBack: () => void;
-}
+interface LibraryPageProps {}
 
-export function LibraryPage({ onBack }: LibraryPageProps) {
+export function LibraryPage({}: LibraryPageProps) {
   const [selectedPillar, setSelectedPillar] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [lessonModalOpen, setLessonModalOpen] = useState(false);
@@ -88,23 +85,6 @@ export function LibraryPage({ onBack }: LibraryPageProps) {
 
   return (
     <div className="min-h-screen bg-[#f8fafc] flex flex-col">
-      {/* ── Header ── */}
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-[#e2e8f0]">
-        <div className="max-w-[1440px] mx-auto flex items-center justify-between px-6 md:px-8 h-16 md:h-20">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={onBack}
-              className="flex items-center gap-1.5 text-sm text-[#45556c] hover:text-[#0f172b] transition-colors cursor-pointer"
-              style={{ fontWeight: 500 }}
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Dashboard
-            </button>
-          </div>
-          <BrandLogo />
-          <div className="w-20" /> {/* Spacer for centering */}
-        </div>
-      </header>
 
       <main className="flex-1 max-w-[1200px] mx-auto w-full px-6 md:px-8 py-8 md:py-12">
         {/* ── Page title ── */}

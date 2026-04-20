@@ -160,7 +160,7 @@ export function LandingPage({
       <div className="w-full min-h-full bg-white overflow-x-hidden" style={{ fontFamily: "'Inter', sans-serif" }}>
         {/* ───── HEADER ───── */}
         <header className="fixed top-0 left-0 w-full z-50 bg-white border-b border-gray-200">
-          <div className="max-w-6xl mx-auto flex items-center justify-between px-6 h-16">
+          <div className="flex items-center justify-between px-6 md:px-8 h-16">
             <BrandLogo />
             <nav className="hidden md:flex items-center gap-8">
               <a href="#how" className="text-[#4B505B] hover:text-gray-900 text-sm transition-colors">{copy.nav.howItWorks}</a>

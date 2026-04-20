@@ -87,12 +87,8 @@ interface PracticeSessionPageProps {
   userProfile?: OnboardingProfile | null;
   onProfileUpdate?: (profile: OnboardingProfile) => void;
 
-  /** Logged in user name for header */
-  userName?: string;
-  /** Callback to handle logout from header */
-  onLogout?: () => void;
-  /** Callback to navigate to account page */
-  onNavigateToAccount?: () => void;
+  /** Callback to navigate to dashboard (session header) */
+  onGoToDashboard?: () => void;
 }
 
 import { MAX_REPEATS, SCENARIO_LABELS_MAP } from "@/features/practice-session/model/session.constants";
@@ -133,15 +129,13 @@ export function PracticeSessionPage({
   ownedPaths = [],
   userProfile,
   onProfileUpdate,
-
-  userName,
-  onLogout,
-  onNavigateToAccount,
+  onGoToDashboard,
 }: PracticeSessionPageProps) {
 
 
   /* ── SideNav drawer (mobile) + confirmation modal state ── */
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [pendingSwitch, setPendingSwitch] = useState<{
     scenario: string;
     scenarioType: ScenarioType;
@@ -800,9 +794,6 @@ export function PracticeSessionPage({
     <div aria-label="PracticeSessionPage" className="size-full flex flex-col" style={{ fontFamily: "'Inter', sans-serif" }}>
       <AppHeader
         variant="session"
-        userName={userName}
-        onLogout={onLogout}
-        onNavigateToAccount={onNavigateToAccount}
         leftSlot={
           <button
             onClick={() => setDrawerOpen(true)}
@@ -812,7 +803,40 @@ export function PracticeSessionPage({
             <Menu className="w-5 h-5" />
           </button>
         }
+        onGoToDashboard={() => setShowExitConfirm(true)}
       />
+
+      {/* Exit confirmation dialog */}
+      {showExitConfirm && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-xl border border-[#e2e8f0]">
+            <div className="flex items-center gap-3 mb-3">
+              <AlertTriangle className="w-5 h-5 text-amber-500" />
+              <h3 className="text-lg text-[#0f172b] font-medium">Leave session?</h3>
+            </div>
+            <p className="text-sm text-[#45556c] mb-5">
+              Your current session progress will be lost. Are you sure you want to go to the Dashboard?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowExitConfirm(false)}
+                className="flex-1 py-2.5 rounded-xl border border-[#e2e8f0] text-sm text-[#45556c] hover:bg-[#f8fafc] transition-colors font-medium"
+              >
+                Stay
+              </button>
+              <button
+                onClick={() => {
+                  setShowExitConfirm(false);
+                  onGoToDashboard?.();
+                }}
+                className="flex-1 py-2.5 rounded-xl bg-[#0f172b] text-white text-sm hover:bg-[#1d293d] transition-colors font-medium"
+              >
+                Leave
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main layout: SideNav + Content */}
       <div className="flex-1 flex min-h-0">

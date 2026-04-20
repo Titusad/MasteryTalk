@@ -2,17 +2,15 @@ import { useState } from "react";
 import { User, CreditCard, Settings, LogOut, CheckCircle, AlertTriangle, ShieldAlert, Lock } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { PastelBlobs, MiniFooter } from "@/shared/ui";
-import { AppHeader } from "@/shared/ui/AppHeader";
 import type { OnboardingProfile, User as AuthUser } from "@/services/types";
 
 interface AccountPageProps {
   userProfile?: OnboardingProfile | null;
   authUser?: AuthUser | null;
-  onBack: () => void;
   onLogout: () => void;
 }
 
-export function AccountPage({ userProfile, authUser, onBack, onLogout }: AccountPageProps) {
+export function AccountPage({ userProfile, authUser, onLogout }: AccountPageProps) {
   const [showConfirmLogout, setShowConfirmLogout] = useState(false);
 
   // Fallbacks
@@ -23,16 +21,6 @@ export function AccountPage({ userProfile, authUser, onBack, onLogout }: Account
   return (
     <div className="w-full min-h-full flex flex-col bg-[#f8fafc] relative overflow-hidden" style={{ fontFamily: "'Inter', sans-serif" }}>
       <PastelBlobs />
-
-      {/* HEADER */}
-      <AppHeader
-        variant="app"
-        showBackButton
-        backLabel="Volver al Dashboard"
-        onBack={onBack}
-        userName={authUser?.displayName}
-        onLogout={onLogout}
-      />
 
       {/* MAIN CONTENT */}
       <main className="relative w-full max-w-[800px] mx-auto px-4 md:px-8 pt-8 pb-20 flex-1">

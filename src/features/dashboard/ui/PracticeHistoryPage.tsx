@@ -9,20 +9,18 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { PastelBlobs, MiniFooter } from "@/shared/ui";
+import { AppHeader } from "@/shared/ui/AppHeader";
 import { userService } from "@/services";
 import type { PracticeHistoryItem, ScenarioType } from "@/services/types";
 import { SessionReport } from "@/widgets/SessionReport";
 import { projectId, publicAnonKey } from "@/../utils/supabase/info";
 import { getAuthToken } from "@/services/supabase";
-import { AppHeader } from "@/shared/ui/AppHeader";
+
 
 /* ─── Props ─── */
 interface PracticeHistoryPageProps {
-  userName?: string;
   firstPracticeScenario?: string;
   firstPracticeInterlocutor?: string;
-  onBack: () => void;
-  onLogout?: () => void;
 }
 
 /* ─── Detect scenario type from title ─── */
@@ -93,11 +91,8 @@ function toPracticeHistoryItem(s: PersistedSession): EnrichedHistoryItem {
 }
 
 export function PracticeHistoryPage({
-  userName,
   firstPracticeScenario,
   firstPracticeInterlocutor,
-  onBack,
-  onLogout,
 }: PracticeHistoryPageProps) {
   const [expandedPractice, setExpandedPractice] = useState<number | null>(0);
   const [persistedSessions, setPersistedSessions] = useState<PersistedSession[]>([]);
@@ -140,16 +135,6 @@ export function PracticeHistoryPage({
       style={{ fontFamily: "'Inter', sans-serif" }}
     >
       <PastelBlobs />
-
-      {/* ───── HEADER ───── */}
-      <AppHeader
-        variant="app"
-        showBackButton
-        backLabel="Dashboard"
-        onBack={onBack}
-        userName={userName}
-        onLogout={onLogout}
-      />
 
       {/* ───── CONTENT ───── */}
       <main className="flex-1 relative z-10">
@@ -358,7 +343,7 @@ export function PracticeHistoryPage({
             >
               {/* Report header */}
               <AppHeader
-                variant="minimal"
+                variant="public"
                 showBackButton
                 backLabel="Back to history"
                 onBack={() => setViewingReport(null)}

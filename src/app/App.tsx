@@ -37,6 +37,7 @@ import type { SetupModalResult } from "@/pages/landing/PracticeWidget";
 // AnimatePresence removed — was causing modal to linger during exit animation
 // when auth re-renders interrupted the exit. Direct unmount is bulletproof.
 import type { LandingLang } from "@/shared/i18n/landing-i18n";
+import { AppHeader } from "@/shared/ui/AppHeader";
 import { PathPurchaseModal } from "@/widgets/PathPurchaseModal";
 import type { PurchaseType } from "../services/types";
 import { useUsageGating } from "@/shared/hooks/useUsageGating";
@@ -456,6 +457,12 @@ export default function App() {
     window.location.hash = "";
   };
 
+  const handleLogout = () => {
+    authService.signOut().catch(() => {});
+    handleBackToLanding();
+    setAuthUser(null);
+  };
+
   const handleNewPractice = () => {
     // DEV MODE: bypass usage gating — always allow
     setFlowState({ scenario: "", interlocutor: "" });
@@ -573,42 +580,54 @@ export default function App() {
               ownedPaths={authUser?.pathsPurchased ?? []}
               userProfile={userProfile}
               onProfileUpdate={handleProfileUpdate}
+              onGoToDashboard={handleBackToDashboard}
+            />
+          )}
 
-              userName={authUser?.displayName}
-              onLogout={() => {
-                authService.signOut().catch(() => {});
-                handleBackToLanding();
-                setAuthUser(null);
-              }}
-              onNavigateToAccount={() => {
-                setPage("account");
-                window.location.hash = "#account";
-              }}
-            />
-          )}
-          {page === "dashboard" && (
-            <DashboardPage
-              userName={authUser?.displayName}
-              firstPracticeScenario={flowState.scenario}
-              firstPracticeInterlocutor={flowState.interlocutor}
-              onLogout={handleBackToLanding}
-              onNavigateToHistory={handleNavigateToHistory}
-              onNavigateToAccount={() => {
-                setPage("account");
-                window.location.hash = "#account";
-              }}
-              onStartNewPractice={handleStartNewPractice}
-              userProfile={userProfile}
-              onProfileUpdate={handleProfileUpdate}
-              lang={landingLang}
-              onNavigateToLibrary={handleNavigateToLibrary}
-              ownedPaths={authUser?.pathsPurchased ?? []}
-            />
-          )}
-          {page === "library" && (
-            <LibraryPage
-              onBack={handleBackToDashboard}
-            />
+          {/* ═══ Dashboard family — persistent header ═══ */}
+          {(page === "dashboard" || page === "account" || page === "practice-history" || page === "library") && (
+            <>
+              <AppHeader
+                variant="dashboard"
+                userName={authUser?.displayName}
+                onLogout={handleLogout}
+                onLogoClick={() => { setPage("landing"); window.location.hash = ""; }}
+                onNavigateToDashboard={page !== "dashboard" ? handleBackToDashboard : undefined}
+                onNavigateToAccount={() => {
+                  setPage("account");
+                  window.location.hash = "#account";
+                }}
+                onNavigateToHistory={handleNavigateToHistory}
+                onNavigateToLibrary={handleNavigateToLibrary}
+              />
+              {page === "dashboard" && (
+                <DashboardPage
+                  userName={authUser?.displayName}
+                  firstPracticeScenario={flowState.scenario}
+                  firstPracticeInterlocutor={flowState.interlocutor}
+                  onNavigateToHistory={handleNavigateToHistory}
+                  onStartNewPractice={handleStartNewPractice}
+                  userProfile={userProfile}
+                  onProfileUpdate={handleProfileUpdate}
+                  lang={landingLang}
+                  ownedPaths={authUser?.pathsPurchased ?? []}
+                />
+              )}
+              {page === "library" && <LibraryPage />}
+              {page === "practice-history" && (
+                <PracticeHistoryPage
+                  firstPracticeScenario={flowState.scenario}
+                  firstPracticeInterlocutor={flowState.interlocutor}
+                />
+              )}
+              {page === "account" && (
+                <AccountPage
+                  userProfile={userProfile}
+                  authUser={authUser}
+                  onLogout={handleLogout}
+                />
+              )}
+            </>
           )}
           {page === "admin" && (
             authUser && ADMIN_EMAILS.includes(authUser.email?.toLowerCase() || "") ? (
@@ -634,27 +653,6 @@ export default function App() {
                 )}
               </div>
             )
-          )}
-          {page === "practice-history" && (
-            <PracticeHistoryPage
-              userName={authUser?.displayName}
-              firstPracticeScenario={flowState.scenario}
-              firstPracticeInterlocutor={flowState.interlocutor}
-              onBack={handleBackToDashboard}
-              onLogout={handleBackToLanding}
-            />
-          )}
-          {page === "account" && (
-            <AccountPage
-              userProfile={userProfile}
-              authUser={authUser}
-              onBack={handleBackToDashboard}
-              onLogout={() => {
-                authService.signOut().catch(() => {});
-                handleBackToLanding();
-                setAuthUser(null);
-              }}
-            />
           )}
           {page === "terms" && <TermsPage />}
           {page === "privacy" && <PrivacyPage />}

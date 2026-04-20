@@ -22,7 +22,6 @@ import type { PurchaseType, OnboardingProfile } from "@/services/types";
 /* ── Feature Module Imports ── */
 import { useDashboardData } from "../model";
 import {
-  DashboardHeader,
   StatPills,
   SkillRadarChart,
   ProgressChart,
@@ -39,14 +38,11 @@ interface DashboardPageProps {
   userName?: string;
   firstPracticeScenario?: string;
   firstPracticeInterlocutor?: string;
-  onLogout?: () => void;
   onNavigateToHistory?: () => void;
-  onNavigateToAccount?: () => void;
   onStartNewPractice?: (scenario: string, scenarioType?: string, levelId?: string, interlocutor?: string) => void;
   userProfile?: OnboardingProfile | null;
   onProfileUpdate?: (profile: OnboardingProfile) => void;
   lang?: LandingLang;
-  onNavigateToLibrary?: () => void;
   /** Paths already purchased by the user — used for Mode A/B detection in PathPurchaseModal */
   ownedPaths?: string[];
 }
@@ -56,12 +52,9 @@ export function DashboardPage({
   userName,
   firstPracticeScenario,
   firstPracticeInterlocutor,
-  onLogout,
   onNavigateToHistory,
-  onNavigateToAccount,
   onStartNewPractice,
   lang = "en",
-  onNavigateToLibrary,
   ownedPaths = [],
 }: DashboardPageProps) {
   /* ─── Shared Data Hook ─── */
@@ -103,20 +96,6 @@ export function DashboardPage({
       style={{ fontFamily: "'Inter', sans-serif" }}
     >
       <PastelBlobs />
-
-      {/* ═══════ HEADER ═══════ */}
-      <DashboardHeader
-        avatarInitials={data.avatarInitials}
-        credits={data.credits}
-        freeSessionAvailable={data.freeSessionAvailable}
-        lang={lang}
-        dc={data.dc}
-        onNavigateToHistory={onNavigateToHistory}
-        onNavigateToLibrary={onNavigateToLibrary}
-        onNavigateToAccount={onNavigateToAccount}
-        onLogout={onLogout}
-        onOpenUpsell={() => setUpsellOpen(true)}
-      />
 
       {/* ═══════ MAIN ═══════ */}
       <main className="relative w-full max-w-[1120px] mx-auto px-4 md:px-8 pt-6 md:pt-8 pb-20">

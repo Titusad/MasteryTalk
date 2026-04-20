@@ -7,8 +7,7 @@
  *  Matches existing light-mode design system (Inter, slate palette).
  * ══════════════════════════════════════════════════════════════
  */
-import { ArrowLeft } from "lucide-react";
-import { BrandLogo } from "@/shared/ui";
+import { AppHeader } from "@/shared/ui/AppHeader";
 
 const LAST_UPDATED = "April 2025";
 const CONTACT_EMAIL = "legal@masterytalk.pro";
@@ -16,19 +15,12 @@ const CONTACT_EMAIL = "legal@masterytalk.pro";
 export function TermsPage() {
   return (
     <div aria-label="TermsPage" className="min-h-screen bg-white" style={{ fontFamily: "'Inter', sans-serif" }}>
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
-        <div className="max-w-3xl mx-auto flex items-center justify-between px-6 h-16">
-          <button
-            onClick={() => window.history.back()}
-            className="flex items-center gap-2 text-sm text-[#4B505B] hover:text-[#0f172b] transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </button>
-          <BrandLogo />
-        </div>
-      </header>
+      <AppHeader
+        variant="public"
+        showBackButton
+        backLabel="Back"
+        onBack={() => window.history.back()}
+      />
 
       {/* Content */}
       <main className="max-w-3xl mx-auto px-6 py-12 md:py-16">

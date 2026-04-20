@@ -3,7 +3,6 @@
  * Re-exports all presentational components.
  */
 export { ProficiencyRing } from "./ProficiencyRing";
-export { DashboardHeader } from "./DashboardHeader";
 export { StatPills } from "./StatPills";
 export { SkillRadarChart } from "./SkillRadarChart";
 export { ProgressChart } from "./ProgressChart";
