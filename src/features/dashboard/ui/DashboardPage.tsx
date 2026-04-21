@@ -13,6 +13,7 @@
  * ══════════════════════════════════════════════════════════════
  */
 import { useState } from "react";
+import { motion } from "motion/react";
 import { Zap, Trophy, BarChart3 } from "lucide-react";
 import { PastelBlobs, MiniFooter } from "@/shared/ui";
 import type { LandingLang } from "@/shared/i18n/landing-i18n";
@@ -124,6 +125,127 @@ export function DashboardPage({
           <PracticeDropdown onSelect={handleStartSession} />
         </div>
 
+        {/* ═══════ EMPTY STATE — First-time users ═══════ */}
+        {data.totalSessions === 0 && (
+          <div className="mb-10">
+            {/* Warm-up Recommendation */}
+            <motion.div
+              className="bg-gradient-to-br from-[#0f172b] to-[#1e293b] rounded-3xl p-6 md:p-8 mb-6 relative overflow-hidden"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.05 }}
+            >
+              {/* Decorative gradient orb */}
+              <div className="absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br from-[#6366f1]/20 to-transparent rounded-full blur-3xl pointer-events-none" />
+
+              <div className="relative">
+                <span
+                  className="inline-flex items-center gap-1.5 text-[10px] bg-[#f59e0b]/15 text-[#f59e0b] px-3 py-1 rounded-full mb-4"
+                  style={{ fontWeight: 600 }}
+                >
+                  <Zap className="w-3 h-3" /> RECOMMENDED
+                </span>
+
+                <h3
+                  className="text-xl md:text-2xl text-white mb-2"
+                  style={{ fontWeight: 600 }}
+                >
+                  Professional Self-Introduction
+                </h3>
+                <p className="text-white/70 text-sm leading-relaxed mb-6 max-w-lg">
+                  Practice introducing yourself in a professional setting — the perfect warm-up before interviews, networking events, or team meetings.
+                </p>
+
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    onClick={() =>
+                      handleStartSession(
+                        "Professional self-introduction at a networking event",
+                        "interview",
+                        "int-1",
+                        "recruiter"
+                      )
+                    }
+                    className="flex items-center gap-2 px-6 py-3 rounded-full text-sm bg-white text-[#0f172b] hover:bg-[#f8fafc] transition-colors shadow-lg cursor-pointer"
+                    style={{ fontWeight: 500 }}
+                  >
+                    <Zap className="w-4 h-4" />
+                    Start Warm-Up
+                  </button>
+                  <span className="text-xs text-white/40">~8 min · Free</span>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Scenario quick-picks */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.15 }}
+            >
+              <p
+                className="text-sm text-[#45556c] mb-4"
+                style={{ fontWeight: 500 }}
+              >
+                Or choose a specific scenario:
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {[
+                  {
+                    emoji: "🎯",
+                    title: "Job Interview",
+                    desc: "Practice with an AI interviewer",
+                    scenario: "Job interview preparation",
+                    type: "interview",
+                    level: "int-1",
+                    interlocutor: "recruiter",
+                  },
+                  {
+                    emoji: "📋",
+                    title: "Remote Meeting",
+                    desc: "Lead or present in meetings",
+                    scenario: "Remote meeting simulation",
+                    type: "meeting",
+                    level: "meet-1",
+                    interlocutor: "meeting_facilitator",
+                  },
+                  {
+                    emoji: "🎤",
+                    title: "Presentation",
+                    desc: "Deliver and handle Q&A",
+                    scenario: "Professional presentation",
+                    type: "presentation",
+                    level: "pres-1",
+                    interlocutor: "senior_stakeholder",
+                  },
+                ].map((card) => (
+                  <button
+                    key={card.type}
+                    onClick={() =>
+                      handleStartSession(
+                        card.scenario,
+                        card.type,
+                        card.level,
+                        card.interlocutor
+                      )
+                    }
+                    className="bg-white border border-[#e2e8f0] rounded-2xl p-5 text-left hover:border-[#c7d2e0] hover:shadow-sm transition-all cursor-pointer group"
+                  >
+                    <span className="text-2xl mb-3 block">{card.emoji}</span>
+                    <p
+                      className="text-sm text-[#0f172b] mb-1 group-hover:text-[#6366f1] transition-colors"
+                      style={{ fontWeight: 600 }}
+                    >
+                      {card.title}
+                    </p>
+                    <p className="text-xs text-[#62748e]">{card.desc}</p>
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        )}
+
         {/* ═══════ SECTION 1: YOUR LEARNING PATH ═══════ */}
         <div className="mb-10">
           <div className="flex items-center gap-2 mb-4">
@@ -156,64 +278,66 @@ export function DashboardPage({
           </div>
         )}
 
-        {/* ═══════ SECTION 3: PROGRESS HISTORY ═══════ */}
-        <div className="border-t border-[#e2e8f0] pt-8 mt-4">
-          <div className="flex items-center gap-2 mb-6">
-            <BarChart3 className="w-5 h-5 text-[#6366f1]" />
-            <h2
-              className="text-lg text-[#0f172b]"
-              style={{ fontWeight: 700 }}
-            >
-              Your Progress History
-            </h2>
-          </div>
+        {/* ═══════ SECTION 3: PROGRESS HISTORY (only if user has data) ═══════ */}
+        {data.hasRealData && (
+          <div className="border-t border-[#e2e8f0] pt-8 mt-4">
+            <div className="flex items-center gap-2 mb-6">
+              <BarChart3 className="w-5 h-5 text-[#6366f1]" />
+              <h2
+                className="text-lg text-[#0f172b]"
+                style={{ fontWeight: 700 }}
+              >
+                Your Progress History
+              </h2>
+            </div>
 
-          <ProficiencyHeroCard
-            proficiencyScore={data.proficiencyScore}
-            proficiencyDelta={data.proficiencyDelta}
-            cefrApprox={data.cefrApprox}
-            radarData={data.radarData}
-            biggestImprovement={data.biggestImprovement}
-            persistedSessions={data.persistedSessions}
-            dc={data.dc}
-          />
-
-          <StatPills
-            totalSessions={data.totalSessions}
-            biggestImprovement={data.biggestImprovement}
-            streak={data.streak}
-            dc={data.dc}
-          />
-
-          <div className="grid lg:grid-cols-3 gap-6 mb-6">
-            <SkillRadarChart
+            <ProficiencyHeroCard
+              proficiencyScore={data.proficiencyScore}
+              proficiencyDelta={data.proficiencyDelta}
+              cefrApprox={data.cefrApprox}
               radarData={data.radarData}
-              hasRealData={data.hasRealData}
+              biggestImprovement={data.biggestImprovement}
+              persistedSessions={data.persistedSessions}
               dc={data.dc}
             />
 
-            <div
-              className="lg:col-span-2 flex flex-col gap-6"
-              style={{ minWidth: 0 }}
-            >
-              <ProgressChart
-                progressData={data.progressData}
+            <StatPills
+              totalSessions={data.totalSessions}
+              biggestImprovement={data.biggestImprovement}
+              streak={data.streak}
+              dc={data.dc}
+            />
+
+            <div className="grid lg:grid-cols-3 gap-6 mb-6">
+              <SkillRadarChart
+                radarData={data.radarData}
+                hasRealData={data.hasRealData}
                 dc={data.dc}
               />
+
+              <div
+                className="lg:col-span-2 flex flex-col gap-6"
+                style={{ minWidth: 0 }}
+              >
+                <ProgressChart
+                  progressData={data.progressData}
+                  dc={data.dc}
+                />
+              </div>
             </div>
-          </div>
 
-          {data.latestBeforeAfter && (
-            <BeforeAfterCard
-              data={data.latestBeforeAfter}
-              dc={data.dc}
+            {data.latestBeforeAfter && (
+              <BeforeAfterCard
+                data={data.latestBeforeAfter}
+                dc={data.dc}
+              />
+            )}
+
+            <InterviewPrepCard
+              persistedSessions={data.persistedSessions}
             />
-          )}
-
-          <InterviewPrepCard
-            persistedSessions={data.persistedSessions}
-          />
-        </div>
+          </div>
+        )}
       </main>
 
       <MiniFooter />

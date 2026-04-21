@@ -185,9 +185,7 @@ export function LandingPage({
               ) : (
                 <>
                   <button className="text-[#4B505B] hover:text-gray-900 text-sm transition-colors" onClick={() => openAuth("login")}>{copy.nav.login}</button>
-                  <button className="bg-[#2d2d2d] text-white text-sm px-6 py-2.5 rounded-full hover:bg-[#1a1a1a] transition-colors" onClick={() => {
-                    document.querySelector('#hero')?.scrollIntoView({ behavior: 'smooth' });
-                  }}>
+                  <button className="bg-[#2d2d2d] text-white text-sm px-6 py-2.5 rounded-full hover:bg-[#1a1a1a] transition-colors" onClick={() => openAuth("registro")}>
                     {copy.nav.cta}
                   </button>
                 </>
@@ -220,7 +218,7 @@ export function LandingPage({
                   </button>
                 </>
               ) : (
-                <button className="w-full bg-[#2d2d2d] text-white py-3 rounded-full mt-2" style={{ fontWeight: 500 }} onClick={() => { setMobileMenuOpen(false); document.querySelector('#hero')?.scrollIntoView({ behavior: 'smooth' }); }}>{copy.nav.cta}</button>
+                <button className="w-full bg-[#2d2d2d] text-white py-3 rounded-full mt-2" style={{ fontWeight: 500 }} onClick={() => { setMobileMenuOpen(false); openAuth("registro"); }}>{copy.nav.cta}</button>
               )}
             </div>
           )}
@@ -274,7 +272,7 @@ export function LandingPage({
 
               {/* ── Practice Widget ── */}
               <div className="relative z-10 max-w-5xl mx-auto px-6">
-                <PracticeWidget onAuthComplete={onAuthComplete} />
+                <PracticeWidget onAuthComplete={onAuthComplete} onOpenAuth={() => openAuth("registro")} />
 
                 {/* Microcopy */}
                 <p className="text-center text-sm text-[#4B505B] mt-6">

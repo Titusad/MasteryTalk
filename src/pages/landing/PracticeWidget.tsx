@@ -343,15 +343,34 @@ function PracticeSetupModal({
 /* ═══════════════════════ PRACTICE WIDGET (embeddable) ═══════════════════════ */
 export function PracticeWidget({
   onAuthComplete,
+  onOpenAuth,
 }: {
   onAuthComplete?: (data: SetupModalResult, authMode?: "login" | "registro") => void;
+  onOpenAuth?: () => void;
 }) {
   const [showModal, setShowModal] = useState(false);
   const [submittedScenario, setSubmittedScenario] = useState("");
 
   const handleScenarioClick = (card: { id: ScenarioType; scenarioText: string }) => {
-    setSubmittedScenario(card.scenarioText);
-    setShowModal(true);
+    // Save the selected scenario so App.tsx can route to practice-session after auth
+    try {
+      sessionStorage.setItem("masterytalk_pending_setup", JSON.stringify({
+        scenario: card.scenarioText,
+        scenarioType: card.id,
+        interlocutor: DEFAULT_INTERLOCUTOR[card.id],
+        guidedFields: {},
+      }));
+      sessionStorage.setItem("masterytalk_oauth_pending", "true");
+    } catch { /* ignore */ }
+
+    // Open auth directly (skip setup modal)
+    if (onOpenAuth) {
+      onOpenAuth();
+    } else {
+      // Fallback: open setup modal if no auth handler (shouldn't happen)
+      setSubmittedScenario(card.scenarioText);
+      setShowModal(true);
+    }
   };
 
   // Lock body scroll when modal is open

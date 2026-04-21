@@ -238,7 +238,22 @@ className="bg-white rounded-xl border border-[#e2e8f0] p-4"
 className="bg-[#0f172b] rounded-2xl p-6"
 ```
 
-### §6.5 Shared Components (never reimplement)
+### §6.5 Pills / Badges
+
+```tsx
+// Standard pill (dark — used in stepper, intro screen, context labels)
+className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0f172b] text-white text-[11px]"
+style={{ fontWeight: 600, letterSpacing: "0.02em" }}
+```
+
+**Rules:**
+- **One style only** — dark navy (`#0f172b`) background, white text. No color variants.
+- Font: `11px`, weight `600`, letter-spacing `0.02em`.
+- Shape: `rounded-full`, padding `px-3 py-1`.
+- Content: short labels like `Interview · Phone Screen`, `Level 3`, `Beta`.
+- ❌ No indigo/colored pills. ❌ No bordered/outline pills. ❌ No inline `fontSize`.
+
+### §6.6 Shared Components (never reimplement)
 
 `BrandLogo` · `PastelBlobs` · `MiniFooter` · `AppHeader` · `AnalyzingScreen` · `RecordButton` · `RecordingWaveformBars` · `RecordingTimer` · `SessionProgressBar` · `ServiceErrorBanner` · `SmoothHeight` · `DotPattern`
 
@@ -290,5 +305,6 @@ HEADER:     AppHeader from shared/ui
 
 | Version | Date | Changes |
 |---------|------|---------|
+| v1.2 | 2026-04-21 | §6.5 Pills/Badges — canonical dark pill style, one variant only |
 | v1.1 | 2026-04-20 | §6.1 AppHeader rewritten — 3 polymorphic variants (public/dashboard/session), persistent layout, full-width headers, exit confirmation |
 | v1.0 | 2026-04-17 | Initial — consolidated from SKILL.md + Guidelines.md |

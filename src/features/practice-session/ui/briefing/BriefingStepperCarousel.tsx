@@ -119,13 +119,38 @@ export function BriefingStepperCarousel({
 
     return (
         <div className="space-y-6">
-            {/* Progress bar */}
+            {/* Progress row — counter + step dots + mastered, all in one line */}
             <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                    <span className="text-xs text-[#62748e]" style={{ fontWeight: 500 }}>
+                    <span className="text-xs text-[#62748e] shrink-0" style={{ fontWeight: 500 }}>
                         {isSales ? "Section" : "Question"} {activeQuestionIdx + 1} of {totalQuestions}
                     </span>
-                    <span className="text-xs text-[#62748e]" style={{ fontWeight: 500 }}>
+
+                    {/* Step indicators */}
+                    <div className="flex items-center gap-1.5">
+                        {STEPS.map((step, i) => (
+                            <div key={step} className="flex items-center gap-1.5">
+                                <div
+                                    className={`w-1.5 h-1.5 rounded-full transition-all ${
+                                        step === activeStep
+                                            ? "bg-[#6366f1] scale-150"
+                                            : i < activeStepIdx
+                                                ? "bg-emerald-400"
+                                                : "bg-[#d1d5db]"
+                                    }`}
+                                />
+                                {i < 3 && (
+                                    <div className={`w-6 h-[1px] ${
+                                        i < activeStepIdx
+                                            ? "bg-emerald-300"
+                                            : "bg-[#e2e8f0]"
+                                    }`} />
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    <span className="text-xs text-[#62748e] shrink-0" style={{ fontWeight: 500 }}>
                         {completedQuestions.size}/{totalQuestions} {isSales ? "practiced" : "mastered"}
                     </span>
                 </div>
@@ -137,30 +162,6 @@ export function BriefingStepperCarousel({
                         animate={{ width: `${progress}%` }}
                         transition={{ duration: 0.5, ease: "easeOut" }}
                     />
-                </div>
-
-                {/* Step indicators */}
-                <div className="flex items-center justify-center gap-1.5 py-1">
-                    {STEPS.map((step, i) => (
-                        <div key={step} className="flex items-center gap-1.5">
-                            <div
-                                className={`w-1.5 h-1.5 rounded-full transition-all ${
-                                    step === activeStep
-                                        ? "bg-[#6366f1] scale-150"
-                                        : i < activeStepIdx
-                                            ? "bg-emerald-400"
-                                            : "bg-[#d1d5db]"
-                                }`}
-                            />
-                            {i < 3 && (
-                                <div className={`w-6 h-[1px] ${
-                                    i < activeStepIdx
-                                        ? "bg-emerald-300"
-                                        : "bg-[#e2e8f0]"
-                                }`} />
-                            )}
-                        </div>
-                    ))}
                 </div>
             </div>
 

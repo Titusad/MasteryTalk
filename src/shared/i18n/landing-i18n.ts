@@ -159,6 +159,7 @@ export interface LandingCopy {
       toggle: string;
       toggleAction: string;
       trust: string;
+      termsNotice: string;
     };
     ctaRegister: {
       title: string;
@@ -433,13 +434,14 @@ export const ES: LandingCopy = {
       toggleAction: "Regístrate",
     },
     register: {
-      title: "Crea tu cuenta",
+      title: "Crea tu cuenta gratuita",
       subtitle: "Comienza tu entrenamiento profesional en inglés",
       google: "Registrarse con Google",
       divider: "Registro seguro en un clic",
       toggle: "¿Ya tienes cuenta?",
       toggleAction: "Inicia sesión",
       trust: "1ª sesión gratis · Sin tarjeta · Sin suscripción",
+      termsNotice: "Al registrarte, aceptas los Términos de Servicio y la Política de Privacidad.",
     },
     ctaRegister: {
       title: "Estás a un paso de tu primera práctica",
@@ -712,13 +714,14 @@ export const PT: LandingCopy = {
       toggleAction: "Registre-se",
     },
     register: {
-      title: "Crie sua conta",
+      title: "Crie sua conta gratuita",
       subtitle: "Comece seu treinamento profissional em inglês",
       google: "Registrar com Google",
       divider: "Registro seguro em um clique",
       toggle: "Já tem conta?",
       toggleAction: "Entrar",
       trust: "1ª sessão grátis · Sem cartão · Sem assinatura",
+      termsNotice: "Ao se registrar, você aceita os Termos de Serviço e a Política de Privacidade.",
     },
     ctaRegister: {
       title: "Você está a um passo da sua primeira prática",
@@ -991,13 +994,14 @@ export const EN: LandingCopy = {
       toggleAction: "Sign up",
     },
     register: {
-      title: "Create your account",
+      title: "Create your free account",
       subtitle: "Start your professional communication training",
       google: "Sign up with Google",
       divider: "Secure one-click registration",
       toggle: "Already have an account?",
       toggleAction: "Sign in",
       trust: "1st session free · No credit card · No subscription",
+      termsNotice: "By signing up, you agree to our Terms of Service and Privacy Policy.",
     },
     ctaRegister: {
       title: "You're one step away from your first practice",

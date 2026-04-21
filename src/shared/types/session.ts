@@ -7,6 +7,7 @@
  */
 
 export type Step =
+  | "intro"
   | "experience"
   | "context"
   | "strategy"

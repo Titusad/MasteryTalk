@@ -16,6 +16,7 @@ interface LevelNodeProps {
     title: string;
     scenario: string;
     interlocutor: any; // Keeping any for now
+    introValue?: string;
   };
   status: "locked" | "unlocked" | "study" | "completed";
   config: StatusConfig;
@@ -109,7 +110,7 @@ export function LevelNode({ level, status, config, isLast, isExpanded = false, o
                 {status === "study" 
                   ? "Review your approach, then practice again" 
                   : status === "locked"
-                    ? "Complete previous level to unlock"
+                    ? (level.introValue || "Complete previous level to unlock")
                     : status === "completed"
                       ? "Level mastered - review or retake"
                       : "Ready to start your session"}

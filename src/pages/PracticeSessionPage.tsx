@@ -61,6 +61,7 @@ const _detectedLocale = detectLanguageBackground();
 import { ExperienceScreen } from "@/features/practice-session/ui/ExperienceScreen";
 import { ContextScreen } from "@/features/practice-session/ui/ContextScreen";
 import { StrategyScreen } from "@/features/practice-session/ui/StrategyScreen";
+import { IntroductionScreen } from "@/features/practice-session/ui/IntroductionScreen";
 import { scriptSectionsToBriefingData } from "@/features/practice-session/ui/briefing/salesAdapter";
 
 /* ═══════════════════════════════════════════════════════════
@@ -112,7 +113,7 @@ import type { PersonalizedPatterns } from "@/features/practice-session/model/ses
    practice-prep → practice → analyzing → feedback → Dashboard
    ═══════════════════════════════════════════════════════════ */
 /** Steps where switching level is safe (no AI-generated data to lose) */
-const SAFE_STEPS: Step[] = ["experience", "context"];
+const SAFE_STEPS: Step[] = ["intro", "experience", "context"];
 
 export function PracticeSessionPage({
   scenario,
@@ -152,8 +153,30 @@ export function PracticeSessionPage({
 
   const [step, setStep] = useState<Step>(() => {
     if (initialHistoryState?.step) return initialHistoryState.step;
+
+    // Show intro screen the first time user enters this level
+    const introKey = `masterytalk_intro_seen_${progressionLevelId}`;
+    const introSeen = progressionLevelId ? localStorage.getItem(introKey) === "1" : true;
+    const levelDef = progressionPathId && progressionLevelId
+      ? getLevelDefinition(progressionPathId, progressionLevelId)
+      : null;
+    if (!introSeen && levelDef?.introHeadline) return "intro";
+
+    // Auto-skip "experience" if user already has profile data from onboarding
+    const hasProfileContext = userProfile?.cvSummary || (userProfile?.position && userProfile?.industry);
+    if (hasProfileContext) return "context";
+
     return "experience";
   });
+
+  /* ── Pre-seed extraContext from onboarding profile (skip experience step data) ── */
+  const profileSeed = useMemo(() => {
+    if (!userProfile) return {};
+    const seed: Record<string, string> = {};
+    if (userProfile.cvSummary) seed.cvSummary = userProfile.cvSummary;
+    if (userProfile.position) seed.manualExperience = `${userProfile.position} in ${userProfile.industry || "tech"}, ${userProfile.seniority || "mid-level"}. ${userProfile.keyExperience || ""}`.trim();
+    return seed;
+  }, [userProfile]);
 
   /* ── Scenario cache key for pre-session data (script, toolkit) ── */
   const sKey = useMemo(
@@ -169,7 +192,7 @@ export function PracticeSessionPage({
      Without this, { ...guidedFields, ...extraContext } creates a NEW object
      every render → useEffect sees mergedGuidedFields as "changed" → cancels
      & restarts prepareSession endlessly → VoicePractice never loads messages. */
-  const [extraContext, setExtraContext] = useState<Record<string, string>>({});
+  const [extraContext, setExtraContext] = useState<Record<string, string>>(profileSeed);
   const guidedFieldsJSON = JSON.stringify(guidedFields);
   const extraContextJSON = JSON.stringify(extraContext);
   const mergedGuidedFields = useMemo(
@@ -859,10 +882,12 @@ export function PracticeSessionPage({
             exit={{ opacity: 0, filter: "blur(4px)" }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
           >
-            {/* Stepper — rendered once here, not inside each sub-screen */}
-            <div className="w-full max-w-md mx-auto px-6 pt-4">
-              <SessionProgressBar currentStep={step} />
-            </div>
+            {/* Stepper — rendered once here, not inside each sub-screen (hidden on intro) */}
+            {step !== "intro" && (
+              <div className="w-full max-w-md mx-auto px-6 pt-4">
+                <SessionProgressBar currentStep={step} />
+              </div>
+            )}
 
             {/* Global error banner */}
             {serviceError && (
@@ -877,6 +902,27 @@ export function PracticeSessionPage({
             )}
 
 
+            {step === "intro" && (() => {
+              const levelDef = progressionPathId && progressionLevelId
+                ? getLevelDefinition(progressionPathId, progressionLevelId)
+                : null;
+              return levelDef?.introHeadline ? (
+                <IntroductionScreen
+                  scenarioType={scenarioType || "interview"}
+                  levelTitle={levelDef.title}
+                  introHeadline={levelDef.introHeadline}
+                  onContinue={() => {
+                    // Mark intro as seen for this level
+                    if (progressionLevelId) {
+                      localStorage.setItem(`masterytalk_intro_seen_${progressionLevelId}`, "1");
+                    }
+                    // Advance to next step
+                    const hasProfileContext = userProfile?.cvSummary || (userProfile?.position && userProfile?.industry);
+                    setStep(hasProfileContext ? "context" : "experience");
+                  }}
+                />
+              ) : null;
+            })()}
             {step === "experience" && (
               <ExperienceScreen
                 scenarioType={scenarioType}
@@ -988,7 +1034,14 @@ export function PracticeSessionPage({
                   setStep("generating");
                   fireScriptGeneration(enriched);
                 }}
-                onBack={() => setStep("experience")}
+                onBack={() => {
+                  const hasProfileContext = userProfile?.cvSummary || (userProfile?.position && userProfile?.industry);
+                  if (hasProfileContext) {
+                    onFinish?.();
+                  } else {
+                    setStep("experience");
+                  }
+                }}
               />
             )}
 

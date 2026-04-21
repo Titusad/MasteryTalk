@@ -234,6 +234,18 @@
     line-height: 1.5;
   }
 
+  /* Global: all interactive elements get pointer cursor */
+  button,
+  a,
+  select,
+  summary,
+  [role="button"],
+  input[type="checkbox"],
+  input[type="radio"],
+  label[for] {
+    cursor: pointer;
+  }
+
   input {
     font-size: var(--text-base);
     font-weight: var(--font-weight-normal);

@@ -7,7 +7,6 @@ import { authService } from "@/services";
 import type { AuthProvider } from "@/services/types";
 import { isAuthError, type ServiceError } from "@/services/errors";
 import { useLandingCopy } from "@/shared/i18n/LandingLangContext";
-import { TermsCheckbox } from "@/shared/ui/TermsCheckbox";
 
 /* ──────────────────────── Social Icons ──────────────────────── */
 
@@ -87,7 +86,6 @@ export function AuthModal({
   /* ── Loading & error state for auth buttons ── */
   const [loadingProvider, setLoadingProvider] = useState<AuthProvider | null>(null);
   const [inlineError, setInlineError] = useState<string | null>(null);
-  const [termsAccepted, setTermsAccepted] = useState(false);
 
   /**
    * Handle social login through the service layer.
@@ -156,31 +154,27 @@ export function AuthModal({
           )}
         </AnimatePresence>
 
-        {/* Terms checkbox (registration only) — BEFORE the button */}
+        {/* Terms notice (registration only) — informational, no checkbox */}
         {!isLogin && (
-          <div className="mb-4">
-            <TermsCheckbox checked={termsAccepted} onChange={setTermsAccepted} lang={lang} />
-          </div>
+          <p className="text-xs text-[#62748e] mb-4 text-center leading-relaxed">
+            {landingCopy.auth.register.termsNotice}
+          </p>
         )}
 
         {/* Social buttons */}
         <div className="space-y-3 mb-6">
           {/* Google */}
           <button
-            className={`w-full flex items-center justify-center gap-3 border-2 rounded-full py-3.5 transition-all duration-200 ${
-              !isLogin && !termsAccepted
-                ? "bg-[#f1f5f9] border-[#e2e8f0] opacity-50 cursor-not-allowed"
-                : "bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300 disabled:opacity-60 disabled:cursor-not-allowed"
-            }`}
+            className={`w-full flex items-center justify-center gap-3 border-2 rounded-full py-3.5 transition-all duration-200 bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300 disabled:opacity-60 disabled:cursor-not-allowed`}
             onClick={() => handleSocialLogin("google")}
-            disabled={loadingProvider !== null || (!isLogin && !termsAccepted)}
+            disabled={loadingProvider !== null}
           >
             {loadingProvider === "google" ? (
               <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
             ) : (
               <GoogleIcon />
             )}
-            <span className={`${!isLogin && !termsAccepted ? "text-gray-400" : "text-gray-900"}`} style={{ fontWeight: 500 }}>
+            <span className="text-gray-900" style={{ fontWeight: 500 }}>
               {googleLabel}
             </span>
           </button>
