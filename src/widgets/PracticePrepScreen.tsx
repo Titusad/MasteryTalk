@@ -30,13 +30,13 @@ import { ReadinessScore } from "@/features/practice-session/ui/briefing/Readines
 const MIN_CARDS_FOR_SKIP = 3;
 
 /* ── Interlocutor labels ── */
-const INTERLOCUTOR_LABELS: Record<string, { label: string; emoji: string }> = {
-    recruiter: { label: "Recruiter", emoji: "🎯" },
-    sme: { label: "Technical Expert", emoji: "🔬" },
-    hiring_manager: { label: "Hiring Manager", emoji: "👔" },
-    hr: { label: "HR / People & Culture", emoji: "🤝" },
-    meeting_facilitator: { label: "Meeting Facilitator", emoji: "📋" },
-    senior_stakeholder: { label: "Senior Stakeholder", emoji: "🏛️" },
+const INTERLOCUTOR_LABELS: Record<string, { label: string }> = {
+    recruiter: { label: "Recruiter" },
+    sme: { label: "Technical Expert" },
+    hiring_manager: { label: "Hiring Manager" },
+    hr: { label: "HR / People & Culture" },
+    meeting_facilitator: { label: "Meeting Facilitator" },
+    senior_stakeholder: { label: "Senior Stakeholder" },
 };
 
 interface PracticePrepScreenProps {
@@ -70,7 +70,6 @@ export function PracticePrepScreen({
 
     const interlocutorInfo = INTERLOCUTOR_LABELS[interlocutor] ?? {
         label: interlocutor,
-        emoji: "💼",
     };
 
     const handleAllComplete = useCallback((completedCount: number) => {

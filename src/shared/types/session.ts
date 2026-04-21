@@ -10,6 +10,7 @@ export type Step =
   | "intro"
   | "experience"
   | "context"
+  | "self-intro-context"
   | "strategy"
   | "generating"
   | "practice-prep"

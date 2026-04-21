@@ -95,7 +95,7 @@ function ScreenSetup() {
           </p>
           <div className="inline-flex items-center gap-1 bg-[#fecaca]/40 rounded px-1.5 py-0.5 group relative">
             <p className="text-[9px] text-[#0f172b] italic" style={{ fontWeight: 500 }}>{s.highlightPhrase}</p>
-            <span className="text-[7px] text-[#6366f1]">💡</span>
+            <span className="text-[7px] text-[#6366f1]">tip</span>
           </div>
           <p className="text-[8px] text-[#6366f1]/70 mt-1 italic">{s.highlightTooltip}</p>
         </div>

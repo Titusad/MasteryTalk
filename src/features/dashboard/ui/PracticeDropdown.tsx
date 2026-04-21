@@ -1,8 +1,20 @@
 import { SUPABASE_URL } from "@/services/supabase";
 import { useState, useRef, useEffect } from "react";
-import { Mic, ChevronDown } from "lucide-react";
+import { Mic, ChevronDown, UserCircle, Target, Briefcase, Video, Handshake, Crown } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+
+/* Map icon name → Lucide component for path rendering */
+const PATH_ICONS: Record<string, LucideIcon> = {
+  target: Target,
+  briefcase: Briefcase,
+  video: Video,
+  mic: Mic,
+  handshake: Handshake,
+  crown: Crown,
+};
 import { motion, AnimatePresence } from "motion/react";
 import { PROGRESSION_PATHS, VISIBLE_PATHS, getLevelState, getDefaultProgressionState } from "@/features/dashboard/model/progression-paths";
+import type { PathId } from "@/features/dashboard/model/progression-paths";
 import type { ProgressionState, ScenarioType } from "@/services/types";
 
 import { projectId } from "@/../utils/supabase/info";
@@ -45,7 +57,7 @@ export function PracticeDropdown({ onSelect }: PracticeDropdownProps) {
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
-  const handleSelect = (pathId: ScenarioType) => {
+  const handleSelect = (pathId: PathId) => {
     const path = PROGRESSION_PATHS.find((p) => p.id === pathId);
     if (!path) return;
 
@@ -104,11 +116,44 @@ export function PracticeDropdown({ onSelect }: PracticeDropdownProps) {
               zIndex: 50,
             }}
           >
+            {/* Self-Introduction — always visible, free warm-up */}
+            <button
+              onClick={() => {
+                setOpen(false);
+                onSelect(
+                  "Professional self-introduction warm-up",
+                  "self-intro",
+                  "",
+                  "senior_stakeholder"
+                );
+              }}
+              style={{
+                display: "flex", alignItems: "center", gap: 10,
+                width: "100%", padding: "14px 16px",
+                background: "transparent", border: "none",
+                cursor: "pointer", fontSize: 14, fontWeight: 500,
+                color: "#0f172b", textAlign: "left",
+                transition: "background 0.15s",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "#f8fafc")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+            >
+              <span style={{
+                display: "flex", alignItems: "center", justifyContent: "center",
+                width: 28, height: 28, borderRadius: "50%",
+                background: "#0f172b", flexShrink: 0,
+              }}>
+                <UserCircle size={16} color="#fff" />
+              </span>
+              Self-Introduction
+            </button>
+            <div style={{ height: 1, background: "#e2e8f0", margin: "0 16px" }} />
+
             {VISIBLE_PATHS.map((path) => {
               return (
                 <button
                   key={path.id}
-                  onClick={() => handleSelect(path.id)}
+                  onClick={() => handleSelect(path.id as PathId)}
                   style={{
                     display: "flex", alignItems: "center", gap: 10,
                     width: "100%", padding: "14px 16px",
@@ -124,9 +169,11 @@ export function PracticeDropdown({ onSelect }: PracticeDropdownProps) {
                     display: "flex", alignItems: "center", justifyContent: "center",
                     width: 28, height: 28, borderRadius: "50%",
                     background: "#0f172b", flexShrink: 0,
-                    fontSize: 14,
                   }}>
-                    {path.icon}
+                    {(() => {
+                      const Icon = PATH_ICONS[path.icon];
+                      return Icon ? <Icon size={14} color="#fff" /> : null;
+                    })()}
                   </span>
                   {path.title}
                 </button>

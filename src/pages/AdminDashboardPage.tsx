@@ -256,7 +256,7 @@ export function AdminDashboardPage({ onBack }: AdminDashboardPageProps) {
           <button onClick={() => setView("overview")} style={styles.backBtn}>
             <ArrowLeft size={18} /> Back to Users
           </button>
-          <h1 style={styles.title}>👤 {u.displayName || u.email}</h1>
+          <h1 style={styles.title}>{u.displayName || u.email}</h1>
         </header>
 
         <div style={styles.content}>
@@ -284,7 +284,7 @@ export function AdminDashboardPage({ onBack }: AdminDashboardPageProps) {
             </div>
             <div style={styles.kpiCard}>
               <p style={styles.kpiLabel}>CV Consent</p>
-              <p style={styles.kpiValue}>{u.cvConsentGiven ? "✅ Yes" : "❌ No"}</p>
+              <p style={styles.kpiValue}>{u.cvConsentGiven ? "Yes" : "No"}</p>
             </div>
           </div>
 
@@ -305,14 +305,14 @@ export function AdminDashboardPage({ onBack }: AdminDashboardPageProps) {
           {/* CV Summary */}
           {u.cvSummary && (
             <div style={styles.chartBox}>
-              <h3 style={styles.sectionTitle}>📄 CV Summary</h3>
+              <h3 style={styles.sectionTitle}>CV Summary</h3>
               <p style={{ color: "#cbd5e1", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{u.cvSummary}</p>
             </div>
           )}
 
           {/* Sessions */}
           <div style={styles.chartBox}>
-            <h3 style={styles.sectionTitle}>📋 Session History ({selectedUser.sessions.length})</h3>
+            <h3 style={styles.sectionTitle}>Session History ({selectedUser.sessions.length})</h3>
             {selectedUser.sessions.length === 0 ? (
               <p style={{ color: "#64748b" }}>No sessions yet</p>
             ) : (
@@ -344,7 +344,7 @@ export function AdminDashboardPage({ onBack }: AdminDashboardPageProps) {
           {/* SR Cards */}
           {selectedUser.srCards.length > 0 && (
             <div style={styles.chartBox}>
-              <h3 style={styles.sectionTitle}>🔁 SR Cards ({selectedUser.srCards.length})</h3>
+              <h3 style={styles.sectionTitle}>SR Cards ({selectedUser.srCards.length})</h3>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                 {selectedUser.srCards.map((card, i) => (
                   <span key={i} style={styles.srTag}>{card.phrase}</span>
@@ -430,7 +430,7 @@ export function AdminDashboardPage({ onBack }: AdminDashboardPageProps) {
               fontWeight: 600,
             }}
           >
-            📊 Platform
+            Platform
           </button>
           <button
             onClick={() => setActiveTab("costs")}
@@ -445,7 +445,7 @@ export function AdminDashboardPage({ onBack }: AdminDashboardPageProps) {
               fontWeight: 600,
             }}
           >
-            💰 API Costs
+            API Costs
           </button>
         </div>
 
@@ -489,7 +489,7 @@ export function AdminDashboardPage({ onBack }: AdminDashboardPageProps) {
 
             {/* Service Breakdown */}
             <div style={styles.chartBox}>
-              <h3 style={styles.sectionTitle}>🔧 Service Breakdown</h3>
+              <h3 style={styles.sectionTitle}>Service Breakdown</h3>
               <div style={{ overflowX: "auto" }}>
                 <table style={styles.table}>
                   <thead>
@@ -523,7 +523,7 @@ export function AdminDashboardPage({ onBack }: AdminDashboardPageProps) {
             {/* Per-User Breakdown */}
             {apiUsage.byUser.length > 0 && (
               <div style={styles.chartBox}>
-                <h3 style={styles.sectionTitle}>👤 Cost by User</h3>
+                <h3 style={styles.sectionTitle}>Cost by User</h3>
                 <div style={{ overflowX: "auto" }}>
                   <table style={styles.table}>
                     <thead>
@@ -564,7 +564,7 @@ export function AdminDashboardPage({ onBack }: AdminDashboardPageProps) {
         <div style={styles.chartBox}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
             <h3 style={styles.sectionTitle}>
-              👥 Users ({filteredUsers.length})
+              Users ({filteredUsers.length})
             </h3>
             <div style={styles.searchBox}>
               <Search size={16} color="#64748b" />

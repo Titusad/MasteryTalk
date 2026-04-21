@@ -34,6 +34,7 @@ const OnboardingProfileScreen = lazyRetry(() => import("@/features/onboarding/ui
 import { LoadingScreen } from "./components/LoadingScreen";
 import { LanguageTransitionModal } from "./components/LanguageTransitionModal";
 import type { User, OnboardingProfile, ScenarioType, SessionSummary, TurnPronunciationData, ScriptSection, InterviewBriefingData } from "@/services/types";
+import type { PathId } from "@/features/dashboard/model/progression-paths";
 import type { SetupModalResult } from "@/pages/landing/PracticeWidget";
 // AnimatePresence removed — was causing modal to linger during exit animation
 // when auth re-renders interrupted the exit. Direct unmount is bulletproof.
@@ -218,7 +219,7 @@ export default function App() {
                 interlocutor: setup.interlocutor || "recruiter",
                 scenarioType: sType,
                 guidedFields: setup.guidedFields,
-                progressionPathId: sType as ScenarioType,
+                progressionPathId: sType as PathId,
                 progressionLevelId: setup.progressionLevelId || (sType === "interview" ? "int-1" : "sal-1"),
               });
 
@@ -516,7 +517,7 @@ export default function App() {
   };
 
   const handleStartNewPractice = (scenario: string, scenarioType?: string, levelId?: string, interlocutor?: string) => {
-    const validPaths = new Set<string>(["interview", "sales", "meeting", "presentation", "client", "csuite"]);
+    const validPaths = new Set<string>(["interview", "sales", "meeting", "presentation", "client", "csuite", "self-intro"]);
     if (scenarioType && validPaths.has(scenarioType)) {
       // Dashboard → direct to practice-session (skip widget)
       const interlocutorDefaults: Record<string, string> = {
@@ -533,7 +534,7 @@ export default function App() {
         interlocutor: defaultInterlocutor,
         scenarioType: scenarioType as ScenarioType,
         progressionLevelId: levelId,
-        progressionPathId: levelId ? (scenarioType as ScenarioType) : undefined,
+        progressionPathId: levelId ? (scenarioType as PathId) : undefined,
       });
       setPage("practice-session");
       window.location.hash = "#practice-session";
@@ -626,7 +627,7 @@ export default function App() {
                   interlocutor,
                   scenarioType,
                   progressionLevelId: levelId,
-                  progressionPathId: scenarioType,
+                  progressionPathId: scenarioType as PathId,
                 });
               }}
               userPlan={authUser?.plan}

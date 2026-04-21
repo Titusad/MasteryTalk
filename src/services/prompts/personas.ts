@@ -292,6 +292,7 @@ export const INTERLOCUTORS_BY_SCENARIO: Record<ScenarioType, InterlocutorType[]>
   presentation: ["senior_stakeholder", "meeting_facilitator"],
   client: ["senior_stakeholder"],
   csuite: ["senior_stakeholder"],
+  "self-intro": ["senior_stakeholder", "meeting_facilitator"],
 };
 
 /**
@@ -304,6 +305,7 @@ export const DEFAULT_INTERLOCUTOR: Record<ScenarioType, InterlocutorType> = {
   presentation: "senior_stakeholder",
   client: "senior_stakeholder",
   csuite: "senior_stakeholder",
+  "self-intro": "senior_stakeholder",
 };
 
 /* ── Persona Maps ── */

@@ -225,7 +225,7 @@ export function SessionReport({
                   <h4 className="text-[11px] uppercase tracking-wider text-white/50" style={{ fontWeight: 600 }}>Top Strengths</h4>
                   {topStrengths.map((str, i) => (
                     <div key={i} className="flex items-start gap-3">
-                      <span className="text-lg leading-none mt-0.5">✨</span>
+                      <Sparkles className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
                       <p className="text-sm text-white/70">
                         <strong className="text-white">{str.title}:</strong>{" "}
                         {str.desc}
@@ -596,7 +596,7 @@ export function SessionReport({
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6, delay: 0.28 }}
         >
-          <div className="text-4xl mb-4">🚀</div>
+          <Trophy className="w-10 h-10 text-white/80 mx-auto mb-4" />
           <h2 className="text-white text-2xl mb-3" style={{ fontWeight: 500 }}>
             Good luck with your {scenarioLabel}!
           </h2>

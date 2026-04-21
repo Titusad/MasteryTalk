@@ -192,7 +192,7 @@ export function useDashboardData({
     () => getLatestBeforeAfter(persistedSessions),
     [persistedSessions]
   );
-  const totalSessions = persistedSessions.length || allRecent.length;
+  const totalSessions = persistedSessions.length;
 
   /* ─── Professional Proficiency ─── */
   const latestSession = useMemo(() => {

@@ -57,7 +57,7 @@ export function VoiceExerciseStep({ data, onComplete, footer }: Props) {
         {/* Coach instruction */}
         <div className="rounded-2xl bg-[#f8fafc] border border-[#e2e8f0] px-5 py-4">
           <p className="text-[11px] text-[#64748b] uppercase tracking-wider mb-2" style={{ fontWeight: 700 }}>
-            🎤 Coach Says
+            Coach Says
           </p>
           <p className="text-[15px] text-[#334155] leading-relaxed">
             {data.instruction}

@@ -18,6 +18,7 @@ const SCENARIO_LABELS: Record<ScenarioType, string> = {
   presentation: "Presentation",
   client: "Client",
   csuite: "C-Suite",
+  "self-intro": "Self-Introduction",
 };
 
 const STEPS = [

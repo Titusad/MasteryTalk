@@ -4,7 +4,7 @@
 > Any code change MUST be consistent with this spec.
 > If the spec needs to change, update THIS FILE FIRST → get approval → then code.
 >
-> Last updated: 2026-04-20 (Beta v11.1 — Landing Page Overhaul)
+> Last updated: 2026-04-21 (Beta v11.2 — Self-Intro Warm-Up + Path Recommendation Engine)
 
 ---
 
@@ -30,11 +30,14 @@
 | `interview` | Job Interview | Entrevista de trabajo | ✅ Active |
 | `meeting` | Remote Meetings | Reuniones remotas | ✅ Active |
 | `presentation` | Presentations | Presentaciones | ✅ Active |
+| `self-intro` | Self-Introduction (Warm-Up) | Auto-presentación | ✅ Active (Free) |
 
 ```typescript
 // Canonical type — src/entities/session/index.ts
-type ScenarioType = "interview" | "meeting" | "presentation";
+type ScenarioType = "interview" | "meeting" | "presentation" | "self-intro";
 ```
+
+> **Note:** `self-intro` is NOT a purchasable Learning Path — it is a free warm-up session that all users can access. It does not appear in `PROGRESSION_PATHS` or `PathId`.
 
 ### Retired Scenarios (not visible, not purchasable)
 - `sales` — planned for Phase 2 as separate flow
@@ -308,6 +311,58 @@ type Step =
 - Score < 45 → SR card auto-created
 - Pillar modality: Vocabulary/Grammar/Prof.Tone/Persuasion = text, Fluency/Pronunciation = voice
 
+### §7.4 Self-Introduction Warm-Up
+
+> **Purpose:** Free, friction-free first practice for new users. Builds engagement before the progression paywall.
+
+**Flow:**
+```
+Intro Screen → Context Selection → Strategy → Conversation → Feedback → Path Recommendation
+```
+
+**Context Selection (SelfIntroContextScreen):**
+
+| Context | Label | Interlocutor |
+|---------|-------|--------------|
+| `networking` | Networking Event | recruiter |
+| `team` | Team Introduction | team_lead |
+| `client` | Client Meeting | client_director |
+
+**Rules:**
+- Always free — no paywall, no path purchase required
+- Available from Dashboard banner (for users with 0 sessions) and PracticeDropdown (always visible)
+- Uses same AI pipeline (`/process-turn`, `/analyze-feedback`) as regular sessions
+- NOT a Learning Path — no levels, no progression tracking
+- `scenarioType = "self-intro"` — excluded from `PathId` type
+
+### §7.5 Path Recommendation Engine (Post Warm-Up)
+
+> **Purpose:** After the warm-up session, recommend a specific Learning Path based on performance data — a high-conversion moment.
+
+**Data signals:**
+1. `pillarScores` from `/analyze-feedback` (6 dimensions: Vocabulary, Grammar, Fluency, Pronunciation, Professional Tone, Persuasion)
+2. Self-intro context chosen by user (networking / team / client)
+3. Onboarding profile (position, industry, seniority)
+
+**Mapping logic:**
+
+| Weakest Pillar(s) | Recommended Path |
+|--------------------|------------------|
+| Persuasion + Professional Tone | C-Suite Communication |
+| Persuasion (solo) | Sales Champion |
+| Professional Tone (solo) | Client-Facing Communication |
+| Fluency + Grammar | Remote Meeting Presence |
+| Vocabulary | Interview Mastery |
+| Fluency (solo) | Presentations |
+
+Context tiebreaker (when pillar scores are within 5 points): `networking` → Interview Mastery, `team` → Remote Meeting Presence, `client` → Client-Facing Communication.
+
+**UI placement:** Renders inside the feedback step (below progression gate, above actions) as `PathRecommendationCard`. Educational tone — not a sales modal.
+
+**CTA:** "Start This Path →" opens `PathPurchaseModal` pre-seeded with the recommended path.
+
+**Source:** `src/features/dashboard/model/path-recommendation.ts` (pure function, no side effects)
+
 ---
 
 ## §8 — Learning Path Structure
@@ -417,6 +472,7 @@ Learning Path: [Scenario] ($4.99 first / $16.99 additional)
 |---------|------|---------|
 | v1.0 | 2026-04-17 | Initial spec — retroactive documentation of beta state |
 | v1.1 | 2026-04-20 | Landing page overhaul (v4 copy), §6 restructured, §7.1 steps cleaned, storage keys rebranded |
+| v1.2 | 2026-04-21 | Added `self-intro` to §2, new §7.4 Self-Intro Warm-Up flow, §7.5 Path Recommendation Engine. Updated ScenarioType. |
 
 ### What this spec does NOT cover (yet)
 - Detailed prompt engineering (system prompts, evaluator prompts)

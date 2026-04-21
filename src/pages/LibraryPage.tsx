@@ -22,13 +22,13 @@ import type { MicroLesson } from "@/services/microLessons";
 import { LessonModal } from "./LessonModal";
 
 /* ─── Pillar config ─── */
-const PILLAR_META: Record<string, { color: string; emoji: string }> = {
-  Grammar: { color: "#0ea5e9", emoji: "📐" },
-  Vocabulary: { color: "#6366f1", emoji: "⚡" },
-  Fluency: { color: "#22c55e", emoji: "🎯" },
-  Pronunciation: { color: "#f59e0b", emoji: "🔊" },
-  "Professional Tone": { color: "#ec4899", emoji: "👔" },
-  Persuasion: { color: "#14b8a6", emoji: "🏗️" },
+const PILLAR_META: Record<string, { color: string }> = {
+  Grammar: { color: "#0ea5e9" },
+  Vocabulary: { color: "#6366f1" },
+  Fluency: { color: "#22c55e" },
+  Pronunciation: { color: "#f59e0b" },
+  "Professional Tone": { color: "#ec4899" },
+  Persuasion: { color: "#14b8a6" },
 };
 
 const ALL_PILLARS = Object.keys(PILLAR_META);
@@ -152,7 +152,7 @@ export function LibraryPage({}: LibraryPageProps) {
                       : {}),
                   }}
                 >
-                  {meta.emoji} {pillar}
+                  {pillar}
                 </button>
               );
             })}
@@ -187,7 +187,12 @@ export function LibraryPage({}: LibraryPageProps) {
               return (
                 <section key={pillar}>
                   <div className="flex items-center gap-2 mb-4">
-                    <span className="text-lg">{meta.emoji}</span>
+                    <span
+                      className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] text-white"
+                      style={{ backgroundColor: meta.color, fontWeight: 700 }}
+                    >
+                      {pillar.charAt(0)}
+                    </span>
                     <h2
                       className="text-lg text-[#0f172b]"
                       style={{ fontWeight: 600 }}
@@ -260,7 +265,12 @@ function LessonCard({
       transition={{ delay: index * 0.03 }}
     >
       <div className="relative shrink-0 mt-0.5">
-        <span className="text-2xl">{lesson.icon}</span>
+        <span
+          className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white"
+          style={{ backgroundColor: meta.color, fontWeight: 700 }}
+        >
+          {lesson.pillar.charAt(0)}
+        </span>
         {done && (
           <CheckCircle2 className="w-4 h-4 text-[#22c55e] absolute -top-1 -right-1.5" />
         )}

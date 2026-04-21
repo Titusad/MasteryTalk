@@ -1,13 +1,25 @@
 import { SUPABASE_URL } from "@/services/supabase";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Lock, Unlock, BookOpen, CheckCircle2 } from "lucide-react";
+import { Lock, Unlock, BookOpen, CheckCircle2, Target, Briefcase, Video, Mic, Handshake, Crown } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+
+/* Map icon name → Lucide component */
+const PATH_ICONS: Record<string, LucideIcon> = {
+  target: Target,
+  briefcase: Briefcase,
+  video: Video,
+  mic: Mic,
+  handshake: Handshake,
+  crown: Crown,
+};
 
 import {
   PROGRESSION_PATHS,
   VISIBLE_PATHS,
   getLevelState,
 } from "@/features/dashboard/model/progression-paths";
+import type { PathId } from "@/features/dashboard/model/progression-paths";
 import { useProgressionState } from "@/features/dashboard/model/useProgressionState";
 import type { LevelStatus, ScenarioType } from "@/services/types";
 import { projectId } from "@/../utils/supabase/info";
@@ -60,12 +72,12 @@ interface ProgressionTreeProps {
 }
 
 export function ProgressionTree({ onStartLevel, onDrillComplete }: ProgressionTreeProps) {
-  const [activeTab, setActiveTab] = useState<ScenarioType>("interview");
+  const [activeTab, setActiveTab] = useState<PathId>("interview");
   const { state, loading, refetch: fetchState } = useProgressionState();
 
   useEffect(() => {
     if (state.activeGoal) {
-      setActiveTab(state.activeGoal as ScenarioType);
+      setActiveTab(state.activeGoal as PathId);
     }
   }, [state.activeGoal]);
 
@@ -119,7 +131,7 @@ export function ProgressionTree({ onStartLevel, onDrillComplete }: ProgressionTr
               <button
                 key={path.id}
                 onClick={() => {
-                  setActiveTab(path.id);
+                  setActiveTab(path.id as PathId);
                 }}
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs whitespace-nowrap transition-all duration-200 cursor-pointer ${
                   activeTab === path.id
@@ -129,7 +141,14 @@ export function ProgressionTree({ onStartLevel, onDrillComplete }: ProgressionTr
                 style={{ fontWeight: activeTab === path.id ? 600 : 500 }}
                 title={path.title}
               >
-                <span className="text-sm">{path.icon}</span>
+                {(() => {
+                  const Icon = PATH_ICONS[path.icon];
+                  return Icon ? (
+                    <span className="flex items-center justify-center w-5 h-5 rounded-full bg-[#0f172b]">
+                      <Icon size={11} color="#fff" />
+                    </span>
+                  ) : null;
+                })()}
                 <span className="hidden sm:inline">{path.title}</span>
                 <span className="sm:hidden">{path.title.split(' ')[0]}</span>
               </button>

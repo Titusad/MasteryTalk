@@ -79,8 +79,8 @@ export function PaymentSuccessHandler({
 
   const label =
     purchaseInfo?.type === "first_path"
-      ? "Learning Path unlocked! 🎉"
-      : "Learning Path unlocked! 🎉";
+      ? "Learning Path unlocked!"
+      : "Learning Path unlocked!";
 
   return (
     <AnimatePresence>
@@ -98,7 +98,7 @@ export function PaymentSuccessHandler({
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-[#0f172b]">
-                Payment successful! 🎉
+                Payment successful!
               </p>
               <p className="text-xs text-[#62748e] mt-0.5">
                 {label} Start practicing now.

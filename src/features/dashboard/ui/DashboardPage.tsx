@@ -7,14 +7,14 @@
  *  - Passes props down to "dumb" presentational sub-components
  *  - Handles UI-local state (modals, upsell flow)
  *
- *  📱 Mobile-Ready Architecture:
+ *  Mobile-Ready Architecture:
  *  - Model layer (hooks, computations) → 100% reusable in React Native
  *  - UI layer (this file + ui/ components) → Web-specific (React DOM)
  * ══════════════════════════════════════════════════════════════
  */
 import { useState } from "react";
 import { motion } from "motion/react";
-import { Zap, Trophy, BarChart3 } from "lucide-react";
+import { Zap, Trophy, BarChart3, Target, ClipboardList, Mic2 } from "lucide-react";
 import { PastelBlobs, MiniFooter } from "@/shared/ui";
 import type { LandingLang } from "@/shared/i18n/landing-i18n";
 import { PathPurchaseModal } from "@/widgets/PathPurchaseModal";
@@ -93,7 +93,7 @@ export function DashboardPage({
 
   return (
     <div aria-label="DashboardPage"
-      className="w-full min-h-full flex flex-col bg-[#f8fafc] relative overflow-hidden"
+      className="w-full min-h-screen flex flex-col bg-[#f8fafc] relative overflow-hidden"
       style={{ fontFamily: "'Inter', sans-serif" }}
     >
       <PastelBlobs />
@@ -143,7 +143,7 @@ export function DashboardPage({
                   className="inline-flex items-center gap-1.5 text-[10px] bg-[#f59e0b]/15 text-[#f59e0b] px-3 py-1 rounded-full mb-4"
                   style={{ fontWeight: 600 }}
                 >
-                  <Zap className="w-3 h-3" /> RECOMMENDED
+                  <Zap className="w-3 h-3" /> START HERE
                 </span>
 
                 <h3
@@ -160,10 +160,10 @@ export function DashboardPage({
                   <button
                     onClick={() =>
                       handleStartSession(
-                        "Professional self-introduction at a networking event",
-                        "interview",
-                        "int-1",
-                        "recruiter"
+                        "Professional self-introduction warm-up",
+                        "self-intro",
+                        undefined as any,
+                        "senior_stakeholder"
                       )
                     }
                     className="flex items-center gap-2 px-6 py-3 rounded-full text-sm bg-white text-[#0f172b] hover:bg-[#f8fafc] transition-colors shadow-lg cursor-pointer"
@@ -192,7 +192,7 @@ export function DashboardPage({
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {[
                   {
-                    emoji: "🎯",
+                    iconName: "target" as const,
                     title: "Job Interview",
                     desc: "Practice with an AI interviewer",
                     scenario: "Job interview preparation",
@@ -201,7 +201,7 @@ export function DashboardPage({
                     interlocutor: "recruiter",
                   },
                   {
-                    emoji: "📋",
+                    iconName: "clipboard" as const,
                     title: "Remote Meeting",
                     desc: "Lead or present in meetings",
                     scenario: "Remote meeting simulation",
@@ -210,7 +210,7 @@ export function DashboardPage({
                     interlocutor: "meeting_facilitator",
                   },
                   {
-                    emoji: "🎤",
+                    iconName: "mic" as const,
                     title: "Presentation",
                     desc: "Deliver and handle Q&A",
                     scenario: "Professional presentation",
@@ -231,7 +231,15 @@ export function DashboardPage({
                     }
                     className="bg-white border border-[#e2e8f0] rounded-2xl p-5 text-left hover:border-[#c7d2e0] hover:shadow-sm transition-all cursor-pointer group"
                   >
-                    <span className="text-2xl mb-3 block">{card.emoji}</span>
+                    {(() => {
+                      const iconMap = { target: Target, clipboard: ClipboardList, mic: Mic2 };
+                      const Icon = iconMap[card.iconName];
+                      return (
+                        <span className="flex items-center justify-center w-9 h-9 rounded-full bg-[#0f172b] mb-3">
+                          <Icon size={16} color="#fff" />
+                        </span>
+                      );
+                    })()}
                     <p
                       className="text-sm text-[#0f172b] mb-1 group-hover:text-[#6366f1] transition-colors"
                       style={{ fontWeight: 600 }}

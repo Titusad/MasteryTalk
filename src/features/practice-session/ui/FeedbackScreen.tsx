@@ -65,11 +65,11 @@ const PILLAR_NAMES = [
 ] as const;
 
 const PILLAR_COLORS: Record<string, { icon: string; bg: string; text: string }> = {
-    Pronunciation: { icon: "🗣️", bg: "rgba(239,68,68,0.12)", text: "#ef4444" },
-    Fluency: { icon: "🌊", bg: "rgba(14,165,233,0.12)", text: "#0ea5e9" },
-    "Professional Tone": { icon: "🕴️", bg: "rgba(139,92,246,0.12)", text: "#14b8a6" },
-    Grammar: { icon: "📐", bg: "rgba(59,130,246,0.12)", text: "#3b82f6" },
-    Vocabulary: { icon: "📚", bg: "rgba(16,185,129,0.12)", text: "#10b981" },
+    Pronunciation: { icon: "P", bg: "rgba(239,68,68,0.12)", text: "#ef4444" },
+    Fluency: { icon: "F", bg: "rgba(14,165,233,0.12)", text: "#0ea5e9" },
+    "Professional Tone": { icon: "T", bg: "rgba(139,92,246,0.12)", text: "#14b8a6" },
+    Grammar: { icon: "G", bg: "rgba(59,130,246,0.12)", text: "#3b82f6" },
+    Vocabulary: { icon: "V", bg: "rgba(16,185,129,0.12)", text: "#10b981" },
 };
 
 type ShadowState = "idle" | "done";
@@ -84,6 +84,8 @@ interface FeedbackScreenProps {
     onFinish: () => void;
     /** Whether this is the user's first free retry */
     canRetryFree?: boolean;
+    /** Optional slot rendered below progression gate (e.g. path recommendation) */
+    bottomSlot?: React.ReactNode;
 }
 
 export function FeedbackScreen({
@@ -94,6 +96,7 @@ export function FeedbackScreen({
     onDownloadPdf,
     onFinish,
     canRetryFree = true,
+    bottomSlot,
 }: FeedbackScreenProps) {
     const [insightsOpen, setInsightsOpen] = useState(false);
     const isInterview = scenarioType === "interview";
@@ -349,7 +352,7 @@ export function FeedbackScreen({
                         <>
                             <Trophy className="w-10 h-10 text-emerald-500 mx-auto mb-3" />
                             <h3 className="text-lg text-[#0f172b] mb-2" style={{ fontWeight: 600 }}>
-                                Level Complete! 🎉
+                                Level Complete!
                             </h3>
                             <p className="text-sm text-[#45556c] mb-6 max-w-md mx-auto">
                                 You scored {communicationScore}/100 — above the {PROGRESSION_THRESHOLD} threshold. Your next level is now available.
@@ -401,6 +404,9 @@ export function FeedbackScreen({
                         </>
                     )}
                 </motion.div>
+
+                {/* ═══ BOTTOM SLOT (e.g. Path Recommendation) ═══ */}
+                {bottomSlot}
 
                 {/* ═══ ACTIONS ═══ */}
                 <motion.div

@@ -4,7 +4,7 @@
 > Any new component or UI change MUST comply with this document.
 > If the design system needs to change, update THIS FILE FIRST → get approval → then code.
 >
-> Last updated: 2026-04-20
+> Last updated: 2026-04-21
 
 ---
 
@@ -253,9 +253,50 @@ style={{ fontWeight: 600, letterSpacing: "0.02em" }}
 - Content: short labels like `Interview · Phone Screen`, `Level 3`, `Beta`.
 - ❌ No indigo/colored pills. ❌ No bordered/outline pills. ❌ No inline `fontSize`.
 
-### §6.6 Shared Components (never reimplement)
+### §6.7 SelfIntroContextScreen
 
-`BrandLogo` · `PastelBlobs` · `MiniFooter` · `AppHeader` · `AnalyzingScreen` · `RecordButton` · `RecordingWaveformBars` · `RecordingTimer` · `SessionProgressBar` · `ServiceErrorBanner` · `SmoothHeight` · `DotPattern`
+**Location:** `src/features/practice-session/ui/SelfIntroContextScreen.tsx`
+
+Context selector for the self-intro warm-up. Shows 3 visual chips (Networking, Team, Client).
+
+```typescript
+interface SelfIntroContextScreenProps {
+  onSelect: (context: SelfIntroContext) => void;
+}
+```
+
+**Visual rules:**
+- 3 cards in a `grid-cols-1 sm:grid-cols-3` layout
+- Each card: `rounded-2xl border-2`, dark circle with white Lucide icon, label + description
+- Selected state: `border-[#0f172b]` + check badge (top-right)
+- CTA: full-width `rounded-full` button, disabled until selection
+
+### §6.8 PathRecommendationCard
+
+**Location:** `src/features/practice-session/ui/PathRecommendationCard.tsx`
+
+Post warm-up recommendation shown inside the feedback step.
+
+```typescript
+interface PathRecommendationCardProps {
+  recommendation: PathRecommendation; // { pathId, pathTitle, pathIcon, reason, focusDetail }
+  onStartPath: () => void;
+  onExploreAll: () => void;
+}
+```
+
+**Visual rules:**
+- Dark gradient card: `bg-gradient-to-br from-[#0f172b] to-[#1e293b] rounded-2xl`
+- Decorative indigo gradient orb (top-right, blurred)
+- Path icon: `w-12 h-12 rounded-2xl bg-white/10 border border-white/10`
+- Reason text: `text-sm text-white/80`, focus detail: `text-xs text-white/50`
+- CTA: white button with `rounded-lg` (app-internal style, NOT `rounded-full`)
+- Separator above: centered text "Based on your session" with `Sparkles` icon
+- Educational tone — NOT a sales modal appearance
+
+### §6.9 Shared Components (never reimplement)
+
+`BrandLogo` · `PastelBlobs` · `MiniFooter` · `AppHeader` · `AnalyzingScreen` · `RecordButton` · `RecordingWaveformBars` · `RecordingTimer` · `SessionProgressBar` · `ServiceErrorBanner` · `SmoothHeight` · `DotPattern` · `SelfIntroContextScreen` · `PathRecommendationCard`
 
 ---
 
@@ -263,11 +304,16 @@ style={{ fontWeight: 600, letterSpacing: "0.02em" }}
 
 ### §7.1 No Emojis
 
-Emojis (`🚀`, `✨`, `🔥`, `💡`, etc.) are **strictly forbidden** in:
-- UI text
-- Buttons
-- Alerts
-- System prompts
+Emojis (`🚀`, `✨`, `🔥`, `💡`, `👋`, etc.) are **strictly forbidden** in:
+- UI text, buttons, alerts, system prompts
+- Cards, chips, navigation items, dropdown options
+- Any visual element that represents a feature or category
+
+**Instead of emojis**, use `lucide-react` icons rendered inside a **dark circle**:
+```
+bg-[#0f172b] rounded-full → white Lucide icon (stroke)
+```
+This is the canonical icon style across the entire app.
 
 ### §7.2 No Arbitrary Icons
 
@@ -305,6 +351,7 @@ HEADER:     AppHeader from shared/ui
 
 | Version | Date | Changes |
 |---------|------|---------|
+| v1.3 | 2026-04-21 | §6.7 SelfIntroContextScreen, §6.8 PathRecommendationCard — new components with visual rules |
 | v1.2 | 2026-04-21 | §6.5 Pills/Badges — canonical dark pill style, one variant only |
 | v1.1 | 2026-04-20 | §6.1 AppHeader rewritten — 3 polymorphic variants (public/dashboard/session), persistent layout, full-width headers, exit confirmation |
 | v1.0 | 2026-04-17 | Initial — consolidated from SKILL.md + Guidelines.md |

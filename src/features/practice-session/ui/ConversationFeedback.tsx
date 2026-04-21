@@ -86,22 +86,22 @@ const CONTENT_QUALITY_COLORS: Record<
   { icon: string; bg: string; text: string }
 > = {
   Relevance: {
-    icon: "🎯",
+    icon: "R",
     bg: "rgba(59,130,246,0.12)",
     text: "#3b82f6",
   },
   Structure: {
-    icon: "🏗️",
+    icon: "S",
     bg: "rgba(168,85,247,0.12)",
     text: "#14b8a6",
   },
   Examples: {
-    icon: "📊",
+    icon: "E",
     bg: "rgba(245,158,11,0.12)",
     text: "#f59e0b",
   },
   Impact: {
-    icon: "⚡",
+    icon: "I",
     bg: "rgba(239,68,68,0.12)",
     text: "#ef4444",
   },
@@ -111,11 +111,11 @@ const LANGUAGE_PILLAR_COLORS: Record<
   string,
   { icon: string; bg: string; text: string }
 > = {
-  Vocabulary: { icon: "📚", bg: "rgba(16,185,129,0.12)", text: "#10b981" },
-  Grammar: { icon: "📐", bg: "rgba(59,130,246,0.12)", text: "#3b82f6" },
-  Fluency: { icon: "🌊", bg: "rgba(14,165,233,0.12)", text: "#0ea5e9" },
-  "Professional Tone": { icon: "🕴️", bg: "rgba(139,92,246,0.12)", text: "#14b8a6" },
-  Persuasion: { icon: "🎯", bg: "rgba(245,158,11,0.12)", text: "#f59e0b" },
+  Vocabulary: { icon: "V", bg: "rgba(16,185,129,0.12)", text: "#10b981" },
+  Grammar: { icon: "G", bg: "rgba(59,130,246,0.12)", text: "#3b82f6" },
+  Fluency: { icon: "F", bg: "rgba(14,165,233,0.12)", text: "#0ea5e9" },
+  "Professional Tone": { icon: "T", bg: "rgba(139,92,246,0.12)", text: "#14b8a6" },
+  Persuasion: { icon: "P", bg: "rgba(245,158,11,0.12)", text: "#f59e0b" },
 };
 
 /* ── Label/Color helpers (used for inline rendering) ── */
@@ -280,7 +280,7 @@ function ConversationFeedback({
               className="inline-flex items-center gap-1.5 text-[10px] bg-[#fef3c7] text-[#92400e] px-3 py-1 rounded-full"
               style={{ fontWeight: 600 }}
             >
-              ⚠️ AI analysis unavailable — showing sample feedback
+              AI analysis unavailable — showing sample feedback
             </span>
           )}
         </PageTitleBlock>
@@ -329,14 +329,14 @@ function ConversationFeedback({
               
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
-                  <span className="text-lg leading-none mt-0.5">✨</span>
+                  <Sparkles className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
                   <p className="text-sm text-white/70">
                     <strong className="text-white">Top Strength:</strong>{" "}
                     {strengths[0]?.title || "Structured and clear responses."}
                   </p>
                 </div>
                 <div className="flex items-start gap-3">
-                  <span className="text-lg leading-none mt-0.5">🎯</span>
+                  <Target className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
                   <p className="text-sm text-white/70">
                     <strong className="text-white">Next Focus:</strong>{" "}
                     {realFeedback?.opportunities?.[0]?.title || "Improving persuasion and pacing."}
@@ -355,7 +355,7 @@ function ConversationFeedback({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
           >
-            <span className="text-xl mt-0.5">⏱️</span>
+            <Lightbulb className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
             <div>
               <p className="text-sm text-[#92400e]" style={{ fontWeight: 600 }}>
                 AI analysis took too long
@@ -758,7 +758,7 @@ function ConversationFeedback({
 
                   <div className="space-y-3">
                     {radarData.map((d, i) => {
-                      const colors = LANGUAGE_PILLAR_COLORS[d.skill] || { icon: "📊", bg: "rgba(99,102,241,0.12)", text: "#6366f1" };
+                      const colors = LANGUAGE_PILLAR_COLORS[d.skill] || { icon: "?", bg: "rgba(99,102,241,0.12)", text: "#6366f1" };
                       const isWorst = d.skill === worstSkill;
                       const insight = insightMap[d.skill];
                       const fallback = fallbackTips[d.skill];
@@ -861,7 +861,7 @@ function ConversationFeedback({
             <div className="space-y-3">
               {allInsights.map((insight, i) => {
                 const dimColor = CONTENT_QUALITY_COLORS[insight.dimension] || LANGUAGE_PILLAR_COLORS[insight.dimension] || {
-                  icon: "💡",
+                  icon: "?",
                   bg: "rgba(99,102,241,0.12)",
                   text: "#6366f1",
                 };
@@ -932,7 +932,7 @@ function ConversationFeedback({
                   className="text-sm text-[#0f172b]"
                   style={{ fontWeight: 600 }}
                 >
-                  Where you nailed it 🎯
+                  Where you nailed it
                 </p>
               </div>
               <div className="space-y-2.5">
@@ -976,7 +976,7 @@ function ConversationFeedback({
                   className="text-sm text-[#0f172b]"
                   style={{ fontWeight: 600 }}
                 >
-                  Level-up moves ⚡
+                  Level-up moves
                 </p>
               </div>
               <div className="space-y-2.5">
@@ -1178,7 +1178,7 @@ function ConversationFeedback({
                   className="text-xl text-[#0f172b] mb-2"
                   style={{ fontWeight: 500 }}
                 >
-                  This scenario? Crushed. ✅
+                  This scenario? Crushed.
                 </h3>
                 <p className="text-[#45556c] mb-6 max-w-md mx-auto">
                   Time to test yourself in a new arena. Pick your next challenge:

@@ -45,7 +45,7 @@ interface ScenarioCopy {
 
 const SCENARIO_COPY: Record<string, ScenarioCopy> = {
   interview: {
-    headline: "You've got the fundamentals — now let's build mastery 🎯",
+    headline: "You've got the fundamentals — now let's build mastery",
     subtitle: "Your demo session revealed your strengths and gaps. The Interview Path takes you from here to interview-ready.",
     valueCards: [
       {
@@ -67,7 +67,7 @@ const SCENARIO_COPY: Record<string, ScenarioCopy> = {
     conversionHook: "At less than $1/session, it costs less than a coffee. 18 sessions to interview mastery.",
   },
   sales: {
-    headline: "First pitch done — now let's sharpen the blade ⚡",
+    headline: "First pitch done — now let's sharpen the blade",
     subtitle: "Your demo showed your style. The Sales Path builds the skills that close deals in English.",
     valueCards: [
       {
@@ -89,7 +89,7 @@ const SCENARIO_COPY: Record<string, ScenarioCopy> = {
     conversionHook: "One closed deal covers years of practice. 18 sessions for $16.99 — invest in your edge.",
   },
   networking: {
-    headline: "Great start — now build real confidence 🌐",
+    headline: "Great start — now build real confidence",
     subtitle: "Your demo revealed your natural style. The Networking Path refines it into a strategic advantage.",
     valueCards: [
       {

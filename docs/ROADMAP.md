@@ -1,6 +1,6 @@
 # MasteryTalk PRO — Roadmap
 
-> **Last updated:** 2026-04-20
+> **Last updated:** 2026-04-21
 > **Spec reference:** [`PRODUCT_SPEC.md`](./PRODUCT_SPEC.md)
 > **Rule:** New items go here FIRST → spec update if needed → then code.
 
@@ -25,7 +25,6 @@
 - `meeting` and `presentation` scenarios have limited prompt tuning vs `interview`
 - No email service (welcome, post-session summaries, nurturing)
 - No error monitoring (Sentry or equivalent)
-- No legal pages (Privacy Policy, Terms of Service)
 
 ---
 
@@ -57,6 +56,12 @@
 - [x] Resolve any TailwindCSS class conflicts
 - [x] Clean up dead code and unused components across features
 
+### 1.1.1 Design System Standardization (Emoji → Icon) ✅
+> **Goal:** Remove all emoji usage from UI, replace with Lucide icons to ensure professional, consistent, language-agnostic interface.
+- [x] Dashboard components: replaced emoji in stat pills, greeting, radar chart labels
+- [x] Practice session: replaced emoji in feedback screens, skill drill, shadowing
+- [x] Updated `DESIGN_SYSTEM.md` to ban emoji usage globally
+
 ### 1.2 Landing Page Overhaul ✅
 - [x] Update copy to reflect current product positioning (MasteryTalk PRO, not inFluentia)
 - [x] Restructure sections for clearer value proposition flow (v4: 11 sections, 3 new, 1 removed)
@@ -67,13 +72,33 @@
 - [x] Bulk rename `inFluentia PRO` → `MasteryTalk PRO` in 25+ file headers and console logs
 - [x] PRODUCT_SPEC v1.1 sync (§6, §7.1, §5.6)
 
-### 1.2 User Dashboard Redesign 🔄
+### 1.2.1 Self-Introduction Warm-Up Session ✅
+> **Goal:** Give new users a free, friction-free first practice experience before they hit the progression paywall.
+- [x] Added `"self-intro"` to `ScenarioType` union (non-progression scenario)
+- [x] Created `SelfIntroContextScreen.tsx` — 3 context chips: Networking, Team Intro, Client Meeting
+- [x] Created `SELF_INTRO_CONTEXTS` data in `progression-paths.ts`
+- [x] Integrated into `PracticeSessionPage.tsx` flow: intro → context selection → profile → conversation → feedback
+- [x] Dashboard empty-state banner: "START HERE — Professional Self-Introduction" for users with 0 sessions
+- [x] `PracticeDropdown` permanent "Self-Introduction" option (always visible, free)
+- [x] Exported `PathId` type and fixed `ScenarioType` vs `PathId` type mismatch across 7 files
+- [x] Fixed `totalSessions` bug — was counting fallback display items, now only counts real persisted sessions
+- [x] Fixed viewport height — `min-h-screen` on PracticeSessionPage + DashboardPage so footer doesn't float
+
+### 1.2.2 Path Recommendation Engine (Post Warm-Up) 🔄
+> **Goal:** After warm-up completion, recommend a specific learning path based on the user's performance — a high-conversion moment.
+- [x] Create `path-recommendation.ts` — pure function mapping `pillarScores` + `selfIntroContext` + `profile` → recommended `PathId` + personalized reason
+- [x] Create `PathRecommendationCard.tsx` — renders inside Session Analysis step (educational tone, not sales modal)
+- [x] Wire into `PracticeSessionPage.tsx` — only renders when `scenarioType === "self-intro"` and feedback is available
+- [ ] Persist recommendation in backend KV (`recommended_path`) for dashboard reminder banner
+- [x] CTA opens existing `PathPurchaseModal` pre-seeded with recommended path (via `recommendedPathOverride` state)
+
+### 1.3 User Dashboard Redesign 🔄
 - [ ] Reorganize dashboard layout and information hierarchy
 - [ ] Clarify path progression vs session history
 - [ ] Improve scenario selection UX (3 active paths)
 - [ ] Ensure purchased vs locked states are visually clear
 
-### 1.3 Stripe → Live Mode
+### 1.4 Stripe → Live Mode
 - [ ] **Debug todos los journeys de pago (test mode):**
   - Verificar que `STRIPE_SECRET_KEY`, `STRIPE_PRICE_FIRST_PATH`, `STRIPE_PRICE_PATH`, `STRIPE_WEBHOOK_SECRET` estén seteados en Supabase Secrets
   - Journey A: `PathConversionScreen` existe pero `setStep("path-conversion")` nunca se llama — CTA post-demo no funciona
@@ -86,26 +111,26 @@
 - [ ] Configure live webhook endpoint → `STRIPE_WEBHOOK_SECRET`
 - [ ] Test one real $4.99 purchase end-to-end → verify `paths_purchased` updates
 
-### 1.4 E2E Payment Verification
+### 1.5 E2E Payment Verification
 - [ ] Complete a real purchase on production with live Stripe
 - [ ] Verify webhook fires → profile updates → session unlocks
 - [ ] Verify post-payment auth persistence (no session loss)
 - [ ] Test additional path purchase ($16.99) with path selector
 
-### 1.5 Scenario Quality Audit
+### 1.6 Scenario Quality Audit
 - [ ] Audit `meeting` system prompt quality vs `interview`
 - [ ] Audit `presentation` system prompt quality
 - [ ] Run at least 1 full demo session per scenario and verify output quality
 
-### 1.6 Production Hardening
+### 1.7 Production Hardening
 - [ ] Error monitoring: integrate Sentry (or Supabase built-in logs)
 - [ ] Rate limiting: already implemented ✅, verify limits are appropriate
 - [ ] Review Google OAuth consent screen — update to "MasteryTalk PRO"
 - [ ] Custom domain for Supabase Auth (removes `zkury...supabase.co` from OAuth)
 
-### 1.7 Legal Compliance
-- [ ] Privacy Policy page (GDPR/CCPA compliant)
-- [ ] Terms of Service page
+### 1.8 Legal Compliance
+- [x] Privacy Policy page (GDPR/CCPA compliant) — `PrivacyPage.tsx`
+- [x] Terms of Service page — `TermsPage.tsx`
 - [ ] Cookie notice (if applicable)
 
 ---
@@ -196,3 +221,5 @@
 | Date | Change |
 |------|--------|
 | 2026-04-17 | Initial roadmap — retroactive from beta v11.0 state |
+| 2026-04-20 | Added 1.1.1 Emoji→Icon standardization (completed) |
+| 2026-04-21 | Added 1.2.1 Self-Intro Warm-Up (completed), 1.2.2 Path Recommendation Engine (planned). Re-numbered 1.3–1.8. Updated legal compliance status. |

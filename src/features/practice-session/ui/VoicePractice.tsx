@@ -571,9 +571,9 @@ function VoicePractice({
   }, [recorder.isRecording, isProcessing, isAiTyping, isTtsPlaying, isConversationComplete, revealingMsgIndex, messages.length]);
 
   const thinkingHint = thinkingSeconds >= 15
-    ? "In a real conversation, this pause might feel long 💭"
+    ? "In a real conversation, this pause might feel long"
     : thinkingSeconds >= 8
-      ? "Take your time... 🧠"
+      ? "Take your time..."
       : null;
 
   return (
@@ -659,7 +659,7 @@ function VoicePractice({
               className="text-xs text-[#4B505B]"
               style={{ fontWeight: 500 }}
             >
-              We're live 🎙️ — listen, think, respond naturally
+              We're live — listen, think, respond naturally
             </span>
           </motion.div>
 
@@ -916,7 +916,7 @@ function VoicePractice({
                             className="text-xs text-[#15803d]"
                             style={{ fontWeight: 500 }}
                           >
-                             🧠 Try opening with:{" "}
+                             Try opening with:{" "}
                             <span
                               className="text-[#0f172b] italic"
                               style={{ fontWeight: 600 }}
@@ -930,7 +930,7 @@ function VoicePractice({
                                 className="text-[11px] text-[#0f172b] mt-1.5"
                                 style={{ fontWeight: 500 }}
                               >
-                                🔑{" "}
+                                Key{" "}
                                 <span
                                   className="text-[#45556c]"
                                   style={{ fontWeight: 400 }}
@@ -1215,22 +1215,22 @@ const CONTENT_QUALITY_COLORS: Record<
   { icon: string; bg: string; text: string }
 > = {
   Relevance: {
-    icon: "🎯",
+    icon: "R",
     bg: "rgba(59,130,246,0.12)",
     text: "#3b82f6",
   },
   Structure: {
-    icon: "🏗️",
+    icon: "S",
     bg: "rgba(168,85,247,0.12)",
     text: "#14b8a6",
   },
   Examples: {
-    icon: "📊",
+    icon: "E",
     bg: "rgba(245,158,11,0.12)",
     text: "#f59e0b",
   },
   Impact: {
-    icon: "⚡",
+    icon: "I",
     bg: "rgba(239,68,68,0.12)",
     text: "#ef4444",
   },

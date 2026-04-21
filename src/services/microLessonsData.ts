@@ -40,7 +40,7 @@ export const MICRO_LESSONS: MicroLesson[] = [
     title: "Conditionals for Negotiations",
     subtitle: "Sound more strategic with hypothetical framing",
     duration: "2 min",
-    icon: "📐",
+    icon: "",
     content: {
       intro:
         "In executive conversations, conditionals let you propose ideas without sounding pushy. They signal strategic thinking and create space for collaboration.",
@@ -67,7 +67,7 @@ export const MICRO_LESSONS: MicroLesson[] = [
     title: "Passive Voice for Diplomacy",
     subtitle: "Deliver tough messages without pointing fingers",
     duration: "2 min",
-    icon: "🛡️",
+    icon: "",
     content: {
       intro:
         "Passive voice gets a bad reputation in writing, but in executive speech it's a powerful tool for delivering difficult messages diplomatically — especially when assigning blame would be counterproductive.",
@@ -96,7 +96,7 @@ export const MICRO_LESSONS: MicroLesson[] = [
     title: "Power Verbs for Leadership",
     subtitle: "Replace weak verbs with executive-level language",
     duration: "2 min",
-    icon: "⚡",
+    icon: "",
     content: {
       intro:
         "The verbs you choose signal your level of authority. Leaders don't 'do things' — they spearhead, orchestrate, and drive results. Swapping basic verbs for power verbs instantly elevates your presence.",
@@ -123,7 +123,7 @@ export const MICRO_LESSONS: MicroLesson[] = [
     title: "Hedging Language for Diplomacy",
     subtitle: "Express opinions confidently without sounding aggressive",
     duration: "2 min",
-    icon: "🤝",
+    icon: "",
     content: {
       intro:
         "Hedging language softens assertions while maintaining authority. In multicultural business settings, it's essential for building consensus without alienating colleagues.",
@@ -152,7 +152,7 @@ export const MICRO_LESSONS: MicroLesson[] = [
     title: "Eliminating Filler Words",
     subtitle: "Replace 'um' and 'like' with strategic pauses",
     duration: "2 min",
-    icon: "🎯",
+    icon: "",
     content: {
       intro:
         "Filler words ('um', 'uh', 'like', 'you know', 'basically') undermine your authority. Research shows that speakers who pause instead of filling silence are perceived as more confident and thoughtful.",
@@ -179,7 +179,7 @@ export const MICRO_LESSONS: MicroLesson[] = [
     title: "Thought Grouping & Pausing",
     subtitle: "Structure your speech for maximum clarity",
     duration: "2 min",
-    icon: "💬",
+    icon: "",
     content: {
       intro:
         "Native speakers naturally group words into 'thought groups' — meaningful chunks separated by micro-pauses. This rhythm makes speech easier to follow and more persuasive.",
@@ -208,7 +208,7 @@ export const MICRO_LESSONS: MicroLesson[] = [
     title: "Word Stress in Business English",
     subtitle: "Sound natural by stressing the right syllables",
     duration: "2 min",
-    icon: "🔊",
+    icon: "",
     content: {
       intro:
         "Incorrect word stress is one of the most common markers of non-native speech. Stressing the wrong syllable can make familiar words sound unrecognizable to native speakers.",
@@ -235,7 +235,7 @@ export const MICRO_LESSONS: MicroLesson[] = [
     title: "Connected Speech & Linking",
     subtitle: "Flow between words like a native speaker",
     duration: "2 min",
-    icon: "🔗",
+    icon: "",
     content: {
       intro:
         "Native speakers don't pronounce each word separately. They link words together, creating a flowing rhythm. Mastering connected speech is what transforms 'clear but foreign' into 'natural and fluent.'",
@@ -264,7 +264,7 @@ export const MICRO_LESSONS: MicroLesson[] = [
     title: "Diplomatic Disagreement",
     subtitle: "Push back on ideas while preserving relationships",
     duration: "2 min",
-    icon: "⚖️",
+    icon: "",
     content: {
       intro:
         "The ability to disagree without creating conflict is the hallmark of executive communication. It requires acknowledging the other person's perspective before introducing your counterpoint.",
@@ -291,7 +291,7 @@ export const MICRO_LESSONS: MicroLesson[] = [
     title: "Executive Register in Speech",
     subtitle: "Adjust your language level for C-suite conversations",
     duration: "2 min",
-    icon: "👔",
+    icon: "",
     content: {
       intro:
         "Executive register isn't about using big words — it's about precision, brevity, and signaling that you think at a strategic level. C-suite leaders speak in outcomes, impacts, and decisions — not tasks and processes.",
@@ -320,7 +320,7 @@ export const MICRO_LESSONS: MicroLesson[] = [
     title: "The PREP Framework",
     subtitle: "Structure any argument in 30 seconds",
     duration: "2 min",
-    icon: "🏗️",
+    icon: "",
     content: {
       intro:
         "PREP (Point, Reason, Example, Point) is the most versatile persuasion framework for business. It works for interview answers, meeting contributions, and elevator pitches.",
@@ -347,7 +347,7 @@ export const MICRO_LESSONS: MicroLesson[] = [
     title: "Data-Backed Arguments",
     subtitle: "Turn opinions into evidence-based proposals",
     duration: "2 min",
-    icon: "📊",
+    icon: "",
     content: {
       intro:
         "In executive settings, opinions without data are just noise. Learning to anchor your arguments in numbers, benchmarks, and evidence transforms you from a participant into an authority.",
@@ -380,7 +380,7 @@ export const MICRO_LESSONS: MicroLesson[] = [
     title: "Reported Speech for Summaries",
     subtitle: "Relay decisions and quotes with authority",
     duration: "3 min",
-    icon: "📋",
+    icon: "",
     content: {
       intro:
         "In executive settings, you often need to summarize what others said — in meetings, emails, or status updates. Reported speech lets you convey information accurately without sounding like you're reading a transcript.",
@@ -407,7 +407,7 @@ export const MICRO_LESSONS: MicroLesson[] = [
     title: "Relative Clauses for Precision",
     subtitle: "Add detail without losing clarity",
     duration: "2 min",
-    icon: "🔬",
+    icon: "",
     content: {
       intro:
         "Relative clauses (who, which, that, where) let you pack more information into a single sentence without sounding wordy. They're the secret to sounding articulate under pressure.",
@@ -436,7 +436,7 @@ export const MICRO_LESSONS: MicroLesson[] = [
     title: "Business Collocations",
     subtitle: "Sound natural with word partnerships",
     duration: "2 min",
-    icon: "🧩",
+    icon: "",
     content: {
       intro:
         "Native speakers use fixed word combinations called collocations. Saying 'make a decision' (not 'do a decision') or 'reach an agreement' (not 'arrive to an agreement') instantly signals fluency.",
@@ -463,7 +463,7 @@ export const MICRO_LESSONS: MicroLesson[] = [
     title: "Transition Phrases for Flow",
     subtitle: "Connect ideas like a seasoned speaker",
     duration: "2 min",
-    icon: "🔄",
+    icon: "",
     content: {
       intro:
         "Transitions are the glue between ideas. Without them, even good points sound disconnected. Executive speakers use transitions to guide listeners through their logic seamlessly.",
@@ -492,7 +492,7 @@ export const MICRO_LESSONS: MicroLesson[] = [
     title: "Speech Rhythm & Cadence",
     subtitle: "Vary your pace to hold attention",
     duration: "3 min",
-    icon: "🎵",
+    icon: "",
     content: {
       intro:
         "Monotone delivery is the fastest way to lose an audience. Great speakers vary their speed, volume, and emphasis to create a rhythm that keeps listeners engaged.",
@@ -519,7 +519,7 @@ export const MICRO_LESSONS: MicroLesson[] = [
     title: "Graceful Self-Correction",
     subtitle: "Recover from mistakes without losing credibility",
     duration: "2 min",
-    icon: "🔧",
+    icon: "",
     content: {
       intro:
         "Every speaker makes mistakes. What separates professionals from amateurs is how they handle them. Graceful self-correction can actually increase your credibility by showing awareness and honesty.",
@@ -548,7 +548,7 @@ export const MICRO_LESSONS: MicroLesson[] = [
     title: "Intonation for Authority",
     subtitle: "Use pitch patterns to sound confident",
     duration: "3 min",
-    icon: "📈",
+    icon: "",
     content: {
       intro:
         "Intonation — the rise and fall of your voice — communicates more than your words do. Rising intonation at the end of statements (upspeak) makes you sound uncertain. Falling intonation signals authority.",
@@ -575,7 +575,7 @@ export const MICRO_LESSONS: MicroLesson[] = [
     title: "Minimal Pairs in Business",
     subtitle: "Avoid confusion between similar-sounding words",
     duration: "2 min",
-    icon: "👂",
+    icon: "",
     content: {
       intro:
         "Minimal pairs are words that differ by only one sound: 'ship/sheep', 'live/leave', 'price/prize'. In business contexts, confusing these can change your message entirely.",
@@ -604,7 +604,7 @@ export const MICRO_LESSONS: MicroLesson[] = [
     title: "Assertive Softening",
     subtitle: "Be firm without being aggressive",
     duration: "2 min",
-    icon: "🎯",
+    icon: "",
     content: {
       intro:
         "There's a sweet spot between pushover and aggressive. Assertive softening lets you hold your ground while maintaining professional warmth. It's the hallmark of emotionally intelligent leaders.",
@@ -631,7 +631,7 @@ export const MICRO_LESSONS: MicroLesson[] = [
     title: "Meeting Power Phrases",
     subtitle: "Control conversations with strategic language",
     duration: "2 min",
-    icon: "🎙️",
+    icon: "",
     content: {
       intro:
         "Executive meetings are won or lost with specific phrases. Knowing how to steer, redirect, summarize, and close discussions gives you outsized influence — even when you're not the most senior person in the room.",
@@ -660,7 +660,7 @@ export const MICRO_LESSONS: MicroLesson[] = [
     title: "Storytelling in Business",
     subtitle: "Make your arguments unforgettable with narrative",
     duration: "3 min",
-    icon: "📖",
+    icon: "",
     content: {
       intro:
         "Data convinces the rational brain. Stories convince the emotional brain. The most persuasive executives combine both. A well-placed 30-second story can be more memorable than 10 slides of data.",
@@ -687,7 +687,7 @@ export const MICRO_LESSONS: MicroLesson[] = [
     title: "Handling Objections Like a Pro",
     subtitle: "Turn pushback into opportunities",
     duration: "3 min",
-    icon: "🛡️",
+    icon: "",
     content: {
       intro:
         "Objections aren't attacks — they're buying signals. When someone pushes back, it means they're engaged enough to think critically. How you handle objections determines whether you close or lose.",

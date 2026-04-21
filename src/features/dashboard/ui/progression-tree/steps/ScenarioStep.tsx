@@ -40,7 +40,7 @@ export function ScenarioStep({ data, footer }: Props) {
         {/* Challenge */}
         <div className="p-5 rounded-2xl bg-[#eff6ff] border border-[#bfdbfe]">
           <p className="text-[11px] text-[#1d4ed8] uppercase tracking-wider mb-2" style={{ fontWeight: 700 }}>
-            🎯 Your Challenge
+            Your Challenge
           </p>
           <p className="text-[#1e3a5f] text-[15px] leading-relaxed" style={{ fontWeight: 500 }}>
             {data.challenge}

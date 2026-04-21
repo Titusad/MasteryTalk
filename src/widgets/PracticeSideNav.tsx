@@ -13,6 +13,7 @@ import {
   PROGRESSION_PATHS,
   getLevelState,
 } from "@/features/dashboard/model/progression-paths";
+import type { PathId } from "@/features/dashboard/model/progression-paths";
 import type { LevelStatus, ScenarioType } from "@/services/types";
 
 const STATUS_CONFIG: Record<
@@ -50,7 +51,7 @@ const STATUS_CONFIG: Record<
 };
 
 interface PracticeSideNavProps {
-  activePathId: ScenarioType;
+  activePathId: PathId;
   activeLevelId?: string;
   onLevelSwitch: (
     scenario: string,

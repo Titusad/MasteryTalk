@@ -14,6 +14,7 @@ import { authService } from "@/services";
 import type { User } from "@/services/types";
 import type { Page } from "./useHashRouter";
 import type { ScenarioType } from "@/services/types";
+import type { PathId } from "@/features/dashboard/model/progression-paths";
 
 /* Session storage keys for OAuth redirect recovery */
 const OAUTH_PENDING_KEY = "masterytalk_oauth_pending";
@@ -24,7 +25,7 @@ export interface FlowState {
   interlocutor: string;
   scenarioType?: ScenarioType;
   guidedFields?: Record<string, string>;
-  progressionPathId?: ScenarioType;
+  progressionPathId?: PathId;
   progressionLevelId?: string;
 }
 
@@ -73,7 +74,7 @@ export function useAuthFlow(options: UseAuthFlowOptions) {
                 interlocutor: setup.interlocutor || "recruiter",
                 scenarioType: sType,
                 guidedFields: setup.guidedFields,
-                progressionPathId: sType as ScenarioType,
+                progressionPathId: sType as PathId,
                 progressionLevelId: setup.progressionLevelId || (sType === "interview" ? "int-1" : "sal-1"),
               });
 
