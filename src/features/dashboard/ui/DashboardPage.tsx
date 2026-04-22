@@ -33,6 +33,7 @@ import {
   ProgressionTree,
 } from "./index";
 import { PracticeDropdown } from "./PracticeDropdown";
+import { WhatsAppActivationCard } from "./WhatsAppActivationCard";
 
 /* ─── Types ─── */
 interface DashboardPageProps {
@@ -123,6 +124,11 @@ export function DashboardPage({
 
           {/* Practice Conversation Dropdown */}
           <PracticeDropdown onSelect={handleStartSession} />
+        </div>
+
+        {/* ─── WhatsApp Coach Activation ─── */}
+        <div className="mb-6">
+          <WhatsAppActivationCard />
         </div>
 
         {/* ═══════ EMPTY STATE — First-time users ═══════ */}

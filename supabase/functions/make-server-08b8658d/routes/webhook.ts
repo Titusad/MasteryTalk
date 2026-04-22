@@ -1,11 +1,14 @@
 /**
  * ══════════════════════════════════════════════════════════════
- *  webhook.ts — Stripe payment webhook handler
+ *  webhook.ts — Stripe subscription webhook handler
  *
  *  POST /webhook/stripe
  *  - Validates Stripe signature (HMAC)
- *  - Handles checkout.session.completed events
- *  - Updates user profile: paths_purchased, plan, trial_expires_at
+ *  - Handles subscription lifecycle events:
+ *    • customer.subscription.created  → plan = "pro"
+ *    • customer.subscription.updated  → handles past_due/active transitions
+ *    • customer.subscription.deleted  → plan = "free"
+ *  - Updates user profile in KV + Supabase
  *  - Sends confirmation email
  *
  *  ⚠️ This endpoint MUST NOT require auth — Stripe calls it directly.
@@ -47,26 +50,28 @@ app.post("/make-server-08b8658d/webhook/stripe", async (c) => {
 
     // 3. Handle events
     switch (event.type) {
-      case "checkout.session.completed": {
-        const session = event.data.object;
-        const metadata = session.metadata || {};
-        const userId = metadata.userId;
-        const purchaseType = metadata.purchaseType as "first_path" | "path";
-        const scenarioType = metadata.scenarioType;
+      /* ── New subscription activated ── */
+      case "customer.subscription.created":
+      case "customer.subscription.updated": {
+        const subscription = event.data.object as any;
+        const userId = subscription.metadata?.userId;
+        const status = subscription.status; // active, past_due, canceled, etc.
 
-        if (!userId || !purchaseType || !scenarioType) {
-          console.warn(
-            "[Stripe Webhook] Missing metadata in checkout session:",
-            metadata,
-          );
-          return c.json({ status: "received", warning: "incomplete metadata" }, 200);
+        if (!userId) {
+          console.warn("[Stripe Webhook] Missing userId in subscription metadata:", subscription.id);
+          return c.json({ status: "received", warning: "no userId in metadata" }, 200);
         }
 
+        // Map Stripe status to our plan
+        const isActive = status === "active" || status === "trialing";
+        const plan = isActive ? "pro" : "free";
+        const planStatus = status === "past_due" ? "past_due" : isActive ? "active" : "canceled";
+
         console.log(
-          `[Stripe Webhook] Payment completed: user=${userId} type=${purchaseType} scenario=${scenarioType} amount=${session.amount_total}`,
+          `[Stripe Webhook] Subscription ${event.type}: user=${userId} stripe_status=${status} → plan=${plan} plan_status=${planStatus}`,
         );
 
-        // 4. Update user profile
+        // 4. Update KV profile
         const profileKey = `profile:${userId}`;
         const raw = await kv.get(profileKey);
         const profile: Record<string, unknown> = (raw as Record<string, unknown>) || {
@@ -74,86 +79,111 @@ app.post("/make-server-08b8658d/webhook/stripe", async (c) => {
           plan: "free",
           plan_status: "active",
           free_sessions_used: [],
-          paths_purchased: [],
+          monthly_sessions_used: 0,
           stats: {},
           achievements: [],
           created_at: new Date().toISOString(),
         };
 
-        // Add scenarioType to paths_purchased (if not already there)
-        const pathsPurchased: string[] = (profile.paths_purchased as string[]) || [];
-        if (!pathsPurchased.includes(scenarioType)) {
-          pathsPurchased.push(scenarioType);
-        }
-        profile.paths_purchased = pathsPurchased;
-        profile.plan = "path";
-        profile.plan_status = "active";
+        profile.plan = plan;
+        profile.plan_status = planStatus;
+        profile.stripe_subscription_id = subscription.id;
+        profile.stripe_customer_id = subscription.customer;
 
-        // 5. Record purchase
-        const purchaseRecord = {
-          id: session.id,
-          userId,
-          purchaseType,
-          scenarioType,
-          amountCents: session.amount_total,
-          currency: session.currency,
-          stripeSessionId: session.id,
-          stripePaymentIntent: session.payment_intent,
-          customerEmail: session.customer_email || session.customer_details?.email,
-          createdAt: new Date().toISOString(),
-        };
+        // Reset monthly sessions on new billing cycle
+        if (event.type === "customer.subscription.updated" && isActive) {
+          const currentPeriodStart = subscription.current_period_start;
+          const prevPeriodStart = profile._last_period_start;
+          if (currentPeriodStart && currentPeriodStart !== prevPeriodStart) {
+            profile.monthly_sessions_used = 0;
+            profile._last_period_start = currentPeriodStart;
+            console.log(`[Stripe Webhook] Reset monthly_sessions_used for ${userId} (new billing cycle)`);
+          }
+        }
 
         await kv.set(profileKey, profile);
-        await kv.set(`purchase:${session.id}`, purchaseRecord);
 
-        // Also update Supabase profiles table if available
+        // 5. Update Supabase profiles table (non-blocking)
         try {
           const supabase = getAdminClient();
           await supabase
             .from("profiles")
             .update({
-              plan: "path",
-              plan_status: "active",
-              paths_purchased: pathsPurchased,
+              plan,
+              plan_status: planStatus,
+              monthly_sessions_used: isActive && event.type === "customer.subscription.updated"
+                ? 0
+                : undefined,
             })
             .eq("id", userId);
         } catch (dbErr) {
           console.warn("[Stripe Webhook] DB update failed (non-blocking):", dbErr);
         }
 
-        console.log(
-          `[Stripe Webhook] ✅ Profile updated: ${userId} → paths=[${pathsPurchased.join(",")}]`,
-        );
+        console.log(`[Stripe Webhook] ✅ Profile updated: ${userId} → plan=${plan}`);
 
-        // 6. Send confirmation email (fire-and-forget)
-        const customerEmail =
-          session.customer_email ||
-          session.customer_details?.email;
-        if (customerEmail) {
-          const productLabel =
-            PRODUCT_INFO[purchaseType]?.label || purchaseType;
-          const amount = (session.amount_total || 0) / 100;
-
-          sendEmail({
-            to: customerEmail,
-            subject: `Your MasteryTalk ${productLabel} is active! 🚀`,
-            html: subscriptionConfirmationEmailHtml({
-              userName: customerEmail.split("@")[0],
-              planName: `${productLabel} — ${scenarioType}`,
-              amountUsd: amount,
-              nextBillingDate: "Permanent access — no recurring charges",
-            }),
-          }).catch(() => {});
+        // 6. Send confirmation email on new subscription (fire-and-forget)
+        if (event.type === "customer.subscription.created" && isActive) {
+          const customerEmail = subscription.customer_email || subscription.customer_details?.email;
+          if (customerEmail) {
+            sendEmail({
+              to: customerEmail,
+              subject: "Welcome to MasteryTalk PRO!",
+              html: subscriptionConfirmationEmailHtml({
+                userName: customerEmail.split("@")[0],
+                planName: PRODUCT_INFO.subscription.label,
+                amountUsd: PRODUCT_INFO.subscription.price,
+                nextBillingDate: new Date(subscription.current_period_end * 1000).toLocaleDateString("en-US", {
+                  year: "numeric", month: "long", day: "numeric",
+                }),
+              }),
+            }).catch(() => {});
+          }
         }
 
-        return c.json({ status: "processed", purchaseType, scenarioType }, 200);
+        return c.json({ status: "processed", plan, planStatus }, 200);
       }
 
-      case "checkout.session.expired": {
-        console.log(
-          `[Stripe Webhook] Checkout expired: ${event.data.object.id}`,
-        );
-        return c.json({ status: "received" }, 200);
+      /* ── Subscription canceled ── */
+      case "customer.subscription.deleted": {
+        const subscription = event.data.object as any;
+        const userId = subscription.metadata?.userId;
+
+        if (!userId) {
+          console.warn("[Stripe Webhook] Missing userId on subscription.deleted");
+          return c.json({ status: "received", warning: "no userId" }, 200);
+        }
+
+        console.log(`[Stripe Webhook] Subscription canceled: user=${userId}`);
+
+        // Downgrade to free
+        const profileKey = `profile:${userId}`;
+        const raw = await kv.get(profileKey);
+        const profile: Record<string, unknown> = (raw as Record<string, unknown>) || {};
+        profile.plan = "free";
+        profile.plan_status = "canceled";
+        profile.stripe_subscription_id = null;
+        await kv.set(profileKey, profile);
+
+        try {
+          const supabase = getAdminClient();
+          await supabase
+            .from("profiles")
+            .update({ plan: "free", plan_status: "canceled" })
+            .eq("id", userId);
+        } catch (dbErr) {
+          console.warn("[Stripe Webhook] DB update on cancel failed:", dbErr);
+        }
+
+        console.log(`[Stripe Webhook] ✅ User ${userId} downgraded to free`);
+        return c.json({ status: "processed", plan: "free" }, 200);
+      }
+
+      /* ── Checkout completed (initial subscription purchase) ── */
+      case "checkout.session.completed": {
+        const session = event.data.object as any;
+        console.log(`[Stripe Webhook] Checkout completed: ${session.id} (subscription handled by subscription.created)`);
+        return c.json({ status: "received", note: "subscription lifecycle handled separately" }, 200);
       }
 
       default:

@@ -11,3 +11,4 @@ export { BeforeAfterCard } from "./BeforeAfterCard";
 export { RecentSessionsList } from "./RecentSessionsList";
 export { InterviewPrepCard } from "./InterviewPrepCard";
 export { ProgressionTree } from "./progression-tree/ProgressionTree";
+export { WhatsAppActivationCard } from "./WhatsAppActivationCard";

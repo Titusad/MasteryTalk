@@ -1,0 +1,250 @@
+/**
+ * ══════════════════════════════════════════════════════════════
+ *  WhatsAppActivationCard — Dashboard component for linking
+ *  a WhatsApp number to receive daily SR pronunciation coaching.
+ *
+ *  States: idle → inputting → sending OTP → verifying → verified
+ * ══════════════════════════════════════════════════════════════
+ */
+import { useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { MessageCircle, Check, Loader2, ArrowRight, ShieldCheck } from "lucide-react";
+import { SUPABASE_URL, getAuthToken } from "@/services/supabase";
+
+const BASE = `${SUPABASE_URL}/functions/v1/make-server-08b8658d`;
+
+async function apiFetch(path: string, body?: Record<string, unknown>) {
+  const token = await getAuthToken();
+  return fetch(`${BASE}${path}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+}
+
+type Step = "idle" | "input" | "sending" | "verify" | "verifying" | "done";
+
+interface WhatsAppActivationCardProps {
+  whatsappVerified?: boolean;
+  whatsappNumber?: string;
+}
+
+export function WhatsAppActivationCard({
+  whatsappVerified = false,
+  whatsappNumber: initialNumber,
+}: WhatsAppActivationCardProps) {
+  const [step, setStep] = useState<Step>(whatsappVerified ? "done" : "idle");
+  const [phone, setPhone] = useState(initialNumber || "");
+  const [countryCode, setCountryCode] = useState("+52");
+  const [otp, setOtp] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  const fullNumber = `${countryCode}${phone.replace(/\D/g, "")}`;
+
+  const handleSendOTP = async () => {
+    setError(null);
+    setStep("sending");
+    try {
+      const res = await apiFetch("/whatsapp/send-otp", { phoneNumber: fullNumber });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "No se pudo enviar el código");
+        setStep("input");
+        return;
+      }
+      setStep("verify");
+    } catch {
+      setError("Error de conexión. Intenta de nuevo.");
+      setStep("input");
+    }
+  };
+
+  const handleVerifyOTP = async () => {
+    setError(null);
+    setStep("verifying");
+    try {
+      const res = await apiFetch("/whatsapp/verify-otp", {
+        phoneNumber: fullNumber,
+        code: otp,
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Código inválido");
+        setStep("verify");
+        return;
+      }
+      setStep("done");
+    } catch {
+      setError("Error de conexión. Intenta de nuevo.");
+      setStep("verify");
+    }
+  };
+
+  // Already verified — show compact confirmation
+  if (step === "done") {
+    return (
+      <motion.div
+        className="bg-white border border-[#d1fae5] rounded-2xl p-5 flex items-center gap-4"
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <span className="flex items-center justify-center w-10 h-10 rounded-full bg-[#10b981]/10">
+          <Check className="w-5 h-5 text-[#10b981]" />
+        </span>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
+            WhatsApp Coach activo
+          </p>
+          <p className="text-xs text-[#62748e] truncate">
+            Recibirás frases de práctica diarias en tu WhatsApp
+          </p>
+        </div>
+        <ShieldCheck className="w-4 h-4 text-[#10b981] shrink-0" />
+      </motion.div>
+    );
+  }
+
+  // Idle — promotional CTA
+  if (step === "idle") {
+    return (
+      <motion.div
+        className="bg-gradient-to-br from-[#0f172b] to-[#1e293b] rounded-2xl p-6 relative overflow-hidden"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        <div className="absolute -top-16 -right-16 w-48 h-48 bg-gradient-to-br from-[#10b981]/15 to-transparent rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative flex items-start gap-4">
+          <span className="flex items-center justify-center w-11 h-11 rounded-full bg-[#25d366]/15 shrink-0 mt-0.5">
+            <MessageCircle className="w-5 h-5 text-[#25d366]" />
+          </span>
+          <div className="flex-1 min-w-0">
+            <p className="text-white text-sm mb-1" style={{ fontWeight: 600 }}>
+              Activa tu Coach de Pronunciación por WhatsApp
+            </p>
+            <p className="text-white/60 text-xs leading-relaxed mb-4">
+              Recibe frases de práctica diarias directo en tu teléfono. Responde con un audio y recibe tu score al instante.
+            </p>
+            <button
+              onClick={() => setStep("input")}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full text-xs bg-[#25d366] text-white hover:bg-[#22c55e] transition-colors cursor-pointer"
+              style={{ fontWeight: 600 }}
+            >
+              <MessageCircle className="w-3.5 h-3.5" />
+              Vincular WhatsApp
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
+  // Input + Verify flow
+  return (
+    <motion.div
+      className="bg-white border border-[#e2e8f0] rounded-2xl p-6"
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+    >
+      <div className="flex items-center gap-3 mb-4">
+        <span className="flex items-center justify-center w-9 h-9 rounded-full bg-[#25d366]/10">
+          <MessageCircle className="w-4 h-4 text-[#25d366]" />
+        </span>
+        <p className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
+          {step === "verify" || step === "verifying"
+            ? "Ingresa el código de verificación"
+            : "Ingresa tu número de WhatsApp"}
+        </p>
+      </div>
+
+      <AnimatePresence mode="wait">
+        {(step === "input" || step === "sending") && (
+          <motion.div
+            key="phone-input"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <div className="flex gap-2 mb-3">
+              <select
+                value={countryCode}
+                onChange={(e) => setCountryCode(e.target.value)}
+                className="w-24 px-3 py-2.5 rounded-xl border border-[#e2e8f0] bg-[#f8fafc] text-sm text-[#0f172b] focus:outline-none focus:border-[#6366f1]"
+              >
+                <option value="+52">🇲🇽 +52</option>
+                <option value="+57">🇨🇴 +57</option>
+                <option value="+55">🇧🇷 +55</option>
+                <option value="+1">🇺🇸 +1</option>
+              </select>
+              <input
+                type="tel"
+                placeholder="10 dígitos"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="flex-1 px-4 py-2.5 rounded-xl border border-[#e2e8f0] text-sm text-[#0f172b] placeholder-[#94a3b8] focus:outline-none focus:border-[#6366f1]"
+                maxLength={15}
+              />
+            </div>
+            <button
+              onClick={handleSendOTP}
+              disabled={phone.replace(/\D/g, "").length < 8 || step === "sending"}
+              className="w-full flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm bg-[#0f172b] text-white hover:bg-[#1e293b] transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              style={{ fontWeight: 500 }}
+            >
+              {step === "sending" ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <ArrowRight className="w-4 h-4" />
+              )}
+              {step === "sending" ? "Enviando código..." : "Enviar código por WhatsApp"}
+            </button>
+          </motion.div>
+        )}
+
+        {(step === "verify" || step === "verifying") && (
+          <motion.div
+            key="otp-input"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <p className="text-xs text-[#62748e] mb-3">
+              Enviamos un código de 6 dígitos a <span style={{ fontWeight: 600 }}>{fullNumber}</span>
+            </p>
+            <input
+              type="text"
+              placeholder="000000"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              className="w-full px-4 py-2.5 rounded-xl border border-[#e2e8f0] text-sm text-[#0f172b] placeholder-[#94a3b8] text-center tracking-[0.3em] focus:outline-none focus:border-[#6366f1] mb-3"
+              style={{ fontWeight: 600, fontSize: "1.1rem" }}
+              maxLength={6}
+              autoFocus
+            />
+            <button
+              onClick={handleVerifyOTP}
+              disabled={otp.length < 6 || step === "verifying"}
+              className="w-full flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm bg-[#0f172b] text-white hover:bg-[#1e293b] transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              style={{ fontWeight: 500 }}
+            >
+              {step === "verifying" ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <ShieldCheck className="w-4 h-4" />
+              )}
+              {step === "verifying" ? "Verificando..." : "Verificar código"}
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {error && (
+        <p className="text-xs text-[#ef4444] mt-3">{error}</p>
+      )}
+    </motion.div>
+  );
+}

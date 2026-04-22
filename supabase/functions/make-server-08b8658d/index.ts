@@ -20,6 +20,9 @@ import admin from "./routes/admin.ts";
 import progression from "./routes/progression.ts";
 import webhook from "./routes/webhook.ts";
 import checkout from "./routes/checkout.ts";
+import webhookTwilio from "./routes/webhook-twilio.ts";
+import cronDailySr from "./routes/cron-daily-sr.ts";
+import whatsappVerify from "./routes/whatsapp-verify.ts";
 import { createRateLimiter } from "./kv_store.ts";
 import { getAuthUser } from "./_shared.ts";
 
@@ -80,6 +83,8 @@ const RATE_LIMITED_PREFIXES = [
   "/make-server-08b8658d/analyze-cv-match",
   "/make-server-08b8658d/generate-summary",
   "/make-server-08b8658d/create-checkout",
+  "/make-server-08b8658d/whatsapp/send-otp",
+  "/make-server-08b8658d/whatsapp/verify-otp",
 ];
 
 app.use("/*", async (c: any, next: any) => {
@@ -108,6 +113,9 @@ app.route("", admin);
 app.route("", progression);
 app.route("", webhook);
 app.route("", checkout);
+app.route("", webhookTwilio);
+app.route("", cronDailySr);
+app.route("", whatsappVerify);
 
 // ── Start server — intercept OPTIONS before Hono ──
 Deno.serve({

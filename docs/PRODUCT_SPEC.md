@@ -17,7 +17,7 @@
 | Tagline | Professional English Communication Coaching |
 | Target | LATAM professionals (Mexico, Colombia, Brasil) in nearshoring roles |
 | Core Loop | Learn → Practice → Feedback → Improve → Repeat |
-| Business Model | One-time path purchases (no subscriptions in beta) |
+| Business Model | Monthly subscription ($14.99/month) |
 
 ---
 
@@ -51,35 +51,30 @@ type ScenarioType = "interview" | "meeting" | "presentation" | "self-intro";
 
 | Tier | Price | Type | Access | Stripe Price ID |
 |------|-------|------|--------|-----------------|
-| **Demo** | $0 | — | 1 free session per scenario, no card required | — |
-| **First Path** | $4.99 | One-time | Full permanent access to 1 Learning Path | `price_1TMhEZHp3CeGzGza3sWfNTkC` |
-| **Additional Path** | $16.99 | One-time | Full permanent access to 1 additional Learning Path | `price_1TMZYnHp3CeGzGzaGDABt6wV` |
+| **Demo** | $0 | — | 1 free session per scenario (Web), no card required | — |
+| **Pro Plan** | $14.99 | Monthly | Full access to ALL paths, WhatsApp SR Coach, max 15 Web sessions/mo | `price_TBD_PRO_MONTHLY` |
 
 ### §3.2 Purchase Types
 
 ```typescript
 // Canonical type — src/services/types.ts
-type PurchaseType = "first_path" | "path";
+type PurchaseType = "subscription";
 
 const PATH_PRODUCTS = {
-  first_path: { type: "first_path", price: 4.99, label: "First Path (Beta)" },
-  path:       { type: "path",       price: 16.99, label: "Learning Path" },
+  subscription: { type: "subscription", price: 14.99, label: "MasteryTalk PRO Subscription" },
 } as const;
 ```
 
 ### §3.3 Pricing Logic
 
-```
-IF ownedPaths.length === 0 → charge $4.99 (first_path)
-IF ownedPaths.length >= 1  → charge $16.99 (path)
-```
+- The $14.99/mo subscription provides access to all available scenarios.
+- The subscription includes the **WhatsApp Spaced Repetition (SR) Coach**, sending daily audio challenges to the user's phone.
+- A **Fair Use Limit** of 15 full Web App practice sessions per month prevents abuse of backend LLM costs, but unlimited asynchronous WhatsApp phrase coaching is included (up to 3 phrases/day).
 
 ### §3.4 What does NOT exist (Beta)
-- ❌ Subscriptions (monthly recurring)
-- ❌ Trial periods (time-limited access)
-- ❌ All-Access Bundle
-- ❌ Booster Packs
-- ❌ Credits / pay-per-session
+- ❌ One-time purchases
+- ❌ Pay-per-session credits
+- ❌ Trial periods (time-limited full access without payment)
 
 ---
 
@@ -89,16 +84,18 @@ IF ownedPaths.length >= 1  → charge $16.99 (path)
 
 ```typescript
 // Canonical type — src/entities/user/index.ts
-type UserPlan = "free" | "path";
+type UserPlan = "free" | "pro";
 
 interface User {
   uid: string;
   displayName: string;
   email: string;
   photoURL?: string;
-  plan: UserPlan;                // "free" until first purchase, then "path"
+  plan: UserPlan;                // "free" until purchase, then "pro"
   freeSessionsUsed: string[];   // ScenarioType[] — demo sessions consumed
-  pathsPurchased: string[];     // ScenarioType[] — paths with permanent access
+  monthlySessionsUsed: number;  // Resets monthly, max 15
+  whatsappNumber?: string;      // E164 format
+  whatsappVerified?: boolean;
   createdAt: string;
   marketFocus?: string;         // "mexico" | "colombia"
 }
@@ -108,11 +105,10 @@ interface User {
 
 | Condition | UI Behavior |
 |-----------|-------------|
-| `freeSessionsUsed` does NOT include scenario | Show free demo CTA in hero |
-| `freeSessionsUsed` includes scenario AND `pathsPurchased` is empty | Show $4.99 upsell in feedback screen |
-| `pathsPurchased` includes scenario | Full access, no paywall |
-| `pathsPurchased.length >= 1` AND wants different path | Show path selector + $16.99 |
-| `pathsPurchased` includes ALL 3 scenarios | Full access to everything |
+| `plan === "free"` AND `freeSessionsUsed` excludes scenario | Show free demo CTA in hero |
+| `plan === "free"` AND `freeSessionsUsed` includes scenario | Show $14.99 paywall |
+| `plan === "pro"` AND `monthlySessionsUsed < 15` | Full access to Web sessions |
+| `plan === "pro"` AND `monthlySessionsUsed >= 15` | Soft block: "You've reached your monthly web practice limit" |
 
 ### §4.3 Gating Hook
 
@@ -132,30 +128,25 @@ interface GateResult {
 ### §5.1 Customer Journeys
 
 ```
-Journey A: Landing Hero → Auth → Demo Session → Feedback → $4.99 CTA → Stripe → Dashboard
-Journey B: Landing Pricing → Auth → Dashboard → Modal (first purchase) → Stripe → Dashboard
-Journey C: Dashboard → New Path → Modal (additional, with selector) → Stripe → Dashboard
-Journey D: Demo Session → Paywall → Modal (first purchase) → Stripe → Dashboard
+Journey A: Landing Hero → Auth → Demo Session → Feedback → Subscription CTA → Stripe → Dashboard
+Journey B: Landing Pricing → Auth → Dashboard → Subscription Modal → Stripe → Dashboard
+Journey C: Demo Session → Paywall → Subscription Modal → Stripe → Dashboard
 ```
 
-### §5.2 PathPurchaseModal Modes
+### §5.2 Subscription Paywall Modes
 
-| Mode | Condition | Path Selection | Price |
-|------|-----------|---------------|-------|
-| **A — First Purchase** | `ownedPaths.length === 0` | Inherited from currentPath (no selector) | $4.99 |
-| **B — Additional Path** | `ownedPaths.length >= 1` | Selector shown (3 cards, owned paths excluded) | $16.99 |
+The modal acts as a unified subscription sell screen: Price: $14.99/mo, features: Full Access to all paths + WhatsApp Coach.
 
 ### §5.3 Post-Purchase Flow
 
-1. Stripe redirects to `{origin}/#/dashboard?payment=success&session_id={CHECKOUT_SESSION_ID}&type={type}&scenario={scenario}`
-2. `PaymentSuccessHandler` (`src/shared/ui/PaymentSuccessHandler.tsx`) waits for `authReady === true` before processing
+1. Stripe redirects to `/#/dashboard?payment=success&session_id={CHECKOUT_SESSION_ID}`
+2. `PaymentSuccessHandler` waits for `authReady === true` before processing
 3. Shows success toast notification (auto-dismiss 6s)
-4. Calls `onPaymentConfirmed()` → refreshes user profile from Supabase → updates `authUser.pathsPurchased`
-5. Syncs `usageGating.addPurchasedPath()` for each path in the refreshed profile
+4. Refreshes user profile from Supabase → updates `authUser.plan` to `"pro"`
+5. Syncs usage gating.
 6. Cleans URL to `/#/dashboard`
 
-> **Source of truth for `ownedPaths`:** Always `authUser.pathsPurchased` (from Supabase profile).
-> Never rely on `usageGating.purchasedPaths` (localStorage) for Mode A/B detection — it can be stale.
+> **Source of truth for `plan`:** Always `authUser.plan` (from Supabase profile), managed by Stripe webhook.
 
 ### §5.4 Stripe Checkout Configuration
 
@@ -163,10 +154,7 @@ Journey D: Demo Session → Paywall → Modal (first purchase) → Stripe → Da
 
 ```typescript
 // POST /create-checkout
-{
-  purchaseType: "first_path" | "path",
-  scenarioType: "interview" | "meeting" | "presentation"
-}
+// No body required as subscription covers everything
 // Returns: { checkoutUrl: string, checkoutId: string }
 ```
 
@@ -174,48 +162,39 @@ Journey D: Demo Session → Paywall → Modal (first purchase) → Stripe → Da
 
 | Setting | Value |
 |---------|-------|
-| `mode` | `"payment"` (one-time, no subscription) |
+| `mode` | `"subscription"` |
 | `payment_method_types` | `["card"]` |
 | `expires_at` | 30 minutes from creation |
 | `customer_email` | Pre-filled from `user.email` |
-| `success_url` | `{origin}/#/dashboard?payment=success&session_id={CHECKOUT_SESSION_ID}&type={purchaseType}&scenario={scenarioType}` |
+| `success_url` | `{origin}/#/dashboard?payment=success&session_id={CHECKOUT_SESSION_ID}` |
 | `cancel_url` | `{origin}/#/dashboard?payment=cancelled` |
 
-**Metadata attached to the session (required by webhook):**
+**Metadata attached to the subscription (required by webhook):**
 
 ```typescript
 metadata: {
   userId: string,       // Supabase user UID
-  purchaseType: string, // "first_path" | "path"
-  scenarioType: string, // "interview" | "meeting" | "presentation"
 }
 ```
 
-> ⚠️ If any metadata field is missing, the webhook logs a warning and returns 200
-> without updating the profile. The user pays but gets no access — silent failure.
-
 ### §5.5 Webhook Contract
 
-**Endpoint:** `POST /make-server-08b8658d/webhook/stripe`
-**Auth:** None — validated via Stripe HMAC signature (`stripe-signature` header + `STRIPE_WEBHOOK_SECRET`)
+**Endpoint:** `POST /make-server-TBD/webhook/stripe`
+**Auth:** None — validated via Stripe HMAC signature
 
 **Events handled:**
 
 | Event | Action |
 |-------|--------|
-| `checkout.session.completed` | Updates profile: adds `scenarioType` to `paths_purchased`, sets `plan = "path"` |
-| `checkout.session.expired` | Logged, no action |
-| All others | Acknowledged (200), not processed |
+| `customer.subscription.created` | sets `plan = "pro"`, `plan_status = "active"` |
+| `customer.subscription.deleted` | sets `plan = "free"`, `plan_status = "canceled"` |
+| `customer.subscription.updated` | Handles past_due/active transitions |
 
-**Profile update on `checkout.session.completed`:**
+**Profile update on subscription change:**
 
-1. Reads profile from Deno KV (`profile:{userId}`)
-2. Adds `scenarioType` to `paths_purchased` (idempotent — no duplicates)
-3. Sets `plan = "path"`, `plan_status = "active"`
-4. Writes back to Deno KV
-5. Also updates Supabase `profiles` table (non-blocking — failure logged but not fatal)
-6. Records purchase in KV (`purchase:{session.id}`)
-7. Sends confirmation email (fire-and-forget)
+1. Reads user identity.
+2. Updates Supabase `profiles` table to reflect new subscription status.
+3. Updates KV store fallback to `plan: "pro"`.
 
 > **Resilience note:** Deno KV is updated first. Supabase DB update is non-blocking.
 > If Supabase fails, KV is the fallback source. `GET /profile` reads from KV first.
@@ -253,11 +232,13 @@ All four entry points must pass `ownedPaths={authUser?.pathsPurchased ?? []}`:
 
 ### §6.2 Pricing Section
 
-- **2 cards** side-by-side (max-w-3xl)
-- Card 1: **$4.99** — primera ruta, acceso permanente (dark featured card)
-- Card 2: **$16.99** — rutas adicionales, acceso permanente (white card)
-- Demo reinforcement line below cards: "Primera sesión completamente gratis"
-- Demo session does NOT appear in pricing cards — lives in hero widget microcopy
+- **1 Subscription Card** centered (max-w-md)
+- Price: **$14.99/mes** — Acceso total
+- Bullets: 
+  - Práctica ilimitada vía WhatsApp (SR Coach) diaria.
+  - Simulador de conversaciones web (15 sesiones completas/mes).
+  - Feedback detallado y reportes ejecutivos.
+- Demo reinforcement: "Primera sesión gratis" in hero copy.
 
 ### §6.3 Nav
 
@@ -368,9 +349,10 @@ Context tiebreaker (when pillar scores are within 5 points): `networking` → In
 ## §8 — Learning Path Structure
 
 ```
-Learning Path: [Scenario] ($4.99 first / $16.99 additional)
+Learning Path: [Scenario] (Included in Pro Subscription)
 ├── Level 1: "Foundation" — Arena Support mode
-│   ├── 3 fresh sessions
+│   ├── 3 fresh sessions (deducted from 15/mo quota)
+
 │   ├── Review Mode (unlimited, $0 cost)
 │   ├── Remedial: shadowing + micro-lessons
 │   └── Skill Drill → unlocks Level 2
@@ -406,20 +388,20 @@ Learning Path: [Scenario] ($4.99 first / $16.99 additional)
 
 | Method | Route | Auth | Description |
 |--------|-------|------|-------------|
-| POST | `/create-checkout` | ✅ | Create Stripe Checkout session |
-| POST | `/webhook/stripe` | ❌ (Stripe sig) | Handle payment webhooks |
+| POST | `/create-checkout` | ✅ | Create Stripe checkout for subscription |
+| POST | `/webhook/stripe` | ❌ | Handle subscription state webhooks |
+| POST | `/webhook/twilio` | ❌ | Handle WhatsApp incoming audio |
+| POST | `/cron/daily-sr` | DB | Cron job for Twilio WhatsApp SR dispatch |
 | GET | `/profile` | ✅ | Get user profile |
 | PUT | `/profile` | ✅ | Update user profile |
 | POST | `/prepare-session` | ✅ | Create practice session |
 | POST | `/process-turn` | ✅ | Process conversation turn (GPT-4o) |
 | POST | `/analyze-feedback` | ✅ | Post-session analysis (Gemini) |
 | POST | `/generate-summary` | ✅ | Executive session summary |
-| POST | `/generate-script` | ✅ | Improved script generation |
 | POST | `/tts` | ✅ | Text-to-speech (ElevenLabs/Azure) |
 | POST | `/transcribe` | ✅ | Speech-to-text (Azure) |
 | POST | `/pronunciation-assess` | ✅ | Pronunciation scoring (Azure) |
 | POST | `/evaluate-drill` | ✅ | Skill Drill evaluation (GPT-4o) |
-| GET | `/progression/:scenario/levels` | ✅ | Get path level progress |
 | GET | `/admin/stats` | ✅ (admin) | Admin dashboard data |
 
 ### §9.3 Environment Variables
@@ -433,6 +415,9 @@ Learning Path: [Scenario] ($4.99 first / $16.99 additional)
 | `STRIPE_PRICE_FIRST_PATH` | Supabase Secrets | Price ID for $4.99 |
 | `STRIPE_PRICE_PATH` | Supabase Secrets | Price ID for $16.99 |
 | `STRIPE_WEBHOOK_SECRET` | Supabase Secrets | Webhook signing secret |
+| `TWILIO_ACCOUNT_SID` | Supabase Secrets | Twilio Integration |
+| `TWILIO_AUTH_TOKEN` | Supabase Secrets | Twilio Integration |
+| `TWILIO_PHONE_NUMBER` | Supabase Secrets | Sender WhatsApp Node |
 | `OPENAI_API_KEY` | Supabase Secrets | GPT-4o access |
 | `GEMINI_API_KEY` | Supabase Secrets | Gemini Flash access |
 | `AZURE_SPEECH_KEY` | Supabase Secrets | Azure Speech Services |
@@ -446,12 +431,14 @@ Learning Path: [Scenario] ($4.99 first / $16.99 additional)
 |-------|-----------|--------|
 | Frontend | React 18 + Tailwind v4 + Vite 6 | SPA, FSD architecture |
 | Backend | Supabase Edge Functions (Deno/TS) | Low latency, Hono router |
+| Job Scheduler | Supabase `pg_cron` | CRON execution |
+| Comms / Phone | Twilio API | WhatsApp Cloud interactions |
 | Database | Supabase (PostgreSQL) + Deno KV | Relational + key-value hybrid |
 | Chat AI | GPT-4o | Maximum realism for executive confrontation |
 | Analysis AI | Gemini 1.5 Flash | 98% cost savings vs GPT-4o |
 | TTS | ElevenLabs (practice) + Azure Neural (system) | Premium voice quality |
 | STT | Azure Speech REST API | Pronunciation scoring included |
-| Payments | Stripe (global) | One-time payments via Checkout |
+| Payments | Stripe (global) | Subscription billing |
 | Hosting | Vercel (frontend) + Supabase (backend) | Edge deployment |
 | Audio Cache | Cloudflare R2 | $0 egress, SHA-256 dedup |
 
