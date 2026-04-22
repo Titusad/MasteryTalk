@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 48" width="320" height="48">
+  <defs>
+    <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00D3F3"/>
+      <stop offset="100%" stop-color="#50C878"/>
+    </linearGradient>
+  </defs>
+
+  <!-- MasteryTalk — Inter Bold, 24px -->
+  <text x="0" y="33" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-weight="700" font-size="24" letter-spacing="-0.5" fill="#1C0B1E">MasteryTalk</text>
+
+  <!-- Dot separator -->
+  <circle cx="222" cy="31" r="3" fill="url(#brandGrad)"/>
+
+  <!-- pro — Montserrat Bold, 20px, gradient fill -->
+  <text x="230" y="33" font-family="'Montserrat', 'Helvetica Neue', Arial, sans-serif" font-weight="700" font-size="20" fill="url(#brandGrad)">pro</text>
+</svg>
