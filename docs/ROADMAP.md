@@ -10,7 +10,8 @@
 
 ### ✅ What's Live
 - 3 active scenarios: interview, meeting, presentation
-- One-time purchases: $4.99 first path / $16.99 additional
+- Subscription Model (Planned): $14.99/mo with WhatsApp SR Coach
+- Architecture pivot from one-time-purchases to recurring billing initiated
 - Stripe Checkout integration (test mode ready, live mode ready)
 - Full practice flow: setup → briefing → conversation → feedback → skill drill
 - Azure Speech pronunciation + ElevenLabs TTS
@@ -98,37 +99,72 @@
 - [ ] Improve scenario selection UX (3 active paths)
 - [ ] Ensure purchased vs locked states are visually clear
 
-### 1.4 Stripe → Live Mode
-- [ ] **Debug todos los journeys de pago (test mode):**
-  - Verificar que `STRIPE_SECRET_KEY`, `STRIPE_PRICE_FIRST_PATH`, `STRIPE_PRICE_PATH`, `STRIPE_WEBHOOK_SECRET` estén seteados en Supabase Secrets
-  - Journey A: `PathConversionScreen` existe pero `setStep("path-conversion")` nunca se llama — CTA post-demo no funciona
-  - Journey B/D: `POST /create-checkout` falla — revisar logs de Edge Function
-  - Journey C: `handlePurchaseComplete` en `DashboardPage` no refresca `authUser.pathsPurchased` — ownedPaths queda stale hasta recarga
-- [ ] Activate Stripe account (complete identity verification if pending)
-- [ ] Create **live** products + prices mirroring test ones ($4.99 / $16.99)
-- [ ] Set live secrets in Supabase: `STRIPE_SECRET_KEY`, `STRIPE_PRICE_FIRST_PATH`, `STRIPE_PRICE_PATH`
-- [ ] Set live `VITE_STRIPE_PUBLISHABLE_KEY` in Vercel env vars
-- [ ] Configure live webhook endpoint → `STRIPE_WEBHOOK_SECRET`
-- [ ] Test one real $4.99 purchase end-to-end → verify `paths_purchased` updates
+### 1.4 Stripe Subscriptions & Webhook Pivot ✅
+- [x] Remove `first_path` and `path` checkout modes.
+- [x] Create **Pro Plan** Subscription in Stripe ($14.99/month).
+- [x] Refactor Edge Function `create-checkout` to process `mode: subscription`.
+- [x] Refactor Edge Function `webhook-stripe` to listen to `customer.subscription.*` events.
+- [ ] Configure live and test webhook endpoints in Stripe Dashboard.
 
-### 1.5 E2E Payment Verification
-- [ ] Complete a real purchase on production with live Stripe
-- [ ] Verify webhook fires → profile updates → session unlocks
-- [ ] Verify post-payment auth persistence (no session loss)
-- [ ] Test additional path purchase ($16.99) with path selector
+### 1.5 WhatsApp SR Coach Integration (The Retention Hook) ✅ (Sandbox)
+- [x] Create Twilio Account & WhatsApp Sandbox.
+- [x] Database Schema: Add `whatsapp_number`, `whatsapp_verified` to `profiles`, and create `wa_pending_reviews` table.
+- [x] `cron-daily-sr`: Daily dispatcher with TTS audio generation (ElevenLabs/OpenAI) + Supabase Storage upload.
+- [x] `webhook-twilio`: Incoming audio → Azure Speech STT → Pronunciation Score → WhatsApp reply.
+- [x] `whatsapp-verify`: OTP phone linking via Twilio Verify.
+- [x] Web UX: `WhatsAppActivationCard.tsx` in Dashboard (phone input, OTP, verified state).
+- [x] i18n: All WA messages in 3 languages (es/pt/en) based on `market_focus`.
+- [x] Personalized greeting with user's first name.
+- [x] "Repetir" / "Repeat" command to resend phrase with TTS audio.
+- [x] E2E tested: Sandbox → cron dispatch → audio shadowing → pronunciation score → SR progression.
 
 ### 1.6 Scenario Quality Audit
 - [ ] Audit `meeting` system prompt quality vs `interview`
 - [ ] Audit `presentation` system prompt quality
 - [ ] Run at least 1 full demo session per scenario and verify output quality
 
-### 1.7 Production Hardening
+### 1.6.1 Twilio WhatsApp Production Configuration ⚡ (Priority: START NOW)
+> **Goal:** Migrate from Sandbox to a dedicated WhatsApp Business number. This takes ~1 week for Meta approval — start NOW so it's ready by beta launch.
+>
+> **Why urgent:** Sandbox requires each user to manually send `join <keyword>` to a shared number. Unacceptable UX for paying subscribers.
+
+**Step 1 — Meta Business Verification (~2-3 business days):**
+- [ ] Create Meta Business account at business.facebook.com (use corporate email).
+- [ ] Upload LLC documentation (Articles of Organization or bank statement).
+- [ ] Verify domain `masterytalk.pro` (DNS TXT record or HTML meta tag).
+- [ ] Wait for Meta approval.
+
+**Step 2 — Twilio WhatsApp Sender (~1-2 business days):**
+- [ ] In Twilio Console → Messaging → Senders → WhatsApp Senders, start application.
+- [ ] Link your verified Meta Business account.
+- [ ] Purchase a dedicated Twilio phone number (Colombian +57 or US +1).
+
+**Step 3 — Message Templates (~24-48h):**
+- [ ] Submit "daily_sr_challenge" template (daily practice message).
+- [ ] Submit "otp_verification" template (phone verification code).
+- [ ] Wait for Meta template approval.
+
+**Step 4 — Production Cutover:**
+- [ ] Update `TWILIO_PHONE_NUMBER` secret in Supabase with new number.
+- [ ] Update webhook URL in Twilio console.
+- [ ] Configure `pg_cron` schedule in Supabase (daily at 9 AM).
+- [ ] Test full E2E with production number.
+
+### 1.7 Corporate Infrastructure Migration 🏢
+> **Goal:** Transition from personal to corporate accounts before processing real user data and payments.
+- [ ] Incorporate company/entity (if not fully completed).
+- [ ] Migrate/Create Stripe Account under Corporate EIN (critical for payouts and KYC).
+- [ ] Migrate/Create Supabase Project to a corporate email/billing account.
+- [ ] Migrate Vercel, Twilio, OpenAI, Azure, and ElevenLabs to company billing.
+- [ ] Secure corporate domains and email addresses (e.g. `dave@masterytalk.pro`).
+
+### 1.9 Production Hardening
 - [ ] Error monitoring: integrate Sentry (or Supabase built-in logs)
 - [ ] Rate limiting: already implemented ✅, verify limits are appropriate
 - [ ] Review Google OAuth consent screen — update to "MasteryTalk PRO"
 - [ ] Custom domain for Supabase Auth (removes `zkury...supabase.co` from OAuth)
 
-### 1.8 Legal Compliance
+### 2.0 Legal Compliance
 - [x] Privacy Policy page (GDPR/CCPA compliant) — `PrivacyPage.tsx`
 - [x] Terms of Service page — `TermsPage.tsx`
 - [ ] Cookie notice (if applicable)
@@ -190,13 +226,8 @@
 - [ ] Create Stripe product + price
 - [ ] Update PathPurchaseModal with bundle option
 
-### 4.2 Subscription Model (if data supports recurring)
-- [ ] Evaluate retention data: do users want ongoing access?
-- [ ] Design subscription vs one-time hybrid
-- [ ] Implement Stripe Subscriptions (invoicing, dunning, cancellation)
-
-### 4.3 B2B / Enterprise
-- [ ] Team accounts (admin can buy paths for team members)
+### 4.2 B2B / Enterprise
+- [ ] Team accounts (admin can buy subscriptions for team members)
 - [ ] Analytics dashboard for managers
 - [ ] Volume pricing
 
@@ -223,3 +254,4 @@
 | 2026-04-17 | Initial roadmap — retroactive from beta v11.0 state |
 | 2026-04-20 | Added 1.1.1 Emoji→Icon standardization (completed) |
 | 2026-04-21 | Added 1.2.1 Self-Intro Warm-Up (completed), 1.2.2 Path Recommendation Engine (planned). Re-numbered 1.3–1.8. Updated legal compliance status. |
+| 2026-04-21 | Completed 1.4 Stripe Subscriptions, 1.5 WhatsApp SR Coach (Sandbox). Added 1.8 Twilio Production Config. Re-numbered Legal to 2.0. |
