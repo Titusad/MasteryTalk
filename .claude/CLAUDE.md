@@ -1,4 +1,4 @@
-# inFluentia PRO — CLAUDE.md
+# MasteryTalk PRO — CLAUDE.md
 
 > Briefing permanente para Claude Code. Este archivo define el contexto del producto,
 > la arquitectura objetivo, las reglas de trabajo y el plan de mejoras activo.
@@ -8,7 +8,7 @@
 
 ## 1. Producto
 
-**inFluentia PRO** es un simulador de comunicación ejecutiva en inglés para profesionales
+**MasteryTalk PRO** es un simulador de comunicación profesional en inglés para profesionales
 de nearshoring en Latinoamérica (México y Colombia).
 
 **Propuesta de valor:** No vendemos clases. Vendemos acceso a riqueza y poder.
