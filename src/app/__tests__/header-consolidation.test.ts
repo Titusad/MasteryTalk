@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Header Consolidation QA — Static verification
  * Validates that all pages use the correct AppHeader variant

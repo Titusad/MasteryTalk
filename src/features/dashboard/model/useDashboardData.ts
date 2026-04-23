@@ -29,7 +29,13 @@ import {
   computePreviousProficiency,
   getCEFRApprox,
   toPracticeHistoryItem,
+  computeUserState,
+  computeChurnGap,
+  buildDiagnosis,
+  getOpenNextSteps,
   type EnrichedHistoryItem,
+  type UserState,
+  type ChurnGapSignal,
 } from "./dashboard.computations";
 import type { LandingLang } from "@/shared/i18n/landing-i18n";
 import { LANDING_COPIES } from "@/shared/i18n/landing-i18n";
@@ -73,6 +79,13 @@ export interface DashboardData {
   proficiencyDelta: number;
   cefrApprox: { level: string; label: string };
   latestSession: PersistedSession | null;
+
+  /* New: User State & Diagnosis */
+  userState: UserState;
+  churnGap: ChurnGapSignal | null;
+  diagnosis: { text: string; highlights: string[] };
+  openNextSteps: Array<{ title: string; desc: string; pillar: string }>;
+  daysSinceLastSession: number;
 
   /* Lessons */
   recommendedLessons: ReturnType<typeof getRecommendedLessons>;
@@ -255,6 +268,31 @@ export function useDashboardData({
     [radarData]
   );
 
+  /* ─── User State & Diagnosis ─── */
+  const userState = useMemo(
+    () => computeUserState(persistedSessions),
+    [persistedSessions]
+  );
+  const churnGap = useMemo(
+    () => computeChurnGap(persistedSessions, radarData),
+    [persistedSessions, radarData]
+  );
+  const diagnosis = useMemo(
+    () => buildDiagnosis(persistedSessions, proficiencyScore, cefrApprox, focusArea, biggestImprovement),
+    [persistedSessions, proficiencyScore, cefrApprox, focusArea, biggestImprovement]
+  );
+  const openNextSteps = useMemo(
+    () => getOpenNextSteps(persistedSessions),
+    [persistedSessions]
+  );
+  const daysSinceLastSession = useMemo(() => {
+    if (persistedSessions.length === 0) return Infinity;
+    const sorted = [...persistedSessions].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+    return Math.floor((Date.now() - new Date(sorted[0].created_at).getTime()) / 86_400_000);
+  }, [persistedSessions]);
+
   /* ─── Greeting ─── */
   const hour = new Date().getHours();
   const dc = LANDING_COPIES[lang].dashboard;
@@ -302,5 +340,10 @@ export function useDashboardData({
     dc,
     setCredits,
     setFreeSessionAvailable,
+    userState,
+    churnGap,
+    diagnosis,
+    openNextSteps,
+    daysSinceLastSession,
   };
 }

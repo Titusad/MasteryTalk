@@ -90,14 +90,14 @@
 - [x] Create `path-recommendation.ts` — pure function mapping `pillarScores` + `selfIntroContext` + `profile` → recommended `PathId` + personalized reason
 - [x] Create `PathRecommendationCard.tsx` — renders inside Session Analysis step (educational tone, not sales modal)
 - [x] Wire into `PracticeSessionPage.tsx` — only renders when `scenarioType === "self-intro"` and feedback is available
-- [ ] Persist recommendation in backend KV (`recommended_path`) for dashboard reminder banner
+- [x] Persist recommendation in backend KV (`recommended_path`) for dashboard reminder banner
 - [x] CTA opens existing `PathPurchaseModal` pre-seeded with recommended path (via `recommendedPathOverride` state)
 
-### 1.3 User Dashboard Redesign 🔄
-- [ ] Reorganize dashboard layout and information hierarchy
-- [ ] Clarify path progression vs session history
-- [ ] Improve scenario selection UX (3 active paths)
-- [ ] Ensure purchased vs locked states are visually clear
+### 1.3 User Dashboard Redesign ✅
+- [x] Reorganize dashboard layout and information hierarchy
+- [x] Clarify path progression vs session history
+- [x] Improve scenario selection UX (paths with full levels)
+- [x] Ensure purchased vs locked states are visually clear
 
 ### 1.4 Stripe Subscriptions & Webhook Pivot ✅
 - [x] Remove `first_path` and `path` checkout modes.

@@ -1498,8 +1498,8 @@ export const PROGRESSION_PATHS: ProgressionPath[] = [
   { id: "sales", title: "Sales Champion", icon: "briefcase", levels: SALES_LEVELS },
   { id: "meeting", title: "Remote Meeting Presence", icon: "video", levels: MEETING_LEVELS },
   { id: "presentation", title: "Presentations", icon: "mic", levels: PRESENTATION_LEVELS },
-  { id: "client", title: "Client-Facing Communication", icon: "handshake", levels: CLIENT_LEVELS },
-  { id: "csuite", title: "C-Suite Communication", icon: "crown", levels: CSUITE_LEVELS },
+  { id: "client", title: "Dealing with Clients", icon: "handshake", levels: CLIENT_LEVELS },
+  // { id: "csuite", title: "C-Suite Communication", icon: "crown", levels: CSUITE_LEVELS },
 ];
 
 /* ── Feature Flag: Visible Paths in Production ──

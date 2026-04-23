@@ -288,3 +288,131 @@ export function toPracticeHistoryItem(
     scenarioType: s.scenarioType,
   };
 }
+
+/* ── User State Classification ── */
+
+export type UserState = "new" | "inactive" | "returning";
+
+export function computeUserState(
+  sessions: PersistedSession[]
+): UserState {
+  if (sessions.length === 0) return "new";
+  const sorted = [...sessions].sort(
+    (a, b) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+  const lastDate = new Date(sorted[0].created_at);
+  const daysSince = Math.floor(
+    (Date.now() - lastDate.getTime()) / 86_400_000
+  );
+  return daysSince > 7 ? "inactive" : "returning";
+}
+
+/* ── Churn Gap Signal ── */
+
+export interface ChurnGapSignal {
+  daysSinceLastSession: number;
+  weakestPillar: string;
+  weakestScore: number;
+}
+
+export function computeChurnGap(
+  sessions: PersistedSession[],
+  radarData: RadarDataPoint[]
+): ChurnGapSignal | null {
+  if (sessions.length === 0) return null;
+  const sorted = [...sessions].sort(
+    (a, b) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+  const lastDate = new Date(sorted[0].created_at);
+  const daysSince = Math.floor(
+    (Date.now() - lastDate.getTime()) / 86_400_000
+  );
+  if (daysSince <= 7) return null;
+
+  const withScores = radarData.filter((d) => d.score > 0);
+  if (withScores.length === 0) return null;
+  const weakest = withScores.reduce((w, c) =>
+    c.score < w.score ? c : w, withScores[0]
+  );
+  return {
+    daysSinceLastSession: daysSince,
+    weakestPillar: weakest.skill,
+    weakestScore: weakest.score,
+  };
+}
+
+/* ── Dynamic Diagnosis Builder ── */
+
+export function buildDiagnosis(
+  sessions: PersistedSession[],
+  proficiencyScore: number,
+  cefr: { level: string; label: string },
+  focusArea: { pillar: string; score: number } | null,
+  biggestImprovement: { pillar: string; delta: number } | null
+): { text: string; highlights: string[] } {
+  // State A: New user
+  if (sessions.length === 0) {
+    return {
+      text: "Let's establish your baseline. A 3-minute self-introduction will calibrate your score, CEFR level, and personalize your learning path.",
+      highlights: ["baseline", "CEFR level"],
+    };
+  }
+
+  // Compute days since last session
+  const sorted = [...sessions].sort(
+    (a, b) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+  const daysSince = Math.floor(
+    (Date.now() - new Date(sorted[0].created_at).getTime()) / 86_400_000
+  );
+
+  // State C: Inactive user (>7 days)
+  if (daysSince > 7) {
+    const focusPillar = focusArea?.pillar || "Fluency";
+    const focusScore = focusArea?.score || 0;
+    return {
+      text: `${daysSince} days without practice. Your ${focusPillar} was at ${focusScore}% — without sessions, that level does not consolidate.`,
+      highlights: [`${daysSince} days`, `${focusPillar}`, `${focusScore}%`],
+    };
+  }
+
+  // State B: Returning user — build a specific, data-driven sentence
+  const parts: string[] = [];
+  if (biggestImprovement && biggestImprovement.delta > 0) {
+    parts.push(
+      `Your ${biggestImprovement.pillar} improved +${biggestImprovement.delta} points recently.`
+    );
+  } else {
+    parts.push(`You're at ${cefr.level} (${cefr.label}).`);
+  }
+
+  if (focusArea) {
+    parts.push(
+      `Next goal: push ${focusArea.pillar} past ${focusArea.score}%.`
+    );
+  }
+
+  const highlights = [
+    biggestImprovement?.pillar,
+    focusArea?.pillar,
+    cefr.level,
+  ].filter(Boolean) as string[];
+
+  return { text: parts.join(" "), highlights };
+}
+
+/* ── Open Next Steps ── */
+
+export function getOpenNextSteps(
+  sessions: PersistedSession[]
+): Array<{ title: string; desc: string; pillar: string }> {
+  if (sessions.length === 0) return [];
+  const sorted = [...sessions].sort(
+    (a, b) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+  return sorted[0]?.summary?.nextSteps || [];
+}
