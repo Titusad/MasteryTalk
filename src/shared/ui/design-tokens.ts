@@ -27,8 +27,8 @@ export const COLORS = {
     peach: "#FFE9C7",
     blue: "#D9ECF0",
     green: "#DBEDDF",
-    lavender: "#E1D4FF",
-    softPurple: "#E1D5F8",
+    mint: "#D1FAE5",
+    softEmerald: "#D1FAE5",
 
     /* Semantic */
     success: "#00C950",

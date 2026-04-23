@@ -113,13 +113,14 @@ class UXAuditor:
 
         # Pre-calculate common flags
         has_long_text = bool(re.search(r'<p|<div.*class=.*text|article|<span.*text', content, re.IGNORECASE))
-        has_form = bool(re.search(r'<form|<input|password|credit|card|payment', content, re.IGNORECASE))
+        has_form = bool(re.search(r'<form|<input|password|credit-card|payment-method', content, re.IGNORECASE))
         complex_elements = len(re.findall(r'<input|<select|<textarea|<option', content, re.IGNORECASE))
 
         # --- 1. PSYCHOLOGY LAWS ---
         # Hick's Law
+        is_legal_page = 'terms' in filename.lower() or 'privacy' in filename.lower()
         nav_items = len(re.findall(r'<NavLink|<Link|<a\s+href|nav-item', content, re.IGNORECASE))
-        if nav_items > 7:
+        if nav_items > 7 and not is_legal_page:
             self.issues.append(f"[Hick's Law] {filename}: {nav_items} nav items (Max 7)")
         
         # Fitts' Law

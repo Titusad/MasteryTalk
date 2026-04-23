@@ -256,7 +256,7 @@ export function AdminDashboardPage({ onBack }: AdminDashboardPageProps) {
           <button onClick={() => setView("overview")} style={styles.backBtn}>
             <ArrowLeft size={18} /> Back to Users
           </button>
-          <h1 style={styles.title}>{u.displayName || u.email}</h1>
+          <h3 style={styles.title}>{u.displayName || u.email}</h3>
         </header>
 
         <div style={styles.content}>

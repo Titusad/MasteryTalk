@@ -196,7 +196,7 @@ export function DesignSystemPage() {
       {/* ───── HERO ───── */}
       <section className="bg-[#f0f4f8] py-16 md:py-24 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-          <div className="absolute -top-20 -left-24 w-[320px] h-[320px] rounded-full opacity-40" style={{ background: COLORS.lavender, filter: "blur(80px)" }} />
+          <div className="absolute -top-20 -left-24 w-[320px] h-[320px] rounded-full opacity-40" style={{ background: COLORS.mint, filter: "blur(80px)" }} />
           <div className="absolute -bottom-10 -right-20 w-[280px] h-[280px] rounded-full opacity-40" style={{ background: COLORS.blue, filter: "blur(80px)" }} />
         </div>
         <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
@@ -296,8 +296,8 @@ export function DesignSystemPage() {
           <ColorSwatch name="Peach" hex={COLORS.peach} usage="Hero, Cómo funciona, Antes/Después" />
           <ColorSwatch name="Blue" hex={COLORS.blue} usage="Hero, Cómo funciona, Impacto, Pricing stats" />
           <ColorSwatch name="Green" hex={COLORS.green} usage="Hero, Cómo funciona, Antes/Después" />
-          <ColorSwatch name="Lavender" hex={COLORS.lavender} usage="Hero, Impacto" />
-          <ColorSwatch name="Soft Purple" hex={COLORS.softPurple} usage="Hero, Impacto (reemplazó #F7E2FB)" />
+          <ColorSwatch name="Mint" hex={COLORS.mint} usage="Hero, Impacto" />
+          <ColorSwatch name="Soft Emerald" hex={COLORS.softEmerald} usage="Hero, Impacto (reemplazó #F7E2FB)" />
         </div>
 
         {/* Semantic */}
@@ -898,7 +898,7 @@ export function DesignSystemPage() {
           </div>
           <div className="flex flex-wrap items-center gap-4 mb-4">
             {[
-              { color: COLORS.softPurple, label: "Estructura" },
+              { color: COLORS.softEmerald, label: "Estructura" },
               { color: COLORS.peach, label: "Impacto" },
               { color: COLORS.blue, label: "Engagement" },
             ].map((c) => (
@@ -1341,7 +1341,7 @@ export function DesignSystemPage() {
             <PastelBlobs />
             <div className="relative z-10 h-full flex items-center justify-center">
               <p className="text-sm text-[#4B505B] bg-white/80 backdrop-blur-sm rounded-full px-4 py-2" style={{ fontWeight: 500 }}>
-                5 blobs: peach, blue, green, lavender, softPurple
+                5 blobs: peach, blue, green, mint, softEmerald
               </p>
             </div>
           </div>
@@ -1397,8 +1397,8 @@ export function DesignSystemPage() {
             <div className="absolute -top-10 -left-12 w-[220px] h-[220px] rounded-full opacity-60" style={{ background: COLORS.peach, filter: "blur(60px)" }} />
             <div className="absolute -top-5 -right-16 w-[200px] h-[200px] rounded-full opacity-50" style={{ background: COLORS.blue, filter: "blur(70px)" }} />
             <div className="absolute top-1/2 -left-8 w-[160px] h-[160px] rounded-full opacity-50" style={{ background: COLORS.green, filter: "blur(60px)" }} />
-            <div className="absolute bottom-0 right-0 w-[180px] h-[180px] rounded-full opacity-40" style={{ background: COLORS.lavender, filter: "blur(80px)" }} />
-            <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[260px] h-[100px] rounded-full opacity-25" style={{ background: COLORS.softPurple, filter: "blur(80px)" }} />
+            <div className="absolute bottom-0 right-0 w-[180px] h-[180px] rounded-full opacity-40" style={{ background: COLORS.mint, filter: "blur(80px)" }} />
+            <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[260px] h-[100px] rounded-full opacity-25" style={{ background: COLORS.softEmerald, filter: "blur(80px)" }} />
           </div>
           <div className="relative z-10 h-full flex items-center justify-center">
             <p className="text-sm text-[#4B505B] bg-white/80 backdrop-blur-sm rounded-full px-4 py-2" style={{ fontWeight: 500 }}>5 blobs con blur(80-100px) y baja opacidad</p>
@@ -1640,10 +1640,10 @@ export function DesignSystemPage() {
         <div className="bg-gray-50 rounded-3xl p-8 border border-gray-100">
           <div className="space-y-4">
             {[
-              { section: "Hero (blobs)", colors: [COLORS.peach, COLORS.blue, COLORS.green, COLORS.lavender, COLORS.softPurple] },
+              { section: "Hero (blobs)", colors: [COLORS.peach, COLORS.blue, COLORS.green, COLORS.mint, COLORS.softEmerald] },
               { section: "Cómo funciona", colors: [COLORS.peach, COLORS.blue, COLORS.green] },
               { section: "Antes y Después", colors: [COLORS.green, COLORS.peach] },
-              { section: "Impacto", colors: [COLORS.softPurple, COLORS.blue, COLORS.softPurple] },
+              { section: "Impacto", colors: [COLORS.softEmerald, COLORS.blue, COLORS.softEmerald] },
               { section: "Pricing", colors: [COLORS.white, COLORS.darkPrimary, COLORS.white] },
             ].map((row) => (
               <div key={row.section} className="flex items-center gap-4">
