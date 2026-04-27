@@ -248,14 +248,6 @@ export function AnswerCard({ question, onNext, onBack }: AnswerCardProps) {
                     Get Feedback
                     <ArrowRight className="w-6 h-6" />
                 </button>
-                <button
-                    onClick={onBack}
-                    className="mt-4 flex items-center gap-1.5 text-sm text-[#62748e] hover:text-[#0f172b] transition-colors"
-                    style={{ fontWeight: 500 }}
-                >
-                    <ArrowLeft className="w-3.5 h-3.5" />
-                    Back
-                </button>
             </div>
         </motion.div>
     );
