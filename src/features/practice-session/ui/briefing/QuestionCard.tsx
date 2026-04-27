@@ -33,15 +33,6 @@ export function QuestionCard({
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.35 }}
         >
-            {/* Step indicator */}
-            <div className="px-6 py-3 bg-[#f8fafc] border-b border-[#f1f5f9] flex items-center justify-between">
-                <span className="text-[11px] text-[#94a3b8]" style={{ fontWeight: 500 }}>
-                    Step 1 of 4
-                </span>
-                <span className="text-[11px] text-[#94a3b8]" style={{ fontWeight: 500 }}>
-                    Question {questionNumber} of {totalQuestions}
-                </span>
-            </div>
 
             {/* Question */}
             <div className="px-6 py-10 md:px-10 md:py-14 text-center">

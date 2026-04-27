@@ -41,15 +41,6 @@ export function StrategyCard({
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.35 }}
         >
-            {/* Step indicator */}
-            <div className="px-6 py-3 bg-[#f8fafc] border-b border-[#f1f5f9] flex items-center justify-between">
-                <span className="text-[11px] text-[#94a3b8]" style={{ fontWeight: 500 }}>
-                    Step 2 of 4
-                </span>
-                <span className="text-[11px] text-[#6366f1]" style={{ fontWeight: 600 }}>
-                    Understand the Strategy
-                </span>
-            </div>
 
             <div className="px-6 py-6 md:px-8 space-y-5">
                 {/* Why this question */}

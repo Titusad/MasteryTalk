@@ -193,11 +193,6 @@ export function FeedbackCard({
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
             >
-                <div className="px-6 py-3 bg-[#f8fafc] border-b border-[#f1f5f9]">
-                    <span className="text-[11px] text-[#94a3b8]" style={{ fontWeight: 500 }}>
-                        Step 4 of 4
-                    </span>
-                </div>
                 <div className="flex flex-col items-center justify-center py-14 px-6">
                     <Loader2 className="w-10 h-10 text-[#6366f1] animate-spin mb-4" />
                     <p className="text-sm text-[#45556c]" style={{ fontWeight: 500 }}>
@@ -219,11 +214,6 @@ export function FeedbackCard({
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
             >
-                <div className="px-6 py-3 bg-[#f8fafc] border-b border-[#f1f5f9]">
-                    <span className="text-[11px] text-[#94a3b8]" style={{ fontWeight: 500 }}>
-                        Step 4 of 4
-                    </span>
-                </div>
                 <div className="flex flex-col items-center justify-center py-14 px-6">
                     <p className="text-sm text-red-600 mb-3">Feedback generation failed</p>
                     <p className="text-xs text-[#94a3b8] mb-4">{error}</p>
@@ -250,15 +240,6 @@ export function FeedbackCard({
                 exit={{ opacity: 0, y: -12 }}
                 transition={{ duration: 0.35 }}
             >
-                {/* Step indicator */}
-                <div className="px-6 py-3 bg-[#f8fafc] border-b border-[#f1f5f9] flex items-center justify-between">
-                    <span className="text-[11px] text-[#94a3b8]" style={{ fontWeight: 500 }}>
-                        Step 4 of 4
-                    </span>
-                    <span className="text-[11px] text-emerald-600" style={{ fontWeight: 600 }}>
-                        AI Feedback
-                    </span>
-                </div>
 
                 <div className="px-6 py-6 md:px-8 space-y-5">
                     {/* ── Score pill ── */}
