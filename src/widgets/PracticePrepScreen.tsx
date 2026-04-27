@@ -15,6 +15,7 @@
 
 import { useState, useCallback, useRef } from "react";
 import { useNarration } from "@/shared/lib/useNarration";
+import { READINESS_URLS } from "@/features/practice-session/model/narrator-audio";
 import { motion } from "motion/react";
 import {
     ArrowLeft,
@@ -142,6 +143,7 @@ export function PracticePrepScreen({
                         totalCards={briefingData.anticipatedQuestions.length}
                         completedCards={actualCompleted}
                         onStartPractice={handleStartPractice}
+                        narratorUrl={READINESS_URLS[scenarioType ?? "interview"]}
                     />
                 ) : (
                     <BriefingStepperCarousel

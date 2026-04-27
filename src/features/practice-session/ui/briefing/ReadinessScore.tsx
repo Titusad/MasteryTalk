@@ -11,18 +11,22 @@ import { useEffect, useRef } from "react";
 import { Play, Mic, Trophy, Sparkles } from "lucide-react";
 import { motion } from "motion/react";
 import confetti from "canvas-confetti";
+import { useNarration } from "@/shared/lib/useNarration";
 
 interface ReadinessScoreProps {
     totalCards: number;
     completedCards: number;
     onStartPractice: () => void;
+    narratorUrl?: string;
 }
 
 export function ReadinessScore({
     totalCards,
     completedCards,
     onStartPractice,
+    narratorUrl,
 }: ReadinessScoreProps) {
+    useNarration(narratorUrl || null);
     const confettiFired = useRef(false);
     const score = totalCards > 0 ? Math.round((completedCards / totalCards) * 100) : 0;
 
