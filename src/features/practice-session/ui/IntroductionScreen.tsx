@@ -87,13 +87,52 @@ export function IntroductionScreen({
         {SCENARIO_LABELS[scenarioType]} · {levelTitle}
       </span>
 
-      {/* Greeting + headline */}
+      {/* Greeting + headline — animated word by word */}
       <h1
         className="text-2xl font-bold text-center text-[#0f172b] leading-snug mb-2"
         style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
       >
-        Hey {firstName}, <br></br>in this practice you'll master how to{" "}
-        <span style={{ color: "#6366f1" }}>{introHeadline}</span>.
+        {/* Greeting */}
+        <motion.span
+          className="block"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+        >
+          Hey {firstName},
+        </motion.span>
+
+        {/* Static intro */}
+        <motion.span
+          className="block"
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.8 }}
+        >
+          in this practice you'll master how to{" "}
+        </motion.span>
+
+        {/* Headline words — word by word */}
+        <span style={{ color: "#6366f1" }}>
+          {introHeadline.split(" ").map((word, i) => (
+            <motion.span
+              key={i}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.25, delay: 1.3 + i * 0.1 }}
+              style={{ display: "inline-block", marginRight: "0.25em" }}
+            >
+              {word}
+            </motion.span>
+          ))}
+          <motion.span
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.3 + introHeadline.split(" ").length * 0.1 }}
+          >
+            .
+          </motion.span>
+        </span>
       </h1>
 
       {/* Transition text */}
