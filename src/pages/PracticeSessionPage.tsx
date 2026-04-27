@@ -170,13 +170,11 @@ export function PracticeSessionPage({
     // Self-intro warm-up always starts with intro
     if (scenarioType === "self-intro") return "intro";
 
-    // Show intro screen the first time user enters this level
-    const introKey = `masterytalk_intro_seen_${progressionLevelId}`;
-    const introSeen = progressionLevelId ? localStorage.getItem(introKey) === "1" : true;
+    // Always show intro if the level has one
     const levelDef = progressionPathId && progressionLevelId
       ? getLevelDefinition(progressionPathId, progressionLevelId)
       : null;
-    if (!introSeen && levelDef?.introHeadline) return "intro";
+    if (levelDef?.introHeadline) return "intro";
 
     // Auto-skip "experience" if user already has profile data from onboarding
     const hasProfileContext = userProfile?.cvSummary || (userProfile?.position && userProfile?.industry);
@@ -945,11 +943,6 @@ export function PracticeSessionPage({
                   introHeadline={levelDef.introHeadline}
                   narratorUrl={progressionLevelId ? INTRO_URLS[progressionLevelId] : undefined}
                   onContinue={() => {
-                    // Mark intro as seen for this level
-                    if (progressionLevelId) {
-                      localStorage.setItem(`masterytalk_intro_seen_${progressionLevelId}`, "1");
-                    }
-                    // Advance to next step
                     const hasProfileContext = userProfile?.cvSummary || (userProfile?.position && userProfile?.industry);
                     setStep(hasProfileContext ? "context" : "experience");
                   }}
