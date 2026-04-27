@@ -44,28 +44,28 @@
  *    Be real — corporate answers will work against you."
  */
 
-const R2 = "https://pub-8e06617bc009468c9a26c5ddccc28a74.r2.dev/narration";
+const STORAGE = "https://zkuryztcwmazspscomiu.supabase.co/storage/v1/object/public/narration";
 
 export const NARRATOR_URLS = {
   context: {
-    interview:    R2 ? `${R2}/context-interview.mp3`    : "",
-    sales:        R2 ? `${R2}/context-sales.mp3`        : "",
-    meeting:      R2 ? `${R2}/context-meeting.mp3`      : "",
-    presentation: R2 ? `${R2}/context-presentation.mp3` : "",
+    interview:    `${STORAGE}/context-interview.mp3`,
+    sales:        `${STORAGE}/context-sales.mp3`,
+    meeting:      `${STORAGE}/context-meeting.mp3`,
+    presentation: `${STORAGE}/context-presentation.mp3`,
   },
-  generating: R2 ? `${R2}/generating.mp3`  : "",
-  analyzing:  R2 ? `${R2}/analyzing.mp3`   : "",
+  generating: `${STORAGE}/generating.mp3`,
+  analyzing:  `${STORAGE}/analyzing.mp3`,
   interlocutor: {
-    recruiter:          R2 ? `${R2}/interlocutor-recruiter.mp3`          : "",
-    hiring_manager:     R2 ? `${R2}/interlocutor-hiring-manager.mp3`     : "",
-    sme:                R2 ? `${R2}/interlocutor-sme.mp3`                : "",
-    hr:                 R2 ? `${R2}/interlocutor-hr.mp3`                 : "",
-    gatekeeper:         R2 ? `${R2}/interlocutor-gatekeeper.mp3`         : "",
-    technical_buyer:    R2 ? `${R2}/interlocutor-technical-buyer.mp3`    : "",
-    champion:           R2 ? `${R2}/interlocutor-champion.mp3`           : "",
-    decision_maker:     R2 ? `${R2}/interlocutor-decision-maker.mp3`     : "",
-    meeting_facilitator:R2 ? `${R2}/interlocutor-meeting-facilitator.mp3`: "",
-    senior_stakeholder: R2 ? `${R2}/interlocutor-senior-stakeholder.mp3` : "",
+    recruiter:           `${STORAGE}/interlocutor-recruiter.mp3`,
+    hiring_manager:      `${STORAGE}/interlocutor-hiring-manager.mp3`,
+    sme:                 `${STORAGE}/interlocutor-sme.mp3`,
+    hr:                  `${STORAGE}/interlocutor-hr.mp3`,
+    gatekeeper:          `${STORAGE}/interlocutor-gatekeeper.mp3`,
+    technical_buyer:     `${STORAGE}/interlocutor-technical-buyer.mp3`,
+    champion:            `${STORAGE}/interlocutor-champion.mp3`,
+    decision_maker:      `${STORAGE}/interlocutor-decision-maker.mp3`,
+    meeting_facilitator: `${STORAGE}/interlocutor-meeting-facilitator.mp3`,
+    senior_stakeholder:  `${STORAGE}/interlocutor-senior-stakeholder.mp3`,
   },
 } as const;
 

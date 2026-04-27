@@ -1161,6 +1161,7 @@ export function PracticeSessionPage({
                     variant="generating"
                     canComplete={scriptGenStatus === "ready"}
                     onComplete={() => setAnimationDone(true)}
+                    narratorUrl={NARRATOR_URLS.generating}
                   />
                 )}
 
@@ -1312,6 +1313,7 @@ export function PracticeSessionPage({
                 variant="feedback"
                 canComplete={feedbackStatus === "ready" || feedbackStatus === "error"}
                 onComplete={() => setFeedbackAnimDone(true)}
+                narratorUrl={NARRATOR_URLS.analyzing}
               />
             )}
             {step === "feedback" && (() => {
