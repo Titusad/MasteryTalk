@@ -15,6 +15,7 @@
  */
 
 import { useState, useMemo, useCallback } from "react";
+import { useNarration } from "@/shared/lib/useNarration";
 import { motion, AnimatePresence } from "motion/react";
 import {
     Trophy,
@@ -86,6 +87,7 @@ interface FeedbackScreenProps {
     canRetryFree?: boolean;
     /** Optional slot rendered below progression gate (e.g. path recommendation) */
     bottomSlot?: React.ReactNode;
+    narratorUrl?: string;
 }
 
 export function FeedbackScreen({
@@ -97,7 +99,9 @@ export function FeedbackScreen({
     onFinish,
     canRetryFree = true,
     bottomSlot,
+    narratorUrl,
 }: FeedbackScreenProps) {
+    useNarration(narratorUrl || null);
     const [insightsOpen, setInsightsOpen] = useState(false);
     const isInterview = scenarioType === "interview";
 

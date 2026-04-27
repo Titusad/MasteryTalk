@@ -46,6 +46,13 @@
 
 const STORAGE = "https://zkuryztcwmazspscomiu.supabase.co/storage/v1/object/public/narration";
 
+export const FEEDBACK_URLS: Record<string, string> = {
+  interview:    `${STORAGE}/feedback-interview.mp3`,
+  sales:        `${STORAGE}/feedback-sales.mp3`,
+  meeting:      `${STORAGE}/feedback-meeting.mp3`,
+  presentation: `${STORAGE}/feedback-presentation.mp3`,
+};
+
 export const READINESS_URLS: Record<string, string> = {
   interview:    `${STORAGE}/readiness-interview.mp3`,
   sales:        `${STORAGE}/readiness-sales.mp3`,

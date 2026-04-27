@@ -62,7 +62,7 @@ const _detectedLocale = detectLanguageBackground();
 import { ExperienceScreen } from "@/features/practice-session/ui/ExperienceScreen";
 import { ContextScreen } from "@/features/practice-session/ui/ContextScreen";
 import { InterlocutorIntroScreen } from "@/features/practice-session/ui/InterlocutorIntroScreen";
-import { NARRATOR_URLS, INTRO_URLS, STRATEGY_URLS, PREP_URLS } from "@/features/practice-session/model/narrator-audio";
+import { NARRATOR_URLS, INTRO_URLS, STRATEGY_URLS, PREP_URLS, FEEDBACK_URLS } from "@/features/practice-session/model/narrator-audio";
 import type { InterlocutorKey } from "@/features/practice-session/model/narrator-audio";
 import { StrategyScreen } from "@/features/practice-session/ui/StrategyScreen";
 import { IntroductionScreen } from "@/features/practice-session/ui/IntroductionScreen";
@@ -1353,6 +1353,7 @@ export function PracticeSessionPage({
                   scenarioType={scenarioType}
                   realFeedback={realFeedback}
                   pronunciationData={sessionPronData}
+                  narratorUrl={FEEDBACK_URLS[scenarioType ?? "interview"]}
                   onPracticeAgain={canRepeat ? handlePracticeAgain : undefined}
                   onDownloadPdf={() => {
                     downloadSessionReportPdf({
