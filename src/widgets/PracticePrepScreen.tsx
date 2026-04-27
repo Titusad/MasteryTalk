@@ -14,6 +14,7 @@
  */
 
 import { useState, useCallback, useRef } from "react";
+import { useNarration } from "@/shared/lib/useNarration";
 import { motion } from "motion/react";
 import {
     ArrowLeft,
@@ -39,6 +40,39 @@ const INTERLOCUTOR_LABELS: Record<string, { label: string }> = {
     senior_stakeholder: { label: "Senior Stakeholder" },
 };
 
+/* ── Scenario-specific copy ── */
+const SCENARIO_PREP_CONFIG: Record<string, {
+    title: string;
+    cardLabel: string;
+    completedLabel: string;
+    subtitle: (n: number, interlocutor?: string) => string;
+}> = {
+    interview: {
+        title: "Interview Preparation",
+        cardLabel: "Question",
+        completedLabel: "mastered",
+        subtitle: (n, il) => `${n} questions your ${il || "interviewer"} will likely ask — master each one.`,
+    },
+    sales: {
+        title: "Sales Preparation",
+        cardLabel: "Section",
+        completedLabel: "practiced",
+        subtitle: (n) => `${n} sections — master each one step by step.`,
+    },
+    meeting: {
+        title: "Meeting Preparation",
+        cardLabel: "Key moment",
+        completedLabel: "prepared",
+        subtitle: (n) => `${n} key moments where your communication will define the outcome.`,
+    },
+    presentation: {
+        title: "Presentation Preparation",
+        cardLabel: "Key challenge",
+        completedLabel: "prepared",
+        subtitle: (n) => `${n} questions your audience will likely challenge you with.`,
+    },
+};
+
 interface PracticePrepScreenProps {
     interlocutor: string;
     briefingData: InterviewBriefingData;
@@ -47,6 +81,7 @@ interface PracticePrepScreenProps {
     onBack: () => void;
     scenario?: string;
     scenarioType?: ScenarioType;
+    narratorUrl?: string;
 }
 
 /* ── Main Screen ── */
@@ -57,7 +92,9 @@ export function PracticePrepScreen({
     onBack,
     scenario,
     scenarioType,
+    narratorUrl,
 }: PracticePrepScreenProps) {
+    useNarration(narratorUrl || null);
     const [allDone, setAllDone] = useState(false);
     const [actualCompleted, setActualCompleted] = useState(0);
 
@@ -92,11 +129,11 @@ export function PracticePrepScreen({
 
                 {/* Header */}
                 <PageTitleBlock
-                    title={scenarioType === "sales" ? "Sales Preparation" : "Interview Preparation"}
-                    subtitle={scenarioType === "sales"
-                        ? `${briefingData.anticipatedQuestions.length} sections — master each one step by step.`
-                        : `${briefingData.anticipatedQuestions.length} questions your ${interlocutorInfo.label} will likely ask — master each one.`
-                    }
+                    title={(SCENARIO_PREP_CONFIG[scenarioType ?? "interview"] ?? SCENARIO_PREP_CONFIG.interview).title}
+                    subtitle={(SCENARIO_PREP_CONFIG[scenarioType ?? "interview"] ?? SCENARIO_PREP_CONFIG.interview).subtitle(
+                        briefingData.anticipatedQuestions.length,
+                        interlocutorInfo.label,
+                    )}
                 />
 
                 {/* ── Carousel or Readiness Score ── */}
@@ -113,6 +150,8 @@ export function PracticePrepScreen({
                         onDraftChange={handleDraftChange}
                         isSales={scenarioType === "sales"}
                         scenarioType={scenarioType}
+                        cardLabel={(SCENARIO_PREP_CONFIG[scenarioType ?? "interview"] ?? SCENARIO_PREP_CONFIG.interview).cardLabel}
+                        completedLabel={(SCENARIO_PREP_CONFIG[scenarioType ?? "interview"] ?? SCENARIO_PREP_CONFIG.interview).completedLabel}
                         interlocutor={interlocutor}
                     />
                 )}

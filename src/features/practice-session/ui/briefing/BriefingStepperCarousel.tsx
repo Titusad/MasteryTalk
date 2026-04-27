@@ -36,6 +36,8 @@ interface BriefingStepperCarouselProps {
     isSales?: boolean;
     scenarioType?: string;
     interlocutor?: string;
+    cardLabel?: string;
+    completedLabel?: string;
 }
 
 export function BriefingStepperCarousel({
@@ -45,6 +47,8 @@ export function BriefingStepperCarousel({
     isSales,
     scenarioType,
     interlocutor,
+    cardLabel = "Question",
+    completedLabel = "mastered",
 }: BriefingStepperCarouselProps) {
     /* ── State ── */
     const [activeQuestionIdx, setActiveQuestionIdx] = useState(0);
@@ -123,7 +127,7 @@ export function BriefingStepperCarousel({
             <div className="space-y-2">
                 <div className="flex items-center justify-between">
                     <span className="text-xs text-[#62748e] shrink-0" style={{ fontWeight: 500 }}>
-                        {isSales ? "Section" : "Question"} {activeQuestionIdx + 1} of {totalQuestions}
+                        {cardLabel} {activeQuestionIdx + 1} of {totalQuestions}
                     </span>
 
                     {/* Step indicators */}
@@ -151,7 +155,7 @@ export function BriefingStepperCarousel({
                     </div>
 
                     <span className="text-xs text-[#62748e] shrink-0" style={{ fontWeight: 500 }}>
-                        {completedQuestions.size}/{totalQuestions} {isSales ? "practiced" : "mastered"}
+                        {completedQuestions.size}/{totalQuestions} {completedLabel}
                     </span>
                 </div>
                 <div className="w-full h-2 bg-[#f1f5f9] rounded-full overflow-hidden">
@@ -187,7 +191,7 @@ export function BriefingStepperCarousel({
                                     <PartyPopper className="w-8 h-8 text-emerald-500" />
                                 </div>
                                 <p className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
-                                    {isSales ? "Section practiced!" : "Question mastered!"}
+                                    {cardLabel} {completedLabel}!
                                 </p>
                             </motion.div>
                         </motion.div>
