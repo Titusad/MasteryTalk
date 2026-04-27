@@ -4,17 +4,18 @@ import {
     ArrowLeft,
     Info,
     ClipboardPaste,
-    Loader2,
+    ChevronDown,
+    ChevronUp,
+    Check,
 } from "lucide-react";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 
 import type { ScenarioType, OnboardingProfile } from "@/services/types";
+import { getPresetsForScenario, type SituationPreset } from "@/features/practice-session/model/scenario-presets";
+import { useNarration } from "@/shared/lib/useNarration";
 
 /* ═══════════════════════════════════════════════════════════
-   CONTEXT FIELD DATA — "The Opportunity"
-   
-   After Experience is complete, this screen captures the
-   specific job/prospect context. Interview = JD, Sales = prospect.
+   CONTEXT FIELD DATA — custom form per scenario
    ═══════════════════════════════════════════════════════════ */
 
 interface ExtraContextField {
@@ -22,13 +23,9 @@ interface ExtraContextField {
     placeholder: string;
     hint: string;
     pasteHint: string;
-    suggestions: string[];
 }
 
-const EXTRA_CONTEXT_FIELDS: Record<
-    string,
-    ExtraContextField[]
-> = {
+const EXTRA_CONTEXT_FIELDS: Record<string, ExtraContextField[]> = {
     interview: [
         {
             label: "Job Description",
@@ -37,12 +34,6 @@ const EXTRA_CONTEXT_FIELDS: Record<
             hint: "The AI will tailor interview questions to the specific role, seniority level, and required skills",
             pasteHint:
                 "Tip: Copy-paste directly from LinkedIn or the company careers page",
-            suggestions: [
-                "Senior PM role, B2B SaaS, 5+ years experience required",
-                "Must lead cross-functional teams of 8-12 people",
-                "Key KPIs: retention, NPS, quarterly revenue targets",
-                "Reports to VP of Product, US-based company",
-            ],
         },
     ],
     meeting: [
@@ -53,12 +44,6 @@ const EXTRA_CONTEXT_FIELDS: Record<
             hint: "The AI will simulate realistic interruptions, follow-up questions, and dynamics based on your meeting type",
             pasteHint:
                 "Tip: Copy-paste the meeting invite or agenda if you have one",
-            suggestions: [
-                "Sprint planning with cross-functional team (US + LATAM)",
-                "Weekly standup — I need to report on a delayed deliverable",
-                "All-hands meeting, ~40 people, I'm presenting team OKRs",
-                "1-on-1 with my skip-level manager to discuss promotion",
-            ],
         },
     ],
     presentation: [
@@ -69,21 +54,101 @@ const EXTRA_CONTEXT_FIELDS: Record<
             hint: "The AI will challenge you with realistic Q&A and tailor the difficulty to your audience seniority",
             pasteHint:
                 "Tip: Paste your slide outline or key talking points for more targeted practice",
-            suggestions: [
-                "Q3 results presentation to the board of directors (8 C-level execs)",
-                "Product roadmap review with engineering + leadership",
-                "Tech talk on our migration to microservices — 50+ engineers",
-                "Client-facing demo of our analytics dashboard to a VP of Marketing",
-            ],
+        },
+    ],
+    sales: [
+        {
+            label: "Prospect & context",
+            placeholder:
+                "Who are you pitching to? What's their company, role, and main pain point?",
+            hint: "The AI will role-play the buyer's psychology — skepticism, objections, and evaluation criteria",
+            pasteHint:
+                "Tip: Paste the LinkedIn profile or company description of your prospect",
         },
     ],
 };
 
+const SCENARIO_TITLES: Record<string, string> = {
+    interview: "The Opportunity",
+    sales: "The Prospect",
+    meeting: "The Meeting",
+    presentation: "The Stage",
+    client: "The Client",
+    csuite: "The Room",
+};
+
+const SCENARIO_SUBTITLES: Record<string, string> = {
+    interview: "Pick a situation — or describe your own. I'll build the interview around it.",
+    sales: "Pick a situation — or describe your prospect. The more I know, the harder I'll push back.",
+    meeting: "Pick a situation — or describe your meeting. I'll simulate the room.",
+    presentation: "Pick a situation — or describe the context. I'll be your toughest audience.",
+    client: "Tell me about your client. I'll role-play their expectations, pushback, and concerns.",
+    csuite: "Set the scene. I'll think like a C-level exec — testing your logic, ROI, and composure.",
+};
+
 /* ═══════════════════════════════════════════════════════════
-   CONTEXT SCREEN — "The Opportunity"
-   
-   Now focused solely on capturing the job/prospect context.
-   CV upload has been extracted to ExperienceScreen.
+   PRESET CARD
+   ═══════════════════════════════════════════════════════════ */
+
+function PresetCard({
+    preset,
+    selected,
+    onSelect,
+}: {
+    preset: SituationPreset;
+    selected: boolean;
+    onSelect: () => void;
+}) {
+    return (
+        <button
+            onClick={onSelect}
+            className={`w-full text-left p-4 rounded-2xl border transition-all ${
+                selected
+                    ? "border-[#0f172b] bg-white shadow"
+                    : "border-[#e2e8f0] bg-white hover:border-[#94a3b8] shadow-sm"
+            }`}
+        >
+            <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                        <span className="text-sm font-medium text-[#0f172b] truncate">
+                            {preset.label}
+                        </span>
+                        {preset.badge && (
+                            <span className="shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded bg-[#DBEDDF] text-[#0f172b]">
+                                {preset.badge}
+                            </span>
+                        )}
+                    </div>
+                    <p className="text-xs text-[#62748e]">{preset.company}</p>
+                </div>
+                <div
+                    className={`shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                        selected
+                            ? "border-[#0f172b] bg-[#0f172b]"
+                            : "border-[#e2e8f0]"
+                    }`}
+                >
+                    {selected && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+                </div>
+            </div>
+            {selected && (
+                <motion.p
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="mt-3 text-xs text-[#45556c] leading-relaxed border-t border-[#f0f4f8] pt-3"
+                >
+                    {preset.context}
+                </motion.p>
+            )}
+        </button>
+    );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CONTEXT SCREEN
    ═══════════════════════════════════════════════════════════ */
 
 function ContextScreen({
@@ -92,17 +157,22 @@ function ContextScreen({
     onBack,
     userProfile,
     onProfileUpdate,
+    narratorUrl,
 }: {
     scenarioType?: ScenarioType;
     onContinue: (extraData: Record<string, string>) => void;
     onBack?: () => void;
-    /** User profile — for backward compat */
     userProfile?: OnboardingProfile | null;
     onProfileUpdate?: (profile: OnboardingProfile) => void;
+    narratorUrl?: string;
 }) {
     const fields = scenarioType ? EXTRA_CONTEXT_FIELDS[scenarioType] ?? [] : [];
+    const presets = getPresetsForScenario(scenarioType);
+    useNarration(narratorUrl || null);
     const storageKey = `masterytalk_extra_ctx_${scenarioType || "default"}`;
 
+    const [selectedPreset, setSelectedPreset] = useState<SituationPreset | null>(null);
+    const [customOpen, setCustomOpen] = useState(false);
     const [values, setValues] = useState<Record<string, string>>(() => {
         if (typeof window !== "undefined") {
             try {
@@ -113,40 +183,59 @@ function ContextScreen({
         return {};
     });
 
-    // Auto-save to sessionStorage
+    // Auto-save custom values to sessionStorage
     useEffect(() => {
         if (typeof window !== "undefined") {
             sessionStorage.setItem(storageKey, JSON.stringify({ values }));
         }
     }, [values, storageKey]);
 
-    const hasContent = Object.values(values).some((v) => v.trim().length > 0);
-
-    const scenarioLabels: Record<string, string> = {
-        sales: "sales pitch",
-        interview: "interview",
-        meeting: "remote meeting",
-        presentation: "presentation",
-        client: "client communication",
-        csuite: "executive conversation",
+    // Selecting a preset collapses the custom form
+    const handleSelectPreset = (preset: SituationPreset) => {
+        if (selectedPreset?.id === preset.id) {
+            setSelectedPreset(null);
+        } else {
+            setSelectedPreset(preset);
+            setCustomOpen(false);
+        }
     };
-    const label = scenarioType ? scenarioLabels[scenarioType] ?? "practice" : "practice";
+
+    // Opening custom form deselects preset
+    const handleToggleCustom = () => {
+        setCustomOpen((prev) => {
+            if (!prev) setSelectedPreset(null);
+            return !prev;
+        });
+    };
+
+    const hasCustomContent = Object.values(values).some((v) => v.trim().length > 0);
+    const canContinue = selectedPreset !== null || hasCustomContent;
 
     const handleContinue = () => {
-        onContinue(values);
+        if (selectedPreset) {
+            onContinue({ situationContext: selectedPreset.context });
+        } else {
+            onContinue(values);
+        }
     };
+
+    const handleSkip = () => {
+        onContinue({});
+    };
+
+    const title = scenarioType ? SCENARIO_TITLES[scenarioType] ?? "Context" : "Context";
+    const subtitle = scenarioType ? SCENARIO_SUBTITLES[scenarioType] ?? "The more you tell me, the more realistic this gets." : "The more you tell me, the more realistic this gets.";
 
     return (
         <div
             className="w-full min-h-full flex flex-col bg-[#f0f4f8] relative overflow-hidden"
             style={{ fontFamily: "'Inter', sans-serif" }}
         >
+            <main className="relative w-full max-w-[768px] mx-auto px-6 pt-6 pb-24">
 
-
-            <main className="relative w-full max-w-[768px] mx-auto px-6 pt-6 pb-20">
-
+                {/* Header */}
                 <motion.div
-                    className="text-center mb-10"
+                    className="text-center mb-8"
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
@@ -154,123 +243,158 @@ function ContextScreen({
                     <h1
                         className="text-2xl md:text-[28px] text-[#0f172b] mb-2"
                         style={{ fontWeight: 300, lineHeight: 1.2 }}
-                >
-                    {(() => {
-                        const titles: Record<string, string> = {
-                            interview: "The Opportunity",
-                            sales: "The Prospect",
-                            meeting: "The Meeting",
-                            presentation: "The Stage",
-                            client: "The Client",
-                            csuite: "The Room",
-                        };
-                        return titles[scenarioType || ""] || "Context";
-                    })()}
+                    >
+                        {title}
                     </h1>
                     <p className="text-[#45556c] text-sm md:text-base max-w-lg mx-auto">
-                        {(() => {
-                            const subtitles: Record<string, string> = {
-                                interview: "Paste the job description — I'll build questions that match what they're actually looking for.",
-                                sales: "Tell me about your prospect. The more I know, the harder I'll push back — like a real buyer.",
-                                meeting: "Tell me about the meeting. I'll simulate the room — interruptions, follow-ups, all of it.",
-                                presentation: "Describe the situation. I'll be your toughest audience member during Q&A.",
-                                client: "Tell me about your client. I'll role-play their expectations, pushback, and concerns.",
-                                csuite: "Set the scene. I'll think like a C-level exec — testing your logic, ROI, and composure.",
-                            };
-                            return subtitles[scenarioType || ""] || "The more you tell me, the more realistic this gets.";
-                        })()}
+                        {subtitle}
                     </p>
                 </motion.div>
 
-                {/* ═══ TEXT FIELDS ═══ */}
-                {fields.length > 0 && (
-                    <motion.div
-                        className="space-y-8 mb-10"
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4, delay: 0.1 }}
-                    >
-                        {fields.map((field, i) => {
-                            const currentValue = values[field.label] ?? "";
-
-                            return (
+                {/* Preset cards — stagger animado */}
+                {presets.length > 0 && (
+                    <div className="mb-4">
+                        <motion.p
+                            className="text-xs font-medium text-[#62748e] uppercase tracking-wide mb-3"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.4, delay: 0.15 }}
+                        >
+                            Quick start — pick a situation
+                        </motion.p>
+                        <div className="space-y-2">
+                            {presets.map((preset, i) => (
                                 <motion.div
-                                    key={i}
-                                    className="bg-white rounded-2xl border border-[#e2e8f0] p-5 shadow-sm"
+                                    key={preset.id}
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.4, delay: 0.1 + i * 0.08 }}
+                                    transition={{ duration: 0.35, delay: 0.2 + i * 0.08 }}
                                 >
-                                    {/* Field header */}
-                                    <div className="flex items-start justify-between mb-3">
-                                        <label className="flex items-center gap-1.5">
-                                            <span className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
-                                                {field.label}
-                                            </span>
-                                            <span className="relative group cursor-help">
-                                                <Info className="w-3.5 h-3.5 text-[#94a3b8] group-hover:text-[#0f172b] transition-colors" />
-                                                <span className="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-56 rounded-xl bg-[#0f172b] text-white text-xs px-3 py-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-lg z-50" style={{ lineHeight: "1.45" }}>
-                                                    {field.hint}
-                                                    <span className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-[5px] border-x-transparent border-t-[5px] border-t-[#0f172b]" />
-                                                </span>
-                                            </span>
-                                        </label>
-                                    </div>
-
-                                    {/* Paste hint */}
-                                    <div className="flex items-center gap-1.5 mb-3 text-xs text-[#62748e]">
-                                        <ClipboardPaste className="w-3 h-3 shrink-0" />
-                                        <span>{field.pasteHint}</span>
-                                    </div>
-
-                                    {/* Textarea */}
-                                    <textarea
-                                        value={currentValue}
-                                        onChange={(e) =>
-                                            setValues((prev) => ({ ...prev, [field.label]: e.target.value }))
-                                        }
-                                        placeholder={field.placeholder}
-                                        className="w-full h-[110px] bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-4 text-[#0f172b] placeholder:text-[#94a3b8] focus:outline-none focus:border-[#0f172b] focus:bg-white transition-all resize-none"
-                                        style={{ fontSize: "14px", lineHeight: "22px" }}
+                                    <PresetCard
+                                        preset={preset}
+                                        selected={selectedPreset?.id === preset.id}
+                                        onSelect={() => handleSelectPreset(preset)}
                                     />
-
-                                    {/* Character count */}
-                                    {currentValue.length > 0 && (
-                                        <div className="flex justify-end mt-1">
-                                            <span className={`text-[10px] ${currentValue.length > 4000 ? "text-amber-500" : "text-[#c4cdd5]"}`}>
-                                                {currentValue.length} / 5,000 chars
-                                            </span>
-                                        </div>
-                                    )}
                                 </motion.div>
-                            );
-                        })}
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Custom form toggle */}
+                {fields.length > 0 && (
+                    <motion.div
+                        className="mb-8"
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: 0.2 }}
+                    >
+                        <button
+                            onClick={handleToggleCustom}
+                            className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-[#e2e8f0] bg-white text-sm text-[#45556c] hover:border-[#94a3b8] transition-colors"
+                        >
+                            <span className="font-medium">
+                                {customOpen ? "Using my own context" : "Or describe your specific situation"}
+                            </span>
+                            {customOpen
+                                ? <ChevronUp className="w-4 h-4 shrink-0" />
+                                : <ChevronDown className="w-4 h-4 shrink-0" />
+                            }
+                        </button>
+
+                        <AnimatePresence>
+                            {customOpen && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: "auto" }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    transition={{ duration: 0.25 }}
+                                    className="overflow-hidden"
+                                >
+                                    <div className="space-y-4 pt-3">
+                                        {fields.map((field, i) => {
+                                            const currentValue = values[field.label] ?? "";
+                                            return (
+                                                <div
+                                                    key={i}
+                                                    className="bg-white rounded-2xl border border-[#e2e8f0] p-5 shadow-sm"
+                                                >
+                                                    <div className="flex items-start justify-between mb-3">
+                                                        <label className="flex items-center gap-1.5">
+                                                            <span className="text-sm font-medium text-[#0f172b]">
+                                                                {field.label}
+                                                            </span>
+                                                            <span className="relative group cursor-help">
+                                                                <Info className="w-3.5 h-3.5 text-[#94a3b8] group-hover:text-[#0f172b] transition-colors" />
+                                                                <span className="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-56 rounded-xl bg-[#0f172b] text-white text-xs px-3 py-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-lg z-50" style={{ lineHeight: "1.45" }}>
+                                                                    {field.hint}
+                                                                    <span className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-[5px] border-x-transparent border-t-[5px] border-t-[#0f172b]" />
+                                                                </span>
+                                                            </span>
+                                                        </label>
+                                                    </div>
+                                                    <div className="flex items-center gap-1.5 mb-3 text-xs text-[#62748e]">
+                                                        <ClipboardPaste className="w-3 h-3 shrink-0" />
+                                                        <span>{field.pasteHint}</span>
+                                                    </div>
+                                                    <textarea
+                                                        value={currentValue}
+                                                        onChange={(e) =>
+                                                            setValues((prev) => ({ ...prev, [field.label]: e.target.value }))
+                                                        }
+                                                        placeholder={field.placeholder}
+                                                        className="w-full h-[110px] bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-4 text-[#0f172b] placeholder:text-[#94a3b8] focus:outline-none focus:border-[#0f172b] focus:bg-white transition-all resize-none"
+                                                        style={{ fontSize: "14px", lineHeight: "22px" }}
+                                                    />
+                                                    {currentValue.length > 0 && (
+                                                        <div className="flex justify-end mt-1">
+                                                            <span className={`text-[10px] ${currentValue.length > 4000 ? "text-amber-500" : "text-[#c4cdd5]"}`}>
+                                                                {currentValue.length} / 5,000 chars
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </motion.div>
                 )}
 
+                {/* CTAs */}
                 <motion.div
-                    className="flex flex-col items-center justify-center"
+                    className="flex flex-col items-center gap-3"
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: 0.2 }}
+                    transition={{ duration: 0.4, delay: 0.25 }}
                 >
                     <button
                         onClick={handleContinue}
-                        disabled={!hasContent}
-                        className={`flex items-center gap-3 px-10 py-5 rounded-full text-xl shadow-[0px_10px_15px_rgba(0,0,0,0.1)] transition-all ${hasContent
+                        disabled={!canContinue}
+                        className={`flex items-center gap-3 px-10 py-4 rounded-lg text-base shadow-lg transition-all ${
+                            canContinue
                                 ? "bg-[#0f172b] text-white hover:bg-[#1d293d] cursor-pointer"
                                 : "bg-[#e2e8f0] text-[#94a3b8] cursor-not-allowed"
-                            }`}
+                        }`}
                         style={{ fontWeight: 500 }}
                     >
                         Let's build your strategy
-                        <ArrowRight className="w-6 h-6" />
+                        <ArrowRight className="w-5 h-5" />
+                    </button>
+
+                    <button
+                        onClick={handleSkip}
+                        className="text-sm text-[#94a3b8] hover:text-[#62748e] transition-colors py-1"
+                    >
+                        Skip — use a generic scenario
                     </button>
 
                     {onBack && (
                         <button
                             onClick={onBack}
-                            className="mt-4 flex items-center justify-center gap-1.5 py-2.5 text-sm text-[#62748e] hover:text-[#0f172b] transition-colors"
+                            className="flex items-center justify-center gap-1.5 py-2 text-sm text-[#62748e] hover:text-[#0f172b] transition-colors"
                             style={{ fontWeight: 500 }}
                         >
                             <ArrowLeft className="w-3.5 h-3.5" />

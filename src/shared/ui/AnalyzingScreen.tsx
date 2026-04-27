@@ -16,6 +16,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { CheckCircle2 } from "lucide-react";
 import { BrandLogo } from "./BrandLogo";
 import { COLORS } from "./design-tokens";
+import { useNarration } from "@/shared/lib/useNarration";
 
 /* ── Config per variant ── */
 
@@ -94,11 +95,14 @@ export function AnalyzingScreen({
     variant = "feedback",
     onComplete,
     canComplete = true,
+    narratorUrl,
 }: {
     variant?: "feedback" | "script" | "results" | "generating";
     onComplete: () => void;
     canComplete?: boolean;
+    narratorUrl?: string;
 }) {
+    useNarration(narratorUrl || null);
     const config = ANALYSIS_CONFIGS[variant];
     const [activeStep, setActiveStep] = useState(0);
     const [progress, setProgress] = useState(0);

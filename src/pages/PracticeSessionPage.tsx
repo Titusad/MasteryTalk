@@ -61,6 +61,9 @@ const _detectedLocale = detectLanguageBackground();
 /* ── Sub-screens extracted to session/ ── */
 import { ExperienceScreen } from "@/features/practice-session/ui/ExperienceScreen";
 import { ContextScreen } from "@/features/practice-session/ui/ContextScreen";
+import { InterlocutorIntroScreen } from "@/features/practice-session/ui/InterlocutorIntroScreen";
+import { NARRATOR_URLS } from "@/features/practice-session/model/narrator-audio";
+import type { InterlocutorKey } from "@/features/practice-session/model/narrator-audio";
 import { StrategyScreen } from "@/features/practice-session/ui/StrategyScreen";
 import { IntroductionScreen } from "@/features/practice-session/ui/IntroductionScreen";
 import { SelfIntroContextScreen } from "@/features/practice-session/ui/SelfIntroContextScreen";
@@ -118,7 +121,7 @@ import type { PersonalizedPatterns } from "@/features/practice-session/model/ses
    practice-prep → practice → analyzing → feedback → Dashboard
    ═══════════════════════════════════════════════════════════ */
 /** Steps where switching level is safe (no AI-generated data to lose) */
-const SAFE_STEPS: Step[] = ["intro", "experience", "context", "self-intro-context"];
+const SAFE_STEPS: Step[] = ["intro", "experience", "context", "self-intro-context", "interlocutor-intro"];
 
 export function PracticeSessionPage({
   scenario,
@@ -988,6 +991,7 @@ export function PracticeSessionPage({
                 scenarioType={scenarioType}
                 userProfile={userProfile}
                 onProfileUpdate={onProfileUpdate}
+                narratorUrl={NARRATOR_URLS.context[scenarioType as keyof typeof NARRATOR_URLS.context] || ""}
                 onContinue={(extraData) => {
                   // Inject profile data into guided fields for AI generation
                   const enriched = { ...extraData };
@@ -1210,7 +1214,6 @@ export function PracticeSessionPage({
                 interlocutor={interlocutor}
                 briefingData={interviewBriefing}
                 onStartSimulation={(userDrafts) => {
-                  // Package briefing data for the interviewer prompt (Gap A+B)
                   const briefingPayload: SessionConfig["interviewBriefing"] = {
                     anticipatedQuestions: interviewBriefing.anticipatedQuestions.map((q) => ({
                       id: q.id,
@@ -1223,14 +1226,20 @@ export function PracticeSessionPage({
                     userDrafts: Object.keys(userDrafts).length > 0 ? userDrafts : undefined,
                   };
                   setBriefingForSession(briefingPayload);
-                  // Persist drafts for PDF generation later
                   if (Object.keys(userDrafts).length > 0) {
                     setUserDrafts(userDrafts);
                   }
-                  setStep("practice");
+                  setStep("interlocutor-intro");
                 }}
                 onBack={() => setStep("context")}
                 scenario={scenario}
+              />
+            )}
+            {step === "interlocutor-intro" && (
+              <InterlocutorIntroScreen
+                interlocutor={effectiveInterlocutor}
+                narratorUrl={NARRATOR_URLS.interlocutor[effectiveInterlocutor as InterlocutorKey] || ""}
+                onReady={() => setStep("practice")}
               />
             )}
             {step === "practice-prep" && generatedScript && scenarioType !== "interview" && (

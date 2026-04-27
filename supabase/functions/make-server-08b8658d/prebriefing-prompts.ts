@@ -19,6 +19,7 @@
  */
 
 import { resolveLocale } from "./locale-utils.ts";
+import { getScenarioGapAnalysis } from "./scenarios/index.ts";
 
 /* ═══════════════════════════════════════════════════════════════
    INTERLOCUTOR INTELLIGENCE
@@ -174,7 +175,9 @@ function processGuidedFields(
         filledKeys.push(normalizedKey);
 
         // Semantic labeling based on known field keys
-        if (normalizedKey.includes("job description") || normalizedKey === "role") {
+        if (normalizedKey === "situationcontext") {
+            arsenalLines.push(`SITUATION CONTEXT (pre-defined scenario):\n"""${value}"""`);
+        } else if (normalizedKey.includes("job description") || normalizedKey === "role") {
             arsenalLines.push(`TARGET ROLE / JOB DESCRIPTION:\n"""${value}"""`);
         } else if (normalizedKey.includes("key experience") || normalizedKey === "strength" || normalizedKey.includes("professional experience")) {
             arsenalLines.push(`USER'S RELEVANT EXPERIENCE & STRENGTHS:\n"""${value}"""`);
@@ -192,22 +195,7 @@ function processGuidedFields(
     }
 
     // Identify gaps
-    const gapLines: string[] = [];
-    if (scenarioType === "interview") {
-        if (!filledKeys.some((k) => k.includes("job") || k === "role")) {
-            gapLines.push("- No job description provided. Infer a realistic senior role from the user's experience.");
-        }
-        if (!filledKeys.some((k) => k.includes("experience") || k === "strength" || k === "cvsummary")) {
-            gapLines.push("- No experience details. Focus the script on STRUCTURE and universal interview strategy.");
-        }
-    } else {
-        if (!filledKeys.some((k) => k.includes("prospect") || k.includes("company") || k === "product")) {
-            gapLines.push("- No prospect information. Create a realistic B2B scenario.");
-        }
-        if (!filledKeys.some((k) => k.includes("deck") || k.includes("talking") || k === "problem")) {
-            gapLines.push("- No pitch material. Focus on strategic frameworks the user can fill with their data.");
-        }
-    }
+    const gapLines = getScenarioGapAnalysis(scenarioType, filledKeys);
 
     return {
         userArsenal: arsenalLines.join("\n\n"),

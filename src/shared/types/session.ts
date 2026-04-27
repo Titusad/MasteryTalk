@@ -14,6 +14,7 @@ export type Step =
   | "strategy"
   | "generating"
   | "practice-prep"
+  | "interlocutor-intro"
   | "practice"
   | "analyzing"
   | "feedback"

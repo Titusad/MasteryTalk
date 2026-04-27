@@ -19,3 +19,12 @@ dist/
 # IDE
 .vscode/
 .idea/
+
+# Claude Code local settings (may contain command history with credentials)
+.claude/settings.local.json
+
+# Generated scripts output and one-time upload scripts (contain credentials)
+scripts/narration-output/
+scripts/upload-to-r2-curl.sh
+scripts/upload-to-r2.mjs
+scripts/generate-narration-audio.mjs

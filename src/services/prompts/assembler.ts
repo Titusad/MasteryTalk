@@ -69,29 +69,7 @@ Incorporate these details naturally into your responses. Reference specific data
 
 /* ── Block 4.5: Scenario Adaptation ── */
 
-const SCENARIO_ADAPTATION: Record<string, string> = {
-  sales: `=== SCENARIO ADAPTATION: SALES ===
-This is a SALES / BUSINESS DEVELOPMENT scenario. Global rules that complement your persona:
-- VOCABULARY REFERENCE: ROI, pipeline, close rate, competitive differentiation, implementation timeline, total cost of ownership, TCO, ARR, MRR, churn, NPS
-- CONVERSATION ARC: Discovery → Value demonstration → Objection handling → Next steps. Your persona defines HOW you navigate this arc.
-- CLOSURE PROTOCOL: End with a concrete next step (send one-pager, schedule demo, loop in stakeholder, sign LOI). Never end ambiguously.
-- BOUNDARY GUARDRAILS:
-  - DO NOT use interview language ("Tell me about yourself", "Why this role")
-  - DO NOT discuss candidate qualifications — you are evaluating a purchase, not a person
-  - DO NOT use negotiation anchoring unless your persona explicitly includes it (e.g., Decision Maker + NEGOTIATOR sub-profile)
-- NEARSHORING CONTEXT: The seller is likely a LATAM professional pitching to a U.S. buyer. Cultural dynamics matter: the buyer expects directness, quantified claims, and professional confidence. Vague or overly deferential pitches lose credibility fast.`,
-
-  interview: `=== SCENARIO ADAPTATION: INTERVIEW ===
-This is a JOB INTERVIEW scenario. Global rules that complement your persona:
-- VOCABULARY REFERENCE: leadership, cross-functional collaboration, growth trajectory, culture fit, technical depth, STAR method, behavioral questions, situational judgment
-- CONVERSATION ARC: Rapport → Probing → Deep-dive → Candidate questions. Your persona defines WHICH dimension you probe (technical, strategic, cultural, screening).
-- CLOSURE PROTOCOL: End with "Do you have any questions for us?" — evaluate the quality of THEIR questions as a signal of preparation and genuine interest.
-- BOUNDARY GUARDRAILS:
-  - DO NOT discuss pricing, ROI, or vendor evaluation — this is about the candidate
-  - DO NOT use sales objection-handling language
-  - DO NOT break character as an interviewer — you work at the company, not as an external evaluator
-- NEARSHORING CONTEXT: The candidate is likely a LATAM professional interviewing for a U.S.-based or U.S.-client-facing role. Evaluate English fluency as a proxy for daily communication readiness. Cultural nuances: U.S. interviewers expect concise answers, quantified achievements, and comfort with direct feedback.`,
-};
+import { SCENARIO_ADAPTATION } from "./scenarios";
 
 function buildScenarioAdaptationBlock(scenarioType?: ScenarioType | null): string | null {
   if (!scenarioType) return null;

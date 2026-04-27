@@ -14,27 +14,30 @@
  */
 
 import { resolveLocale, getPillarTags } from "./locale-utils.ts";
+import {
+  INTERVIEW_DUAL_AXIS_BLOCK,
+  INTERVIEW_OUTPUT_FIELDS,
+  buildInterviewBriefingBlock,
+  SALES_DUAL_AXIS_BLOCK,
+  SALES_OUTPUT_FIELDS,
+  MEETING_DUAL_AXIS_BLOCK,
+  MEETING_OUTPUT_FIELDS,
+  PRESENTATION_DUAL_AXIS_BLOCK,
+  PRESENTATION_OUTPUT_FIELDS,
+  type InterviewBriefingData,
+} from "./scenarios/index.ts";
 
 export function buildFeedbackAnalystPrompt(
   scenarioType?: string | null,
   locale?: string | null,
   /** Gap C: briefing data from pre-interview preparation */
-  interviewBriefing?: {
-    anticipatedQuestions?: Array<{
-      id: number;
-      question: string;
-      approach: string;
-      suggestedOpener?: string;
-      framework?: { name: string; description: string };
-      keyPhrases?: string[];
-    }>;
-    userDrafts?: Record<number, string>;
-  } | null
+  interviewBriefing?: InterviewBriefingData | null
 ): string {
   const isInterview = scenarioType === "interview";
+  const isMeeting = scenarioType === "meeting";
+  const isPresentation = scenarioType === "presentation";
+  const isSales = !isInterview && !isMeeting && !isPresentation;
   const lc = resolveLocale(locale);
-  const lang = lc.lang;
-  const langTag = lc.langTag;
   const pillarTags = getPillarTags(lc);
 
   const toneGood1 = "You defended your pricing with conviction, demonstrating excellent preparation.";
@@ -45,83 +48,11 @@ export function buildFeedbackAnalystPrompt(
 You are an expert in executive communication, international negotiation, and professional coaching. You have just observed a simulated business conversation between a Latin American professional and a demanding U.S. business counterpart.
 
 Your job is to analyze the transcript and provide feedback that goes BEYOND grammar — you focus on PROFESSIONAL EFFECTIVENESS: did they persuade? did they hold their ground? did they sound like a senior executive or a junior employee?
-${isInterview ? `
-=== INTERVIEW-SPECIFIC: DUAL-AXIS EVALUATION ===
-This was a JOB INTERVIEW practice session. You must evaluate on TWO axes:
-
-**AXIS 1: Language Proficiency** — "How did they SOUND?"
-(Vocabulary, Grammar, Fluency, Professional Tone, Persuasion — scored in pillarScores as usual)
-
-**AXIS 2: Content Quality** — "How well did they ANSWER?"
-Evaluate these 4 dimensions (0-100 each):
-- **Relevance**: Did they actually answer what was asked? Or did they go off-topic, give generic answers, or dodge the question?
-- **Structure**: Did they organize their answer with a clear beginning, middle, and end? Was their reasoning easy to follow?
-- **Examples**: Did they provide concrete, specific examples with numbers/metrics? Or were answers vague and theoretical?
-- **Impact**: Were their answers memorable? Did they sell themselves effectively? Would the interviewer be impressed and want to hire them?
-
-Also provide 3-4 "contentInsights" — one per dimension that needs attention, with an observation and a coaching tip.
-
-The **interviewReadinessScore** combines both axes:
-  interviewReadinessScore = (professionalProficiency * 0.4) + (avgContentQuality * 0.6)
-Content Quality gets MORE weight because in an interview, WHAT you say matters more than HOW you say it (as long as language is competent).
-` : ''}
-${!isInterview ? `
-=== SALES-SPECIFIC: DUAL-AXIS EVALUATION ===
-This was a SALES PITCH practice session. You must evaluate on TWO axes:
-
-**AXIS 1: Language Proficiency** — "How did they SOUND?"
-(Vocabulary, Grammar, Fluency, Professional Tone, Persuasion — scored in pillarScores as usual)
-
-**AXIS 2: Sales Effectiveness** — "How well did they SELL?"
-Evaluate these 4 dimensions (0-100 each):
-- **Value Articulation**: Did they clearly communicate the value proposition? Did they frame benefits in terms of ROI, cost savings, or competitive advantage? Or did they lead with features and jargon?
-- **Objection Handling**: When the buyer pushed back (price, competitors, timing), did they address the objection directly with data/evidence? Or did they deflect, fold, or panic?
-- **Closing Strength**: Did they drive toward a concrete next step? Did they create urgency? Or did the conversation fizzle with "I'll send you some materials"?
-- **Discovery Quality**: Did they ask smart questions to understand the buyer's pain? Did they listen and adapt, or just deliver a monologue?
-
-Also provide 2-4 "salesInsights" — one per dimension that needs attention, with an observation and a coaching tip.
-
-The **salesReadinessScore** combines both axes:
-  salesReadinessScore = (professionalProficiency * 0.35) + (avgSalesEffectiveness * 0.65)
-Sales Effectiveness gets MORE weight because in a pitch, persuasion and strategy matter more than perfect grammar.
-` : ''}
-${isInterview && interviewBriefing?.anticipatedQuestions?.length ? `
-=== GAP C: BRIEFING-AWARE EVALUATION ===
-The candidate prepared for this interview using a structured pre-briefing. Below is what they practiced.
-Evaluate whether they ACTUALLY USED their preparation during the live conversation.
-
-PREPARED QUESTIONS & STRATEGIES:
-${interviewBriefing.anticipatedQuestions.map(q => {
-    const lines = [`Q${q.id}: "${q.question}" — Planned approach: ${q.approach}`];
-    if (q.framework) lines.push(`  Expected framework: ${q.framework.name}`);
-    if (q.keyPhrases?.length) lines.push(`  Key phrases practiced: ${q.keyPhrases.join(", ")}`);
-    const draft = interviewBriefing.userDrafts?.[q.id];
-    if (draft?.trim()) lines.push(`  Prepared draft: "${draft.trim().slice(0, 200)}"`);
-    return lines.join("\n");
-  }).join("\n\n")}
-
-BRIEFING EVALUATION CRITERIA:
-1. **Preparation Utilization**: Did they use the frameworks, openers, and key phrases they practiced? Or did they forget their preparation under pressure?
-2. **Adaptation Quality**: When the interviewer deviated from anticipated questions, did they adapt their prepared material or freeze?
-3. **Draft vs. Live Gap**: Compare their prepared drafts (if any) to what they actually said. Did they improve on their drafts, stick to them robotically, or abandon them entirely?
-
-Include these observations in your strengths/opportunities. If they used their preparation well, it's a strength ("Excellent preparation transfer"). If they abandoned it under pressure, it's an opportunity.
-
-=== CRITICAL: METHODOLOGICAL COHERENCE ===
-**YOU MUST ONLY REFERENCE FRAMEWORKS THAT WERE EXPLICITLY TAUGHT ABOVE.**
-The user was coached with SPECIFIC frameworks for each question (listed in "Expected framework" above).
-- If a question had NO framework assigned, do NOT suggest any (not STAR, not PAR, not CAR, not anything).
-- If a question had a specific framework (e.g., "Problem-Action-Result"), ONLY reference THAT framework.
-- NEVER introduce a framework the user has never seen. This confuses them and undermines their confidence.
-- For "Structure" feedback, focus on whether their answer had a clear beginning/middle/end — do NOT name-drop frameworks they weren't taught.
-` : ''}
-${isInterview && (!interviewBriefing?.anticipatedQuestions?.length) ? `
-=== CRITICAL: NO FRAMEWORK ASSUMPTIONS ===
-The user did NOT go through a structured briefing with specific frameworks.
-- Do NOT suggest specific frameworks by name (e.g., STAR, PAR, CAR).
-- Instead, give concrete structural advice: "Start with the situation, then explain what you did, and end with the result."
-- Frame advice as actionable steps, not academic framework names.
-` : ''}
+${isInterview ? INTERVIEW_DUAL_AXIS_BLOCK : ''}
+${isSales ? SALES_DUAL_AXIS_BLOCK : ''}
+${isMeeting ? MEETING_DUAL_AXIS_BLOCK : ''}
+${isPresentation ? PRESENTATION_DUAL_AXIS_BLOCK : ''}
+${isInterview ? buildInterviewBriefingBlock(interviewBriefing) : ''}
 === LANGUAGE ===
 ALL text fields in your response (titles, descriptions, observations, tips, verdicts) MUST be written entirely in English. The only exceptions are if you need to quote the user directly in another language.
 
@@ -212,47 +143,7 @@ Respond with ONLY a JSON object. No markdown, no code fences, no commentary.
       "tip": "Actionable coaching tip in English (1-2 sentences). Include an English example phrase in single quotes if applicable."
     }
   ],
-  "professionalProficiency": 0-100${isInterview ? `
-  ,
-  "contentScores": {
-    "Relevance": 0-100,
-    "Structure": 0-100,
-    "Examples": 0-100,
-    "Impact": 0-100
-  },
-  "interviewReadinessScore": 0-100,
-  "preparationUtilization": {
-    "score": 0-100,
-    "verdict": "Short verdict in English (e.g. 'Strong Alignment', 'Abandoned Preparation')",
-    "insights": [
-      {
-        "aspect": "Framework usage | Key phrases | Pivot execution",
-        "observation": "What happened in English",
-        "rating": "strong | partial | missed"
-      }
-    ]
-  },
-  "contentInsights": [
-    {
-      "dimension": "Relevance | Structure | Examples | Impact",
-      "observation": "What you noticed in English (1 sentence)",
-      "tip": "Actionable coaching tip in English (1-2 sentences). Include an English example phrase in single quotes if applicable."
-    }
-  ]` : ''}${!isInterview ? `,
-  "salesContentScores": {
-    "Value Articulation": 0-100,
-    "Objection Handling": 0-100,
-    "Closing Strength": 0-100,
-    "Discovery Quality": 0-100
-  },
-  "salesReadinessScore": 0-100,
-  "salesInsights": [
-    {
-      "dimension": "Value Articulation | Objection Handling | Closing Strength | Discovery Quality",
-      "observation": "What you noticed in English (1 sentence)",
-      "tip": "Actionable coaching tip in English (1-2 sentences). Include an English example phrase in single quotes if applicable."
-    }
-  ]` : ''}
+  "professionalProficiency": 0-100${isInterview ? INTERVIEW_OUTPUT_FIELDS : ''}${isSales ? SALES_OUTPUT_FIELDS : ''}${isMeeting ? MEETING_OUTPUT_FIELDS : ''}${isPresentation ? PRESENTATION_OUTPUT_FIELDS : ''}
 }
 
 === PILLAR SCORES GUIDE ===

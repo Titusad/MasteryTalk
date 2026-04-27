@@ -152,8 +152,23 @@ function ScreenChat() {
           <div className="w-7 h-7 rounded-full bg-[#0f172b] flex items-center justify-center shrink-0">
             <Sparkles className="w-3 h-3 text-white" />
           </div>
-          <div className="bg-white rounded-2xl rounded-tl-sm px-3.5 py-2.5 text-xs text-[#334155] leading-relaxed max-w-[85%] shadow-sm border border-[#e2e8f0]">
-            Hi! Thanks for taking the time to meet today. I've been looking forward to hearing about your team. Could you start by giving me an overview of what you do?
+          <div className="flex-1">
+            <div className="bg-white rounded-2xl rounded-tl-sm px-3.5 py-2.5 text-xs text-[#334155] leading-relaxed shadow-sm border border-[#e2e8f0]">
+              Hi! Thanks for taking the time to meet today. I've been looking forward to hearing about your team. Could you start by giving me an overview of what you do?
+            </div>
+            {/* Coaching hint — matches real VoicePractice UI */}
+            <div className="mt-1.5 bg-[#f0fdf4] border border-[#b9f8cf] rounded-xl px-3 py-2">
+              <div className="flex items-center gap-1 mb-1">
+                <Sparkles className="w-2.5 h-2.5 text-[#15803d]" />
+                <span className="text-[8px] text-[#15803d] uppercase tracking-wide" style={{ fontWeight: 600 }}>Coaching hint</span>
+              </div>
+              <p className="text-[9px] text-[#166534] mb-1.5 italic">"What we've delivered in the last three years..."</p>
+              <div className="flex flex-wrap gap-1">
+                {["track record", "ROI", "enterprise scale"].map((kw) => (
+                  <span key={kw} className="bg-[#dcfce7] text-[#166534] px-1.5 py-0.5 rounded-md text-[8px]" style={{ fontWeight: 500 }}>{kw}</span>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -234,18 +249,71 @@ function ScreenFeedback() {
       </div>
       {/* Feedback content */}
       <div className="flex-1 bg-white rounded-b-xl p-4 flex flex-col gap-3 overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#dcfce7] to-[#d1fae5] flex items-center justify-center">
-            <CheckCircle2 className="w-3.5 h-3.5 text-[#15803d]" />
+
+        {/* Header + score badge */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#dcfce7] to-[#d1fae5] flex items-center justify-center">
+              <CheckCircle2 className="w-3.5 h-3.5 text-[#15803d]" />
+            </div>
+            <div>
+              <p className="text-[11px] text-[#0f172b]" style={{ fontWeight: 600 }}>Conversation Feedback</p>
+              <p className="text-[9px] text-[#94a3b8]">{s.subline}</p>
+            </div>
           </div>
-          <div>
-            <p className="text-[11px] text-[#0f172b]" style={{ fontWeight: 600 }}>Conversation Feedback</p>
-            <p className="text-[9px] text-[#94a3b8]">{s.subline}</p>
+          <div className="bg-[#0f172b] text-white rounded-full px-2.5 py-1 text-[10px]" style={{ fontWeight: 700 }}>78/100</div>
+        </div>
+
+        {/* Pillar scores — radar chart (matches real ConversationFeedback UI) */}
+        <div className="bg-[#f8fafc] rounded-xl border border-[#e2e8f0] p-2 flex items-center gap-3">
+          <svg viewBox="0 0 140 120" className="w-28 shrink-0">
+            {/* Grid pentagons */}
+            <polygon points="70,20 113,51 97,101 43,101 27,51" fill="none" stroke="#e2e8f0" strokeWidth="1" />
+            <polygon points="70,31 102,55 89,92 51,92 38,55" fill="none" stroke="#e2e8f0" strokeWidth="0.8" />
+            <polygon points="70,43 91,58 83,83 57,83 49,58" fill="none" stroke="#e2e8f0" strokeWidth="0.8" />
+            <polygon points="70,54 81,62 76,73 64,73 59,62" fill="none" stroke="#e2e8f0" strokeWidth="0.6" />
+            {/* Axis lines */}
+            <line x1="70" y1="65" x2="70" y2="20" stroke="#e2e8f0" strokeWidth="0.7" />
+            <line x1="70" y1="65" x2="113" y2="51" stroke="#e2e8f0" strokeWidth="0.7" />
+            <line x1="70" y1="65" x2="97" y2="101" stroke="#e2e8f0" strokeWidth="0.7" />
+            <line x1="70" y1="65" x2="43" y2="101" stroke="#e2e8f0" strokeWidth="0.7" />
+            <line x1="70" y1="65" x2="27" y2="51" stroke="#e2e8f0" strokeWidth="0.7" />
+            {/* Score polygon: Vocab 78%, Grammar 82%, Fluency 65%, ProfTone 71%, Persuasion 60% */}
+            <polygon points="70,30 105,54 87,89 51,91 44,57" fill="#0f172b" fillOpacity="0.1" stroke="#0f172b" strokeWidth="1.5" strokeLinejoin="round" />
+            {/* Score dots */}
+            <circle cx="70" cy="30" r="2.5" fill="#0f172b" />
+            <circle cx="105" cy="54" r="2.5" fill="#0f172b" />
+            <circle cx="87" cy="89" r="2.5" fill="#0f172b" />
+            <circle cx="51" cy="91" r="2.5" fill="#0f172b" />
+            <circle cx="44" cy="57" r="2.5" fill="#0f172b" />
+            {/* Labels */}
+            <text x="70" y="13" textAnchor="middle" fill="#64748b" fontSize="6" fontWeight="500">Vocabulary</text>
+            <text x="120" y="50" textAnchor="start" fill="#64748b" fontSize="6" fontWeight="500">Grammar</text>
+            <text x="97" y="113" textAnchor="middle" fill="#64748b" fontSize="6" fontWeight="500">Fluency</text>
+            <text x="43" y="113" textAnchor="middle" fill="#64748b" fontSize="6" fontWeight="500">Prof. Tone</text>
+            <text x="2" y="50" textAnchor="start" fill="#64748b" fontSize="6" fontWeight="500">Persuasion</text>
+          </svg>
+          {/* Score breakdown */}
+          <div className="flex flex-col gap-1 flex-1 min-w-0">
+            {[
+              { label: "Vocabulary",       score: 78, color: "#6366f1" },
+              { label: "Grammar",          score: 82, color: "#22c55e" },
+              { label: "Fluency",          score: 65, color: "#f59e0b" },
+              { label: "Prof. Tone",       score: 71, color: "#0ea5e9" },
+              { label: "Persuasion",       score: 60, color: "#ec4899" },
+            ].map(({ label, score, color }) => (
+              <div key={label} className="flex items-center gap-1.5">
+                <span className="text-[7px] text-[#64748b] w-14 shrink-0 truncate">{label}</span>
+                <div className="flex-1 h-1 bg-[#e2e8f0] rounded-full overflow-hidden">
+                  <div className="h-full rounded-full" style={{ width: `${score}%`, backgroundColor: color }} />
+                </div>
+                <span className="text-[7px] tabular-nums" style={{ color, fontWeight: 600 }}>{score}</span>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* 1. What worked well */}
+        {/* What worked well */}
         <div>
           <div className="flex items-center gap-1.5 mb-1.5">
             <TrendingUp className="w-3 h-3 text-[#15803d]" />
@@ -263,7 +331,7 @@ function ScreenFeedback() {
           </div>
         </div>
 
-        {/* 2. Key improvements (before/after) */}
+        {/* Key improvements (before/after) */}
         <div>
           <div className="flex items-center gap-1.5 mb-1.5">
             <Zap className="w-3 h-3 text-[#f59e0b]" />
@@ -274,34 +342,11 @@ function ScreenFeedback() {
               <span className="text-[8px] bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded" style={{ fontWeight: 500 }}>Before</span>
               <p className="text-[9px] text-white/50 line-through">We have a lot of experience doing this</p>
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 mb-1.5">
               <span className="text-[8px] bg-[#50C878]/20 text-[#50C878] px-1.5 py-0.5 rounded" style={{ fontWeight: 500 }}>After</span>
               <p className="text-[9px] text-white" style={{ fontWeight: 500 }}>We've delivered 50+ enterprise platforms</p>
             </div>
-          </div>
-        </div>
-
-        {/* 3. Power Phrases */}
-        <div>
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <Sparkles className="w-3 h-3 text-[#6366f1]" />
-            <p className="text-[10px] text-[#0f172b]" style={{ fontWeight: 600 }}>{s.powerPhrases}</p>
-          </div>
-          <div className="bg-[#eef2ff] border border-[#c7d2fe] rounded-lg px-2.5 py-2">
-            <p className="text-[9px] text-[#312e81] italic" style={{ fontWeight: 500 }}>"{s.phrase1}"</p>
-            <p className="text-[8px] text-[#6366f1]/70 mt-0.5">{s.phrase1ctx}</p>
-          </div>
-        </div>
-
-        {/* 4. Power Questions */}
-        <div>
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <Target className="w-3 h-3 text-[#0ea5e9]" />
-            <p className="text-[10px] text-[#0f172b]" style={{ fontWeight: 600 }}>{s.powerQuestions}</p>
-          </div>
-          <div className="bg-white border border-[#e2e8f0] rounded-lg px-2.5 py-2">
-            <p className="text-[9px] text-[#0f172b]" style={{ fontWeight: 500 }}>"{s.question1}"</p>
-            <span className="text-[7px] bg-[#0ea5e9]/10 text-[#0ea5e9] px-1.5 py-0.5 rounded-full mt-1 inline-block" style={{ fontWeight: 600 }}>{s.questionTiming}</span>
+            <span className="text-[7px] bg-[#6366f1]/20 text-[#818cf8] px-1.5 py-0.5 rounded-full" style={{ fontWeight: 500 }}>Estructura del Discurso</span>
           </div>
         </div>
 

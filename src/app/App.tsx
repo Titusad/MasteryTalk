@@ -20,6 +20,8 @@ function lazyRetry(factory: () => Promise<any>) {
 }
 
 const LandingPage = lazyRetry(() => import("@/pages/landing/LandingPage").then(m => ({ default: m.LandingPage })));
+const Landing2Page = lazyRetry(() => import("@/pages/landing/Landing2Page").then(m => ({ default: m.Landing2Page })));
+const Landing3Page = lazyRetry(() => import("@/pages/landing/Landing3Page").then(m => ({ default: m.Landing3Page })));
 const DesignSystemPage = lazyRetry(() => import("../pages/DesignSystemPage").then(m => ({ default: m.DesignSystemPage })));
 const PracticeSessionPage = lazyRetry(() => import("../pages/PracticeSessionPage").then(m => ({ default: m.PracticeSessionPage })));
 const DashboardPage = lazyRetry(() => import("@/features/dashboard/ui/DashboardPage").then(m => ({ default: m.DashboardPage })));
@@ -73,6 +75,8 @@ export default function App() {
     if (hash === "#admin") return "admin";
     if (hash === "#terms") return "terms";
     if (hash === "#privacy") return "privacy";
+    if (hash === "#landing2") return "landing2";
+    if (hash === "#landing3") return "landing3";
 
     // For authenticated app pages, check if there's a Supabase session
     // in localStorage. If so, respect the hash so users stay on their
@@ -386,6 +390,8 @@ export default function App() {
       else if (hash === "#admin") setPage("admin");
       else if (hash === "#terms") setPage("terms");
       else if (hash === "#privacy") setPage("privacy");
+      else if (hash === "#landing2") setPage("landing2");
+      else if (hash === "#landing3") setPage("landing3");
       else if (hash.startsWith("#study-phase")) setPage("study-phase");
       else setPage("landing");
     };
@@ -585,6 +591,32 @@ export default function App() {
           )}
 
           {page === "design-system" && <DesignSystemPage />}
+          {page === "landing3" && (
+            <Landing3Page
+              onAuthComplete={handleAuthComplete}
+              landingLang={landingLang}
+              onLangChange={handleLangChange}
+              authUser={authUser}
+              onLogout={() => { authService.signOut().catch(() => {}); handleBackToLanding(); setAuthUser(null); }}
+              onGoToDashboard={handleBackToDashboard}
+              onPricingPurchase={() => { setPage("dashboard"); }}
+            />
+          )}
+          {page === "landing2" && (
+            <Landing2Page
+              onAuthComplete={handleAuthComplete}
+              landingLang={landingLang}
+              onLangChange={handleLangChange}
+              authUser={authUser}
+              onLogout={() => {
+                authService.signOut().catch(() => {});
+                handleBackToLanding();
+                setAuthUser(null);
+              }}
+              onGoToDashboard={handleBackToDashboard}
+              onPricingPurchase={() => { setPage("dashboard"); }}
+            />
+          )}
           {page === "landing" && (
             <LandingPage
               onAuthComplete={handleAuthComplete}

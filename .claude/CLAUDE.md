@@ -434,7 +434,18 @@ LandinginfluentiavMVP/                   ← raíz del código
         ├── types.ts
         ├── errors.ts
         ├── interfaces/
-        └── adapters/mock/ + supabase/
+        ├── adapters/mock/ + supabase/
+        └── prompts/
+            ├── assembler.ts                     ← inyecta bloques en el system prompt
+            ├── personas.ts                      ← 10 interlocutores por escenario
+            ├── templates.ts                     ← bloques compartidos (master, output, arena)
+            ├── analyst.ts                       ← prompts para Gemini (feedback + script)
+            └── scenarios/                       ← ★ SCENARIO REGISTRY (ver §16)
+                ├── index.ts                     ← barrel + SCENARIO_ADAPTATION Record
+                ├── interview.ts
+                ├── sales.ts
+                ├── meeting.ts
+                └── presentation.ts
 ```
 
 ### Orden de migración (siempre de abajo hacia arriba)
@@ -459,7 +470,7 @@ Landing (#)
   └── PracticeWidget → PracticeSetupModal → Auth (Google)
         └── LanguageTransitionModal (solo ES/PT, no EN)
               └── PracticeSessionPage (#practice-session)
-                    1. extra-context         ← ExtraContextScreen
+                    1. extra-context         ← ContextScreen (presets + custom form + skip)
                     2. generating-script     ← AnalyzingScreen + API call
                     3. pre-briefing          ← InterviewBriefingScreen
                     4. practice              ← VoicePractice + ArenaSystem
@@ -506,11 +517,14 @@ Dashboard (#dashboard)
 - 3 pilares débiles = `pillarScores` ordenado ascendente, primeros 3
 - CTA "Activar mi Conversational Path" → Dashboard con path pre-seleccionado
 
-### Fase 3 — Extra Context: resistencia al skip
-**Archivos:** `ExtraContextScreen.tsx`, Edge Function `/profile`
-- Preview de preguntas en tiempo real (templates locales, sin llamada API)
-- Skip label: "Saltar (recibirás preguntas genéricas)"
-- Persistir `cvSummary` en perfil, pre-llenar en sesiones siguientes
+### Fase 3 — Extra Context: Situation Presets ✅ IMPLEMENTADO
+**Archivos:** `ContextScreen.tsx`, `scenario-presets.ts`, Edge Function prebriefing
+- ✅ Presets de situación por escenario (3 × interview, sales, meeting, presentation)
+- ✅ UI: preset cards como opción primaria, formulario colapsable secundario, skip siempre visible
+- ✅ Preset fluye como `{ situationContext }` → `processGuidedFields()` → arsenal del prompt
+- ✅ Compatible con `cvSummary` del perfil — combinación automática sin fricción
+- ⏳ Persistir `cvSummary` en perfil (pre-llenar en sesiones siguientes) — pendiente
+- ⏳ Preview de preguntas en tiempo real — pendiente
 
 ### Fase 4 — Dashboard adaptivo
 **Archivos:** `DashboardPage.tsx`, Edge Function `/sessions/count`
@@ -704,7 +718,7 @@ GET  /sessions/count        ← total de sesiones del usuario (para Dashboard ad
 
 ---
 
-## 15. Estado actual del proyecto (2026-03-27)
+## 15. Estado actual del proyecto (2026-04-26)
 
 ### ✅ Completado y estable
 
@@ -715,9 +729,11 @@ GET  /sessions/count        ← total de sesiones del usuario (para Dashboard ad
 | Design tokens | ✅ | Centralizados en `shared/design-tokens.ts` |
 | Auth security | ✅ | `getAuthToken()` en todos los Edge Function calls — `publicAnonKey` eliminado de 11 archivos |
 | Service adapters | ✅ | 6 adapters reales (auth, conversation, speech, feedback, user, SR) |
-| Test coverage | ✅ 36 tests | Vitest + happy-dom: SR logic (22), Auth flow (7), Feedback adapter (7) |
+| Test coverage | ✅ 90 tests | Vitest: SR logic (22), Auth flow (7), Feedback adapter (7), Scenario presets (20), Assembler scenarios (22) |
 | Error handling | ✅ | FeedbackError, retry/backoff, timeouts |
 | Edge Functions | ✅ | TTS, STT, Feedback, Briefing, Pronunciation |
+| Scenario system | ✅ | Meeting + presentation: SCENARIO_ADAPTATION, dual-axis evaluación, gap analysis — ver §16 |
+| Situation Presets | ✅ | ContextScreen con 12 presets (3 × 4 escenarios), sin asunción de rol |
 
 ### ⚠️ Pendiente — próximas sesiones
 
@@ -725,7 +741,9 @@ GET  /sessions/count        ← total de sesiones del usuario (para Dashboard ad
 |-----------|-------|-------|
 | 🔴 Alta | **SupabasePaymentService** | Payment flow es 100% mock — sin esto no hay revenue |
 | 🔴 Alta | **Loading skeletons** | Dashboard y Library sin skeletons |
-| 🔴 Alta | **Fases UX 1-4** | Quick Prep/Conversational Path widget, ConversationalPathOffer, Extra Context, Dashboard adaptivo |
+| 🔴 Alta | **Fases UX 1-2** | Quick Prep/Conversational Path widget (Fase 1), ConversationalPathOffer (Fase 2) |
+| 🔴 Alta | **Fase 4 — Dashboard adaptivo** | Vista por sesiones + banner de transición |
+| 🟡 Media | **Fase 3 remanente** | Persistir `cvSummary` en perfil + preview de preguntas en tiempo real |
 | 🟡 Media | **E2E tests** | Playwright: onboarding → practice → feedback |
 | 🟡 Media | **Mobile responsiveness** | Revisar todos los flujos en mobile |
 | 🟡 Media | **Supabase CLI migrations** | Schema no está versionado |
@@ -751,5 +769,57 @@ PracticeHistoryPage.tsx — apikey header estándar Supabase REST
 
 ---
 
-*v1.3 — 2026-03-27*
-*Cambios: estado actual del proyecto post Security Hardening + Foundational Tests session · issues conocidos documentados · próximas tareas priorizadas*
+## 16. Scenario Registry — reglas de mantenimiento
+
+> Esta sección documenta cómo está organizado el sistema de escenarios y cómo extenderlo.
+> Leer antes de tocar cualquier archivo de prompts.
+
+### Arquitectura del sistema de escenarios
+
+Cada escenario activo (`interview`, `sales`, `meeting`, `presentation`) tiene dos registros independientes:
+
+**Frontend — `src/services/prompts/scenarios/{scenario}.ts`**
+- Exporta `SCENARIO_ADAPTATION_{SCENARIO}`: string con vocabulario, arco de conversación, closure protocol y boundary guardrails
+- Se inyecta como Block 4.5 en el system prompt del AI conversacional (GPT-4o)
+- Consumido por `assembler.ts` vía `scenarios/index.ts`
+
+**Backend — `supabase/functions/make-server-08b8658d/scenarios/{scenario}.ts`**
+- Exporta `{SCENARIO}_DUAL_AXIS_BLOCK`: instrucciones de evaluación dual-axis para Gemini
+- Exporta `{SCENARIO}_OUTPUT_FIELDS`: campos JSON adicionales en el output del analista
+- Exporta `get{Scenario}GapAnalysis(filledKeys)`: lógica de detección de gaps en el pre-briefing
+- `interview.ts` también exporta `buildInterviewBriefingBlock()` (depende de parámetros runtime)
+- Consumido por `analyst-prompt.ts` y `prebriefing-prompts.ts` vía `scenarios/index.ts`
+
+**Presets — `src/features/practice-session/model/scenario-presets.ts`**
+- 3 presets por escenario activo (12 total)
+- Cada preset describe solo la SITUACIÓN (empresa, stakes, contexto) — sin asumir el rol del usuario
+- Se inyecta como `{ situationContext: preset.context }` → `processGuidedFields()` → `userArsenal`
+
+### Cómo agregar un nuevo escenario
+
+1. Agregar el tipo a `ScenarioType` en `src/entities/session/index.ts`
+2. Crear `src/services/prompts/scenarios/{nuevo}.ts` con `SCENARIO_ADAPTATION_{NUEVO}`
+3. Re-exportar desde `src/services/prompts/scenarios/index.ts`
+4. Crear `supabase/functions/make-server-08b8658d/scenarios/{nuevo}.ts` con dual-axis block, output fields y gap analysis
+5. Re-exportar desde `supabase/functions/make-server-08b8658d/scenarios/index.ts` y agregar al dispatcher `getScenarioGapAnalysis()`
+6. Agregar interlocutores en `personas.ts` → `INTERLOCUTORS_BY_SCENARIO` y `DEFAULT_INTERLOCUTOR`
+7. Agregar interlocutor intel en `prebriefing-prompts.ts` → `INTERLOCUTOR_INTEL`
+8. Agregar 2-3 presets en `scenario-presets.ts`
+9. Escribir tests: preset integrity + assembler adaptation block
+
+### Escenarios activos vs definidos
+
+| ScenarioType | SCENARIO_ADAPTATION | Dual-axis eval | Presets | Activo en UI |
+|-------------|--------------------|--------------------|---------|--------------|
+| `interview` | ✅ | ✅ | ✅ 3 | ✅ |
+| `sales` | ✅ | ✅ | ✅ 3 | ✅ |
+| `meeting` | ✅ | ✅ | ✅ 3 | ✅ |
+| `presentation` | ✅ | ✅ | ✅ 3 | ✅ |
+| `client` | ❌ | ❌ | ❌ | ❌ |
+| `csuite` | ❌ | ❌ | ❌ | ❌ |
+| `self-intro` | ❌ | ❌ | ❌ | ❌ |
+
+---
+
+*v1.4 — 2026-04-26*
+*Cambios: Scenario Registry (§16) · meeting/presentation audit + bugs corregidos · separación en archivos independientes (frontend + backend) · Situation Presets en ContextScreen · test coverage 36 → 90 tests*

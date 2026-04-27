@@ -13,6 +13,8 @@ import { useState, useEffect, useCallback } from "react";
 
 export type Page =
   | "landing"
+  | "landing2"
+  | "landing3"
   | "loading"
   | "practice-session"
   | "dashboard"
@@ -40,6 +42,8 @@ function resolveInitialPage(): Page {
   if (hash === "#admin") return "admin";
   if (hash === "#terms") return "terms";
   if (hash === "#privacy") return "privacy";
+  if (hash === "#landing2") return "landing2";
+  if (hash === "#landing3") return "landing3";
 
   if (AUTH_PAGES[hash] || hash.startsWith("#study-phase")) {
     const hasSession = Object.keys(localStorage).some(
