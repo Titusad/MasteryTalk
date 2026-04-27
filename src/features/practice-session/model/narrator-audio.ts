@@ -46,6 +46,21 @@
 
 const STORAGE = "https://zkuryztcwmazspscomiu.supabase.co/storage/v1/object/public/narration";
 
+export const STRATEGY_URLS: Record<string, string> = {
+  "int-1": `${STORAGE}/strategy-int-1.mp3`,
+  "int-2": `${STORAGE}/strategy-int-2.mp3`,
+  "int-3": `${STORAGE}/strategy-int-3.mp3`,
+  "int-4": `${STORAGE}/strategy-int-4.mp3`,
+  "int-5": `${STORAGE}/strategy-int-5.mp3`,
+  "int-6": `${STORAGE}/strategy-int-6.mp3`,
+  "sal-1": `${STORAGE}/strategy-sal-1.mp3`,
+  "sal-2": `${STORAGE}/strategy-sal-2.mp3`,
+  "sal-3": `${STORAGE}/strategy-sal-3.mp3`,
+  "sal-4": `${STORAGE}/strategy-sal-4.mp3`,
+  "sal-5": `${STORAGE}/strategy-sal-5.mp3`,
+  "sal-6": `${STORAGE}/strategy-sal-6.mp3`,
+};
+
 export const INTRO_URLS: Record<string, string> = {
   "int-1": `${STORAGE}/intro-int-1.mp3`,
   "int-2": `${STORAGE}/intro-int-2.mp3`,

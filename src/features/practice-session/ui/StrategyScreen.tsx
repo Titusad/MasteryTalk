@@ -30,6 +30,7 @@ import type {
   BriefLocale,
 } from "@/features/dashboard/model/progression-paths";
 import { useBriefLocale } from "../hooks/useBriefLocale";
+import { useNarration } from "@/shared/lib/useNarration";
 
 
 /* ── Locale display config ── */
@@ -50,6 +51,7 @@ interface StrategyScreenProps {
   patternLoading?: boolean;
   onReady: () => void;
   onSkip: () => void;
+  narratorUrl?: string;
 }
 
 export function StrategyScreen({
@@ -60,7 +62,9 @@ export function StrategyScreen({
   patternLoading,
   onReady,
   onSkip,
+  narratorUrl,
 }: StrategyScreenProps) {
+  useNarration(narratorUrl || null);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const [briefLocale, setBriefLocale] = useBriefLocale();
   const [showLocalePicker, setShowLocalePicker] = useState(false);
