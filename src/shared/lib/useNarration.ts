@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { getNarrationMuted, setNarrationMuted } from "./useNarrationPreference";
 
 /**
  * Plays a narration audio URL on mount. Fails silently if:
@@ -13,6 +14,12 @@ export function useNarration(url: string | null | undefined) {
 
   useEffect(() => {
     if (!url) {
+      setIsDone(true);
+      return;
+    }
+
+    // Skip playback if user has muted narration
+    if (getNarrationMuted()) {
       setIsDone(true);
       return;
     }

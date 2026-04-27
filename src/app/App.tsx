@@ -46,6 +46,7 @@ import { PathPurchaseModal } from "@/widgets/PathPurchaseModal";
 import type { PurchaseType } from "../services/types";
 import { useUsageGating } from "@/shared/hooks/useUsageGating";
 import { PaymentSuccessHandler } from "@/shared/ui/PaymentSuccessHandler";
+import { NarrationToggle } from "@/shared/ui/NarrationToggle";
 import type { MarketFocus } from "../services/prompts";
 import { projectId } from "../../utils/supabase/info";
 
@@ -807,6 +808,8 @@ export default function App() {
           />
         </Suspense>
 
+        {/* Global narration mute/unmute toggle */}
+        <NarrationToggle />
 
       </div>
     </ErrorBoundary>
