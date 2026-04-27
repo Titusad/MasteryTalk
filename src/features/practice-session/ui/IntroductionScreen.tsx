@@ -61,14 +61,7 @@ export function IntroductionScreen({
   onContinue,
   narratorUrl,
 }: IntroductionScreenProps) {
-  const { isPlaying, isDone } = useNarration(narratorUrl || null);
-
-  // Start animations when audio begins — or immediately if no audio / autoplay blocked
-  const [started, setStarted] = useState(!narratorUrl);
-  useEffect(() => {
-    if ((isPlaying || isDone) && !started) setStarted(true);
-  }, [isPlaying, isDone, started]);
-
+  useNarration(narratorUrl || null);
   const [firstName, setFirstName] = useState("there");
 
   useEffect(() => {
@@ -99,47 +92,9 @@ export function IntroductionScreen({
         className="text-2xl font-bold text-center text-[#0f172b] leading-snug mb-2"
         style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
       >
-        {/* Greeting — audio says "Hi there." at t=0 */}
-        <motion.span
-          className="block"
-          initial={{ opacity: 0, y: 8 }}
-          animate={started ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.4, delay: 0 }}
-        >
-          Hey {firstName},
-        </motion.span>
-
-        {/* "in this practice..." — audio says this at ~t=0.7s */}
-        <motion.span
-          className="block"
-          initial={{ opacity: 0, y: 6 }}
-          animate={started ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.4, delay: 0.7 }}
-        >
-          in this practice you'll master how to{" "}
-        </motion.span>
-
-        {/* Headline words — audio reads headline from ~t=1.2s, ~0.15s per word */}
-        <span style={{ color: "#6366f1" }}>
-          {introHeadline.split(" ").map((word, i) => (
-            <motion.span
-              key={i}
-              initial={{ opacity: 0, y: 4 }}
-              animate={started ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.2, delay: 1.2 + i * 0.15 }}
-              style={{ display: "inline-block", marginRight: "0.25em" }}
-            >
-              {word}
-            </motion.span>
-          ))}
-          <motion.span
-            initial={{ opacity: 0 }}
-            animate={started ? { opacity: 1 } : {}}
-            transition={{ delay: 1.2 + introHeadline.split(" ").length * 0.15 }}
-          >
-            .
-          </motion.span>
-        </span>
+        Hey {firstName}, <br />
+        in this practice you'll master how to{" "}
+        <span style={{ color: "#6366f1" }}>{introHeadline}</span>.
       </h1>
 
       {/* Transition text */}
