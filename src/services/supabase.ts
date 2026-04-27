@@ -124,7 +124,7 @@ export function getSupabaseClient(): SupabaseClient {
 }
 
 export async function getAuthToken(): Promise<string> {
-  const TIMEOUT_MS = 8_000;
+  const TIMEOUT_MS = 15_000;
   const client = getSupabaseClient();
 
   /** Race a promise against a timeout, resolving to null on timeout instead of throwing */
@@ -163,17 +163,11 @@ export async function getAuthToken(): Promise<string> {
     return refreshResult.data.session.access_token;
   }
 
-  // ── Attempt 3: both failed — clear stale auth state ──
-  console.error("[getAuthToken] ❌ Both getSession() and refreshSession() failed. Clearing stale auth state.");
-  try {
-    Object.keys(localStorage).forEach((key) => {
-      if (key.startsWith("sb-") && key.endsWith("-auth-token")) {
-        localStorage.removeItem(key);
-      }
-    });
-  } catch (_) { /* ignore */ }
-
-  throw new Error("getAuthToken: unable to obtain a valid session. Please sign in again.");
+  // ── Attempt 3: both failed — likely a temporary network issue ──
+  // Do NOT clear localStorage tokens: the session may still be valid
+  // but the network timed out. Let the caller handle the error and retry.
+  console.error("[getAuthToken] ❌ Both getSession() and refreshSession() failed (possible network timeout).");
+  throw new Error("getAuthToken: unable to obtain a valid session. Please check your connection and try again.");
 }
 
 

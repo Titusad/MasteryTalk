@@ -75,7 +75,11 @@ export function AnswerCard({ question, onNext, onBack }: AnswerCardProps) {
             setStatus("done");
         } catch (err: any) {
             console.error("[AnswerCard] Transcription failed:", err);
-            setError("Transcription failed. Try again or use text input.");
+            const isAuthError = err?.message?.includes("session") || err?.message?.includes("sign in");
+            setError(isAuthError
+                ? "Connection issue. Tap the mic again to retry."
+                : "Transcription failed. Try again or use text input."
+            );
             setStatus("idle");
         }
     }, [recorder]);
