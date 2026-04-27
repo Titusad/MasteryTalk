@@ -209,6 +209,7 @@ export function StrategyScreen({
                 className="text-sm text-[#334155] leading-relaxed mb-3 last:mb-0"
                 dangerouslySetInnerHTML={{
                   __html: paragraph
+                    .replace(/\n(\*\*)/g, "<br/><br/>$1")
                     .replace(
                       /\*\*(.*?)\*\*/g,
                       '<strong class="text-[#0f172b]">$1</strong>'
