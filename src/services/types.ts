@@ -142,6 +142,8 @@ export interface InterviewQuestionCard {
   why: string;
   approach: string;
   suggestedOpener: string;
+  /** Full 2-3 sentence example answer using the user's profile data */
+  exampleAnswer?: string;
   framework?: { name: string; description: string };
   keyPhrases: ScriptHighlight[];
   pivot: string;

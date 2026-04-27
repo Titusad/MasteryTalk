@@ -15,6 +15,7 @@ interface StrategyCardProps {
     why: string;
     approach: string;
     suggestedOpener: string;
+    exampleAnswer?: string;
     framework?: { name: string; description: string };
     pivot: string;
     isSales?: boolean;
@@ -27,6 +28,7 @@ export function StrategyCard({
     why,
     approach,
     suggestedOpener,
+    exampleAnswer,
     framework,
     pivot,
     isSales,
@@ -81,24 +83,26 @@ export function StrategyCard({
                     )}
                 </div>
 
-                {/* Suggested opener */}
-                {suggestedOpener && (
+                {/* Example answer — full narrative using user's data */}
+                {(exampleAnswer || suggestedOpener) && (
                     <div>
                         <div className="flex items-center gap-2 mb-2">
                             <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
                                 <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
                             </div>
                             <h3 className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
-                                You Could Start With
+                                A Strong Answer Looks Like
                             </h3>
                         </div>
-                        <div className="ml-9 px-4 py-3 bg-emerald-50/50 rounded-xl border border-emerald-100">
-                            <p
-                                className="text-sm text-[#0f172b] leading-relaxed italic"
-                                style={{ fontWeight: 500 }}
-                            >
-                                "{suggestedOpener}"
+                        <div className="ml-9 px-4 py-4 bg-emerald-50/50 rounded-xl border border-emerald-100 space-y-2">
+                            <p className="text-sm text-[#0f172b] leading-relaxed italic" style={{ fontWeight: 500 }}>
+                                "{exampleAnswer || suggestedOpener}"
                             </p>
+                            {exampleAnswer && (
+                                <p className="text-[11px] text-emerald-600" style={{ fontWeight: 500 }}>
+                                    Built from your profile · Use this as your model, not a script
+                                </p>
+                            )}
                         </div>
                     </div>
                 )}

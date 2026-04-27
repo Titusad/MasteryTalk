@@ -187,6 +187,7 @@ Respond with ONLY a valid JSON object. No markdown, no code fences.
       "why": "One sentence: why this interviewer asks this specific question — what they're REALLY evaluating",
       "approach": "Brief strategy (1-2 sentences): which framework to use (STAR, direct pitch, etc.) and what to lead with",
       "suggestedOpener": "A concrete first-person sentence the candidate should say FIRST — 15-30 words. Must sound natural, NOT include the framework name, and be ready to say out loud",
+      "exampleAnswer": "A COMPLETE 2-3 sentence example answer that shows EXACTLY what a strong response sounds like. Rules: (1) Must follow the framework structure precisely. (2) MUST use the user's actual data — their real role, company, specific achievements, or skills from the JD when provided. (3) Written in first person, natural spoken English, ready to say out loud. (4) This is the FULL answer, not just the opener — it covers the beginning, middle, and close. (5) If no user data is available, use realistic placeholders in [brackets] like '[current role]' or '[company name]'.",
       "framework": {
         "name": "Framework name only (2-5 words, e.g. 'Present-First Narrative', 'STAR Method', 'Problem-Solution', 'Direct Pitch')",
         "description": "1-2 sentences explaining WHAT this framework is and WHY it works for this specific question"
@@ -273,7 +274,8 @@ ${"=".repeat(60)}
 - [ ] Tooltips are in ${tooltipLang} and explain strategy
 - [ ] Total content is scannable in 2-3 minutes
 - [ ] COHERENCE: Every 'suggestedOpener' directly applies the framework described in the same card — no contradictions between advice and examples
-- [ ] No opener starts with past tense ("I began...", "My career started...") unless the framework explicitly calls for a chronological narrative`;
+- [ ] No opener starts with past tense ("I began...", "My career started...") unless the framework explicitly calls for a chronological narrative
+- [ ] Every 'exampleAnswer' is 2-3 sentences, uses the user's actual data when available, and demonstrates the complete framework structure from start to close`;
 
     const userMessage = `Generate an interview briefing for a candidate preparing for a ${interlocutor.replace("_", " ")} interview.
 ${scenario ? `\nScenario context: ${scenario}` : ""}

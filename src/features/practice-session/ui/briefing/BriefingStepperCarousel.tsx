@@ -218,6 +218,7 @@ export function BriefingStepperCarousel({
                             why={currentCard.why}
                             approach={currentCard.approach}
                             suggestedOpener={currentCard.suggestedOpener}
+                            exampleAnswer={currentCard.exampleAnswer}
                             framework={currentCard.framework}
                             pivot={currentCard.pivot}
                             isSales={isSales}
