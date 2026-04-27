@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { getNarrationMuted, setNarrationMuted } from "./useNarrationPreference";
+import { getNarrationMuted, setNarrationPlaying } from "./useNarrationPreference";
 
 /**
  * Plays a narration audio URL on mount. Fails silently if:
@@ -27,10 +27,10 @@ export function useNarration(url: string | null | undefined) {
     const audio = new Audio(url);
     audioRef.current = audio;
 
-    audio.onplay    = () => setIsPlaying(true);
-    audio.onpause   = () => setIsPlaying(false);
-    audio.onended   = () => { setIsPlaying(false); setIsDone(true); };
-    audio.onerror   = () => { setIsPlaying(false); setIsDone(true); };
+    audio.onplay    = () => { setIsPlaying(true);  setNarrationPlaying(true); };
+    audio.onpause   = () => { setIsPlaying(false); setNarrationPlaying(false); };
+    audio.onended   = () => { setIsPlaying(false); setNarrationPlaying(false); setIsDone(true); };
+    audio.onerror   = () => { setIsPlaying(false); setNarrationPlaying(false); setIsDone(true); };
 
     audio.play().catch(() => { setIsDone(true); });
 
@@ -38,6 +38,7 @@ export function useNarration(url: string | null | undefined) {
       audio.pause();
       audio.src = "";
       audioRef.current = null;
+      setNarrationPlaying(false);
     };
   }, [url]);
 
