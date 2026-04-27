@@ -118,10 +118,52 @@
 - [x] "Repetir" / "Repeat" command to resend phrase with TTS audio.
 - [x] E2E tested: Sandbox → cron dispatch → audio shadowing → pronunciation score → SR progression.
 
-### 1.6 Scenario Quality Audit
-- [ ] Audit `meeting` system prompt quality vs `interview`
-- [ ] Audit `presentation` system prompt quality
-- [ ] Run at least 1 full demo session per scenario and verify output quality
+### 1.6 Scenario Quality Audit ✅ (Completed 2026-04-27)
+- [x] Audit `meeting` and `presentation` system prompts vs `interview` — bugs found and fixed
+- [x] Fix: `meeting`/`presentation` were getting sales scorecard from Gemini (wrong `!isInterview` branch)
+- [x] Add `SCENARIO_ADAPTATION` blocks for meeting + presentation (vocabulary, arc, guardrails)
+- [x] Add dual-axis evaluation per scenario in analyst prompt (meetingContentScores, presentationContentScores)
+- [x] Separate scenario files: `src/services/prompts/scenarios/` + `supabase/functions/.../scenarios/`
+- [x] 90 tests passing (42 new: scenario-presets + assembler-scenarios)
+
+### 1.6.2 UX & Narration System ✅ (Completed 2026-04-27)
+> **Goal:** Make the practice flow feel like a guided, conversational experience.
+
+**Situation Presets (ContextScreen):**
+- [x] 12 situation presets (3 per scenario) — describe the company/stakes, never the user's role
+- [x] Form-first layout: Job Description at top (open by default), presets collapsible below
+- [x] Dynamic presets: inject user's `position` into preset context when profile available
+- [x] Persist last Job Description to profile — pre-filled on next session
+
+**A/B Landing Pages:**
+- [x] Landing2: dark hero + mascota SVG + animated Arena demo + full original content
+- [x] Landing3: 5-section redesign (hero with real app mockup, dark why section, pricing, FAQ+CTA)
+- [x] Landing3 route: `/#landing3`
+- [x] HowItWorksTabs: coaching hint and radar chart now match real app UI
+
+**Narration System:**
+- [x] 45 static audio files generated with ElevenLabs (Sarah voice), hosted on Supabase Storage
+- [x] `useNarration` hook — plays audio on mount, fails silently if muted or blocked
+- [x] `useNarrationPreference` — global mute state + isPlaying, persisted in localStorage
+- [x] `NarrationToggle` — floating pill button (bottom-right): waveform animated when playing
+- [x] Auto-mute after first completed session (`narrationCompleted` in profile)
+- [x] Narration connected to all screens: IntroductionScreen, ContextScreen, AnalyzingScreen (×2), StrategyScreen, PracticePrepScreen, InterlocutorIntroScreen, ReadinessScore, FeedbackScreen
+
+**Practice Prep UX:**
+- [x] `exampleAnswer` field in InterviewQuestionCard — GPT-4o generates full 2-3 sentence answer using user's profile data
+- [x] StrategyScreen: "A Strong Answer Looks Like" section with personalized example
+- [x] StrategyScreen: spacing between bold framework items (Who you are / What you do / Why this role)
+- [x] SCENARIO_PREP_CONFIG: correct title/label/subtitle for meeting ("Key moment") and presentation ("Key challenge")
+- [x] Remove duplicate Back button from AnswerCard
+- [x] Remove Step X of 4 / Question X of Y header from all briefing cards
+- [x] Remove trophy icon, badge, mic icon, and disclaimer from ReadinessScore
+
+**InterlocutorIntroScreen:**
+- [x] New step `interlocutor-intro` between practice-prep and practice (interview flow)
+- [x] Dark immersive screen with avatar, waveform animation, "I'm ready" CTA
+
+**Auth fix:**
+- [x] `getAuthToken` timeout 8s → 15s, removed session clearing on network failure
 
 ### 1.6.1 Twilio WhatsApp Production Configuration ⚡ (Priority: START NOW)
 > **Goal:** Migrate from Sandbox to a dedicated WhatsApp Business number. This takes ~1 week for Meta approval — start NOW so it's ready by beta launch.
@@ -255,3 +297,4 @@
 | 2026-04-20 | Added 1.1.1 Emoji→Icon standardization (completed) |
 | 2026-04-21 | Added 1.2.1 Self-Intro Warm-Up (completed), 1.2.2 Path Recommendation Engine (planned). Re-numbered 1.3–1.8. Updated legal compliance status. |
 | 2026-04-21 | Completed 1.4 Stripe Subscriptions, 1.5 WhatsApp SR Coach (Sandbox). Added 1.8 Twilio Production Config. Re-numbered Legal to 2.0. |
+| 2026-04-27 | Completed 1.6 Scenario Quality Audit. Added 1.6.2 UX & Narration System (45 audio files, A/B landings, situation presets, briefing UX improvements, auth fix). |

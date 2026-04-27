@@ -23,8 +23,12 @@ dist/
 # Claude Code local settings (may contain command history with credentials)
 .claude/settings.local.json
 
-# Generated scripts output and one-time upload scripts (contain credentials)
+# Generated scripts and output — contain credentials or generated artifacts
 scripts/narration-output/
+scripts/intro-output/
+scripts/strategy-output/
 scripts/upload-to-r2-curl.sh
 scripts/upload-to-r2.mjs
 scripts/generate-narration-audio.mjs
+scripts/generate-intro-audio.mjs
+scripts/generate-strategy-audio.mjs
