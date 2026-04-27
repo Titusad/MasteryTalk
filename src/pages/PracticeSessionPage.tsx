@@ -1004,6 +1004,20 @@ export function PracticeSessionPage({
                     }
                   }
                   setExtraContext(enriched);
+
+                  // Persist JD to profile so it pre-fills on the next session
+                  const jd = extraData["Job Description"];
+                  if (jd?.trim() && scenarioType === "interview") {
+                    getAuthToken().then((token) => {
+                      fetch(`https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/profile`, {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, apikey: publicAnonKey },
+                        body: JSON.stringify({ lastJobDescription: jd.trim() }),
+                      }).catch(() => {});
+                    }).catch(() => {});
+                    onProfileUpdate?.({ ...(userProfile as any), lastJobDescription: jd.trim() });
+                  }
+
                   /* ── Cache-hit fast path: skip GPT call if content is already cached ── */
                   if (scenarioType === "interview") {
                     // Use content-aware cache key: include user's actual input so

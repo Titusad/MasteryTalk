@@ -161,7 +161,7 @@ function ContextScreen({
     onContinue: (extraData: Record<string, string>) => void;
     onBack?: () => void;
     userProfile?: OnboardingProfile | null;
-    onProfileUpdate?: (profile: OnboardingProfile) => void;
+    onProfileUpdate?: (profile: OnboardingProfile) => void; // reserved for future use
     narratorUrl?: string;
 }) {
     const fields   = scenarioType ? EXTRA_CONTEXT_FIELDS[scenarioType] ?? [] : [];
@@ -173,11 +173,19 @@ function ContextScreen({
     const [selectedPreset, setSelectedPreset] = useState<SituationPreset | null>(null);
     const [presetsOpen, setPresetsOpen] = useState(false);
     const [values, setValues] = useState<Record<string, string>>(() => {
+        // Restore from sessionStorage first (current session draft)
         if (typeof window !== "undefined") {
             try {
                 const saved = sessionStorage.getItem(storageKey);
-                if (saved) return JSON.parse(saved).values || {};
+                if (saved) {
+                    const parsed = JSON.parse(saved).values || {};
+                    if (Object.values(parsed).some((v) => (v as string).trim())) return parsed;
+                }
             } catch (e) {}
+        }
+        // Fall back to last saved job description from profile
+        if (userProfile?.lastJobDescription && scenarioType === "interview") {
+            return { "Job Description": userProfile.lastJobDescription };
         }
         return {};
     });

@@ -44,4 +44,6 @@ export interface OnboardingProfile {
   deckFileName?: string;
   /** Whether user consented to share anonymized professional profile */
   cvConsentGiven?: boolean;
+  /** Last job description pasted — pre-filled on the next session */
+  lastJobDescription?: string;
 }
