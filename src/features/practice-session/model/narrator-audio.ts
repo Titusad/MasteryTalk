@@ -46,6 +46,21 @@
 
 const STORAGE = "https://zkuryztcwmazspscomiu.supabase.co/storage/v1/object/public/narration";
 
+export const INTRO_URLS: Record<string, string> = {
+  "int-1": `${STORAGE}/intro-int-1.mp3`,
+  "int-2": `${STORAGE}/intro-int-2.mp3`,
+  "int-3": `${STORAGE}/intro-int-3.mp3`,
+  "int-4": `${STORAGE}/intro-int-4.mp3`,
+  "int-5": `${STORAGE}/intro-int-5.mp3`,
+  "int-6": `${STORAGE}/intro-int-6.mp3`,
+  "sal-1": `${STORAGE}/intro-sal-1.mp3`,
+  "sal-2": `${STORAGE}/intro-sal-2.mp3`,
+  "sal-3": `${STORAGE}/intro-sal-3.mp3`,
+  "sal-4": `${STORAGE}/intro-sal-4.mp3`,
+  "sal-5": `${STORAGE}/intro-sal-5.mp3`,
+  "sal-6": `${STORAGE}/intro-sal-6.mp3`,
+};
+
 export const NARRATOR_URLS = {
   context: {
     interview:    `${STORAGE}/context-interview.mp3`,

@@ -6,6 +6,7 @@
  */
 
 import { useState, useEffect } from "react";
+import { useNarration } from "@/shared/lib/useNarration";
 import { motion } from "motion/react";
 import { ArrowRight, ClipboardList, Lightbulb, Mic, Clock } from "lucide-react";
 import { getSupabaseClient } from "@/services/supabase";
@@ -50,6 +51,7 @@ interface IntroductionScreenProps {
   levelTitle: string;
   introHeadline: string;
   onContinue: () => void;
+  narratorUrl?: string;
 }
 
 export function IntroductionScreen({
@@ -57,7 +59,9 @@ export function IntroductionScreen({
   levelTitle,
   introHeadline,
   onContinue,
+  narratorUrl,
 }: IntroductionScreenProps) {
+  useNarration(narratorUrl || null);
   const [firstName, setFirstName] = useState("there");
 
   useEffect(() => {
