@@ -63,10 +63,10 @@ export const INTRO_URLS: Record<string, string> = {
 
 export const NARRATOR_URLS = {
   context: {
-    interview:    `${STORAGE}/context-interview.mp3`,
-    sales:        `${STORAGE}/context-sales.mp3`,
-    meeting:      `${STORAGE}/context-meeting.mp3`,
-    presentation: `${STORAGE}/context-presentation.mp3`,
+    interview:    `${STORAGE}/context-screen.mp3`,
+    sales:        `${STORAGE}/context-screen.mp3`,
+    meeting:      `${STORAGE}/context-screen.mp3`,
+    presentation: `${STORAGE}/context-screen.mp3`,
   },
   generating: `${STORAGE}/generating.mp3`,
   analyzing:  `${STORAGE}/analyzing.mp3`,
