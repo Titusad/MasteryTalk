@@ -47,6 +47,7 @@ import type { PurchaseType } from "../services/types";
 import { useUsageGating } from "@/shared/hooks/useUsageGating";
 import { PaymentSuccessHandler } from "@/shared/ui/PaymentSuccessHandler";
 import { NarrationToggle } from "@/shared/ui/NarrationToggle";
+import { setNarrationMuted } from "@/shared/lib/useNarrationPreference";
 import type { MarketFocus } from "../services/prompts";
 import { projectId } from "../../utils/supabase/info";
 
@@ -118,7 +119,10 @@ export default function App() {
     () => {
       try {
         const saved = localStorage.getItem("masterytalk_profile");
-        return saved ? JSON.parse(saved) : null;
+        const profile = saved ? JSON.parse(saved) : null;
+        // Restore mute state for returning users who completed their first session
+        if (profile?.narrationCompleted) setNarrationMuted(true);
+        return profile;
       } catch {
         return null;
       }
@@ -462,6 +466,8 @@ export default function App() {
 
   const handleProfileUpdate = (profile: OnboardingProfile) => {
     setUserProfile(profile);
+    // Mute narration once user has completed their first session
+    if (profile.narrationCompleted) setNarrationMuted(true);
     try {
       localStorage.setItem("masterytalk_profile", JSON.stringify(profile));
     } catch { /* ignore */ }

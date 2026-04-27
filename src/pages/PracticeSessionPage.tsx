@@ -63,6 +63,7 @@ import { ExperienceScreen } from "@/features/practice-session/ui/ExperienceScree
 import { ContextScreen } from "@/features/practice-session/ui/ContextScreen";
 import { InterlocutorIntroScreen } from "@/features/practice-session/ui/InterlocutorIntroScreen";
 import { NARRATOR_URLS, INTRO_URLS, STRATEGY_URLS, PREP_URLS, FEEDBACK_URLS } from "@/features/practice-session/model/narrator-audio";
+import { setNarrationMuted } from "@/shared/lib/useNarrationPreference";
 import type { InterlocutorKey } from "@/features/practice-session/model/narrator-audio";
 import { StrategyScreen } from "@/features/practice-session/ui/StrategyScreen";
 import { IntroductionScreen } from "@/features/practice-session/ui/IntroductionScreen";
@@ -1388,6 +1389,19 @@ export function PracticeSessionPage({
                     });
                   }}
                   onFinish={() => {
+                    // First completed session → mute narration for all future sessions
+                    if (!userProfile?.narrationCompleted) {
+                      const updated = { ...(userProfile as any), narrationCompleted: true };
+                      onProfileUpdate?.(updated);
+                      getAuthToken().then((token) => {
+                        fetch(`https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/profile`, {
+                          method: "PUT",
+                          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, apikey: publicAnonKey },
+                          body: JSON.stringify({ narrationCompleted: true }),
+                        }).catch(() => {});
+                      }).catch(() => {});
+                      setNarrationMuted(true);
+                    }
                     onFinish();
                   }}
                   canRetryFree={canRepeat}

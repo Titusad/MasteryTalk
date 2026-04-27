@@ -46,4 +46,6 @@ export interface OnboardingProfile {
   cvConsentGiven?: boolean;
   /** Last job description pasted — pre-filled on the next session */
   lastJobDescription?: string;
+  /** True after the user completes their first practice session end-to-end */
+  narrationCompleted?: boolean;
 }
