@@ -28,7 +28,7 @@ export function StatPills({
     <div className="grid grid-cols-3 gap-3 mb-6">
       {/* Sessions */}
       <motion.div
-        className="bg-indigo-50 rounded-2xl border border-white/60 p-4 md:p-5"
+        className="bg-indigo-50 rounded-2xl border border-white/60 p-4 md:p-6"
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.08, duration: 0.4 }}
@@ -45,7 +45,7 @@ export function StatPills({
 
       {/* Biggest Improvement */}
       <motion.div
-        className={`rounded-2xl border border-white/60 p-4 md:p-5 ${
+        className={`rounded-2xl border border-white/60 p-4 md:p-6 ${
           biggestImprovement ? "bg-green-50" : "bg-slate-50"
         }`}
         initial={{ opacity: 0, y: 12 }}
@@ -73,7 +73,7 @@ export function StatPills({
 
       {/* Streak */}
       <motion.div
-        className={`rounded-2xl border border-white/60 p-4 md:p-5 ${
+        className={`rounded-2xl border border-white/60 p-4 md:p-6 ${
           streak > 0 ? "bg-orange-50" : "bg-slate-50"
         }`}
         initial={{ opacity: 0, y: 12 }}

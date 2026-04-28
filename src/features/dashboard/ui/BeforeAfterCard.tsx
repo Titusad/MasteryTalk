@@ -25,7 +25,7 @@ interface BeforeAfterCardProps {
 export function BeforeAfterCard({ data, dc }: BeforeAfterCardProps) {
   return (
     <motion.div
-      className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-5 mb-6"
+      className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-6 mb-6"
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.22 }}

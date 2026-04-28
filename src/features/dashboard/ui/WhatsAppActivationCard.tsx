@@ -87,7 +87,7 @@ export function WhatsAppActivationCard({
   if (step === "done") {
     return (
       <motion.div
-        className="bg-white border border-[#d1fae5] rounded-2xl p-5 flex items-center gap-4"
+        className="bg-white border border-[#d1fae5] rounded-2xl p-4 flex items-center gap-4"
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
       >

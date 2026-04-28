@@ -476,7 +476,7 @@ export function HowItWorksTabs() {
               <button
                 key={step.id}
                 onClick={() => handleTabClick(i)}
-                className={`group relative text-left rounded-2xl p-5 transition-all duration-300 border ${
+                className={`group relative text-left rounded-2xl p-4 transition-all duration-300 border ${
                   isActive
                     ? "border-[#2d2d2d]/10 shadow-md"
                     : "bg-white border-[#e2e8f0] hover:border-[#cbd5e1] hover:shadow-sm"

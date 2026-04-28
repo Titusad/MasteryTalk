@@ -164,7 +164,7 @@ export function PathPurchaseModal({
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.08 }}
-                className={`relative text-left p-5 rounded-2xl border-2 transition-all ${
+                className={`relative text-left p-4 rounded-2xl border-2 transition-all ${
                   isDisabled
                     ? "border-[#e2e8f0] opacity-40 cursor-not-allowed"
                     : isSelected

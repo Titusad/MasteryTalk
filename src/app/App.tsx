@@ -25,7 +25,7 @@ const Landing3Page = lazyRetry(() => import("@/pages/landing/Landing3Page").then
 const DesignSystemPage = lazyRetry(() => import("../pages/DesignSystemPage").then(m => ({ default: m.DesignSystemPage })));
 const PracticeSessionPage = lazyRetry(() => import("../pages/PracticeSessionPage").then(m => ({ default: m.PracticeSessionPage })));
 const DashboardPage = lazyRetry(() => import("@/features/dashboard/ui/DashboardPage").then(m => ({ default: m.DashboardPage })));
-const PracticeHistoryPage = lazyRetry(() => import("@/features/dashboard/ui/PracticeHistoryPage").then(m => ({ default: m.PracticeHistoryPage })));
+const PracticeHistoryPage = lazyRetry(() => import("@/pages/PracticeHistoryPage").then(m => ({ default: m.PracticeHistoryPage })));
 const AccountPage = lazyRetry(() => import("../pages/AccountPage").then(m => ({ default: m.AccountPage })));
 const LibraryPage = lazyRetry(() => import("../pages/LibraryPage").then(m => ({ default: m.LibraryPage })));
 const AdminDashboardPage = lazyRetry(() => import("../pages/AdminDashboardPage").then(m => ({ default: m.AdminDashboardPage })));

@@ -28,7 +28,7 @@ export function ScenarioStep({ data, footer }: Props) {
       {/* Body */}
       <div className="px-6 py-6 md:px-8 flex flex-col gap-4">
         {/* Context */}
-        <div className="p-5 rounded-2xl bg-[#f8fafc] border border-[#e2e8f0]">
+        <div className="p-4 rounded-2xl bg-[#f8fafc] border border-[#e2e8f0]">
           <p className="text-[11px] text-[#64748b] uppercase tracking-wider mb-2" style={{ fontWeight: 700 }}>
             Your Role &amp; Situation
           </p>
@@ -38,7 +38,7 @@ export function ScenarioStep({ data, footer }: Props) {
         </div>
 
         {/* Challenge */}
-        <div className="p-5 rounded-2xl bg-[#eff6ff] border border-[#bfdbfe]">
+        <div className="p-4 rounded-2xl bg-[#eff6ff] border border-[#bfdbfe]">
           <p className="text-[11px] text-[#1d4ed8] uppercase tracking-wider mb-2" style={{ fontWeight: 700 }}>
             Your Challenge
           </p>

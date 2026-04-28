@@ -279,7 +279,7 @@ function ExperienceScreen({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: 0.05 }}
                 >
-                    <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5 shadow-sm">
+                    <div className="bg-white rounded-2xl border border-[#e2e8f0] p-4 shadow-sm">
                         {/* Header */}
                         <div className="flex items-start justify-between mb-3">
                             <label className="flex items-center gap-1.5">
@@ -340,7 +340,7 @@ function ExperienceScreen({
                         )}
 
                         {cvStatus === "done" && cvSummary && (
-                            <div className="w-full border border-[#bbf7d0] rounded-xl p-5 bg-[#f0fdf4]">
+                            <div className="w-full border border-[#bbf7d0] rounded-xl p-4 bg-[#f0fdf4]">
                                 <div className="flex items-center justify-between mb-3">
                                     <div className="flex items-center gap-2">
                                         <CheckCircle2 className="w-4 h-4 text-[#16a34a]" />
@@ -386,7 +386,7 @@ function ExperienceScreen({
                         )}
 
                         {cvStatus === "error" && (
-                            <div className="w-full border border-[#fecaca] rounded-xl p-5 bg-[#fef2f2]">
+                            <div className="w-full border border-[#fecaca] rounded-xl p-4 bg-[#fef2f2]">
                                 <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center gap-2">
                                         <X className="w-4 h-4 text-[#dc2626]" />

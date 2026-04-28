@@ -89,3 +89,39 @@ export interface ArenaState {
   totalInteractions: number;
   cognitiveLoadLevel: "normal" | "elevated";
 }
+
+/* ── Brief methodology & locale types (extracted from dashboard/model) ── */
+
+export type BriefLocale = "en" | "es" | "pt";
+
+export interface TranslatedBriefContent {
+  tagline: string;
+  explanation: string;
+  patternLabels: { bad: string; good: string };
+  coachTip: string;
+}
+
+export interface LevelMethodology {
+  name: string;
+  tagline: string;
+  explanation: string;
+  pattern: {
+    bad: { label: string; script: string };
+    good: { label: string; script: string };
+  };
+  anchorPhrases: string[];
+  coachTip: string;
+  translations?: Partial<Record<BriefLocale, TranslatedBriefContent>>;
+}
+
+export interface SelfIntroContext {
+  id: "networking" | "team" | "client";
+  label: string;
+  description: string;
+  icon: string;
+  scenario: string;
+  interlocutorBehavior: string;
+  interlocutor: string;
+  methodology: LevelMethodology;
+  introHeadline: string;
+}

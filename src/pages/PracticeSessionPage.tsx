@@ -69,7 +69,7 @@ import { StrategyScreen } from "@/features/practice-session/ui/StrategyScreen";
 import { IntroductionScreen } from "@/features/practice-session/ui/IntroductionScreen";
 import { SelfIntroContextScreen } from "@/features/practice-session/ui/SelfIntroContextScreen";
 import { scriptSectionsToBriefingData } from "@/features/practice-session/ui/briefing/salesAdapter";
-import type { SelfIntroContext } from "@/features/dashboard/model/progression-paths";
+import type { SelfIntroContext } from "@/entities/session";
 import { recommendPath } from "@/features/dashboard/model/path-recommendation";
 import { PathRecommendationCard } from "@/features/practice-session/ui/PathRecommendationCard";
 

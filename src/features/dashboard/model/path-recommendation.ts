@@ -11,15 +11,11 @@ import type { PathId } from "./progression-paths";
 import { PROGRESSION_PATHS } from "./progression-paths";
 import type { OnboardingProfile } from "@/services/types";
 
-/* ── Types ── */
+// Re-export from entities (canonical location)
+export type { PathRecommendation } from "@/entities/progression";
 
-export interface PathRecommendation {
-  pathId: PathId;
-  pathTitle: string;
-  pathIcon: string;
-  reason: string;
-  focusDetail: string;
-}
+/* ── Local alias for use within this file ── */
+import type { PathRecommendation } from "@/entities/progression";
 
 type SelfIntroContextId = "networking" | "team" | "client";
 

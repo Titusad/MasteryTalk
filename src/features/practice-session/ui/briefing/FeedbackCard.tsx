@@ -24,7 +24,7 @@ import {
 import { projectId } from "@/../utils/supabase/info";
 import { getAuthToken } from "@/services/supabase";
 import { ShadowingModal } from "@/features/practice-session/ui/ShadowingModal";
-import type { ShadowingPhrase } from "@/features/shadowing/model";
+import type { ShadowingPhrase } from "@/entities/feedback";
 import {
     computeStressedWords,
     computeLinkedPairs,

@@ -7,7 +7,7 @@
 
 import { motion } from "motion/react";
 import { ArrowRight, Target, Briefcase, Video, Mic, Handshake, Crown, Sparkles } from "lucide-react";
-import type { PathRecommendation } from "@/features/dashboard/model/path-recommendation";
+import type { PathRecommendation } from "@/entities/progression";
 import type { LucideIcon } from "lucide-react";
 
 const PATH_ICONS: Record<string, LucideIcon> = {

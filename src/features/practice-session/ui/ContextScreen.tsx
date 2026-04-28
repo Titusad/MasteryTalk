@@ -254,7 +254,7 @@ function ContextScreen({
                         {fields.map((field, i) => {
                             const currentValue = values[field.label] ?? "";
                             return (
-                                <div key={i} className="bg-white rounded-2xl border border-[#e2e8f0] p-5 shadow-sm">
+                                <div key={i} className="bg-white rounded-2xl border border-[#e2e8f0] p-4 shadow-sm">
                                     <div className="flex items-start justify-between mb-3">
                                         <label className="flex items-center gap-1.5">
                                             <span className="text-sm font-medium text-[#0f172b]">{field.label}</span>

@@ -139,3 +139,13 @@ export interface StructuredLesson {
   generatedAt: string;
   completedAt: string | null;
 }
+
+/* ── Path recommendation (extracted from dashboard/model) ── */
+
+export interface PathRecommendation {
+  pathId: string;
+  pathTitle: string;
+  pathIcon: string;
+  reason: string;
+  focusDetail: string;
+}

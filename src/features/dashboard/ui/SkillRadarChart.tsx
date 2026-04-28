@@ -32,7 +32,7 @@ export function SkillRadarChart({
 }: SkillRadarChartProps) {
   return (
     <motion.div
-      className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-5 lg:col-span-1"
+      className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-6 lg:col-span-1"
       style={{ minWidth: 0 }}
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}

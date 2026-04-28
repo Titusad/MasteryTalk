@@ -31,7 +31,7 @@ export function RecentSessionsList({
 }: RecentSessionsListProps) {
   return (
     <motion.div
-      className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-5 flex flex-col"
+      className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-6 flex flex-col"
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.25 }}

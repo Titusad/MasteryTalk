@@ -1021,7 +1021,7 @@ export function DesignSystemPage() {
                 steps: ["Precisión...", "Comparación...", "Métricas...", "Resumen final..."],
               },
             ].map((v) => (
-              <div key={v.variant} className="bg-[#0f172b] rounded-2xl p-5">
+              <div key={v.variant} className="bg-[#0f172b] rounded-2xl p-6">
                 <span className="text-[10px] text-white/40 uppercase tracking-wider">{v.variant}</span>
                 <p className="text-white text-sm mt-2 mb-3" style={{ fontWeight: 500 }}>{v.title}</p>
                 <div className="space-y-1.5">
@@ -1231,7 +1231,7 @@ export function DesignSystemPage() {
             Acordeón de comparación Antes/Después que muestra la versión original del usuario vs. la versión profesional,
             con técnica aplicada. Aparece en el SessionFeedback.
           </p>
-          <div className="bg-[#f8fafc] rounded-2xl p-5 mb-6">
+          <div className="bg-[#f8fafc] rounded-2xl p-6 mb-6">
             <div className="bg-white border border-[#e2e8f0] rounded-2xl overflow-hidden">
               <div className="w-full text-left px-5 py-4 flex items-start gap-4">
                 <div className="flex-1 min-w-0">

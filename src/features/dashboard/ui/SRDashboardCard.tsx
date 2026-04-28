@@ -67,7 +67,7 @@ export function SRDashboardCard({ totalSessions, onPracticeAll }: SRDashboardCar
             transition={{ duration: 0.2 }}
             className="bg-white rounded-2xl w-full max-w-lg shadow-xl border border-[#e2e8f0] flex flex-col max-h-[80vh]"
           >
-            <div className="flex items-center justify-between p-5 border-b border-[#e2e8f0]">
+            <div className="flex items-center justify-between p-4 border-b border-[#e2e8f0]">
               <h3 className="text-lg font-semibold text-[#0f172b]">Your Phrase Queue</h3>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -77,7 +77,7 @@ export function SRDashboardCard({ totalSessions, onPracticeAll }: SRDashboardCar
               </button>
             </div>
             
-            <div className="p-5 overflow-y-auto space-y-3">
+            <div className="p-4 overflow-y-auto space-y-3">
               {phrases.length === 0 ? (
                 <p className="text-sm text-[#62748e] text-center py-6">No phrases in your queue yet.</p>
               ) : (
@@ -105,7 +105,7 @@ export function SRDashboardCard({ totalSessions, onPracticeAll }: SRDashboardCar
               )}
             </div>
             
-            <div className="p-5 border-t border-[#e2e8f0]">
+            <div className="p-4 border-t border-[#e2e8f0]">
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="w-full py-2.5 rounded-xl bg-[#0f172b] text-white text-sm font-medium hover:bg-[#1d293d] transition-colors"

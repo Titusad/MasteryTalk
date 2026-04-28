@@ -28,7 +28,7 @@ import { useState, useCallback, useMemo } from "react";
 import type {
   LevelMethodology,
   BriefLocale,
-} from "@/features/dashboard/model/progression-paths";
+} from "@/entities/session";
 import { useBriefLocale } from "../hooks/useBriefLocale";
 import { useNarration } from "@/shared/lib/useNarration";
 

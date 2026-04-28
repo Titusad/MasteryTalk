@@ -38,7 +38,7 @@ export function ConceptStep({ data, footer }: Props) {
 
         {/* Mental Model callout */}
         {data.mentalModel && (
-          <div className="mt-6 p-5 rounded-2xl bg-amber-50 border border-amber-200 flex items-start gap-3">
+          <div className="mt-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 flex items-start gap-3">
             <Lightbulb className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
             <div>
               <p className="text-[11px] text-amber-700 uppercase tracking-wider mb-1" style={{ fontWeight: 700 }}>

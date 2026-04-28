@@ -733,7 +733,7 @@ export function PronunciationTab({
                 {/* ACTIONABLE INSIGHTS (Moved up from former Fluency Insights) */}
                 <div className="border-t border-white/10 pt-6 mt-2">
                     {/* Actionable tip */}
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-5 mb-5 flex items-start gap-3">
+                    <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-4 flex items-start gap-3">
                         <div className="w-8 h-8 rounded-full bg-[#14b8a6]/20 flex items-center justify-center shrink-0">
                             <Zap className="w-4 h-4 text-[#2dd4bf]" />
                         </div>
@@ -808,7 +808,7 @@ export function PronunciationTab({
                 </div>
 
                 {shadowingPhrases.length === 0 ? (
-                    <div className="bg-[#f0fdf4] border border-[#bbf7d0] rounded-xl p-5 text-center">
+                    <div className="bg-[#f0fdf4] border border-[#bbf7d0] rounded-xl p-4 text-center">
                         <Award className="w-8 h-8 text-[#22c55e] mx-auto mb-2" />
                         <p className="text-sm text-[#0f172b]" style={{ fontWeight: 500 }}>
                             Great job! No significant pronunciation issues detected.

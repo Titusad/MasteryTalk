@@ -259,7 +259,7 @@ function LessonCard({
   return (
     <motion.button
       onClick={onOpen}
-      className={`w-full bg-white rounded-2xl border p-5 flex items-start gap-3 hover:shadow-lg transition-all text-left cursor-pointer group ${done ? "border-[#bbf7d0]" : "border-[#e2e8f0] hover:border-[#cbd5e1]"}`}
+      className={`w-full bg-white rounded-2xl border p-6 flex items-start gap-3 hover:shadow-lg transition-all text-left cursor-pointer group ${done ? "border-[#bbf7d0]" : "border-[#e2e8f0] hover:border-[#cbd5e1]"}`}
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.03 }}

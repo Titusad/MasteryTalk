@@ -50,7 +50,7 @@ describe("Header Consolidation QA", () => {
   });
 
   test("PracticeHistoryPage main view has no AppHeader (only report overlay)", () => {
-    const src = readSrc("features/dashboard/ui/PracticeHistoryPage.tsx");
+    const src = readSrc("pages/PracticeHistoryPage.tsx");
     // Should NOT have an AppHeader in the main page body
     // but SHOULD have one inside the report overlay (variant="public")
     const lines = src.split("\n");

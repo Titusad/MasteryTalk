@@ -40,7 +40,7 @@ export function PrivacyPage() {
         <p className="text-sm text-[#94a3b8] mb-10">Last updated: {LAST_UPDATED}</p>
 
         {/* Table of Contents */}
-        <nav className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-5 mb-12">
+        <nav className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-4 mb-12">
           <p className="text-sm text-[#0f172b] mb-3" style={{ fontWeight: 600 }}>
             Table of Contents
           </p>

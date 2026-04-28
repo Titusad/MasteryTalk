@@ -47,7 +47,7 @@ export function FeedbackAccordion({
     >
       <button
         onClick={handleToggle}
-        className="w-full flex items-center gap-3 p-5 md:p-6 text-left hover:bg-[#f8fafc] transition-colors"
+        className="w-full flex items-center gap-3 p-4 md:p-6 text-left hover:bg-[#f8fafc] transition-colors"
       >
         <div className="w-10 h-10 rounded-xl bg-[#0f172b] flex items-center justify-center shrink-0">
           {icon}

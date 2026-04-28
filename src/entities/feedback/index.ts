@@ -119,3 +119,17 @@ export interface RealFeedbackData {
   }> | null;
 }
 
+
+/* ── Shadowing phrase type (extracted from features/shadowing/model) ── */
+
+export interface ShadowingPhrase {
+  id: string;
+  sentence: string;
+  focusWord: string;
+  ipa: string;
+  originalScore: number;
+  problemWords: { word: string; score: number; errorType: string }[];
+  turnIndex: number;
+  stressedWords?: string[];
+  linkedPairs?: [string, string][];
+}

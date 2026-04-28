@@ -372,7 +372,7 @@ function ConversationFeedback({
           <div className="grid md:grid-cols-2 gap-4 mb-6">
             {/* Axis 1: Language Proficiency */}
             <motion.div
-              className="bg-white rounded-3xl border border-[#e2e8f0] p-5 md:p-6"
+              className="bg-white rounded-3xl border border-[#e2e8f0] p-4 md:p-6"
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.12 }}
@@ -529,7 +529,7 @@ function ConversationFeedback({
 
             {/* Axis 2: Content Quality */}
             <motion.div
-              className="bg-white rounded-3xl border border-[#e2e8f0] p-5 md:p-6"
+              className="bg-white rounded-3xl border border-[#e2e8f0] p-4 md:p-6"
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.16 }}
@@ -748,7 +748,7 @@ function ConversationFeedback({
               };
 
               return (
-                <div className="bg-white rounded-3xl border border-[#e2e8f0] p-5 md:p-6">
+                <div className="bg-white rounded-3xl border border-[#e2e8f0] p-4 md:p-6">
                   <p
                     className="text-sm text-[#0f172b] mb-4"
                     style={{ fontWeight: 600 }}

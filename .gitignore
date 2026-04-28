@@ -35,3 +35,5 @@ scripts/upload-to-r2.mjs
 scripts/generate-narration-audio.mjs
 scripts/generate-intro-audio.mjs
 scripts/generate-strategy-audio.mjs
+.claude/settings.local.json
+supabase/.temp/

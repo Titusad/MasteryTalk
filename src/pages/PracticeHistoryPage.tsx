@@ -220,7 +220,7 @@ export function PracticeHistoryPage({
                       onClick={() =>
                         setExpandedPractice(isExpanded ? null : i)
                       }
-                      className="w-full p-5 text-left group"
+                      className="w-full p-4 text-left group"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">

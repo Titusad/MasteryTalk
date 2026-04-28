@@ -48,7 +48,7 @@ import type {
 } from "@/services/types";
 import type { RealFeedbackData } from "./ConversationFeedback";
 import { ShadowingModal } from "@/features/practice-session/ui/ShadowingModal";
-import type { ShadowingPhrase } from "@/features/shadowing/model";
+import type { ShadowingPhrase } from "@/entities/feedback";
 import {
     computeStressedWords,
     computeLinkedPairs,
@@ -310,7 +310,7 @@ export function FeedbackScreen({
                 {/* ═══ DETAILED INSIGHTS (always open) ═══ */}
                 {allInsights.length > 0 && (
                     <motion.div
-                        className="bg-white rounded-3xl border border-[#e2e8f0] p-5 md:p-6 mb-6"
+                        className="bg-white rounded-3xl border border-[#e2e8f0] p-4 md:p-6 mb-6"
                         initial={{ opacity: 0, y: 16 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.2 }}
@@ -471,7 +471,7 @@ function FocusBubbleCarousel({ focusLabel, focusScore, items, shadowStates, onPr
 
     return (
         <motion.div
-            className="bg-white rounded-3xl border-l-4 border-l-[#f59e0b] border border-[#e2e8f0] p-5 md:p-6 mb-6"
+            className="bg-white rounded-3xl border-l-4 border-l-[#f59e0b] border border-[#e2e8f0] p-4 md:p-6 mb-6"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.12 }}

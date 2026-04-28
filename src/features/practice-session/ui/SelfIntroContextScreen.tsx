@@ -8,8 +8,8 @@
 import { useState } from "react";
 import { motion } from "motion/react";
 import { ArrowRight, Globe, Users, Handshake } from "lucide-react";
-import { SELF_INTRO_CONTEXTS } from "@/features/dashboard/model/progression-paths";
-import type { SelfIntroContext } from "@/features/dashboard/model/progression-paths";
+import { SELF_INTRO_CONTEXTS } from "@/shared/lib/self-intro-contexts";
+import type { SelfIntroContext } from "@/entities/session";
 
 /* Map context id → Lucide icon component */
 const CONTEXT_ICONS: Record<string, React.ElementType> = {

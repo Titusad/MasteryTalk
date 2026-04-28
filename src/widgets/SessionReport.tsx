@@ -240,7 +240,7 @@ export function SessionReport({
 
         {!isInterview && sessionHighlight && (
           <motion.div
-            className="bg-gradient-to-r from-[#f0fdf4] to-[#ecfdf5] border border-[#bbf7d0] rounded-2xl p-5 mb-6 flex items-start gap-3"
+            className="bg-gradient-to-r from-[#f0fdf4] to-[#ecfdf5] border border-[#bbf7d0] rounded-2xl p-4 mb-6 flex items-start gap-3"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.08 }}
@@ -317,7 +317,7 @@ export function SessionReport({
           >
             <div className="space-y-4">
               {scriptSections.map((section) => (
-                <div key={section.num} className="bg-[#f8fafc] rounded-xl border border-[#e2e8f0] p-5">
+                <div key={section.num} className="bg-[#f8fafc] rounded-xl border border-[#e2e8f0] p-4">
                   <div className="flex items-center gap-2 mb-3">
                     <span
                       className="w-6 h-6 rounded-lg bg-[#3b82f6]/10 flex items-center justify-center text-[10px] text-[#3b82f6]"
@@ -364,7 +364,7 @@ export function SessionReport({
                 return (
                   <motion.div
                     key={i}
-                    className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-5"
+                    className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-4"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: 0.24 + i * 0.08 }}
