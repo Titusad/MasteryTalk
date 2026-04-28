@@ -191,6 +191,20 @@ app.put("/make-server-08b8658d/profile", async (c: any) => {
     }
 
     const updates = await c.req.json();
+
+    // Whitelist: only allow non-sensitive profile fields to be updated by the user
+    const ALLOWED_FIELDS = new Set([
+      "industry", "position", "seniority", "role", "company",
+      "keyExperience", "cvSummary", "cvFileName", "cvConsentGiven",
+      "deckSummary", "deckFileName", "lastJobDescription",
+      "narrationCompleted", "sessionMode", "activeGoal",
+      "market_focus", "whatsapp_number", "whatsapp_verified",
+    ]);
+    const safeUpdates: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(updates)) {
+      if (ALLOWED_FIELDS.has(key)) safeUpdates[key] = value;
+    }
+
     const raw = await kv.get(`profile:${user.id}`);
     const current = raw
       ? raw
@@ -205,7 +219,7 @@ app.put("/make-server-08b8658d/profile", async (c: any) => {
         created_at: new Date().toISOString(),
       };
 
-    const merged = { ...current, ...updates, id: user.id };
+    const merged = { ...current, ...safeUpdates, id: user.id };
     await kv.set(`profile:${user.id}`, merged);
 
     return c.json({ status: "updated", profile: merged });

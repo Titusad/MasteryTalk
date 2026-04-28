@@ -161,6 +161,14 @@ async function uploadTTSToStorage(
 
 /* ── Main cron route ── */
 app.post("/make-server-08b8658d/cron/daily-sr", async (c) => {
+  // Validate cron secret to prevent unauthorized triggers
+  const cronSecret = (globalThis as any).Deno.env.get("CRON_SECRET");
+  const incomingSecret = c.req.header("x-cron-secret");
+  if (!cronSecret || incomingSecret !== cronSecret) {
+    console.warn("[Cron Daily SR] Unauthorized attempt — invalid x-cron-secret");
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+
   const startTime = Date.now();
   console.log("[Cron Daily SR] Starting daily SR dispatch...");
 

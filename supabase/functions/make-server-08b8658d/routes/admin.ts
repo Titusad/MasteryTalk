@@ -4,12 +4,34 @@ import { getAuthUser, getAdminClient } from "../_shared.ts";
 
 const app = new Hono();
 
+/* ── Admin auth middleware ── */
+const ADMIN_EMAILS_RAW = (globalThis as any).Deno.env.get("ADMIN_EMAILS") || "";
+const ADMIN_EMAILS = ADMIN_EMAILS_RAW
+  ? ADMIN_EMAILS_RAW.split(",").map((e: string) => e.trim().toLowerCase())
+  : [];
+
+async function requireAdmin(c: any, next: any) {
+  try {
+    const token = (c.req.header("authorization") || "").replace(/^Bearer\s+/i, "");
+    if (!token) return c.json({ error: "Unauthorized" }, 401);
+    const { data: { user }, error } = await getAdminClient().auth.getUser(token);
+    if (error || !user?.email) return c.json({ error: "Unauthorized" }, 401);
+    const email = user.email.toLowerCase();
+    if (!ADMIN_EMAILS.includes(email)) {
+      console.warn(`[Admin] Access denied for ${email}`);
+      return c.json({ error: "Forbidden" }, 403);
+    }
+    await next();
+  } catch {
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+}
+
+app.use("/make-server-08b8658d/admin/*", requireAdmin);
+
 app.get("/make-server-08b8658d/admin/users", async (c: any) => {
   try {
-    const adminSupabase = createClient(
-      (globalThis as any).Deno.env.get("SUPABASE_URL"),
-      (globalThis as any).Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),
-    );
+    const adminSupabase = getAdminClient();
 
     const { data: profileRows, error } = await adminSupabase
       .from("kv_store_4e8a5b39")
@@ -76,10 +98,7 @@ app.get("/make-server-08b8658d/admin/users/:id", async (c: any) => {
       typeof card === "string" ? JSON.parse(card) : card
     );
 
-    const adminSupabase = createClient(
-      (globalThis as any).Deno.env.get("SUPABASE_URL"),
-      (globalThis as any).Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),
-    );
+    const adminSupabase = getAdminClient();
     let authInfo: any = null;
     try {
       const { data: { user } } = await adminSupabase.auth.admin.getUserById(userId);
@@ -116,10 +135,7 @@ app.get("/make-server-08b8658d/admin/users/:id", async (c: any) => {
 /** GET /admin/kpis — Platform-wide aggregated metrics */
 app.get("/make-server-08b8658d/admin/kpis", async (c: any) => {
   try {
-    const adminSupabase = createClient(
-      (globalThis as any).Deno.env.get("SUPABASE_URL"),
-      (globalThis as any).Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),
-    );
+    const adminSupabase = getAdminClient();
 
     const { data: profileRows } = await adminSupabase
       .from("kv_store_4e8a5b39")
@@ -217,10 +233,7 @@ app.get("/make-server-08b8658d/admin/kpis", async (c: any) => {
 // ═══════════════════════════════════════════════════════════════
 app.get("/make-server-08b8658d/admin/api-usage", async (c: any) => {
   try {
-    const adminSupabase = createClient(
-      (globalThis as any).Deno.env.get("SUPABASE_URL"),
-      (globalThis as any).Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),
-    );
+    const adminSupabase = getAdminClient();
 
     // Fetch last 30 days of usage logs from KV
     const { data: rows, error } = await adminSupabase
