@@ -110,8 +110,12 @@ app.post("/make-server-08b8658d/webhook/stripe", async (c) => {
         profile.stripe_subscription_id = sub.id;
         profile.stripe_customer_id = sub.customer;
         profile.paths_purchased = isActive ? UNLOCKED_PATHS : [];
-        profile.subscription_start_date = new Date(sub.start_date * 1000).toISOString();
-        profile.next_billing_date = new Date(sub.current_period_end * 1000).toISOString();
+        profile.subscription_start_date = sub.start_date
+          ? new Date(sub.start_date * 1000).toISOString()
+          : new Date().toISOString();
+        profile.next_billing_date = sub.current_period_end
+          ? new Date(sub.current_period_end * 1000).toISOString()
+          : null;
         profile.grace_period_until = null;
         profile._last_period_start = sub.current_period_start;
 
@@ -137,9 +141,11 @@ app.post("/make-server-08b8658d/webhook/stripe", async (c) => {
                 userName: email.split("@")[0],
                 planName: `MasteryTalk PRO (${tierInfo.label})`,
                 amountUsd: tierInfo.price,
-                nextBillingDate: new Date(sub.current_period_end * 1000).toLocaleDateString("en-US", {
-                  year: "numeric", month: "long", day: "numeric",
-                }),
+                nextBillingDate: sub.current_period_end
+                  ? new Date(sub.current_period_end * 1000).toLocaleDateString("en-US", {
+                      year: "numeric", month: "long", day: "numeric",
+                    })
+                  : "—",
               }),
             }).catch(() => {});
           }
@@ -175,7 +181,9 @@ app.post("/make-server-08b8658d/webhook/stripe", async (c) => {
         profile.plan_status = sub.status;
         profile.subscription_active = isActive;
         profile.paths_purchased = (isActive || isPastDue) ? UNLOCKED_PATHS : [];
-        profile.next_billing_date = new Date(sub.current_period_end * 1000).toISOString();
+        profile.next_billing_date = sub.current_period_end
+          ? new Date(sub.current_period_end * 1000).toISOString()
+          : null;
 
         if (isActive) profile.grace_period_until = null;
 

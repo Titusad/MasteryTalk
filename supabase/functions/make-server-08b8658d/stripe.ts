@@ -138,5 +138,5 @@ export async function verifyStripeWebhook(rawBody: string, signature: string): P
   const stripe = getStripe();
   const secret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
   if (!secret) throw new Error("[Stripe] STRIPE_WEBHOOK_SECRET not configured");
-  return stripe.webhooks.constructEvent(rawBody, signature, secret);
+  return stripe.webhooks.constructEventAsync(rawBody, signature, secret);
 }
