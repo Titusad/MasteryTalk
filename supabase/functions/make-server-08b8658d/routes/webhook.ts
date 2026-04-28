@@ -26,7 +26,7 @@ import {
   decrementEarlyBirdCount,
 } from "../stripe.ts";
 import { sendEmail } from "../email.ts";
-import { subscriptionConfirmationEmailHtml } from "../email-templates.ts";
+import { subscriptionConfirmationEmailHtml, renewalConfirmationEmailHtml } from "../email-templates.ts";
 import { getAdminClient } from "../_shared.ts";
 
 const app = new Hono();
@@ -321,6 +321,27 @@ app.post("/make-server-08b8658d/webhook/stripe", async (c) => {
         }
 
         await saveProfile(userId, profile);
+
+        // Renewal confirmation email (only for recurring billing, not first payment)
+        const customerEmail = invoice.customer_email || invoice.customer_details?.email;
+        const billingReason = invoice.billing_reason; // "subscription_cycle" for renewals
+        if (customerEmail && billingReason === "subscription_cycle") {
+          const tierInfo = TIER_INFO[tier as keyof typeof TIER_INFO];
+          const nextDate = invoice.period_end
+            ? new Date(invoice.period_end * 1000).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
+            : "—";
+          sendEmail({
+            to: customerEmail,
+            subject: `MasteryTalk PRO renewed — ${tierInfo?.label ?? "your plan"} is active`,
+            html: renewalConfirmationEmailHtml({
+              userName: customerEmail.split("@")[0],
+              planName: tierInfo?.label ?? "MasteryTalk PRO",
+              amountUsd: (invoice.amount_paid ?? 0) / 100,
+              nextBillingDate: nextDate,
+            }),
+          }).catch(() => {});
+        }
+
         console.log(`[Webhook] ✅ invoice.payment_succeeded: user=${userId} access renewed`);
         return c.json({ status: "processed" }, 200);
       }

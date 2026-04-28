@@ -358,3 +358,108 @@ export function subscriptionConfirmationEmailHtml(data: SubscriptionEmailData): 
 
   return baseLayout(content, `Your ${data.planName} subscription is active — full access unlocked!`);
 }
+
+/* ── Renewal confirmation ── */
+
+export interface RenewalEmailData {
+  userName: string;
+  planName: string;
+  amountUsd: number;
+  nextBillingDate: string;
+}
+
+export function renewalConfirmationEmailHtml(data: RenewalEmailData): string {
+  const content = `
+    <div class="body-content">
+      <h1>Subscription Renewed</h1>
+      <p class="strong-text">
+        Hi ${data.userName}! Your ${data.planName} subscription has been successfully renewed.
+        Your access continues without interruption.
+      </p>
+
+      <div class="card" style="background: ${B.surface}; border: 1px solid ${B.border}; border-radius: 12px; overflow: hidden;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+          <tr>
+            <td style="padding: 12px 16px; border-bottom: 1px solid ${B.border};">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="color: ${B.textMuted}; font-size: 13px;">Plan</td>
+                  <td style="color: ${B.accent}; font-size: 14px; font-weight: 700; text-align: right;">${data.planName}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 12px 16px; border-bottom: 1px solid ${B.border};">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="color: ${B.textMuted}; font-size: 13px;">Amount charged</td>
+                  <td style="color: ${B.text}; font-size: 14px; font-weight: 600; text-align: right;">$${data.amountUsd.toFixed(2)} USD</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 12px 16px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="color: ${B.textMuted}; font-size: 13px;">Next renewal</td>
+                  <td style="color: ${B.text}; font-size: 14px; font-weight: 600; text-align: right;">${data.nextBillingDate}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <p>
+        Keep up the momentum — every session brings you closer to executive-level English fluency.
+      </p>
+      <div class="cta-wrapper">
+        <a href="${B.url}/#dashboard" class="cta">Practice Now &rarr;</a>
+      </div>
+      <div class="divider" style="height: 1px; background: ${B.border}; margin: 24px 0;"></div>
+      <p style="font-size: 13px; color: ${B.textMuted};">
+        To manage your subscription, visit your <a href="${B.url}/#account" style="color: ${B.accent};">account settings</a>.
+      </p>
+    </div>`;
+
+  return baseLayout(content, `${data.planName} renewed — your access continues!`);
+}
+
+/* ── Inactivity nudge ── */
+
+export function inactivityNudgeEmailHtml(userName: string): string {
+  const content = `
+    <div class="body-content">
+      <h1>Your English isn't going to practice itself.</h1>
+      <p class="strong-text">
+        Hi ${userName} — it's been a while since your last session.
+      </p>
+      <p>
+        The professionals who achieve real fluency don't wait for the perfect moment.
+        They practice even when they're busy — especially then.
+      </p>
+
+      <div class="focus-card">
+        <p>
+          💡 <strong>10 minutes today</strong> compounds into executive-level English over weeks.
+          Your practice paths are waiting.
+        </p>
+      </div>
+
+      <p>
+        Pick up where you left off — your progress is saved and your paths are fully unlocked.
+      </p>
+      <div class="cta-wrapper">
+        <a href="${B.url}/#dashboard" class="cta">Resume Practice &rarr;</a>
+      </div>
+      <div class="divider" style="height: 1px; background: ${B.border}; margin: 24px 0;"></div>
+      <p style="font-size: 13px; color: ${B.textMuted};">
+        You're receiving this because you have an active MasteryTalk PRO subscription.
+        <a href="${B.url}/#account" style="color: ${B.accent};">Manage your account</a>.
+      </p>
+    </div>`;
+
+  return baseLayout(content, "Your English isn't going to practice itself — come back!");
+}

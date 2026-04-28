@@ -14,6 +14,9 @@
 import { Hono } from "npm:hono";
 import { getAdminClient } from "../_shared.ts";
 import { sendWhatsAppMessage } from "../twilio.ts";
+import * as kv from "../kv_store.ts";
+import { sendEmail } from "../email.ts";
+import { inactivityNudgeEmailHtml } from "../email-templates.ts";
 
 const app = new Hono();
 
@@ -303,6 +306,52 @@ app.post("/make-server-08b8658d/cron/daily-sr", async (c) => {
       .eq("status", "pending")
       .lt("expires_at", now)
       .select("id", { count: "exact", head: true });
+
+    // ── Inactivity nudge emails ──────────────────────────────────────
+    // Send nudge to subscribed users inactive for 7+ days (max 1/week)
+    try {
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
+
+      const { data: profileRows } = await supabase
+        .from("kv_store_4e8a5b39")
+        .select("key, value")
+        .like("key", "profile:%");
+
+      let nudgesSent = 0;
+      for (const row of profileRows || []) {
+        const profile = typeof row.value === "string" ? JSON.parse(row.value) : row.value;
+        if (!profile?.subscription_active) continue;
+
+        const lastActivity = profile.stats?.lastFeedbackAt as string | undefined;
+        if (!lastActivity || lastActivity > sevenDaysAgo) continue; // active recently
+
+        const lastNudge = profile.lastNudgeSentAt as string | undefined;
+        if (lastNudge && lastNudge > fourteenDaysAgo) continue; // nudged within 2 weeks
+
+        const userId = row.key.replace("profile:", "");
+        const { data: { user } } = await supabase.auth.admin.getUserById(userId);
+        const email = user?.email;
+        const name = user?.user_metadata?.full_name?.split(" ")[0] || email?.split("@")[0] || "there";
+
+        if (!email) continue;
+
+        await sendEmail({
+          to: email,
+          subject: "Your English isn't going to practice itself 👀",
+          html: inactivityNudgeEmailHtml(name),
+        });
+
+        // Mark nudge sent so we don't spam
+        profile.lastNudgeSentAt = new Date().toISOString();
+        await kv.set(`profile:${userId}`, profile);
+        nudgesSent++;
+      }
+      if (nudgesSent > 0) console.log(`[Cron Daily SR] Inactivity nudges sent: ${nudgesSent}`);
+    } catch (nudgeErr) {
+      console.error("[Cron Daily SR] Inactivity nudge error (non-blocking):", nudgeErr);
+    }
+    // ────────────────────────────────────────────────────────────────
 
     const elapsed = Date.now() - startTime;
     console.log(
