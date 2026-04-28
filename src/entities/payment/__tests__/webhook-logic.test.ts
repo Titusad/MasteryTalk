@@ -12,7 +12,7 @@ import { SUBSCRIPTION_TIERS, type SubscriptionTier } from "@/entities/payment";
 function applySubscriptionCreated(
   userId: string,
   tier: SubscriptionTier,
-  status: "active" | "past_due" | "canceled" = "active"
+  status: "active" | "past_due" | "canceled" | "trialing" = "active"
 ) {
   const isActive = status === "active" || status === "trialing";
   const UNLOCKED_PATHS = ["interview", "meeting", "presentation", "self-intro"];
@@ -27,7 +27,7 @@ function applySubscriptionCreated(
   };
 }
 
-function applyInvoicePaymentFailed(profile: Record<string, any>) {
+function applyInvoicePaymentFailed(profile: Record<string, any>): Record<string, any> {
   const gracePeriodUntil = new Date();
   gracePeriodUntil.setDate(gracePeriodUntil.getDate() + 2);
   return {

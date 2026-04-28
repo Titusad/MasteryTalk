@@ -77,31 +77,31 @@ export function AccountPage({ userProfile, authUser, onLogout }: AccountPageProp
       {/* MAIN CONTENT */}
       <main className="relative w-full max-w-[800px] mx-auto px-4 md:px-8 pt-8 pb-20 flex-1">
 
-        <h1 className="text-3xl md:text-4xl text-[#0f172b] mb-8" style={{ fontWeight: 300 }}>
+        <h1 className="text-3xl md:text-4xl font-light text-[#0f172b] mb-8">
           Mi Cuenta
         </h1>
 
         <div className="space-y-6">
           {/* PROFILE CARD */}
           <section className="bg-white rounded-2xl border border-[#e2e8f0] p-6 hover:border-[#cad5e2] transition-colors shadow-sm">
-            <h2 className="text-lg text-[#0f172b] mb-5 flex items-center gap-2" style={{ fontWeight: 500 }}>
+            <h2 className="text-lg font-medium text-[#0f172b] mb-5 flex items-center gap-2">
               <User className="w-5 h-5 text-[#62748e]" />
               Perfil Personal
             </h2>
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
               <div className="w-20 h-20 rounded-full bg-[#0f172b] flex items-center justify-center shrink-0">
-                <span className="text-white text-2xl" style={{ fontWeight: 300 }}>{avatarInitials}</span>
+                <span className="text-white text-2xl font-light">{avatarInitials}</span>
               </div>
               <div className="flex-1 space-y-4 w-full">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs text-[#62748e] mb-1.5" style={{ fontWeight: 500 }}>Nombre Completo</label>
-                    <div className="w-full bg-[#f1f5f9] border border-[#e2e8f0] text-[#0f172b] rounded-lg px-4 py-3 text-sm" style={{ fontWeight: 500 }}>
+                    <label className="block text-xs font-medium text-[#62748e] mb-1.5">Nombre Completo</label>
+                    <div className="w-full bg-[#f1f5f9] border border-[#e2e8f0] text-[#0f172b] rounded-lg px-4 py-3 text-sm font-medium">
                       {displayName}
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs text-[#62748e] mb-1.5" style={{ fontWeight: 500 }}>Correo Electrónico</label>
+                    <label className="block text-xs font-medium text-[#62748e] mb-1.5">Correo Electrónico</label>
                     <div className="w-full bg-[#f1f5f9] border border-[#e2e8f0] text-[#45556c] rounded-lg px-4 py-3 text-sm">
                       {displayEmail}
                     </div>
@@ -114,7 +114,7 @@ export function AccountPage({ userProfile, authUser, onLogout }: AccountPageProp
 
           {/* SUBSCRIPTION CARD */}
           <section className="bg-white rounded-2xl border border-[#e2e8f0] p-6 hover:border-[#cad5e2] transition-colors shadow-sm">
-            <h2 className="text-lg text-[#0f172b] mb-5 flex items-center gap-2" style={{ fontWeight: 500 }}>
+            <h2 className="text-lg font-medium text-[#0f172b] mb-5 flex items-center gap-2">
               <CreditCard className="w-5 h-5 text-[#62748e]" />
               Plan y Uso
             </h2>
@@ -125,10 +125,10 @@ export function AccountPage({ userProfile, authUser, onLogout }: AccountPageProp
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <div className="flex items-center gap-3 mb-1.5">
-                      <h3 className="text-xl text-[#0f172b]" style={{ fontWeight: 600 }}>
+                      <h3 className="text-xl font-semibold text-[#0f172b]">
                         {TIER_LABELS[subInfo.tier ?? ""] ?? "MasteryTalk PRO"}
                       </h3>
-                      <span className="bg-[#f0fdf4] text-[#16a34a] border border-[#bbf7d0] text-[10px] px-2.5 py-1 rounded-full uppercase tracking-widest" style={{ fontWeight: 700 }}>
+                      <span className="bg-[#f0fdf4] text-[#16a34a] border border-[#bbf7d0] text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest">
                         Activo
                       </span>
                     </div>
@@ -141,8 +141,7 @@ export function AccountPage({ userProfile, authUser, onLogout }: AccountPageProp
                   <button
                     onClick={handleManageSubscription}
                     disabled={portalLoading}
-                    className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg border border-[#e2e8f0] text-sm text-[#0f172b] hover:bg-[#f8fafc] transition-colors shrink-0 disabled:opacity-50"
-                    style={{ fontWeight: 500 }}
+                    className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg border border-[#e2e8f0] text-sm font-medium text-[#0f172b] hover:bg-[#f8fafc] transition-colors shrink-0 disabled:opacity-50"
                   >
                     {portalLoading ? (
                       <div className="w-4 h-4 rounded-full border-2 border-[#0f172b] border-t-transparent animate-spin" />
@@ -154,7 +153,7 @@ export function AccountPage({ userProfile, authUser, onLogout }: AccountPageProp
                 </div>
 
                 <div className="mt-6 pt-6 border-t border-[#e2e8f0]">
-                  <div className="flex items-center gap-2 mb-2 text-sm text-[#0f172b]" style={{ fontWeight: 500 }}>
+                  <div className="flex items-center gap-2 mb-2 text-sm font-medium text-[#0f172b]">
                     <CheckCircle className="w-4 h-4 text-[#16a34a]" />
                     Sesiones disponibles
                   </div>
@@ -168,12 +167,12 @@ export function AccountPage({ userProfile, authUser, onLogout }: AccountPageProp
               /* ── Beta / no subscription ── */
               <>
                 <div className="flex items-center gap-3 mb-2">
-                  <h3 className="text-xl text-[#0f172b]" style={{ fontWeight: 600 }}>Pionero (Beta)</h3>
-                  <span className="bg-[#f0fdf4] text-[#16a34a] border border-[#bbf7d0] text-[10px] px-2.5 py-1 rounded-full uppercase tracking-widest" style={{ fontWeight: 700 }}>Activo</span>
+                  <h3 className="text-xl font-semibold text-[#0f172b]">Pionero (Beta)</h3>
+                  <span className="bg-[#f0fdf4] text-[#16a34a] border border-[#bbf7d0] text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest">Activo</span>
                 </div>
                 <p className="text-sm text-[#45556c] max-w-sm">Mientras hacemos pruebas con usuarios reales, tienes acceso completo y gratuito a las prácticas de idioma de la plataforma.</p>
                 <div className="mt-6 pt-6 border-t border-[#e2e8f0]">
-                  <div className="flex items-center gap-2 mb-2 text-sm text-[#0f172b]" style={{ fontWeight: 500 }}>
+                  <div className="flex items-center gap-2 mb-2 text-sm font-medium text-[#0f172b]">
                     <CheckCircle className="w-4 h-4 text-[#16a34a]" />
                     Sesiones Disponibles
                   </div>
@@ -188,20 +187,20 @@ export function AccountPage({ userProfile, authUser, onLogout }: AccountPageProp
 
           {/* SETTINGS CARD */}
           <section className="bg-white rounded-2xl border border-[#e2e8f0] p-6 hover:border-[#cad5e2] transition-colors shadow-sm">
-            <h2 className="text-lg text-[#0f172b] mb-5 flex items-center gap-2" style={{ fontWeight: 500 }}>
+            <h2 className="text-lg font-medium text-[#0f172b] mb-5 flex items-center gap-2">
               <Settings className="w-5 h-5 text-[#62748e]" />
               Preferencias
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label className="block text-xs text-[#62748e] mb-1.5" style={{ fontWeight: 500 }}>Foco de Mercado / Rol</label>
+                <label className="block text-xs font-medium text-[#62748e] mb-1.5">Foco de Mercado / Rol</label>
                 <div className="w-full bg-[#f1f5f9] border border-[#e2e8f0] text-[#45556c] rounded-lg px-4 py-3 text-sm flex items-center justify-between">
                   <span>{userProfile?.position || userProfile?.role || "LATAM Sales Manager"}</span>
                   <Lock className="w-3.5 h-3.5 text-[#cbd5e1]" />
                 </div>
               </div>
               <div>
-                <label className="block text-xs text-[#62748e] mb-1.5" style={{ fontWeight: 500 }}>Idioma de Interfaz</label>
+                <label className="block text-xs font-medium text-[#62748e] mb-1.5">Idioma de Interfaz</label>
                 <div className="w-full bg-[#f1f5f9] border border-[#e2e8f0] text-[#45556c] rounded-lg px-4 py-3 text-sm flex items-center justify-between">
                   <span>Español (América Latina)</span>
                   <Lock className="w-3.5 h-3.5 text-[#cbd5e1]" />
@@ -215,17 +214,16 @@ export function AccountPage({ userProfile, authUser, onLogout }: AccountPageProp
 
           {/* DANGER ZONE */}
           <section className="bg-white rounded-2xl border border-red-100 p-6 shadow-sm">
-            <h2 className="text-lg text-red-600 mb-2 flex items-center gap-2" style={{ fontWeight: 500 }}>
+            <h2 className="text-lg font-medium text-red-600 mb-2 flex items-center gap-2">
               <ShieldAlert className="w-5 h-5 text-red-500" />
               Zona de Peligro
             </h2>
             <p className="text-sm text-[#45556c] mb-6">Acciones destructivas que afectan tu sesión o acceso a la plataforma.</p>
-            
+
             <div className="flex flex-col sm:flex-row gap-4">
-              <button 
+              <button
                 onClick={() => setShowConfirmLogout(true)}
-                className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 transition-colors text-sm"
-                style={{ fontWeight: 500 }}
+                className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors text-sm font-medium"
               >
                 <LogOut className="w-4 h-4" />
                 Cerrar Sesión
@@ -257,24 +255,22 @@ export function AccountPage({ userProfile, authUser, onLogout }: AccountPageProp
               <div className="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <LogOut className="w-6 h-6" />
               </div>
-              <h3 className="text-xl text-[#0f172b] mb-2" style={{ fontWeight: 600 }}>¿Cerrar sesión?</h3>
+              <h3 className="text-xl font-semibold text-[#0f172b] mb-2">¿Cerrar sesión?</h3>
               <p className="text-[#45556c] text-sm mb-6">Tendrás que volver a ingresar tus credenciales para acceder a tus prácticas.</p>
-              
+
               <div className="flex flex-col gap-2">
                 <button
                   onClick={() => {
                     setShowConfirmLogout(false);
                     onLogout();
                   }}
-                  className="w-full py-3 rounded-xl bg-red-600 text-white hover:bg-red-700 transition-colors text-sm"
-                  style={{ fontWeight: 500 }}
+                  className="w-full py-3 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors text-sm font-medium"
                 >
                   Sí, cerrar sesión
                 </button>
                 <button
                   onClick={() => setShowConfirmLogout(false)}
-                  className="w-full py-3 rounded-xl bg-[#f1f5f9] text-[#45556c] hover:bg-[#e2e8f0] transition-colors text-sm"
-                  style={{ fontWeight: 500 }}
+                  className="w-full py-3 rounded-lg bg-[#f1f5f9] text-[#45556c] hover:bg-[#e2e8f0] transition-colors text-sm font-medium"
                 >
                   Cancelar
                 </button>
