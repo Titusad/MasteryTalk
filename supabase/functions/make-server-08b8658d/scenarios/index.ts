@@ -24,10 +24,17 @@ export {
   getPresentationGapAnalysis,
 } from "./presentation.ts";
 
+export {
+  CULTURE_DUAL_AXIS_BLOCK,
+  CULTURE_OUTPUT_FIELDS,
+  getCultureGapAnalysis,
+} from "./culture.ts";
+
 import { getInterviewGapAnalysis } from "./interview.ts";
 import { getSalesGapAnalysis } from "./sales.ts";
 import { getMeetingGapAnalysis } from "./meeting.ts";
 import { getPresentationGapAnalysis } from "./presentation.ts";
+import { getCultureGapAnalysis } from "./culture.ts";
 
 export function getScenarioGapAnalysis(
   scenarioType: string,
@@ -37,6 +44,7 @@ export function getScenarioGapAnalysis(
     case "interview":    return getInterviewGapAnalysis(filledKeys);
     case "meeting":      return getMeetingGapAnalysis(filledKeys);
     case "presentation": return getPresentationGapAnalysis(filledKeys);
+    case "culture":      return getCultureGapAnalysis(filledKeys);
     default:             return getSalesGapAnalysis(filledKeys);
   }
 }

@@ -112,6 +112,32 @@ const PRESETS: Record<string, SituationPreset[]> = {
         "A product roadmap review with a mixed audience: the engineering team who will build it, and three executives who approved the budget. Engineers are skeptical about timelines. Executives want ROI justification. The challenge: address both audiences simultaneously without losing either one.",
     },
   ],
+  culture: [
+    {
+      id: "culture-new-team",
+      label: "New U.S. Team",
+      company: "Mid-size SaaS company",
+      context:
+        "You joined a distributed U.S. team 3 weeks ago. Your manager runs a flat, direct-communication culture. Today's sync is your first real 1:1 — they want to understand how you work, what you own, and what you need. They will push for direct answers and ownership language.",
+      badge: "High-pressure",
+    },
+    {
+      id: "culture-disagreement",
+      label: "Disagreeing Upward",
+      company: "Enterprise tech company",
+      context:
+        "Your VP just proposed a timeline that you believe is unrealistic — the team doesn't have the capacity and the scope wasn't fully assessed. You need to push back clearly and professionally, without softening the message to the point of losing it.",
+      badge: "Cultural challenge",
+    },
+    {
+      id: "culture-executive-update",
+      label: "C-Level Status Update",
+      company: "Series C startup",
+      context:
+        "You have 5 minutes with the CTO before their next meeting. They need a status update on your initiative. They are impatient, results-focused, and will interrupt if you give too much context before the point. You need to frame the update for executive consumption.",
+      badge: "Executive stakes",
+    },
+  ],
 };
 
 export function getPresetsForScenario(scenarioType?: ScenarioType | null): SituationPreset[] {

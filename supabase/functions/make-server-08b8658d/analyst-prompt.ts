@@ -24,6 +24,8 @@ import {
   MEETING_OUTPUT_FIELDS,
   PRESENTATION_DUAL_AXIS_BLOCK,
   PRESENTATION_OUTPUT_FIELDS,
+  CULTURE_DUAL_AXIS_BLOCK,
+  CULTURE_OUTPUT_FIELDS,
   type InterviewBriefingData,
 } from "./scenarios/index.ts";
 
@@ -36,7 +38,8 @@ export function buildFeedbackAnalystPrompt(
   const isInterview = scenarioType === "interview";
   const isMeeting = scenarioType === "meeting";
   const isPresentation = scenarioType === "presentation";
-  const isSales = !isInterview && !isMeeting && !isPresentation;
+  const isCulture = scenarioType === "culture";
+  const isSales = !isInterview && !isMeeting && !isPresentation && !isCulture;
   const lc = resolveLocale(locale);
   const pillarTags = getPillarTags(lc);
 
@@ -52,6 +55,7 @@ ${isInterview ? INTERVIEW_DUAL_AXIS_BLOCK : ''}
 ${isSales ? SALES_DUAL_AXIS_BLOCK : ''}
 ${isMeeting ? MEETING_DUAL_AXIS_BLOCK : ''}
 ${isPresentation ? PRESENTATION_DUAL_AXIS_BLOCK : ''}
+${isCulture ? CULTURE_DUAL_AXIS_BLOCK : ''}
 ${isInterview ? buildInterviewBriefingBlock(interviewBriefing) : ''}
 === LANGUAGE ===
 ALL text fields in your response (titles, descriptions, observations, tips, verdicts) MUST be written entirely in English. The only exceptions are if you need to quote the user directly in another language.
@@ -152,7 +156,7 @@ Respond with ONLY a JSON object. No markdown, no code fences, no commentary.
       "tip": "Actionable coaching tip in English (1-2 sentences). Include an English example phrase in single quotes if applicable."
     }
   ],
-  "professionalProficiency": 0-100${isInterview ? INTERVIEW_OUTPUT_FIELDS : ''}${isSales ? SALES_OUTPUT_FIELDS : ''}${isMeeting ? MEETING_OUTPUT_FIELDS : ''}${isPresentation ? PRESENTATION_OUTPUT_FIELDS : ''}
+  "professionalProficiency": 0-100${isInterview ? INTERVIEW_OUTPUT_FIELDS : ''}${isSales ? SALES_OUTPUT_FIELDS : ''}${isMeeting ? MEETING_OUTPUT_FIELDS : ''}${isPresentation ? PRESENTATION_OUTPUT_FIELDS : ''}${isCulture ? CULTURE_OUTPUT_FIELDS : ''}
 }
 
 === PILLAR SCORES GUIDE ===

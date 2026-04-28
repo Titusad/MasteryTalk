@@ -29,10 +29,10 @@ export type ScenarioType =
   | "presentation"
   | "client"
   | "csuite"
-  | "self-intro";
+  | "self-intro"
+  | "culture";
 
-/** Beta v11.0: Only these 3 scenarios are active (visible, selectable, purchasable). */
-export const ACTIVE_SCENARIOS: ScenarioType[] = ["interview", "meeting", "presentation"] as const;
+export const ACTIVE_SCENARIOS: ScenarioType[] = ["interview", "sales", "meeting", "presentation", "culture"] as const;
 
 /** Narrow type for active scenarios only */
 export type ActiveScenarioType = "interview" | "meeting" | "presentation";

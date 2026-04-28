@@ -46,7 +46,7 @@ export interface ProgressionLevel {
 }
 
 export interface ProgressionPath {
-  id: "interview" | "sales" | "meeting" | "presentation" | "client" | "csuite";
+  id: "interview" | "sales" | "meeting" | "presentation" | "client" | "csuite" | "culture";
   title: string;
   icon: string;
   levels: ProgressionLevel[];
@@ -1469,15 +1469,146 @@ const CSUITE_LEVELS: ProgressionLevel[] = [
   },
 ];
 
+/* ── U.S. Business Culture Mastery (6 Levels) ── */
+
+const CULTURE_LEVELS: ProgressionLevel[] = [
+  {
+    id: "cul-1",
+    level: 1,
+    title: "Direct Communication & Feedback",
+    scenario: "Professional communication scenario where the user must deliver feedback, share a recommendation, or respond to a challenge using U.S.-style direct communication — claim first, evidence second, no hedging.",
+    interlocutorBehavior: "Direct, friendly but impatient with indirectness. Cuts off context-building and pushes for the main point immediately. Rewards clarity and penalizes over-qualification.",
+    interlocutor: "egalitarian_leader",
+    unlockRequirement: "Complete the self-introduction warm-up session.",
+    methodology: {
+      name: "Claim-First Communication",
+      tagline: "Lead with your point. Context is for email.",
+      explanation: `In U.S. corporate culture, the way you structure your message signals your seniority level. Junior professionals give context first, then the point. Senior executives give the point first, then context only if needed.\n\n**The U.S. Communication Pyramid:**\n\n**Top: Your main point.** State it in the first sentence. "My recommendation is X." Not "So I've been looking at this for a while and I think that maybe..."\n\n**Middle: Evidence.** Two to three data points that support the point. Not the full backstory.\n\n**Bottom: Optional context.** Only if the other person asks or genuinely needs it.\n\n**Why LATAM professionals struggle here:** In many Latin American cultures, giving context first is a sign of respect — you're explaining yourself before making a claim. In the U.S., it reads as lack of confidence or unclear thinking.`,
+      pattern: {
+        bad: { label: "Context-First (LATAM default)", script: "So I've been analyzing the project timeline and considering all the factors involved, and after talking to the team and reviewing the data, I think that maybe we could consider potentially moving the deadline by one week if that's okay with everyone." },
+        good: { label: "Claim-First (U.S. executive)", script: "My recommendation: move the deadline one week. The team flagged two blockers that weren't in the original scope. I can walk you through them if useful." },
+      },
+      anchorPhrases: ["My recommendation is...", "The bottom line:", "Here's what I need from you:", "I'll give you the short version first."],
+      coachTip: "If you find yourself saying 'I think that maybe perhaps...' — stop. Take a breath. Start over with 'My recommendation is...' The words you lead with determine how the room perceives your seniority.",
+    },
+    introHeadline: "lead with your point, not your context",
+  },
+  {
+    id: "cul-2",
+    level: 2,
+    title: "Meeting Control",
+    scenario: "A team meeting or sync where the user must open with a clear agenda, keep the conversation on track, redirect tangents diplomatically, and close with concrete next steps and ownership.",
+    interlocutorBehavior: "Goes off on tangents, introduces new topics mid-meeting, and takes long turns. Tests whether the user can redirect without being rude and close the meeting with clear commitments.",
+    interlocutor: "senior_stakeholder",
+    unlockRequirement: "Complete Level 1.",
+    methodology: {
+      name: "The Meeting Arc",
+      tagline: "Open with intent. Close with commitments.",
+      explanation: `A meeting without structure is a conversation. A meeting with structure is a decision. The difference between LATAM and U.S. meeting culture is often not language — it's who controls the arc.\n\n**The 3-Part Meeting Arc:**\n\n**Open (30 seconds):** State the goal and the exit criteria. "We have 30 minutes. By the end, I need a decision on X and Y. Let's start with X."\n\n**Middle (navigate tangents):** When someone goes off-topic, acknowledge and redirect. "That's a valid point — let's add it to the parking lot. Back to X."\n\n**Close (2 minutes):** Summarize decisions, assign ownership, confirm dates. "So: [Name] owns [task] by [date]. [Name] will send [thing] by [date]. Agreed?"`,
+      pattern: {
+        bad: { label: "No structure, tangent-driven", script: "Okay so... I guess let's just start. Does anyone have anything to say? Oh, and by the way, I wanted to also mention that thing from last week..." },
+        good: { label: "Structured, controlled", script: "We have 20 minutes. I need two decisions: the go-live date and the rollback plan. Let's take go-live first — [Name], what's your read?" },
+      },
+      anchorPhrases: ["Let's park that for after.", "Back to the main point:", "By end of this meeting, I need...", "Let me confirm what we decided:"],
+      coachTip: "The moment you feel the meeting drifting, say: 'Good point — let me note that. Back to [original topic].' You don't need permission to redirect. In U.S. culture, redirecting is a sign of leadership, not rudeness.",
+    },
+    introHeadline: "run a meeting that ends with decisions, not discussions",
+  },
+  {
+    id: "cul-3",
+    level: 3,
+    title: "Individual Accountability & Ownership",
+    scenario: "A work scenario where the user must take personal ownership of a decision, a mistake, or a deliverable — using first-person accountability language and avoiding passive constructions or group diffusion.",
+    interlocutorBehavior: "Pushes for individual ownership. Rejects vague answers like 'the team will handle it' or 'it was decided'. Asks directly: 'Who owns this? What exactly are you committing to?'",
+    interlocutor: "egalitarian_leader",
+    unlockRequirement: "Complete Level 2.",
+    methodology: {
+      name: "Ownership Language",
+      tagline: "Say 'I' when you mean 'I'.",
+      explanation: `One of the most powerful signals of leadership in U.S. corporate culture is how you use pronouns. The pattern is simple: when something goes right OR wrong on your watch, you own it with "I".\n\n**Ownership vs. Diffusion:**\n\nDiffusion (passive): "There were some delays in delivery." → Who caused them? Nobody owns this.\nOwnership (active): "I underestimated the timeline by two days. Here's what I'm doing to fix it."\n\n**The Accountability Formula:**\n1. State what happened in the first person: "I missed the deadline."\n2. Explain one root cause: "I didn't flag the dependency early enough."\n3. State the fix with a date: "I'm delivering it by Thursday and will send an update by tomorrow noon."\n\n**Why this is hard for LATAM professionals:** In many cultures, using "I" in a negative context feels like exposing yourself to blame. In U.S. culture, it's the opposite — taking ownership signals maturity and trust.`,
+      pattern: {
+        bad: { label: "Passive / group diffusion", script: "There were some issues with the project and the team wasn't able to complete everything on time due to various factors that came up." },
+        good: { label: "First-person ownership", script: "I missed the Thursday deadline. I didn't surface the blocker early enough. I'm delivering the full output by Monday and will send a status update tomorrow morning." },
+      },
+      anchorPhrases: ["I own this.", "I committed to X and I didn't deliver.", "My decision was...", "Here's what I'm doing to fix it:"],
+      coachTip: "If you catch yourself saying 'the team' or 'it was decided' about something you were responsible for — stop and restart with 'I'. It feels vulnerable at first. It builds trust over time.",
+    },
+    introHeadline: "take clear ownership — use 'I' when you mean 'I'",
+  },
+  {
+    id: "cul-4",
+    level: 4,
+    title: "Building Credibility Fast",
+    scenario: "The first 90 seconds of a professional interaction — before the formal agenda starts. The user must establish both competence and approachability simultaneously, creating the impression of a trusted partner rather than an external vendor or junior team member.",
+    interlocutorBehavior: "Assessing silently — is this person worth my time? Responds warmly to genuine curiosity and specific knowledge about the context. Disengages from generic small talk or overly formal self-introductions.",
+    interlocutor: "senior_stakeholder",
+    unlockRequirement: "Complete Level 3.",
+    methodology: {
+      name: "The Credibility Opening",
+      tagline: "Warm. Specific. Relevant.",
+      explanation: `The first 90 seconds of a meeting aren't small talk — they're an audition. The question the other person is silently asking is: "Is this someone I want to work with?"\n\n**The Credibility Opening — 3 elements:**\n\n**1. Relevance hook.** Show you know something specific about them or their context. Not flattery — specificity. "I saw the quarterly report — your logistics costs are down 8%. That's a meaningful win."\n\n**2. A brief human moment.** One authentic, short personal connection. "I was in Denver two weeks ago for a similar rollout — the altitude hit me harder than the project." Not a long story. One sentence.\n\n**3. A forward-lean.** Transition to the meeting with energy. "I'm looking forward to getting into the actual problem today — I think there's something interesting here."`,
+      pattern: {
+        bad: { label: "Generic or over-formal", script: "Good morning. Thank you for your time. As I mentioned in the email, I am here to discuss the proposal that my team has prepared for your organization." },
+        good: { label: "Warm, specific, relevant", script: "Good to see you. I read your team's update on the LATAM rollout — the 40% adoption rate in Q1 is impressive. Quick question before we start: is the Houston team joining or is it just us?" },
+      },
+      anchorPhrases: ["I noticed...", "Quick question before we start:", "I'm looking forward to...", "I've been thinking about your [specific context] since..."],
+      coachTip: "The difference between credibility and small talk is specificity. 'How was your weekend?' is small talk. 'I saw your team hit the Q1 number — how did you approach the last-mile problem?' is credibility.",
+    },
+    introHeadline: "establish trust in the first 90 seconds",
+  },
+  {
+    id: "cul-5",
+    level: 5,
+    title: "Navigating Disagreement",
+    scenario: "A scenario where the user must clearly and directly disagree with a superior or peer — pushing back on a decision, challenging an assumption, or declining a request — without it feeling personal or damaging the relationship.",
+    interlocutorBehavior: "Presents a decision or position and waits for a reaction. Rewards direct, reasoned pushback. Loses respect for passive agreement or conflict avoidance. Explicitly invites disagreement: 'Tell me if you think I'm wrong.'",
+    interlocutor: "egalitarian_leader",
+    unlockRequirement: "Complete Level 4.",
+    methodology: {
+      name: "Direct Disagreement",
+      tagline: "Push back on the idea, not the person.",
+      explanation: `In U.S. corporate culture, disagreement — when done well — builds trust. It signals that you have a position, that you've thought about the problem, and that you're willing to say something uncomfortable because you believe it's right.\n\n**The Disagreement Framework:**\n\n**Acknowledge the position:** "I understand where you're coming from."\n\n**State your disagreement directly:** "I don't think this is the right call, and here's why." Not "I'm not sure but maybe we could consider..." — direct.\n\n**Give one clear reason:** One strong argument, not three mediocre ones.\n\n**Invite dialogue:** "What am I missing?" This shows confidence without arrogance.\n\n**Why this is hard for LATAM professionals:** In hierarchical cultures, disagreeing with a superior is risky behavior. In U.S. flat cultures, not disagreeing when you have a different view is what damages your credibility.`,
+      pattern: {
+        bad: { label: "Passive agreement / conflict avoidance", script: "Yes, that sounds good. I mean, I guess there might be some small things to consider, but overall I think your idea is great and we should probably go with it." },
+        good: { label: "Direct, reasoned pushback", script: "I want to push back on this. The timeline assumes Q2 capacity that we don't have — we're already at 90% on two teams. I think we're setting ourselves up to miss. Can we talk about a phased approach instead?" },
+      },
+      anchorPhrases: ["I want to push back on this.", "I don't think this is the right call — here's why:", "I see it differently.", "What am I missing?"],
+      coachTip: "When you feel the urge to say 'yes, but...' — that's the signal to say 'I disagree' instead. 'Yes, but' is the linguistic equivalent of disagreeing while trying to look like you're agreeing. It satisfies neither goal.",
+    },
+    introHeadline: "disagree directly — ideas are challenged, not people",
+  },
+  {
+    id: "cul-6",
+    level: 6,
+    title: "Executive Presence & Storytelling",
+    scenario: "High-stakes communication with a C-level audience. The user must present a recommendation, a problem, or a decision using a structured narrative framework — leading with the business impact and avoiding the 'curse of knowledge' (over-explaining technical details to a non-technical audience).",
+    interlocutorBehavior: "A distracted, busy C-level executive. Checks their phone if not engaged in the first 30 seconds. Responds to business impact, not technical detail. Will interrupt with 'What's the bottom line?' if the user buries the lead.",
+    interlocutor: "senior_stakeholder",
+    unlockRequirement: "Complete Level 5.",
+    methodology: {
+      name: "Problem-Solution-Impact",
+      tagline: "Frame for a busy executive in under 60 seconds.",
+      explanation: `The hardest communication challenge in U.S. corporate life is talking to executives: people who know less than you about the subject, have less than a minute of attention, and need to make a decision anyway.\n\n**The Problem-Solution-Impact Framework:**\n\n**Problem (1 sentence):** The business issue — not the technical issue. "Our churn rate increased 12% in Q3."\n\n**Solution (1-2 sentences):** What you're proposing. Why it works. Skip implementation details.\n\n**Impact (1 sentence):** The business outcome if the solution is adopted. Dollar figures, percentages, time saved.\n\n**One ask (1 sentence):** What you need from the executive. Not multiple asks — one.\n\n**The Curse of Knowledge:** Experts over-explain. You know every nuance; the executive doesn't need them. Their question isn't "how does it work?" — it's "will it fix my problem?"`,
+      pattern: {
+        bad: { label: "Technical over-explanation", script: "So the issue is that the database architecture that was implemented in Q1 has a replication lag problem that causes the API response times to increase under load, which then causes the frontend to time out, which is why users are experiencing errors..." },
+        good: { label: "Executive framing", script: "We have a scaling problem that's costing us roughly $80K per month in lost conversions. The fix is a 3-week infrastructure change — I need your approval to reallocate two engineers from the roadmap. ROI is 6 weeks." },
+      },
+      anchorPhrases: ["The business issue is...", "My recommendation:", "The impact if we do this:", "What I need from you:"],
+      coachTip: "Before any executive conversation, write down: What is the one thing I need them to understand? What is the one thing I need them to do? Start with those two. Everything else is optional.",
+    },
+    introHeadline: "communicate with executives — brief, impactful, and one ask",
+  },
+];
+
 /* ── Exported Paths ── */
 
 export const PROGRESSION_PATHS: ProgressionPath[] = [
+  { id: "culture", title: "U.S. Business Culture", icon: "crown", levels: CULTURE_LEVELS },
   { id: "interview", title: "Interview Mastery", icon: "target", levels: INTERVIEW_LEVELS },
   { id: "sales", title: "Sales Champion", icon: "briefcase", levels: SALES_LEVELS },
   { id: "meeting", title: "Remote Meeting Presence", icon: "video", levels: MEETING_LEVELS },
   { id: "presentation", title: "Presentations", icon: "mic", levels: PRESENTATION_LEVELS },
   { id: "client", title: "Dealing with Clients", icon: "handshake", levels: CLIENT_LEVELS },
-  // { id: "csuite", title: "C-Suite Communication", icon: "crown", levels: CSUITE_LEVELS },
 ];
 
 /* ── Feature Flag: Visible Paths in Production ──
@@ -1495,7 +1626,7 @@ export const VISIBLE_PATHS: ProgressionPath[] = ENABLED_SCENARIO_IDS.length > 0
 
 /* ── Helpers ── */
 
-export type PathId = "interview" | "sales" | "meeting" | "presentation" | "client" | "csuite";
+export type PathId = "interview" | "sales" | "meeting" | "presentation" | "client" | "csuite" | "culture";
 
 export function getDefaultProgressionState(): ProgressionState {
   return {
@@ -1547,6 +1678,14 @@ export function getDefaultProgressionState(): ProgressionState {
       "cs-4": { status: "locked" },
       "cs-5": { status: "locked" },
       "cs-6": { status: "locked" },
+    },
+    culture: {
+      "cul-1": { status: "unlocked" },
+      "cul-2": { status: "locked" },
+      "cul-3": { status: "locked" },
+      "cul-4": { status: "locked" },
+      "cul-5": { status: "locked" },
+      "cul-6": { status: "locked" },
     },
   };
 }

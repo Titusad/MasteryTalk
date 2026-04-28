@@ -26,6 +26,7 @@ export interface ProgressionState {
   presentation: Record<string, LevelState>;
   client: Record<string, LevelState>;
   csuite: Record<string, LevelState>;
+  culture: Record<string, LevelState>;
 }
 
 /* ── Path level access (computed from PathLevelProgress) ── */

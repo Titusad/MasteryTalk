@@ -20,6 +20,7 @@ const SCENARIO_LABELS: Record<ScenarioType, string> = {
   client: "Client",
   csuite: "C-Suite",
   "self-intro": "Self-Introduction",
+  culture: "U.S. Business Culture",
 };
 
 const STEPS = [

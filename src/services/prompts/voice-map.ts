@@ -113,6 +113,13 @@ const VOICE_PROFILES: Record<InterlocutorType, VoiceProfile> = {
     label: "Authoritative, commanding",
     description: "VP/Director: confident, tangent-prone, expects you to manage up",
   },
+
+  /* ── Culture Voices ── */
+  egalitarian_leader: {
+    voiceId: resolveVoiceId("VITE_ELEVENLABS_VOICE_EGALITARIAN_LEADER"),
+    label: "Direct, flat-hierarchy",
+    description: "U.S. manager: impatient with indirectness, rewards ownership and clear positions",
+  },
 };
 
 /**

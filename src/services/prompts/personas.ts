@@ -259,6 +259,29 @@ In addition to your persona, this conversation involves senior leadership dynami
 - You're evaluating whether this person can represent the company externally.
 - Track their strategic thinking arc in internalAnalysis: Do they default to tactical details or can they zoom out?`;
 
+export const PERSONA_EGALITARIAN_LEADER = `=== YOUR PERSONA: THE EGALITARIAN LEADER ===
+You are a mid-level U.S. manager (Director or Senior Manager) who runs a flat, direct-communication team. Your identity: The No-Hierarchy Coach. Your psychology:
+- You treat everyone as a peer, regardless of seniority. You expect the same from them — don't wait for permission to speak your mind.
+- You have zero patience for indirectness. "Get to the point" is your default mode. If someone builds context for 20 seconds before making their point, you interrupt.
+- You actively invite disagreement. "Tell me if you think I'm wrong" is not a courtesy — you mean it. You lose respect for people who just agree.
+- You are obsessed with ownership. "We" is not an answer. Who specifically is doing what by when?
+- You notice cultural patterns instantly: over-qualifying ("maybe", "I think perhaps"), conflict avoidance ("I don't want to bother you but..."), and question-statements ("...right?"). You call them out directly but not harshly.
+
+Signature phrases (use naturally, never repeat the same one twice):
+- "Are you asking me or telling me?"
+- "Skip the context. What do you need from me?"
+- "That's not a commitment. Give me a date."
+- "You just said three things. Which one is the most important?"
+- "If you disagree, say it. That's how we make better decisions."
+- "I don't need you to soften it. Just tell me what happened."
+
+DYNAMIC BEHAVIOR:
+- If the user over-qualifies or hedges: "Just say it directly. What's your actual recommendation?"
+- If the user avoids ownership: "Who owns this? I need a name, not a team."
+- If the user seeks validation: "Don't ask me if it's okay. Tell me what you decided and why."
+- If the user is direct and owns their position: Respond with genuine respect. "Good. Now let's stress-test it."
+- If the user disagrees confidently: "That's exactly what I wanted. Walk me through your reasoning."`;
+
 /* ═══════════════════════════════════════════════════════════════
    TYPE DEFINITIONS & MAPS
    ═══════════════════════════════════════════════════════════════ */
@@ -277,7 +300,9 @@ export type InterlocutorType =
   | "decision_maker"
   // Meeting
   | "meeting_facilitator"
-  | "senior_stakeholder";
+  | "senior_stakeholder"
+  // Culture
+  | "egalitarian_leader";
 
 export type SubProfileType = "NEGOTIATOR" | "LEADERSHIP" | null;
 
@@ -293,6 +318,7 @@ export const INTERLOCUTORS_BY_SCENARIO: Record<ScenarioType, InterlocutorType[]>
   client: ["senior_stakeholder"],
   csuite: ["senior_stakeholder"],
   "self-intro": ["senior_stakeholder", "meeting_facilitator"],
+  culture: ["egalitarian_leader", "senior_stakeholder"],
 };
 
 /**
@@ -306,6 +332,7 @@ export const DEFAULT_INTERLOCUTOR: Record<ScenarioType, InterlocutorType> = {
   client: "senior_stakeholder",
   csuite: "senior_stakeholder",
   "self-intro": "senior_stakeholder",
+  culture: "egalitarian_leader",
 };
 
 /* ── Persona Maps ── */
@@ -324,6 +351,7 @@ const PERSONA_MAP: Record<InterlocutorType, string> = {
   // Meeting
   meeting_facilitator: PERSONA_MEETING_FACILITATOR,
   senior_stakeholder: PERSONA_SENIOR_STAKEHOLDER,
+  egalitarian_leader: PERSONA_EGALITARIAN_LEADER,
 };
 
 const SUB_PROFILE_MAP: Record<string, string> = {

@@ -103,6 +103,14 @@ const REASON_TEMPLATES: Record<PathId, {
       client: "Senior stakeholders expect concise, high-impact communication. This path trains you to deliver under executive-level scrutiny.",
     },
   },
+  culture: {
+    primary: "Before mastering any specific scenario, the most impactful skill to build is operating naturally in U.S. corporate culture — direct communication, individual ownership, and confident disagreement.",
+    withContext: {
+      networking: "Networking with U.S. professionals requires cultural fluency, not just language fluency. This path trains the behavioral patterns that make you memorable.",
+      team: "Joining a U.S. team means adapting to a direct, flat-hierarchy communication style. This path builds exactly those behavioral habits.",
+      client: "U.S. clients respond to confident, direct communicators who own their positions. This path trains the cultural behaviors that build trust instantly.",
+    },
+  },
 };
 
 /* ── Focus Detail Templates ── */
@@ -114,6 +122,7 @@ const FOCUS_DETAILS: Record<PathId, string> = {
   presentation: "Levels 1-2 focus on message structure and delivery without filler.",
   client: "Levels 1-2 focus on building rapport and executive-level register.",
   csuite: "Levels 1-2 focus on executive brevity and strategic framing.",
+  culture: "Levels 1-3 focus on claim-first communication, ownership language, and meeting control.",
 };
 
 
@@ -159,6 +168,14 @@ export function recommendPath(
   const safeContext = contextId as SelfIntroContextId | undefined;
   if (scoreDiff < 5 && safeContext && CONTEXT_TIEBREAKER[safeContext]) {
     pathId = CONTEXT_TIEBREAKER[safeContext];
+  }
+
+  // 5. Culture override: if the lowest pillar score is above 60 (balanced profile),
+  // recommend U.S. Business Culture as the highest-leverage starting point.
+  // Cultural fluency is the foundation — scenario-specific paths build on top of it.
+  const lowestScore = sorted[0][1];
+  if (lowestScore >= 60) {
+    pathId = "culture";
   }
 
   // 5. Build recommendation
