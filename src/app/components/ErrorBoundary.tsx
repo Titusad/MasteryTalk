@@ -7,6 +7,7 @@
  * entire React tree silently.
  */
 import { Component, type ErrorInfo, type ReactNode } from "react";
+import { Sentry } from "@/app/sentry";
 
 interface Props {
   children: ReactNode;
@@ -32,6 +33,7 @@ export class ErrorBoundary extends Component<Props, State> {
     this.setState({ errorInfo });
     console.error("[MasteryTalk ErrorBoundary] Caught error:", error);
     console.error("[MasteryTalk ErrorBoundary] Component stack:", errorInfo.componentStack);
+    Sentry.captureException(error, { extra: { componentStack: errorInfo.componentStack } });
   }
 
   render() {
