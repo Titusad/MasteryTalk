@@ -6,11 +6,8 @@
 > Rules here are P0-level — they take precedence over skill defaults.
 >
 > **Key documents (always check before coding):**
-> - `CONTRIBUTING.md` — Working rules, Git conventions, session protocol
-> - `docs/PRODUCT_SPEC.md` — Product spec (source of truth for business logic)
-> - `docs/DESIGN_SYSTEM.md` — Visual design rules (source of truth for UI)
+> - `.claude/CLAUDE.md` — Working rules, architecture, design system, reglas operacionales
 > - `docs/ROADMAP.md` — What to build and in what order
-> - `docs/SYSTEM_PROMPTS.md` — AI prompt engineering
 
 ---
 
@@ -19,50 +16,68 @@
 **MasteryTalk PRO** — AI-powered executive English communication simulator
 for nearshoring professionals in Latin America (Mexico and Colombia).
 
-**Business model: One-time path purchases (no subscriptions in beta)**
-- **Demo** — 1 free session per scenario, no card required
-- **First Path** — $4.99 one-time, full permanent access to 1 Learning Path
-- **Additional Path** — $16.99 one-time per additional Learning Path
+**Business model: Subscriptions via Stripe (live mode)**
 
-> See `docs/PRODUCT_SPEC.md` §3 for full pricing logic.
+| Tier | Price | Notes |
+|------|-------|-------|
+| Early Bird | $9.99/mo | Max 20 slots, lifetime price |
+| Monthly Pro | $16.99/mo | Standard monthly |
+| Quarterly Pro | $39.99/3mo | ~$13.33/mo |
 
-> PROHIBITED: Never use "Maratón", "Gimnasio", "Marathon", "Gym",
-> "Quick Prep", "Conversational Path", "credits", or "subscription"
-> in any UI copy. These are either internal metaphors or deprecated terms.
+- Subscription → unlocks ALL practice paths and sessions
+- Early Bird slots tracked via KV store (`global:early_bird_count`)
+- Webhook: `checkout.session.completed` is primary activation event
+- Grace period: 2 days on failed payment before access revoked
+
+**PROHIBITED terms in UI copy:** "Maratón", "Gimnasio", "credits", "one-time purchase"
 
 **North Star metric:** 3+ sessions completed in the first 7 days.
 
 ---
 
-### Stack (Project-Specific Overrides)
+### Stack
 
 | Layer | Technology | Notes |
 |-------|-----------|-------|
 | Frontend | React 18 + TypeScript + Tailwind CSS v4 + Vite 6 | Hash-based routing — NO React Router |
 | Animations | `motion/react` | Import as `motion`. NEVER `framer-motion` |
 | Icons | `lucide-react` | Only this library |
-| Backend | Supabase Edge Functions (Deno + Hono) | |
+| Backend | Supabase Edge Functions (Deno + Hono) | Project ref: `zkuryztcwmazspscomiu` |
+| Function name | `make-server-08b8658d` | Deploy with `--no-verify-jwt` |
 | AI Chat | GPT-4o | ALL sessions including free — no degradation |
 | Feedback | Gemini 1.5 Flash | |
 | TTS | ElevenLabs (practice) + Azure Neural (system) | |
 | STT + Pronunciation | Azure Speech REST API | |
-| Payments | Stripe (global) | One-time payments via Checkout |
+| Payments | Stripe (live mode) | Subscriptions via Checkout |
+| Email | Resend | Key in `supabase/.env.local` |
+| Frontend deploy | Vercel | Auto-deploy on push to main |
 | Package manager | pnpm | NEVER modify `pnpm-lock.yaml` |
 
-**Agent routing for this project:**
-- UI components, pages, React → `frontend-specialist`
-- Edge Functions, Supabase, API → `backend-specialist`
-- Schema, SQL, RLS → `database-architect`
-- Multi-file refactors → `orchestrator` (always plan first)
+---
+
+### Skill routing — consult before acting
+
+| Task | Skill to use |
+|------|-------------|
+| UI components, pages, React | `frontend-design` |
+| Edge Functions, Supabase, API | `api-patterns` |
+| Debugging errors | `systematic-debugging` |
+| Deployments | `deployment-procedures` |
+| Multi-file refactors | `architecture` |
+| Tests | `testing-patterns` |
+| Performance | `performance-profiling` |
+
+---
+
+### Regla #0 — Diagnóstico antes de instruir al usuario
+
+1. **Credenciales** — Buscar siempre en `supabase/.env.local` antes de pedir al usuario que vaya a un dashboard externo.
+2. **Logs** — Leer Supabase logs antes de mandar a re-enviar o re-deployar.
+3. **Instrucción completa** — Qué hacer + dónde exactamente + qué resultado exacto se debe ver.
 
 ---
 
 ### MANDATORY: Confirm Before ANY Code Change
-
-> This rule ADDS TO the existing Socratic Gate — it applies even for
-> "simple" or "single-file" requests.
-
-**Before writing, modifying, or deleting any code, present this plan:**
 
 ```
 PLAN DE CAMBIOS
@@ -70,46 +85,24 @@ PLAN DE CAMBIOS
 Archivos a modificar:
   - src/path/archivo.tsx — [descripción del cambio]
 
-Archivos a crear:
-  - src/path/nuevo.tsx — [descripción]
-
-Archivos a eliminar:
-  - (ninguno) o [lista]
-
-Impacto en otros componentes:
-  - [qué otros archivos podrían verse afectados]
+Archivos a crear: (ninguno) o [lista]
+Archivos a eliminar: (ninguno) o [lista]
+Impacto: [qué otros archivos podrían verse afectados]
 
 ¿Procedo con estos cambios?
 ```
 
-**Wait for explicit confirmation before proceeding.**
-Valid confirmations: "sí", "procede", "adelante", "yes", "proceed".
-
-If unexpected files need to be modified during implementation → PAUSE and notify before continuing.
-
-> This rule exists because unconfirmed modifications have damaged
-> working components in this project. No exceptions for "small changes".
+Esperar confirmación explícita antes de escribir código.
 
 ---
 
-### Component Registry & Design System
+### Component Registry (resumen)
 
-> **Full design rules are in `docs/DESIGN_SYSTEM.md`.**
-> Read that document for colors, typography, spacing, shadows, component registry, and strict bans.
-> Below is a minimal summary for quick reference.
-
-**Canonical components (always use before creating new ones):**
 - `AppHeader` → `src/shared/ui/AppHeader.tsx`
 - `AppModal` → `src/shared/ui/AppModal.tsx`
-- `BrandLogo` · `PastelBlobs` · `MiniFooter` · `AnalyzingScreen` · `RecordButton` · `RecordingWaveformBars` · `RecordingTimer` · `SessionProgressBar` · `ServiceErrorBanner` · `SmoothHeight` · `DotPattern`
-
-**Quick rules:**
-- App buttons = `rounded-lg`. Landing buttons = `rounded-full`. NEVER mix.
-- App cards = `rounded-2xl` + `border-[#e2e8f0]`. Landing cards = `rounded-3xl` + `border-gray-200`.
-- NO emojis in UI. NO arbitrary icons. NO inline CSS.
-- Only `lucide-react` for icons.
-
----
+- App buttons: `rounded-lg` | Landing buttons: `rounded-full`
+- App cards: `rounded-2xl border-[#e2e8f0]` | Landing: `rounded-3xl border-gray-200`
+- Solo `lucide-react` para íconos
 
 ### Protected Files — NEVER Modify
 
@@ -122,15 +115,4 @@ pnpm-lock.yaml
 
 ---
 
-### FSD Architecture
-
-Target layer order: `app → pages → widgets → features → entities → shared`
-
-Upper layers import from lower layers ONLY. Features never import from other features.
-
-**Golden rule:** Never move a file AND change its content in the same step.
-Move first → verify it compiles → then refactor.
-
----
-
-*MasteryTalk PRO project context — v2.0 — April 2026*
+*MasteryTalk PRO project context — v3.0 — 2026-04-28*

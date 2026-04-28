@@ -620,6 +620,43 @@ Al finalizar, listar todos los archivos modificados/creados/eliminados.
 
 ---
 
+### Regla #0 — Leer skills antes de actuar + Diagnóstico antes de instruir al usuario
+
+**Al inicio de cada tarea**, leer el skill correspondiente en `.agent/skills/` según la tarea:
+
+| Tarea | Skill |
+|-------|-------|
+| UI / React / componentes | `frontend-design` |
+| Edge Functions / Supabase / API | `api-patterns` |
+| Debugging de errores | `systematic-debugging` |
+| Deployments | `deployment-procedures` |
+| Refactors multi-archivo | `architecture` |
+| Tests | `testing-patterns` |
+
+Siempre leer `.agent/skills/masterytalk-context/SKILL.md` primero para contexto del proyecto.
+
+---
+
+**Antes de pedirle al usuario que haga cualquier cosa**, hacer el trabajo de diagnóstico primero:
+
+1. **Credenciales y API keys** — Buscar en `supabase/.env.local`, `.env.local`, `.env` antes de pedir al usuario que vaya a un dashboard. Comando: `grep -r "NOMBRE_KEY" supabase/.env.local .env.local .env 2>/dev/null`
+
+2. **Logs de error** — Antes de dar instrucciones de re-deploy o re-envío, leer los logs de Supabase para confirmar qué está fallando exactamente.
+
+3. **Estado actual** — Antes de pedir al usuario que verifique algo en un dashboard externo, verificar primero con scripts locales o comandos bash lo que se pueda verificar localmente.
+
+4. **Instrucción completa siempre** — Cada instrucción que se le da al usuario debe tener:
+   - Qué hacer (acción exacta)
+   - Dónde hacerlo (ruta exacta, URL exacta, comando exacto)
+   - Qué debe ver como resultado (texto exacto esperado)
+
+> Esta regla existe porque se le hizo dar vueltas innecesarias al usuario: buscar API keys
+> en dashboards externos cuando estaban en `.env.local`, re-enviar webhooks múltiples veces
+> sin verificar primero qué código estaba desplegado, y dar instrucciones a medias sin
+> resultado esperado.
+
+---
+
 ### Regla #1 — Buscar antes de crear
 
 1. Consultar el Component Registry (Sección 3).
