@@ -1,8 +1,22 @@
-import { useState } from "react";
-import { User, CreditCard, Settings, LogOut, CheckCircle, AlertTriangle, ShieldAlert, Lock } from "lucide-react";
+import { useState, useEffect } from "react";
+import { User, CreditCard, Settings, LogOut, CheckCircle, AlertTriangle, ShieldAlert, Lock, ExternalLink } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { PastelBlobs, MiniFooter } from "@/shared/ui";
 import type { OnboardingProfile, User as AuthUser } from "@/services/types";
+import { SUPABASE_URL, getAuthToken } from "@/services/supabase";
+
+const TIER_LABELS: Record<string, string> = {
+  early_bird: "Early Bird Plan",
+  monthly: "Monthly Pro",
+  quarterly: "Quarterly Pro",
+};
+
+interface SubscriptionInfo {
+  subscription_active: boolean;
+  tier?: string;
+  plan_status?: string;
+  next_billing_date?: string | null;
+}
 
 interface AccountPageProps {
   userProfile?: OnboardingProfile | null;
@@ -12,6 +26,44 @@ interface AccountPageProps {
 
 export function AccountPage({ userProfile, authUser, onLogout }: AccountPageProps) {
   const [showConfirmLogout, setShowConfirmLogout] = useState(false);
+  const [subInfo, setSubInfo] = useState<SubscriptionInfo | null>(null);
+  const [portalLoading, setPortalLoading] = useState(false);
+
+  useEffect(() => {
+    getAuthToken().then(token => {
+      if (!token) return;
+      fetch(`${SUPABASE_URL}/functions/v1/make-server-08b8658d/profile`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (data) setSubInfo({
+            subscription_active: data.subscription_active ?? false,
+            tier: data.tier,
+            plan_status: data.plan_status,
+            next_billing_date: data.next_billing_date,
+          });
+        })
+        .catch(() => {});
+    });
+  }, []);
+
+  const handleManageSubscription = async () => {
+    setPortalLoading(true);
+    try {
+      const token = await getAuthToken();
+      const res = await fetch(
+        `${SUPABASE_URL}/functions/v1/make-server-08b8658d/create-portal-session`,
+        { method: "POST", headers: { Authorization: `Bearer ${token}` } }
+      );
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+    } catch {
+      // silent
+    } finally {
+      setPortalLoading(false);
+    }
+  };
 
   // Fallbacks
   const displayName = authUser?.displayName || "Beta User";
@@ -66,26 +118,72 @@ export function AccountPage({ userProfile, authUser, onLogout }: AccountPageProp
               <CreditCard className="w-5 h-5 text-[#62748e]" />
               Plan y Uso
             </h2>
-            <div className="flex flex-col md:flex-row gap-6 md:items-center justify-between">
-              <div>
+
+            {subInfo?.subscription_active ? (
+              /* ── Active subscription ── */
+              <>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-3 mb-1.5">
+                      <h3 className="text-xl text-[#0f172b]" style={{ fontWeight: 600 }}>
+                        {TIER_LABELS[subInfo.tier ?? ""] ?? "MasteryTalk PRO"}
+                      </h3>
+                      <span className="bg-[#f0fdf4] text-[#16a34a] border border-[#bbf7d0] text-[10px] px-2.5 py-1 rounded-full uppercase tracking-widest" style={{ fontWeight: 700 }}>
+                        Activo
+                      </span>
+                    </div>
+                    {subInfo.next_billing_date && (
+                      <p className="text-xs text-[#62748e]">
+                        Próxima renovación: {new Date(subInfo.next_billing_date).toLocaleDateString("es-MX", { year: "numeric", month: "long", day: "numeric" })}
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    onClick={handleManageSubscription}
+                    disabled={portalLoading}
+                    className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg border border-[#e2e8f0] text-sm text-[#0f172b] hover:bg-[#f8fafc] transition-colors shrink-0 disabled:opacity-50"
+                    style={{ fontWeight: 500 }}
+                  >
+                    {portalLoading ? (
+                      <div className="w-4 h-4 rounded-full border-2 border-[#0f172b] border-t-transparent animate-spin" />
+                    ) : (
+                      <ExternalLink className="w-4 h-4" />
+                    )}
+                    {portalLoading ? "Cargando..." : "Manage Subscription"}
+                  </button>
+                </div>
+
+                <div className="mt-6 pt-6 border-t border-[#e2e8f0]">
+                  <div className="flex items-center gap-2 mb-2 text-sm text-[#0f172b]" style={{ fontWeight: 500 }}>
+                    <CheckCircle className="w-4 h-4 text-[#16a34a]" />
+                    Sesiones disponibles
+                  </div>
+                  <div className="w-full bg-[#f1f5f9] rounded-full h-2 mb-2">
+                    <div className="bg-[#00C950] h-2 rounded-full" style={{ width: "100%" }} />
+                  </div>
+                  <p className="text-xs text-[#62748e] text-right">Acceso ilimitado a todos los paths</p>
+                </div>
+              </>
+            ) : (
+              /* ── Beta / no subscription ── */
+              <>
                 <div className="flex items-center gap-3 mb-2">
                   <h3 className="text-xl text-[#0f172b]" style={{ fontWeight: 600 }}>Pionero (Beta)</h3>
                   <span className="bg-[#f0fdf4] text-[#16a34a] border border-[#bbf7d0] text-[10px] px-2.5 py-1 rounded-full uppercase tracking-widest" style={{ fontWeight: 700 }}>Activo</span>
                 </div>
                 <p className="text-sm text-[#45556c] max-w-sm">Mientras hacemos pruebas con usuarios reales, tienes acceso completo y gratuito a las prácticas de idioma de la plataforma.</p>
-              </div>
-            </div>
-            
-            <div className="mt-6 pt-6 border-t border-[#e2e8f0]">
-              <div className="flex items-center gap-2 mb-2 text-sm text-[#0f172b]" style={{ fontWeight: 500 }}>
-                <CheckCircle className="w-4 h-4 text-[#16a34a]" />
-                Sesiones Disponibles
-              </div>
-              <div className="w-full bg-[#f1f5f9] rounded-full h-2 mb-2">
-                <div className="bg-[#0f172b] h-2 rounded-full" style={{ width: '100%' }}></div>
-              </div>
-              <p className="text-xs text-[#62748e] text-right">Uso Ilimitado (Beta test phase)</p>
-            </div>
+                <div className="mt-6 pt-6 border-t border-[#e2e8f0]">
+                  <div className="flex items-center gap-2 mb-2 text-sm text-[#0f172b]" style={{ fontWeight: 500 }}>
+                    <CheckCircle className="w-4 h-4 text-[#16a34a]" />
+                    Sesiones Disponibles
+                  </div>
+                  <div className="w-full bg-[#f1f5f9] rounded-full h-2 mb-2">
+                    <div className="bg-[#0f172b] h-2 rounded-full" style={{ width: "100%" }} />
+                  </div>
+                  <p className="text-xs text-[#62748e] text-right">Uso Ilimitado (Beta test phase)</p>
+                </div>
+              </>
+            )}
           </section>
 
           {/* SETTINGS CARD */}

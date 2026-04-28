@@ -9,7 +9,8 @@
  */
 import { Hono } from "npm:hono";
 import { getAuthUser } from "../_shared.ts";
-import { createStripeCheckout, isEarlyBirdAvailable, getEarlyBirdCount, type SubscriptionTier } from "../stripe.ts";
+import { createStripeCheckout, isEarlyBirdAvailable, getEarlyBirdCount, getStripe, type SubscriptionTier } from "../stripe.ts";
+import * as kv from "../kv_store.ts";
 
 const app = new Hono();
 
@@ -67,6 +68,41 @@ app.post("/make-server-08b8658d/create-checkout", async (c) => {
     }
 
     return c.json({ error: "Failed to create checkout session" }, 500);
+  }
+});
+
+app.post("/make-server-08b8658d/create-portal-session", async (c) => {
+  try {
+    const user = await getAuthUser(c.req.header("Authorization"));
+    if (!user) return c.json({ error: "Unauthorized" }, 401);
+
+    const profileRaw = await kv.get(`profile:${user.id}`);
+    const profile = profileRaw
+      ? (typeof profileRaw === "string" ? JSON.parse(profileRaw) : profileRaw)
+      : null;
+
+    const customerId = profile?.stripe_customer_id;
+    if (!customerId) {
+      return c.json({ error: "No active subscription found" }, 404);
+    }
+
+    const origin =
+      c.req.header("Origin") ||
+      c.req.header("Referer")?.replace(/\/[^/]*$/, "") ||
+      "https://masterytalk.pro";
+
+    const stripe = getStripe();
+    const session = await stripe.billingPortal.sessions.create({
+      customer: customerId,
+      return_url: `${origin}/#account`,
+    });
+
+    console.log(`[Portal] ✅ Portal session created for user ${user.id}`);
+    return c.json({ url: session.url });
+
+  } catch (err) {
+    console.error("[Portal] Error:", err);
+    return c.json({ error: "Failed to create portal session" }, 500);
   }
 });
 
