@@ -254,11 +254,28 @@
 
 > **Goal:** More paths to buy, more reasons to stay.
 
-### 3.1 Sales Scenario (New Path)
-- [ ] Design sales-specific conversation flow (separate from interview)
-- [ ] Create sales system prompt + evaluator criteria
-- [ ] Add `sales` back to ACTIVE_SCENARIOS
+### 3.1 Sales Scenario (New Path) ⚡ PROMOTED — Already implemented, needs UI activation
+> **Why now:** B2B sales is the highest-demand skill for LATAM nearshoring professionals.
+> `SCENARIO_ADAPTATION_SALES` and dual-axis backend eval already exist — only UI activation needed.
+- [x] Sales system prompt (`src/services/prompts/scenarios/sales.ts`)
+- [x] Backend dual-axis evaluation (sales-specific Gemini scoring)
+- [ ] Add "Sales Champion" to `VISIBLE_PATHS` in `progression-paths.ts`
+- [ ] Add sales scenario to `ScenarioType` active list and UI tabs
+- [ ] Add 3 situation presets for sales (B2B pitch, objection handling, price negotiation)
+- [ ] Verify end-to-end flow: context → strategy → practice → feedback
 - [ ] Update PRODUCT_SPEC §2
+
+### 3.1.1 Cultural Intelligence in AI Feedback 🧠
+> **Why:** The core problem for LATAM professionals isn't grammar — it's cultural assertiveness.
+> Detecting over-qualifying, conflict avoidance, and indirect communication patterns in feedback
+> directly increases product value and retention.
+- [ ] Update `analyst-prompt.ts`: add explicit LATAM cultural assertiveness detection to
+      "Professional Tone" dimension — over-qualifying ("maybe", "I think perhaps", "if it's okay"),
+      conflict avoidance patterns, indirect communication vs. U.S. direct style
+- [ ] Add `languageInsights` pattern detection for common LATAM false cognates and
+      Spanish/Portuguese phonetic interference (name the pattern explicitly, not just flag the error)
+- [ ] Update `SYSTEM_PROMPTS.md` to document the new feedback dimensions
+- [ ] Deploy and verify feedback quality improvement
 
 ### 3.2 Learning Path Depth
 - [ ] Verify 6-level progression is coherent across all 3 active scenarios
@@ -314,3 +331,4 @@
 | 2026-04-27 | Completed 1.6 Scenario Quality Audit. Added 1.6.2 UX & Narration System (45 audio files, A/B landings, situation presets, briefing UX improvements, auth fix). |
 | 2026-04-28 | Completed 1.4 Stripe payments E2E in live mode. Webhook rewrite. Payment success modal with confetti. Manage Subscription portal. Transactional emails (5 templates). |
 | 2026-04-28 | Completed 1.9 (Sentry + security audit). Completed 2.1 (inactivity nudge + renewal email). FSD violations resolved. p-5 eliminated. PRODUCT_SPEC v2.0. Dead code removed (generate-scenario-data). |
+| 2026-04-28 | Strategic analysis: approved Sales scenario activation (3.1, promoted from Phase 3), Cultural Intelligence feedback (3.1.1), LATAM interference patterns (3.1.1). Plan added to ROADMAP. |
