@@ -96,34 +96,35 @@ export async function downloadTwilioMedia(mediaUrl: string): Promise<ArrayBuffer
 
 /* ── Twilio Webhook Signature Validation ── */
 
-export function validateTwilioSignature(
+export async function validateTwilioSignature(
   url: string,
   params: Record<string, string>,
   signature: string,
-): boolean {
-  // For the Sandbox, we skip signature validation (the Sandbox doesn't use it reliably).
-  // For production, implement HMAC-SHA1 validation per:
-  // https://www.twilio.com/docs/usage/security#validating-requests
+): Promise<boolean> {
   const authToken = Deno.env.get("TWILIO_AUTH_TOKEN");
-  if (!authToken) return false;
+  if (!authToken || !signature) return false;
 
-  // Build the data string: URL + sorted params concatenated
+  // Build validation string: URL + sorted params concatenated (Twilio spec)
   let data = url;
-  const sortedKeys = Object.keys(params).sort();
-  for (const key of sortedKeys) {
+  for (const key of Object.keys(params).sort()) {
     data += key + params[key];
   }
 
-  // HMAC-SHA1
-  const encoder = new TextEncoder();
-  return crypto.subtle
-    .importKey("raw", encoder.encode(authToken), { name: "HMAC", hash: "SHA-1" }, false, ["sign"])
-    .then((key) => crypto.subtle.sign("HMAC", key, encoder.encode(data)))
-    .then((sig) => {
-      const computed = btoa(String.fromCharCode(...new Uint8Array(sig)));
-      return computed === signature;
-    })
-    .catch(() => false) as unknown as boolean;
+  try {
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      "raw",
+      encoder.encode(authToken),
+      { name: "HMAC", hash: "SHA-1" },
+      false,
+      ["sign"],
+    );
+    const sig = await crypto.subtle.sign("HMAC", key, encoder.encode(data));
+    const computed = btoa(String.fromCharCode(...new Uint8Array(sig)));
+    return computed === signature;
+  } catch {
+    return false;
+  }
 }
 
 /* ── Twilio Verify (OTP for phone number linking) ── */

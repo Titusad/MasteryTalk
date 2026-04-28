@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { User, CreditCard, Settings, LogOut, CheckCircle, AlertTriangle, ShieldAlert, Lock, ExternalLink } from "lucide-react";
+import { User, CreditCard, Settings, LogOut, CheckCircle, AlertTriangle, ShieldAlert, Lock, ExternalLink, MessageCircle } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { PastelBlobs, MiniFooter } from "@/shared/ui";
 import type { OnboardingProfile, User as AuthUser } from "@/services/types";
-import { SUPABASE_URL, getAuthToken } from "@/services/supabase";
+import { SUPABASE_URL, getAuthToken, getSupabaseClient } from "@/services/supabase";
 
 const TIER_LABELS: Record<string, string> = {
   early_bird: "Early Bird Plan",
@@ -24,10 +24,20 @@ interface AccountPageProps {
   onLogout: () => void;
 }
 
+type WaStep = "idle" | "otp_sent" | "verified";
+
 export function AccountPage({ userProfile, authUser, onLogout }: AccountPageProps) {
   const [showConfirmLogout, setShowConfirmLogout] = useState(false);
   const [subInfo, setSubInfo] = useState<SubscriptionInfo | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
+
+  // WhatsApp Coach state
+  const [waStep, setWaStep] = useState<WaStep>("idle");
+  const [waPhoneInput, setWaPhoneInput] = useState("");
+  const [waOtpInput, setWaOtpInput] = useState("");
+  const [waLinkedNumber, setWaLinkedNumber] = useState<string | null>(null);
+  const [waLoading, setWaLoading] = useState(false);
+  const [waError, setWaError] = useState<string | null>(null);
 
   useEffect(() => {
     getAuthToken().then(token => {
@@ -46,7 +56,98 @@ export function AccountPage({ userProfile, authUser, onLogout }: AccountPageProp
         })
         .catch(() => {});
     });
+
+    // Load WhatsApp linking status from Supabase profiles table
+    (async () => {
+      try {
+        const { data: { user } } = await getSupabaseClient().auth.getUser();
+        if (!user) return;
+        const { data: profile } = await getSupabaseClient()
+          .from("profiles")
+          .select("whatsapp_number, whatsapp_verified")
+          .eq("id", user.id)
+          .single();
+        if (!profile) return;
+        if (profile.whatsapp_verified && profile.whatsapp_number) {
+          setWaLinkedNumber(profile.whatsapp_number);
+          setWaPhoneInput(profile.whatsapp_number);
+          setWaStep("verified");
+        } else if (profile.whatsapp_number) {
+          setWaPhoneInput(profile.whatsapp_number);
+        }
+      } catch {
+        // non-blocking
+      }
+    })();
   }, []);
+
+  const handleSendOtp = async () => {
+    setWaLoading(true);
+    setWaError(null);
+    try {
+      const token = await getAuthToken();
+      const res = await fetch(
+        `${SUPABASE_URL}/functions/v1/make-server-08b8658d/whatsapp/send-otp`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ phoneNumber: waPhoneInput.trim() }),
+        },
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Error al enviar el código");
+      setWaStep("otp_sent");
+    } catch (err) {
+      setWaError(err instanceof Error ? err.message : "Error al enviar el código");
+    } finally {
+      setWaLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    setWaLoading(true);
+    setWaError(null);
+    try {
+      const token = await getAuthToken();
+      const res = await fetch(
+        `${SUPABASE_URL}/functions/v1/make-server-08b8658d/whatsapp/verify-otp`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ phoneNumber: waPhoneInput.trim(), code: waOtpInput }),
+        },
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Código incorrecto o expirado");
+      setWaLinkedNumber(waPhoneInput.trim());
+      setWaStep("verified");
+    } catch (err) {
+      setWaError(err instanceof Error ? err.message : "Error al verificar el código");
+    } finally {
+      setWaLoading(false);
+    }
+  };
+
+  const handleWaUnlink = async () => {
+    setWaLoading(true);
+    try {
+      const { data } = await getSupabaseClient().auth.getUser();
+      if (data.user) {
+        await getSupabaseClient()
+          .from("profiles")
+          .update({ whatsapp_number: null, whatsapp_verified: false })
+          .eq("id", data.user.id);
+      }
+      setWaStep("idle");
+      setWaLinkedNumber(null);
+      setWaPhoneInput("");
+      setWaOtpInput("");
+    } catch (err) {
+      console.error("[AccountPage] Failed to unlink WhatsApp:", err);
+    } finally {
+      setWaLoading(false);
+    }
+  };
 
   const handleManageSubscription = async () => {
     setPortalLoading(true);
@@ -210,6 +311,95 @@ export function AccountPage({ userProfile, authUser, onLogout }: AccountPageProp
             <p className="text-xs text-[#94a3b8] mt-4 flex items-center gap-1.5">
               <AlertTriangle className="w-3.5 h-3.5" /> Las preferencias están en modo solo lectura durante el Beta.
             </p>
+          </section>
+
+          {/* WHATSAPP COACH CARD */}
+          <section className="bg-white rounded-2xl border border-[#e2e8f0] p-6 hover:border-[#cad5e2] transition-colors shadow-sm">
+            <h2 className="text-lg font-medium text-[#0f172b] mb-2 flex items-center gap-2">
+              <MessageCircle className="w-5 h-5 text-[#25D366]" />
+              WhatsApp Coach
+            </h2>
+            <p className="text-sm text-[#62748e] mb-6">
+              Recibe tu ejercicio de pronunciación diario en WhatsApp. Graba tu respuesta en audio y obtén tu score al instante.
+            </p>
+
+            {waStep === "verified" ? (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-[#f0fdf4] flex items-center justify-center shrink-0">
+                    <CheckCircle className="w-5 h-5 text-[#16a34a]" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-[#0f172b]">{waLinkedNumber}</p>
+                    <p className="text-xs text-[#16a34a]">Verificado · Recibirás ejercicios diarios</p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleWaUnlink}
+                  disabled={waLoading}
+                  className="text-xs text-[#94a3b8] hover:text-[#ef4444] transition-colors disabled:opacity-40"
+                >
+                  Desvincular
+                </button>
+              </div>
+            ) : waStep === "otp_sent" ? (
+              <div className="space-y-4">
+                <p className="text-sm text-[#45556c]">
+                  Enviamos un código de 6 dígitos a{" "}
+                  <span className="font-medium text-[#0f172b]">{waPhoneInput}</span> vía WhatsApp.
+                </p>
+                <input
+                  type="text"
+                  value={waOtpInput}
+                  onChange={e => setWaOtpInput(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  placeholder="123456"
+                  maxLength={6}
+                  className="w-full bg-[#f8fafc] border border-[#e2e8f0] rounded-lg px-4 py-3 text-sm text-[#0f172b] text-center tracking-widest font-medium focus:outline-none focus:border-[#0f172b]"
+                />
+                {waError && <p className="text-xs text-[#ef4444]">{waError}</p>}
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleVerifyOtp}
+                    disabled={waOtpInput.length < 6 || waLoading}
+                    className="flex-1 py-2.5 rounded-lg bg-[#0f172b] text-white text-sm font-medium hover:bg-[#1d293d] transition-colors disabled:opacity-40"
+                  >
+                    {waLoading ? "Verificando..." : "Verificar código"}
+                  </button>
+                  <button
+                    onClick={() => { setWaStep("idle"); setWaOtpInput(""); setWaError(null); }}
+                    className="px-4 py-2.5 rounded-lg border border-[#e2e8f0] text-sm text-[#45556c] hover:bg-[#f8fafc] transition-colors"
+                  >
+                    Cambiar número
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium text-[#62748e] mb-1.5">
+                    Número de WhatsApp (formato internacional)
+                  </label>
+                  <input
+                    type="tel"
+                    value={waPhoneInput}
+                    onChange={e => setWaPhoneInput(e.target.value)}
+                    placeholder="+521234567890"
+                    className="w-full bg-[#f8fafc] border border-[#e2e8f0] rounded-lg px-4 py-3 text-sm text-[#0f172b] focus:outline-none focus:border-[#0f172b]"
+                  />
+                  <p className="text-xs text-[#94a3b8] mt-1.5">
+                    Incluye el código de país: +1 (EE.UU.), +52 (México), +55 (Brasil), +44 (UK), +34 (España)...
+                  </p>
+                </div>
+                {waError && <p className="text-xs text-[#ef4444]">{waError}</p>}
+                <button
+                  onClick={handleSendOtp}
+                  disabled={!waPhoneInput.trim() || waLoading}
+                  className="w-full py-2.5 rounded-lg bg-[#0f172b] text-white text-sm font-medium hover:bg-[#1d293d] transition-colors disabled:opacity-40"
+                >
+                  {waLoading ? "Enviando..." : "Enviar código de verificación"}
+                </button>
+              </div>
+            )}
           </section>
 
           {/* DANGER ZONE */}

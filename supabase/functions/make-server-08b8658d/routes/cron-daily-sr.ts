@@ -57,9 +57,14 @@ const WA_COPY: Record<WaLang, {
 };
 
 function getLangFromMarket(market?: string | null): WaLang {
-  if (market === "brazil") return "pt";
-  if (market === "mexico" || market === "colombia") return "es";
-  return "es"; // default to Spanish
+  if (!market) return "en";
+  const m = market.toLowerCase();
+  if (m.includes("brazil") || m.includes("brasil")) return "pt";
+  if (
+    m.includes("mexico") || m.includes("colombia") || m.includes("argentina") ||
+    m.includes("chile") || m.includes("peru") || m.includes("latam") || m.includes("latin")
+  ) return "es";
+  return "en";
 }
 
 /* ── TTS Generation (ElevenLabs primary, OpenAI fallback) ── */

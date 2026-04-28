@@ -14,7 +14,7 @@
  */
 import { Hono } from "npm:hono";
 import { getAdminClient } from "../_shared.ts";
-import { sendWhatsAppMessage, downloadTwilioMedia } from "../twilio.ts";
+import { sendWhatsAppMessage, downloadTwilioMedia, validateTwilioSignature } from "../twilio.ts";
 
 const app = new Hono();
 
@@ -26,9 +26,14 @@ const PASS_THRESHOLD = 70;
 type WaLang = "es" | "pt" | "en";
 
 function getLangFromMarket(market?: string | null): WaLang {
-  if (market === "brazil") return "pt";
-  if (market === "mexico" || market === "colombia") return "es";
-  return "es";
+  if (!market) return "en";
+  const m = market.toLowerCase();
+  if (m.includes("brazil") || m.includes("brasil")) return "pt";
+  if (
+    m.includes("mexico") || m.includes("colombia") || m.includes("argentina") ||
+    m.includes("chile") || m.includes("peru") || m.includes("latam") || m.includes("latin")
+  ) return "es";
+  return "en";
 }
 
 const FB_COPY: Record<WaLang, {
@@ -75,11 +80,28 @@ const FB_COPY: Record<WaLang, {
 
 app.post("/make-server-08b8658d/webhook/twilio", async (c) => {
   try {
-    // Twilio sends form-urlencoded data
-    const formData = await c.req.parseBody();
-    const from = (formData["From"] as string || "").replace("whatsapp:", "");
-    const numMedia = parseInt(formData["NumMedia"] as string || "0", 10);
-    const body = (formData["Body"] as string || "").trim();
+    // Read raw body once — needed for both signature validation and parsing
+    const rawBody = await c.req.text();
+
+    // Validate Twilio signature (set TWILIO_SKIP_SIG_VALIDATION=true for local testing)
+    const skipSig = Deno.env.get("TWILIO_SKIP_SIG_VALIDATION") === "true";
+    if (!skipSig) {
+      const signature = c.req.header("X-Twilio-Signature") || "";
+      const params = Object.fromEntries(new URLSearchParams(rawBody));
+      const isValid = await validateTwilioSignature(c.req.url, params, signature);
+      if (!isValid) {
+        console.warn("[WA Webhook] Invalid Twilio signature — possible spoofed request");
+        return c.text("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response></Response>", 403, {
+          "Content-Type": "text/xml",
+        });
+      }
+    }
+
+    // Parse form data from raw body
+    const formData = Object.fromEntries(new URLSearchParams(rawBody));
+    const from = (formData["From"] || "").replace("whatsapp:", "");
+    const numMedia = parseInt(formData["NumMedia"] || "0", 10);
+    const body = (formData["Body"] || "").trim();
 
     console.log(`[WA Webhook] Message from ${from} | media=${numMedia} | body="${body.slice(0, 50)}"`);
 
