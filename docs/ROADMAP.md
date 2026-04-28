@@ -265,17 +265,38 @@
 - [ ] Verify end-to-end flow: context → strategy → practice → feedback
 - [ ] Update PRODUCT_SPEC §2
 
-### 3.1.1 Cultural Intelligence in AI Feedback 🧠
-> **Why:** The core problem for LATAM professionals isn't grammar — it's cultural assertiveness.
-> Detecting over-qualifying, conflict avoidance, and indirect communication patterns in feedback
-> directly increases product value and retention.
-- [ ] Update `analyst-prompt.ts`: add explicit LATAM cultural assertiveness detection to
-      "Professional Tone" dimension — over-qualifying ("maybe", "I think perhaps", "if it's okay"),
-      conflict avoidance patterns, indirect communication vs. U.S. direct style
-- [ ] Add `languageInsights` pattern detection for common LATAM false cognates and
-      Spanish/Portuguese phonetic interference (name the pattern explicitly, not just flag the error)
-- [ ] Update `SYSTEM_PROMPTS.md` to document the new feedback dimensions
-- [ ] Deploy and verify feedback quality improvement
+### 3.1.1 Cultural Intelligence in AI Feedback 🧠 ✅ (Completed 2026-04-28)
+- [x] PILLAR 3 expanded: 5 LATAM assertiveness patterns (over-qualifying, conflict avoidance, indirect structure, missing ownership, deference signals)
+- [x] Professional Tone scoring includes cultural directness as criterion
+- [x] languageInsights: named detection for 4 LATAM interference categories (false cognates, calques, fillers, pronoun drops)
+- [x] SYSTEM_PROMPTS.md v1.3 updated
+
+### 3.1.2 U.S. Business Culture Mastery Path 🇺🇸 ⚡ HIGH PRIORITY
+> **Why:** Transforms MasteryTalk from a language tool to a nearshoring performance platform.
+> Cultural fit is the #1 unspoken reason LATAM professionals don't advance in U.S. companies.
+>
+> **Default first path:** After self-intro warm-up, this is the recommended path for ALL users
+> unless they have a specific immediate need (interview, sales pitch, etc.).
+> It fills the gap between "speaking English" and "operating effectively in U.S. corporate culture."
+
+**6 Levels (revised):**
+1. Direct Communication & Feedback — claim-first vs. context-first, avoiding hedging
+2. Meeting Control — open with agenda, redirect tangents, close with concrete next steps
+3. Individual Accountability & Ownership — ownership language, managing up, decision-making
+4. Building Credibility Fast — first 90 seconds: rapport + competence simultaneously
+5. Navigating Disagreement — disagree without it feeling personal, maintain relationships
+6. Executive Presence & Storytelling — Problem/Solution/Contrast framework for C-level influence
+
+**Technical work:**
+- [ ] `src/services/prompts/scenarios/culture.ts` — SCENARIO_ADAPTATION_CULTURE
+- [ ] `supabase/functions/.../scenarios/culture.ts` — dual-axis eval + gap analysis
+- [ ] `supabase/functions/.../scenarios/index.ts` — register new scenario
+- [ ] `src/features/dashboard/model/progression-paths.ts` — CULTURE_LEVELS (6 levels)
+- [ ] `src/services/prompts/personas.ts` — add "egalitarian_leader" interlocutor
+- [ ] `src/features/practice-session/model/scenario-presets.ts` — 3 presets
+- [ ] `src/features/dashboard/model/path-recommendation.ts` — set "culture" as default first path
+- [ ] `VITE_ENABLED_SCENARIOS` in Vercel — add "culture"
+- [ ] Update PRODUCT_SPEC §2
 
 ### 3.2 Learning Path Depth
 - [ ] Verify 6-level progression is coherent across all 3 active scenarios
