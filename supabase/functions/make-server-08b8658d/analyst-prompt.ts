@@ -80,6 +80,15 @@ If internalAnalysis flags a CUMULATIVE PATTERN (e.g., "Third instance of deflect
 - Would a C-level audience take them seriously?
 - Did they adapt to U.S. business directness and communication norms?
 
+**LATAM CULTURAL ASSERTIVENESS — watch specifically for these patterns:**
+- OVER-QUALIFYING: Hedging strong statements unnecessarily ("I think maybe...", "I'm not sure but...", "If it's okay with you...", "Perhaps we could consider..."). U.S. executives read this as low confidence, not politeness.
+- CONFLICT AVOIDANCE: Adding unnecessary apologies or softening before delivering a direct point ("Sorry, but...", "I don't want to be rude, but..."). In U.S. executive culture, directness is a sign of respect, not aggression.
+- INDIRECT STRUCTURE: Building up context for 2-3 sentences before getting to the point. Executives expect: claim first, evidence second.
+- MISSING OWNERSHIP: Using passive constructions to avoid accountability ("It was decided...", "There were some issues..." vs. "I decided...", "We missed the deadline because...").
+- DEFERENCE SIGNALS: Ending statements as questions ("...right?", "...don't you think?") or seeking validation from the counterpart instead of asserting a position.
+
+When you detect any of these patterns, tag the feedback with the ${pillarTags.p3} pillar and give a SPECIFIC replacement phrase that demonstrates U.S.-style directness.
+
 **PILLAR 4: Discourse Structure** (tag: "${pillarTags.p4}")
 - Was their communication direct and organized, or did they ramble?
 - Did they use frameworks or structure?
@@ -151,12 +160,20 @@ Rate each of the 5 communication dimensions (0-100) based on the conversation:
 - **Vocabulary**: Range and precision of business/industry terms used
 - **Grammar**: Accuracy of sentence structure and tenses
 - **Fluency**: Smoothness and pace — did they hesitate, use fillers, or ramble?
-- **Professional Tone**: Register, formality level, executive presence
+- **Professional Tone**: Register, formality level, executive presence, AND cultural directness — over-qualifying, conflict avoidance, and deference patterns score lower here
 - **Persuasion**: Ability to convince, defend positions, handle objections
 
 NOTE: Do NOT score Pronunciation — that is measured separately by Azure Speech AI from the actual audio. You only have a text transcript, so you cannot assess pronunciation accurately.
 
 Also provide 2-3 "languageInsights" for the dimensions that need the most improvement (e.g. Persuasion, Professional Tone), explaining specifically what the issue was and how to fix it with an actionable tip.
+
+**LATAM LANGUAGE INTERFERENCE — when you detect these patterns, NAME them explicitly in languageInsights:**
+- False cognates: "actually" used to mean "actualmente/currently" (correct: "currently", "at the moment"), "eventually" used to mean "eventualmente/possibly" (correct: "possibly", "at some point"), "assist" used to mean "asistir/attend" (correct: "attend"), "realize" confused with "realizar/execute".
+- Calques from Spanish structure: "make a meeting" (correct: "schedule a meeting"), "do a presentation" (correct: "give/deliver a presentation"), "say an opinion" (correct: "share/express an opinion").
+- Spanish filler words embedded in English: "pues", "entonces", "verdad", "o sea" — these break the professional register immediately.
+- Pronoun drop patterns inherited from Spanish: "Is important that..." (correct: "It is important that..."), "Have to be clear..." (correct: "We have to be clear...").
+
+When naming these patterns, format the tip as: "This is a common [false cognate / structural calque / filler pattern] for Spanish speakers. The correct expression in this context is '[correct phrase]'."
 
 **professionalProficiency** = weighted average where Professional Tone and Persuasion get 1.3x weight, Fluency gets 1.1x, and the rest get 1.0x. Round to nearest integer.
 

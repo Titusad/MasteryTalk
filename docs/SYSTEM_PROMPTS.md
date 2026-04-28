@@ -501,6 +501,7 @@ El modelo de suscripción ($9.99–$39.99/mo) cubre el costo de IA con amplio ma
 
 | Version | Fecha | Cambios |
 |---------|-------|---------|
+| v1.3 | 2026-04-28 | PILLAR 3 (Cultural Alignment) expanded with 5 explicit LATAM assertiveness patterns: over-qualifying, conflict avoidance, indirect structure, missing ownership, deference signals. Professional Tone scoring now includes cultural directness. languageInsights extended with 4 LATAM interference pattern categories: false cognates, Spanish calques, filler words, pronoun drops — each triggers named pattern detection in feedback. |
 | v1.2 | 2026-04-28 | §9 rewritten: GPT-4o for ALL users — no degradation to mini. Removed GPT-4o-mini variant section. Updated cost analysis to reflect subscription model. |
 | v1.1 | Feb 2026 | Updated source code paths, token budget. |
 | v1.0 | Feb 2026 | Initial: 7-Block Architecture, 3 perfiles, 2 sub-perfiles, regional context, voice mapping, isComplete rules. |
