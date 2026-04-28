@@ -216,7 +216,7 @@
 - [x] Error monitoring: Sentry (`@sentry/react`, VITE_SENTRY_DSN on Vercel, ErrorBoundary integrated)
 - [x] Rate limiting: implemented in Edge Function middleware ✅
 - [x] Security audit: admin auth, PUT /profile field whitelist, CRON_SECRET
-- [ ] Review Google OAuth consent screen — update to "MasteryTalk PRO"
+- [x] Review Google OAuth consent screen — updated to "MasteryTalk PRO" in Google Cloud Console
 - [ ] Custom domain for Supabase Auth (removes `zkury...supabase.co` from OAuth)
 
 ### 2.0 Legal Compliance
