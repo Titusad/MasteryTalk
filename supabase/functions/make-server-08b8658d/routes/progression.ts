@@ -11,25 +11,41 @@ app.get("/make-server-08b8658d/progression", async (c) => {
     if (!user) return c.json({ error: "Unauthorized" }, 401);
 
     const raw = await kv.get(`progression:${user.id}`);
+    const defaults = getDefaultProgressionState();
+
+    let merged: Record<string, any>;
     if (!raw) {
-      // Return default state — Level 1 unlocked in both paths
-      const defaultState = getDefaultProgressionState();
-      return c.json(defaultState);
+      merged = { ...defaults };
+    } else {
+      const saved = typeof raw === "string" ? JSON.parse(raw) : raw;
+      merged = { ...defaults, ...saved };
+      for (const key of Object.keys(defaults)) {
+        if (key === "activeGoal") continue;
+        if (!saved[key]) {
+          merged[key] = defaults[key as keyof typeof defaults];
+        }
+      }
     }
 
-    // KV stores JSON as string
-    const saved = typeof raw === "string" ? JSON.parse(raw) : raw;
+    // If the user has an active subscription, unlock all locked levels
+    const profileRaw = await kv.get(`profile:${user.id}`);
+    const profile = profileRaw
+      ? (typeof profileRaw === "string" ? JSON.parse(profileRaw) : profileRaw)
+      : null;
 
-    // Merge saved state with defaults so newly added paths always have Level 1 unlocked
-    const defaults = getDefaultProgressionState();
-    const merged = { ...defaults, ...saved };
-
-    // Ensure each path key from defaults exists in merged (backfill new paths)
-    for (const key of Object.keys(defaults)) {
-      if (key === "activeGoal") continue;
-      if (!saved[key]) {
-        merged[key] = defaults[key as keyof typeof defaults];
+    if (profile?.subscription_active) {
+      for (const key of Object.keys(merged)) {
+        if (key === "activeGoal") continue;
+        const pathState = merged[key] as Record<string, { status: string }>;
+        if (typeof pathState === "object" && pathState !== null) {
+          for (const levelId of Object.keys(pathState)) {
+            if (pathState[levelId]?.status === "locked") {
+              pathState[levelId] = { ...pathState[levelId], status: "unlocked" };
+            }
+          }
+        }
       }
+      console.log(`[Progression GET] subscription_active — all locked levels unlocked for ${user.id}`);
     }
 
     return c.json(merged);

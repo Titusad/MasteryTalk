@@ -139,6 +139,7 @@ export function DashboardPage({
           {/* Right Column */}
           <PracticePathsModule
             onStartSession={handleStartSession}
+            onLockedClick={() => setUpsellOpen(true)}
           />
         </div>
       </main>

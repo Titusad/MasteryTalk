@@ -73,12 +73,15 @@ export default function App() {
 
   const [page, setPage] = useState<Page>(() => {
     const hash = window.location.hash;
-    if (hash === "#design-system") return "design-system";
-    if (hash === "#admin") return "admin";
-    if (hash === "#terms") return "terms";
-    if (hash === "#privacy") return "privacy";
-    if (hash === "#landing2") return "landing2";
-    if (hash === "#landing3") return "landing3";
+    // Strip query params from hash to get just the path (e.g. #dashboard?payment=success → #dashboard)
+    const hashPath = hash.split("?")[0];
+
+    if (hashPath === "#design-system") return "design-system";
+    if (hashPath === "#admin") return "admin";
+    if (hashPath === "#terms") return "terms";
+    if (hashPath === "#privacy") return "privacy";
+    if (hashPath === "#landing2") return "landing2";
+    if (hashPath === "#landing3") return "landing3";
 
     // For authenticated app pages, check if there's a Supabase session
     // in localStorage. If so, respect the hash so users stay on their
@@ -91,13 +94,13 @@ export default function App() {
       "#library": "library",
       "#study-phase": "study-phase",
     };
-    if (AUTH_PAGES[hash] || hash.startsWith("#study-phase")) {
+    if (AUTH_PAGES[hashPath] || hashPath.startsWith("#study-phase")) {
       // Quick check: does a Supabase session exist in localStorage?
       const hasSession = Object.keys(localStorage).some(
         (k) => k.startsWith("sb-") && k.endsWith("-auth-token")
       );
       if (hasSession) {
-        return AUTH_PAGES[hash];
+        return AUTH_PAGES[hashPath];
       }
       // No session → clear hash and go to landing
       window.location.hash = "";
@@ -798,15 +801,16 @@ export default function App() {
             }}
           />
 
-          {/* Stripe payment redirect handler — shows success toast */}
+          {/* Stripe payment redirect handler — celebration modal with confetti */}
           <PaymentSuccessHandler
             authReady={!!authUser}
+            onNavigateToDashboard={() => setPage("dashboard")}
             onPaymentConfirmed={() => {
-              // Refresh user profile to pick up new paths_purchased
+              // Navigate to dashboard and refresh user profile
+              setPage("dashboard");
               import("../services").then(({ userService }) => {
                 userService.getProfile("current").then((u) => {
                   setAuthUser((prev) => prev ? { ...prev, plan: u.plan, pathsPurchased: u.pathsPurchased } : prev);
-                  // Sync purchased paths to localStorage so usageGating reflects reality
                   u.pathsPurchased?.forEach((path: string) => usageGating.addPurchasedPath(path));
                 }).catch(() => {});
               });

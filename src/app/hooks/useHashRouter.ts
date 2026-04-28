@@ -38,19 +38,22 @@ const AUTH_PAGES: Record<string, Page> = {
 
 function resolveInitialPage(): Page {
   const hash = window.location.hash;
-  if (hash === "#design-system") return "design-system";
-  if (hash === "#admin") return "admin";
-  if (hash === "#terms") return "terms";
-  if (hash === "#privacy") return "privacy";
-  if (hash === "#landing2") return "landing2";
-  if (hash === "#landing3") return "landing3";
+  // Strip query params from hash before matching (e.g. #dashboard?payment=success → #dashboard)
+  const hashPath = hash.split("?")[0];
 
-  if (AUTH_PAGES[hash] || hash.startsWith("#study-phase")) {
+  if (hashPath === "#design-system") return "design-system";
+  if (hashPath === "#admin") return "admin";
+  if (hashPath === "#terms") return "terms";
+  if (hashPath === "#privacy") return "privacy";
+  if (hashPath === "#landing2") return "landing2";
+  if (hashPath === "#landing3") return "landing3";
+
+  if (AUTH_PAGES[hashPath] || hashPath.startsWith("#study-phase")) {
     const hasSession = Object.keys(localStorage).some(
       (k) => k.startsWith("sb-") && k.endsWith("-auth-token")
     );
     if (hasSession) {
-      return AUTH_PAGES[hash];
+      return AUTH_PAGES[hashPath];
     }
     window.location.hash = "";
   }

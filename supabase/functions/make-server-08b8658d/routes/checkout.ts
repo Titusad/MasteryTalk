@@ -39,8 +39,8 @@ app.post("/make-server-08b8658d/create-checkout", async (c) => {
       c.req.header("Referer")?.replace(/\/[^/]*$/, "") ||
       "https://masterytalk.pro";
 
-    const successUrl = `${origin}/#/dashboard?payment=success&session_id={CHECKOUT_SESSION_ID}`;
-    const cancelUrl  = `${origin}/#/dashboard?payment=cancelled`;
+    const successUrl = `${origin}/#dashboard?payment=success&tier=${tier}&session_id={CHECKOUT_SESSION_ID}`;
+    const cancelUrl  = `${origin}/#dashboard?payment=cancelled`;
 
     console.log(`[Checkout] Creating ${tier} checkout for user ${user.id}`);
 

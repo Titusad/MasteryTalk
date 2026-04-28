@@ -69,9 +69,10 @@ interface ProgressionTreeProps {
     interlocutor: string,
   ) => void;
   onDrillComplete?: (pathId: string, levelId: string, score: number) => void;
+  onLockedClick?: () => void;
 }
 
-export function ProgressionTree({ onStartLevel, onDrillComplete }: ProgressionTreeProps) {
+export function ProgressionTree({ onStartLevel, onDrillComplete, onLockedClick }: ProgressionTreeProps) {
   const [activeTab, setActiveTab] = useState<PathId>("interview");
   const { state, loading, refetch: fetchState } = useProgressionState();
 
@@ -84,7 +85,10 @@ export function ProgressionTree({ onStartLevel, onDrillComplete }: ProgressionTr
   const activePath = PROGRESSION_PATHS.find((p) => p.id === activeTab)!;
 
   const handleNodeClick = (levelId: string, status: LevelStatus, level: any) => {
-    if (status === "locked") return;
+    if (status === "locked") {
+      onLockedClick?.();
+      return;
+    }
     // Both "unlocked" and "study" levels launch a practice session
     // (learning content is now embedded in the session's Preparation phase)
     onStartLevel(level.scenario, activeTab, level.id, level.interlocutor);
