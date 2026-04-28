@@ -68,14 +68,16 @@
 
 ### §2.2 Allowed Weights
 
-`400` (normal) · `500` (medium) · `700` (bold)
+As Tailwind classes: `font-light` · `font-normal` · `font-medium` · `font-semibold` · `font-bold`
+
+> `font-semibold` (600) and `font-light` (300) are allowed **only as Tailwind classes**.
+> They are **prohibited** as inline `style={{ fontWeight: 600 }}`.
 
 ### §2.3 Prohibited
 
 - ❌ `text-[13px]`, `text-[15px]` or any arbitrary pixel values
-- ❌ `style={{ fontWeight: 600 }}` or `style={{ fontSize: '...' }}` inline
-- ❌ Font weights: `300` (light), `600` (semibold as inline)
-- ❌ Use Tailwind scale only — no inline CSS for typography
+- ❌ `style={{ fontWeight: ... }}` inline — always use Tailwind (`font-medium`, `font-semibold`, etc.)
+- ❌ `style={{ fontSize: '...' }}` inline — use Tailwind scale only
 
 ---
 
@@ -296,7 +298,17 @@ interface PathRecommendationCardProps {
 
 ### §6.9 Shared Components (never reimplement)
 
-`BrandLogo` · `PastelBlobs` · `MiniFooter` · `AppHeader` · `AnalyzingScreen` · `RecordButton` · `RecordingWaveformBars` · `RecordingTimer` · `SessionProgressBar` · `ServiceErrorBanner` · `SmoothHeight` · `DotPattern` · `SelfIntroContextScreen` · `PathRecommendationCard`
+`BrandLogo` · `PastelBlobs` · `MiniFooter` · `AppHeader` · `AnalyzingScreen` · `RecordButton` · `RecordingWaveformBars` · `RecordingTimer` · `SessionProgressBar` · `ServiceErrorBanner` · `SmoothHeight` · `DotPattern` · `NarrationToggle` · `SelfIntroContextScreen` · `PathRecommendationCard`
+
+### §6.10 NarrationToggle
+
+**Location:** `src/shared/ui/NarrationToggle.tsx`
+
+Floating pill button (bottom-right, fixed position) for coach narration audio.
+
+- 3 states: waveform bars (playing) · speaker icon (idle) · VolumeX (muted)
+- Uses `useNarrationPreference` for global mute state
+- Mount once in `App.tsx` — renders on top of all pages
 
 ---
 
@@ -351,7 +363,8 @@ HEADER:     AppHeader from shared/ui
 
 | Version | Date | Changes |
 |---------|------|---------|
+| v1.4 | 2026-04-28 | §2.2 typography: clarify font-semibold/font-light allowed as Tailwind classes, only inline style prohibited. §6.9 add NarrationToggle. §6.10 NarrationToggle spec. |
 | v1.3 | 2026-04-21 | §6.7 SelfIntroContextScreen, §6.8 PathRecommendationCard — new components with visual rules |
 | v1.2 | 2026-04-21 | §6.5 Pills/Badges — canonical dark pill style, one variant only |
-| v1.1 | 2026-04-20 | §6.1 AppHeader rewritten — 3 polymorphic variants (public/dashboard/session), persistent layout, full-width headers, exit confirmation |
-| v1.0 | 2026-04-17 | Initial — consolidated from SKILL.md + Guidelines.md |
+| v1.1 | 2026-04-20 | §6.1 AppHeader rewritten — 3 polymorphic variants |
+| v1.0 | 2026-04-17 | Initial |

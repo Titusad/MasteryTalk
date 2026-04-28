@@ -277,56 +277,27 @@ Example openings (do NOT copy these -- create your own based on the scenario):
 
 ---
 
-## 9. Variante GPT-4o-mini (Free Users)
+## 9. Modelo de IA — GPT-4o para todos los usuarios
 
-Para usuarios del plan free, GPT-4o-mini recibe una version simplificada del prompt.
-Cambios respecto al prompt completo:
-
-### Simplificaciones
-
-1. **Master prompt mas corto**: Se eliminan los anti-patterns detallados y se condensan las reglas.
-2. **Persona simplificada**: Solo perfil psicologico + 2 frases firma (en vez de 3).
-3. **Regional context omitido**: Se usa el fallback "GLOBAL" para reducir tokens.
-4. **internalAnalysis simplificado**: "Brief note about user performance" en vez de lista detallada.
-
-### Template mini completo
-
-```
-You are a senior U.S. business professional. Not an AI, not a tutor. A real businessperson.
-
-Rules:
-- Maximum 3 sentences per response
-- Professional tone, direct, no filler phrases
-- Always respond in English regardless of user's language
-- Challenge vague statements, push for specifics
-
-{PERSONA_MINI} (shortened version)
-
-Scenario: "{scenario}"
-
-Respond ONLY with JSON:
-{"aiMessage": "your response", "isComplete": false, "internalAnalysis": "brief performance note"}
-
-isComplete: true only after 4+ user turns when scenario concludes naturally. Must close by turn 8.
-```
-
-### Configuracion obligatoria para ambos modelos
+> **Regla absoluta:** GPT-4o se usa en TODAS las sesiones sin excepción — plan free y suscripción.
+> No hay degradación a GPT-4o-mini. El objetivo es que el usuario viva la máxima calidad desde el primer contacto.
 
 ```typescript
-// En el Edge Function, SIEMPRE usar response_format:
+// Configuracion obligatoria en process-turn Edge Function:
 const completion = await openai.chat.completions.create({
-  model: isPaidUser ? "gpt-4o" : "gpt-4o-mini",
+  model: "gpt-4o",               // Siempre — sin condicionales por plan
   response_format: { type: "json_object" },
   messages: [
     { role: "system", content: assembledSystemPrompt },
     ...conversationHistory,
   ],
-  max_tokens: 300, // Safety cap (3 sentences + internalAnalysis)
-  temperature: 0.7, // Balances creativity with consistency
+  max_tokens: 300,               // Safety cap (3 sentences + internalAnalysis)
+  temperature: 0.7,
 });
 ```
 
-**Tokens del template mini**: ~200 tokens (vs ~1060 del template completo)
+El costo por sesión (~$0.10) está cubierto por el modelo de suscripción.
+Para la sesión gratuita de warm-up (`self-intro`), el costo es asumido como costo de adquisición.
 
 ---
 
@@ -512,25 +483,27 @@ Necesito explicar los beneficios y negociar el precio del contrato anual."
 Esto esta dentro del target de $0.15-0.30 del Blueprint §11, dejando margen para
 sesiones mas largas (8 turnos) y variaciones en longitud de respuesta.
 
-### GPT-4o-mini savings (free user)
+### Costo por sesión — todos los usuarios (GPT-4o)
 
-| Item               | Cost (mini)  | vs GPT-4o |
-| ------------------ | ------------ | --------- |
-| GPT-4o-mini (6 turns) | ~$0.003   | -90%      |
-| ElevenLabs (6x)    | ~$0.06       | igual     |
-| **Total/session**  | **~$0.07**   | -30%      |
+| Item | Costo |
+|------|-------|
+| GPT-4o (6 turnos) | ~$0.03 |
+| ElevenLabs (6x) | ~$0.06 |
+| Azure STT (6x) | ~$0.006 |
+| Gemini Flash (3x) | ~$0.0015 |
+| **Total/sesión** | **~$0.10** |
+
+El modelo de suscripción ($9.99–$39.99/mo) cubre el costo de IA con amplio margen.
 
 ---
 
 ## Changelog
 
-| Version | Fecha         | Cambios                                                      |
-| ------- | ------------- | ------------------------------------------------------------ |
-| v1.0    | Feb 2026      | Initial: 7-Block Architecture, 3 perfiles, 2 sub-perfiles,  |
-|         |               | regional context, GPT-4o-mini variant, voice mapping,        |
-|         |               | isComplete rules (4-8), English-only guard                   |
-| v1.1    | Feb 2026      | Updated references to MASTER_BLUEPRINT.md v4.1 §9,             |
-|         |               | added source code paths, and updated token budget analysis.  |
+| Version | Fecha | Cambios |
+|---------|-------|---------|
+| v1.2 | 2026-04-28 | §9 rewritten: GPT-4o for ALL users — no degradation to mini. Removed GPT-4o-mini variant section. Updated cost analysis to reflect subscription model. |
+| v1.1 | Feb 2026 | Updated source code paths, token budget. |
+| v1.0 | Feb 2026 | Initial: 7-Block Architecture, 3 perfiles, 2 sub-perfiles, regional context, voice mapping, isComplete rules. |
 
 ---
 

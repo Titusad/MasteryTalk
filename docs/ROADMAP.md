@@ -19,15 +19,16 @@
 - Azure Speech pronunciation + ElevenLabs TTS
 - Shadowing practice with phrase-by-phrase coaching
 - 3-language landing page (ES/PT/EN)
-- Admin Dashboard with API cost tracking
+- Admin Dashboard with API cost tracking (auth-protected via ADMIN_EMAILS)
 - Spaced Repetition system + WhatsApp SR Coach (sandbox)
 - Google Auth via Supabase
-- **Transactional emails** — Resend: welcome, post-session summary, subscription confirmation
+- **Transactional emails** — Resend: welcome, subscription confirmation, session summary, renewal, inactivity nudge
+- **Error monitoring** — Sentry (`@sentry/react`, production only, ErrorBoundary integrated)
+- **Security hardened** — admin auth, PUT /profile whitelist, CRON_SECRET
 
 ### ⚠️ Known Gaps
 - WhatsApp in sandbox mode (requires Meta Business approval for production)
-- No error monitoring (Sentry or equivalent)
-- No inactive user nudge emails (7-day no-practice)
+- Google OAuth consent screen still shows dev app name
 - Stripe Customer Portal requires manual activation in Stripe Dashboard settings
 
 ---
@@ -211,9 +212,10 @@
 - [ ] Migrate Vercel, Twilio, OpenAI, Azure, and ElevenLabs to company billing.
 - [ ] Secure corporate domains and email addresses (e.g. `dave@masterytalk.pro`).
 
-### 1.9 Production Hardening
-- [ ] Error monitoring: integrate Sentry (or Supabase built-in logs)
-- [ ] Rate limiting: already implemented ✅, verify limits are appropriate
+### 1.9 Production Hardening ✅ (Partially complete — 2026-04-28)
+- [x] Error monitoring: Sentry (`@sentry/react`, VITE_SENTRY_DSN on Vercel, ErrorBoundary integrated)
+- [x] Rate limiting: implemented in Edge Function middleware ✅
+- [x] Security audit: admin auth, PUT /profile field whitelist, CRON_SECRET
 - [ ] Review Google OAuth consent screen — update to "MasteryTalk PRO"
 - [ ] Custom domain for Supabase Auth (removes `zkury...supabase.co` from OAuth)
 
@@ -228,13 +230,13 @@
 
 > **Goal:** Get users to come back and buy additional paths.
 
-### 2.1 Email Service ✅ (Partially complete — 2026-04-28)
+### 2.1 Email Service ✅ (Completed — 2026-04-28)
 - [x] Provider: Resend — domain `masterytalk.pro` verified
 - [x] Welcome email on registration (`ensure-profile`)
 - [x] Post-session summary email (scores, key improvements)
 - [x] Subscription confirmation email (`checkout.session.completed`)
-- [ ] Inactive user nudge (7 days without practice)
-- [ ] Payment renewal confirmation (invoice.payment_succeeded)
+- [x] Inactive user nudge (7 days without practice, 14-day cooldown, runs in daily cron)
+- [x] Payment renewal confirmation (`invoice.payment_succeeded`, billing_reason=subscription_cycle)
 
 ### 2.2 Dashboard Improvements
 - [ ] Cross-path progress overview (when user owns 2+ paths)
@@ -310,4 +312,5 @@
 | 2026-04-21 | Added 1.2.1 Self-Intro Warm-Up (completed), 1.2.2 Path Recommendation Engine (planned). Re-numbered 1.3–1.8. Updated legal compliance status. |
 | 2026-04-21 | Completed 1.4 Stripe Subscriptions, 1.5 WhatsApp SR Coach (Sandbox). Added 1.8 Twilio Production Config. Re-numbered Legal to 2.0. |
 | 2026-04-27 | Completed 1.6 Scenario Quality Audit. Added 1.6.2 UX & Narration System (45 audio files, A/B landings, situation presets, briefing UX improvements, auth fix). |
-| 2026-04-28 | Completed 1.4 Stripe payments E2E in live mode. Webhook rewrite (checkout.session.completed primary, resolveUserIdFromInvoice, Deno crypto fix). Payment success modal with confetti. Locked path → pricing modal. Subscription unlocks all levels. Manage Subscription via Stripe Customer Portal. Transactional emails operational (Resend). |
+| 2026-04-28 | Completed 1.4 Stripe payments E2E in live mode. Webhook rewrite. Payment success modal with confetti. Manage Subscription portal. Transactional emails (5 templates). |
+| 2026-04-28 | Completed 1.9 (Sentry + security audit). Completed 2.1 (inactivity nudge + renewal email). FSD violations resolved. p-5 eliminated. PRODUCT_SPEC v2.0. Dead code removed (generate-scenario-data). |
