@@ -25,6 +25,7 @@ import cronDailySr from "./routes/cron-daily-sr.ts";
 import whatsappVerify from "./routes/whatsapp-verify.ts";
 import { createRateLimiter } from "./kv_store.ts";
 import { getAuthUser } from "./_shared.ts";
+import { getEarlyBirdCount } from "./stripe.ts";
 
 // Rate limiter: 20 requests burst, refill 0.5/sec (~30 req/min sustained)
 const apiLimiter = createRateLimiter({ maxTokens: 20, refillPerSecond: 0.5 });
@@ -98,6 +99,16 @@ app.use("/*", async (c: any, next: any) => {
     }
   }
   await next();
+});
+
+// ── Public: pricing info (no auth required) ──
+app.get("/make-server-08b8658d/pricing", async (c: any) => {
+  const earlyBirdCount = await getEarlyBirdCount();
+  return c.json({
+    earlyBird:  { price: 9.99,  slotsUsed: earlyBirdCount, maxSlots: 20, available: earlyBirdCount < 20 },
+    monthly:    { price: 16.99 },
+    quarterly:  { price: 39.99, perMonth: 13.33 },
+  });
 });
 
 // ── Mount all routes ──

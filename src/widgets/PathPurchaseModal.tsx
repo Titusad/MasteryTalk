@@ -1,323 +1,264 @@
 /**
- * ══════════════════════════════════════════════════════════════
- *  PathPurchaseModal — Beta Pricing with Stripe Checkout
+ * PathPurchaseModal — Subscription tier selection + Stripe Checkout
  *
- *  Two modes:
- *  - Mode A (first purchase): $4.99, path inherited, no selector
- *  - Mode B (additional):     $16.99, path selector shown
- *
- *  Flow: [Optional: select path] → Create Stripe Checkout → Redirect
- *  Uses canonical AppModal wrapper. Design System compliant.
- * ══════════════════════════════════════════════════════════════
+ * Shows 3 tiers: Early Bird ($9.99), Monthly ($16.99), Quarterly ($39.99)
+ * Fetches live Early Bird availability from backend on open.
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import {
-  Sparkles,
-  Check,
-  BookOpen,
-  ArrowRight,
-  Shield,
-  Briefcase,
-  Users,
-  Presentation,
-} from "lucide-react";
+import { Check, Zap, ArrowRight, Star } from "lucide-react";
 import { AppModal } from "@/shared/ui/AppModal";
-import { PATH_PRODUCTS } from "@/services/types";
-import type { PurchaseType } from "@/services/types";
+import type { SubscriptionTier } from "@/entities/payment";
 import type { PaywallReason } from "@/shared/hooks/useUsageGating";
 import { paymentService } from "@/services";
 
-/* ── Scenario display info ── */
+/* ── Tier card data ── */
 
-const SCENARIO_OPTIONS: {
-  id: string;
+interface TierInfo {
+  id: SubscriptionTier;
   label: string;
-  desc: string;
-  icon: React.ReactNode;
-}[] = [
-    {
-      id: "interview",
-      label: "Job Interview",
-      desc: "Prepare for key questions",
-      icon: <Briefcase className="w-5 h-5" />,
-    },
-    {
-      id: "meeting",
-      label: "Remote Meetings",
-      desc: "Lead international meetings",
-      icon: <Users className="w-5 h-5" />,
-    },
-    {
-      id: "presentation",
-      label: "Presentations",
-      desc: "Deliver impactful presentations",
-      icon: <Presentation className="w-5 h-5" />,
-    },
-  ];
+  price: string;
+  period: string;
+  badge?: string;
+  highlight?: boolean;
+  features: string[];
+}
 
-const SCENARIO_LABELS: Record<string, string> = {
-  interview: "Job Interview",
-  meeting: "Remote Meetings",
-  presentation: "Presentations",
-};
+const TIERS: TierInfo[] = [
+  {
+    id: "early_bird",
+    label: "Early Bird",
+    price: "$9.99",
+    period: "/mes · para siempre",
+    badge: "Precio vitalicio",
+    features: [
+      "Todos los paths incluidos",
+      "WhatsApp SR Coach diario",
+      "Precio nunca sube",
+      "Máximo 20 suscriptores",
+    ],
+  },
+  {
+    id: "monthly",
+    label: "Monthly Pro",
+    price: "$16.99",
+    period: "/mes",
+    highlight: true,
+    features: [
+      "Todos los paths incluidos",
+      "WhatsApp SR Coach diario",
+      "Cancela cuando quieras",
+    ],
+  },
+  {
+    id: "quarterly",
+    label: "Quarterly Pro",
+    price: "$39.99",
+    period: "/ 3 meses",
+    badge: "Ahorra 21%",
+    features: [
+      "Todos los paths incluidos",
+      "WhatsApp SR Coach diario",
+      "$13.33/mes equivalente",
+    ],
+  },
+];
 
 /* ── Props ── */
 
 export interface PathPurchaseModalProps {
   open: boolean;
   onClose: () => void;
-  /** Which scenario triggered the paywall (default for first purchase) */
   scenarioType: string;
-  /** Why the paywall was triggered */
   paywallReason: PaywallReason;
-  /** Called when a purchase completes */
-  onPurchaseComplete: (purchaseType: PurchaseType) => void;
-  /** Paths the user already owns */
+  onPurchaseComplete: (purchaseType: any) => void;
   ownedPaths?: string[];
 }
+
+/* ── Main component ── */
 
 export function PathPurchaseModal({
   open,
   onClose,
-  scenarioType,
-  paywallReason,
-  onPurchaseComplete,
-  ownedPaths = [],
 }: PathPurchaseModalProps) {
-  const isFirstPurchase = ownedPaths.length === 0;
-  const product = isFirstPurchase ? PATH_PRODUCTS.first_path : PATH_PRODUCTS.path;
-
-  // For Mode B: track which path the user selects
-  const availablePaths = SCENARIO_OPTIONS.filter((s) => !ownedPaths.includes(s.id));
-  const [selectedPath, setSelectedPath] = useState<string>(
-    // Default to current scenario if available, else first available path
-    availablePaths.find((s) => s.id === scenarioType)
-      ? scenarioType
-      : availablePaths[0]?.id || scenarioType,
-  );
-
+  const [selectedTier, setSelectedTier] = useState<SubscriptionTier>("monthly");
+  const [earlyBirdSlots, setEarlyBirdSlots] = useState<{ used: number; max: number; available: boolean } | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const targetPath = isFirstPurchase ? scenarioType : selectedPath;
-  const targetLabel = SCENARIO_LABELS[targetPath] || targetPath;
+  // Fetch Early Bird availability when modal opens
+  useEffect(() => {
+    if (!open) return;
+    fetch(`https://zkuryztcwmazspscomiu.supabase.co/functions/v1/make-server-08b8658d/pricing`)
+      .then(r => r.json())
+      .then(data => {
+        setEarlyBirdSlots({
+          used: data.earlyBird.slotsUsed,
+          max: data.earlyBird.maxSlots,
+          available: data.earlyBird.available,
+        });
+        // Auto-switch to monthly if Early Bird is full
+        if (!data.earlyBird.available && selectedTier === "early_bird") {
+          setSelectedTier("monthly");
+        }
+      })
+      .catch(() => setEarlyBirdSlots({ used: 0, max: 20, available: true }));
+  }, [open]);
 
-  const handlePurchase = async () => {
+  const handleCheckout = async () => {
     setIsProcessing(true);
     setError(null);
-
     try {
-      const purchaseType: PurchaseType = isFirstPurchase ? "first_path" : "path";
       const result = await paymentService.createCheckout("current-user", {
-        type: purchaseType,
-        scenarioType: targetPath,
+        type: "path",
+        tier: selectedTier,
       });
-
-      // Redirect to Stripe Checkout
-      if (result.checkoutUrl) {
-        window.location.href = result.checkoutUrl;
-      }
+      if (result.checkoutUrl) window.location.href = result.checkoutUrl;
     } catch (err: any) {
-      console.error("[PathPurchaseModal] Checkout error:", err);
-      const backendError = err?.cause?.message || err?.message || "";
-      setError(
-        `We couldn't process your payment. Please, try again later. ${backendError ? `(Error: ${backendError})` : ""
-        }`,
-      );
+      const msg = err?.cause?.message || err?.message || "";
+      if (msg.includes("full") || msg.includes("20/20")) {
+        setError("Early Bird is sold out. Please select another plan.");
+        setSelectedTier("monthly");
+      } else {
+        setError("Payment failed. Please try again.");
+      }
       setIsProcessing(false);
     }
   };
 
+  const earlyBirdAvailable = earlyBirdSlots?.available !== false;
+  const slotsLeft = earlyBirdSlots ? earlyBirdSlots.max - earlyBirdSlots.used : null;
+
   return (
     <AppModal open={open} onClose={onClose} size="lg">
       <div aria-label="PathPurchaseModal" className="p-6 md:p-8">
-        {/* ── Header ── */}
+
+        {/* Header */}
         <motion.div
-          className="text-center mb-6"
+          className="text-center mb-8"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <div className="w-14 h-14 rounded-2xl bg-[#0f172b] flex items-center justify-center mx-auto mb-4">
-            <BookOpen className="w-7 h-7 text-white" />
-          </div>
-
-          {isFirstPurchase ? (
-            <>
-              <h2 className="text-xl font-medium text-[#0f172b] mb-1">
-                Continue the {targetLabel} Path
-              </h2>
-              <p className="text-sm text-[#62748e]">
-                {paywallReason === "path-required"
-                  ? "Your demo session showed what's possible. Unlock the full program at our beta price."
-                  : "Continue practicing with full access to this Learning Path."}
-              </p>
-            </>
-          ) : (
-            <>
-              <h2 className="text-xl font-medium text-[#0f172b] mb-1">
-                Choose your next path
-              </h2>
-              <p className="text-sm text-[#62748e]">
-                Expand your training — unlock a new Learning Path.
-              </p>
-            </>
-          )}
+          <h2 className="text-2xl text-[#0f172b] mb-2" style={{ fontWeight: 300 }}>
+            Accede a todo <span style={{ fontWeight: 700 }}>MasteryTalk PRO</span>
+          </h2>
+          <p className="text-sm text-[#62748e]">
+            Todos los paths, WhatsApp SR Coach, sin límite de sesiones.
+          </p>
         </motion.div>
 
-        {/* ── Path Selector (Mode B only) ── */}
-        {!isFirstPurchase && (
-          <motion.div
-            className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.15 }}
-          >
-            {SCENARIO_OPTIONS.map((scenario) => {
-              const isOwned = ownedPaths.includes(scenario.id);
-              const isSelected = selectedPath === scenario.id;
-              return (
-                <button
-                  key={scenario.id}
-                  onClick={() => !isOwned && setSelectedPath(scenario.id)}
-                  disabled={isOwned}
-                  className={`text-left p-3 rounded-xl border-2 transition-all duration-200 ${isOwned
-                      ? "border-[#e2e8f0] bg-[#f8fafc] opacity-50 cursor-not-allowed"
-                      : isSelected
-                        ? "border-[#0f172b] bg-[#f8fafc] shadow-sm"
-                        : "border-[#e2e8f0] bg-white hover:border-[#94a3b8] cursor-pointer"
-                    }`}
-                >
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-2 ${isOwned
-                      ? "bg-[#22c55e]/10 text-[#22c55e]"
-                      : isSelected
-                        ? "bg-[#0f172b] text-white"
-                        : "bg-[#f1f5f9] text-[#62748e]"
-                    }`}>
-                    {isOwned ? <Check className="w-4 h-4" /> : scenario.icon}
+        {/* Tier cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          {TIERS.map((tier, i) => {
+            const isSelected = selectedTier === tier.id;
+            const isEarlyBird = tier.id === "early_bird";
+            const isDisabled = isEarlyBird && !earlyBirdAvailable;
+
+            return (
+              <motion.button
+                key={tier.id}
+                onClick={() => !isDisabled && setSelectedTier(tier.id)}
+                disabled={isDisabled}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.08 }}
+                className={`relative text-left p-5 rounded-2xl border-2 transition-all ${
+                  isDisabled
+                    ? "border-[#e2e8f0] opacity-40 cursor-not-allowed"
+                    : isSelected
+                    ? tier.highlight
+                      ? "border-[#0f172b] bg-[#0f172b] text-white"
+                      : "border-[#0f172b] bg-[#f8fafc]"
+                    : "border-[#e2e8f0] bg-white hover:border-[#94a3b8] cursor-pointer"
+                }`}
+              >
+                {/* Badge */}
+                {tier.badge && !isDisabled && (
+                  <span className={`absolute -top-3 left-4 text-[10px] font-semibold px-2.5 py-1 rounded-full ${
+                    isEarlyBird ? "bg-amber-400 text-amber-900" : "bg-[#DBEDDF] text-[#0f172b]"
+                  }`}>
+                    {tier.badge}
+                  </span>
+                )}
+
+                {/* Selected indicator */}
+                {isSelected && (
+                  <div className={`absolute top-3 right-3 w-5 h-5 rounded-full flex items-center justify-center ${
+                    tier.highlight ? "bg-white" : "bg-[#0f172b]"
+                  }`}>
+                    <Check className={`w-3 h-3 ${tier.highlight ? "text-[#0f172b]" : "text-white"}`} strokeWidth={3} />
                   </div>
-                  <p className="text-sm font-medium text-[#0f172b]">{scenario.label}</p>
-                  <p className="text-[10px] text-[#94a3b8]">
-                    {isOwned ? "Already owned ✓" : scenario.desc}
-                  </p>
-                </button>
-              );
-            })}
-          </motion.div>
-        )}
+                )}
 
-        {/* ── Price display ── */}
-        <motion.div
-          className="mb-6 rounded-2xl border-2 border-[#0f172b] bg-[#f8fafc] p-4"
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <div className="flex items-start justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-[#0f172b] text-white flex items-center justify-center">
-                <BookOpen className="w-4 h-4" />
-              </div>
-              <span className="text-sm font-medium text-[#0f172b]">
-                {product.label}
-              </span>
-              {isFirstPurchase && (
-                <span className="text-[10px] font-medium bg-[#f59e0b]/10 text-[#d97706] px-2 py-0.5 rounded">
-                  BETA PRICE
-                </span>
-              )}
-            </div>
-            <div className="text-right">
-              <span className="text-lg font-bold text-[#0f172b]">
-                ${product.price}
-              </span>
-              <p className="text-[10px] text-[#94a3b8]">one-time — forever access</p>
-            </div>
-          </div>
+                {/* Tier name */}
+                <div className="flex items-center gap-1.5 mb-3">
+                  {isEarlyBird && <Zap className={`w-4 h-4 ${isSelected && tier.highlight ? "text-amber-300" : "text-amber-500"}`} />}
+                  {tier.id === "quarterly" && <Star className={`w-4 h-4 ${isSelected && tier.highlight ? "text-emerald-300" : "text-emerald-500"}`} />}
+                  <span className={`text-sm font-semibold ${isSelected && tier.highlight ? "text-white" : "text-[#0f172b]"}`}>
+                    {tier.label}
+                  </span>
+                </div>
 
-          <div className="space-y-1.5">
-            {[
-              `Permanent access to ${targetLabel}`,
-              "Up to 6 progressive levels",
-              "AI feedback + pronunciation coaching",
-              "Unlimited reviews",
-            ].map((feature) => (
-              <div key={feature} className="flex items-center gap-2">
-                <Check className="w-3.5 h-3.5 text-[#22c55e] shrink-0" />
-                <span className="text-xs text-[#62748e]">{feature}</span>
-              </div>
-            ))}
-          </div>
-        </motion.div>
+                {/* Price */}
+                <div className="mb-4">
+                  <span className={`text-3xl font-bold ${isSelected && tier.highlight ? "text-white" : "text-[#0f172b]"}`}>
+                    {tier.price}
+                  </span>
+                  <span className={`text-xs ml-1 ${isSelected && tier.highlight ? "text-white/60" : "text-[#94a3b8]"}`}>
+                    {tier.period}
+                  </span>
+                </div>
 
-        {/* ── Error message ── */}
+                {/* Features */}
+                <ul className="space-y-1.5">
+                  {tier.features.map(f => (
+                    <li key={f} className="flex items-center gap-2">
+                      <Check className={`w-3 h-3 shrink-0 ${isSelected && tier.highlight ? "text-emerald-300" : "text-emerald-500"}`} strokeWidth={3} />
+                      <span className={`text-xs ${isSelected && tier.highlight ? "text-white/80" : "text-[#45556c]"}`}>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                {/* Early Bird slots */}
+                {isEarlyBird && slotsLeft !== null && (
+                  <div className={`mt-3 pt-3 border-t ${isSelected ? "border-white/20" : "border-[#e2e8f0]"}`}>
+                    <p className={`text-[10px] font-medium ${isSelected && tier.highlight ? "text-amber-300" : "text-amber-600"}`}>
+                      {earlyBirdAvailable
+                        ? `${slotsLeft} de 20 slots disponibles`
+                        : "Sold out — elige otro plan"}
+                    </p>
+                  </div>
+                )}
+              </motion.button>
+            );
+          })}
+        </div>
+
+        {/* Error */}
         {error && (
-          <motion.div
-            className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            <p className="text-xs text-red-600">{error}</p>
-          </motion.div>
+          <p className="text-sm text-red-500 text-center mb-4">{error}</p>
         )}
 
-        {/* ── Trust signals ── */}
-        <motion.div
-          className="flex items-center justify-center gap-4 mb-6"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
+        {/* CTA */}
+        <button
+          onClick={handleCheckout}
+          disabled={isProcessing}
+          className="w-full flex items-center justify-center gap-2 bg-[#0f172b] text-white py-3.5 rounded-full text-sm font-medium hover:bg-[#1d293d] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <div className="flex items-center gap-1.5 text-xs text-[#62748e]">
-            <Shield className="w-3.5 h-3.5 text-[#22c55e]" />
-            <span>Secure payment via Stripe</span>
-          </div>
-          <div className="flex items-center gap-1.5 text-xs text-[#62748e]">
-            <Sparkles className="w-3.5 h-3.5 text-[#0ea5e9]" />
-            <span>Access forever — no recurring charges</span>
-          </div>
-        </motion.div>
-
-        {/* ── CTA Button ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35 }}
-        >
-          <button
-            onClick={handlePurchase}
-            disabled={isProcessing}
-            className="w-full flex items-center justify-center gap-2 bg-[#0f172b] text-white py-4 rounded-lg text-sm font-medium hover:bg-[#1d293d] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            {isProcessing ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Redirecting to checkout...
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-4 h-4" />
-                Unlock {targetLabel} — ${product.price}
-                <ArrowRight className="w-4 h-4" />
-              </>
-            )}
-          </button>
-
-          <button
-            onClick={onClose}
-            className="w-full text-center text-sm text-[#94a3b8] hover:text-[#62748e] transition-colors mt-3 py-2"
-          >
-            Maybe later
-          </button>
-
-          {isFirstPurchase && (
-            <p className="text-center text-[10px] text-[#94a3b8] mt-2">
-              Additional paths available at $16.99 each
-            </p>
+          {isProcessing ? "Redirigiendo a Stripe..." : (
+            <>
+              Suscribirse — {TIERS.find(t => t.id === selectedTier)?.price}
+              {selectedTier === "quarterly" ? " / 3 meses" : "/mes"}
+              <ArrowRight className="w-4 h-4" />
+            </>
           )}
-        </motion.div>
+        </button>
+
+        <p className="text-[10px] text-[#94a3b8] text-center mt-3">
+          Pago seguro con Stripe · Cancela cuando quieras
+        </p>
       </div>
     </AppModal>
   );

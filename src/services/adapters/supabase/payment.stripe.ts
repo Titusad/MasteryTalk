@@ -43,8 +43,7 @@ export class StripePaymentService implements IPaymentService {
       const res = await apiFetch("/create-checkout", {
         method: "POST",
         body: JSON.stringify({
-          purchaseType: purchase.type,
-          scenarioType: purchase.scenarioType,
+          tier: purchase.tier || "monthly",
         }),
       });
 

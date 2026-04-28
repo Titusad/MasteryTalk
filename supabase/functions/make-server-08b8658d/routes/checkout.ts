@@ -3,16 +3,17 @@
  *  checkout.ts — Stripe Subscription Checkout session creation
  *
  *  POST /create-checkout
- *  - Requires auth
- *  - Creates a Stripe Checkout Session for Pro subscription ($14.99/mo)
- *  - Returns { checkoutUrl, checkoutId }
+ *  Body: { tier: 'early_bird' | 'monthly' | 'quarterly' }
+ *  Returns: { checkoutUrl, checkoutId, tier }
  * ══════════════════════════════════════════════════════════════
  */
 import { Hono } from "npm:hono";
 import { getAuthUser } from "../_shared.ts";
-import { createStripeCheckout } from "../stripe.ts";
+import { createStripeCheckout, isEarlyBirdAvailable, getEarlyBirdCount, type SubscriptionTier } from "../stripe.ts";
 
 const app = new Hono();
+
+const VALID_TIERS: SubscriptionTier[] = ["early_bird", "monthly", "quarterly"];
 
 app.post("/make-server-08b8658d/create-checkout", async (c) => {
   try {
@@ -21,42 +22,48 @@ app.post("/make-server-08b8658d/create-checkout", async (c) => {
       return c.json({ error: "Unauthorized — valid session required" }, 401);
     }
 
-    console.log(
-      `[Checkout] Creating Pro subscription checkout for user ${user.id}`,
-    );
+    const body = await c.req.json().catch(() => ({}));
+    const tier: SubscriptionTier = VALID_TIERS.includes(body.tier) ? body.tier : "monthly";
 
-    // Build success/cancel URLs from the Origin header or fallback
+    // Validate Early Bird availability
+    if (tier === "early_bird") {
+      const available = await isEarlyBirdAvailable();
+      if (!available) {
+        const count = await getEarlyBirdCount();
+        return c.json({ error: "Early Bird is full", slotsUsed: count, maxSlots: 20 }, 409);
+      }
+    }
+
     const origin =
       c.req.header("Origin") ||
       c.req.header("Referer")?.replace(/\/[^/]*$/, "") ||
       "https://masterytalk.pro";
 
     const successUrl = `${origin}/#/dashboard?payment=success&session_id={CHECKOUT_SESSION_ID}`;
-    const cancelUrl = `${origin}/#/dashboard?payment=cancelled`;
+    const cancelUrl  = `${origin}/#/dashboard?payment=cancelled`;
+
+    console.log(`[Checkout] Creating ${tier} checkout for user ${user.id}`);
 
     const result = await createStripeCheckout({
-      userId: user.id,
+      userId:   user.id,
       userEmail: user.email || undefined,
+      tier,
       successUrl,
       cancelUrl,
     });
 
-    console.log(
-      `[Checkout] ✅ Session created: ${result.checkoutId} → ${result.checkoutUrl.slice(0, 60)}...`,
-    );
+    console.log(`[Checkout] ✅ ${tier} session created: ${result.checkoutId}`);
+    return c.json({ ...result, tier });
 
-    return c.json(result);
   } catch (err) {
     console.error("[Checkout] Error:", err);
-
     const message = err instanceof Error ? err.message : String(err);
 
-    // Surface Stripe config errors clearly
+    if (message.includes("Early Bird slots are full")) {
+      return c.json({ error: "Early Bird is full (20/20)" }, 409);
+    }
     if (message.includes("not configured")) {
-      return c.json(
-        { error: `Stripe configuration error: ${message}` },
-        500,
-      );
+      return c.json({ error: `Stripe configuration error: ${message}` }, 500);
     }
 
     return c.json({ error: "Failed to create checkout session" }, 500);

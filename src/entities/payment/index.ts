@@ -10,6 +10,13 @@ import type { UserPlan } from "@/entities/user";
 /* ── Purchase types ── */
 
 export type PurchaseType = "first_path" | "path";
+export type SubscriptionTier = "early_bird" | "monthly" | "quarterly";
+
+export const SUBSCRIPTION_TIERS = {
+  early_bird: { tier: "early_bird" as SubscriptionTier, price: 9.99,  label: "Early Bird",    maxSlots: 20 },
+  monthly:    { tier: "monthly"    as SubscriptionTier, price: 16.99, label: "Monthly Pro"             },
+  quarterly:  { tier: "quarterly"  as SubscriptionTier, price: 39.99, label: "Quarterly Pro", perMonth: 13.33 },
+} as const;
 
 export const PATH_PRODUCTS = {
   first_path: {
@@ -28,7 +35,8 @@ export const PATH_PRODUCTS = {
 
 export interface PurchaseDetails {
   type: PurchaseType;
-  scenarioType: string;
+  scenarioType?: string;
+  tier?: SubscriptionTier;
 }
 
 export interface CheckoutResult {
