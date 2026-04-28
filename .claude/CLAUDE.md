@@ -4,6 +4,18 @@
 > la arquitectura objetivo, las reglas de trabajo y el plan de mejoras activo.
 > Leer completamente antes de cualquier tarea.
 
+## ⚠️ LECTURA OBLIGATORIA AL INICIO DE CADA SESIÓN
+
+Antes de cualquier tarea, leer en este orden:
+
+1. **`CONTRIBUTING.md`** — Cómo trabajamos, flujo de sesión, protocolo de commits
+2. **`docs/ROADMAP.md`** — En qué fase estamos, cuál es la próxima tarea priorizada
+3. **`.agent/skills/masterytalk-context/SKILL.md`** — Contexto del proyecto, stack, skill routing
+4. El skill específico de `.agent/skills/` según el tipo de tarea
+
+> Esta regla existe porque sin leer estos documentos primero, se pierden sesiones
+> enteras repitiendo errores ya resueltos o trabajando en tareas fuera de prioridad.
+
 ---
 
 ## 1. Producto

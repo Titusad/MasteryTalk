@@ -6,26 +6,29 @@
 
 ---
 
-## Current State (Beta v11.0)
+## Current State (Beta v12.0 — 2026-04-28)
 
 ### ✅ What's Live
 - 3 active scenarios: interview, meeting, presentation
-- Subscription Model (Planned): $14.99/mo with WhatsApp SR Coach
-- Architecture pivot from one-time-purchases to recurring billing initiated
-- Stripe Checkout integration (test mode ready, live mode ready)
+- **Stripe subscriptions live** — Early Bird $9.99, Monthly $16.99, Quarterly $39.99
+- **Webhook fully operational** — checkout.session.completed as primary activation
+- **Payment success flow** — celebration modal with confetti, redirect to dashboard
+- **Subscription unlock** — all paths/levels unlock on any active subscription
+- **Manage Subscription** — Stripe Customer Portal from Account page
 - Full practice flow: setup → briefing → conversation → feedback → skill drill
 - Azure Speech pronunciation + ElevenLabs TTS
 - Shadowing practice with phrase-by-phrase coaching
 - 3-language landing page (ES/PT/EN)
 - Admin Dashboard with API cost tracking
-- Spaced Repetition system
+- Spaced Repetition system + WhatsApp SR Coach (sandbox)
 - Google Auth via Supabase
+- **Transactional emails** — Resend: welcome, post-session summary, subscription confirmation
 
 ### ⚠️ Known Gaps
-- Payment flow untested E2E with real card in production
-- `meeting` and `presentation` scenarios have limited prompt tuning vs `interview`
-- No email service (welcome, post-session summaries, nurturing)
+- WhatsApp in sandbox mode (requires Meta Business approval for production)
 - No error monitoring (Sentry or equivalent)
+- No inactive user nudge emails (7-day no-practice)
+- Stripe Customer Portal requires manual activation in Stripe Dashboard settings
 
 ---
 
@@ -99,12 +102,20 @@
 - [x] Improve scenario selection UX (paths with full levels)
 - [x] Ensure purchased vs locked states are visually clear
 
-### 1.4 Stripe Subscriptions & Webhook Pivot ✅
+### 1.4 Stripe Subscriptions & Webhook Pivot ✅ (Completed 2026-04-28)
 - [x] Remove `first_path` and `path` checkout modes.
-- [x] Create **Pro Plan** Subscription in Stripe ($14.99/month).
+- [x] 3-tier pricing: Early Bird $9.99, Monthly $16.99, Quarterly $39.99 (live mode)
 - [x] Refactor Edge Function `create-checkout` to process `mode: subscription`.
-- [x] Refactor Edge Function `webhook-stripe` to listen to `customer.subscription.*` events.
-- [ ] Configure live and test webhook endpoints in Stripe Dashboard.
+- [x] Webhook rewrite: `checkout.session.completed` as primary activation event
+- [x] `resolveUserIdFromInvoice()` — resilient userId lookup via Stripe API fallback
+- [x] `constructEventAsync` — fix Deno SubtleCrypto async requirement
+- [x] Deploy with `--no-verify-jwt` so Stripe can reach the endpoint
+- [x] Payment success UX: celebration modal with confetti + redirect to dashboard
+- [x] Locked path levels → open pricing modal
+- [x] Subscription unlocks ALL progression levels (progression GET endpoint)
+- [x] Account page: real tier display + Manage Subscription → Stripe Customer Portal
+- [x] `POST /create-portal-session` endpoint
+- [x] Configure live webhook endpoint in Stripe Dashboard ✅
 
 ### 1.5 WhatsApp SR Coach Integration (The Retention Hook) ✅ (Sandbox)
 - [x] Create Twilio Account & WhatsApp Sandbox.
@@ -217,12 +228,13 @@
 
 > **Goal:** Get users to come back and buy additional paths.
 
-### 2.1 Email Service
-- [ ] Choose provider (Resend recommended — $0 for 3k emails/mo)
-- [ ] Welcome email on registration
-- [ ] Post-session summary email (scores, key improvements)
+### 2.1 Email Service ✅ (Partially complete — 2026-04-28)
+- [x] Provider: Resend — domain `masterytalk.pro` verified
+- [x] Welcome email on registration (`ensure-profile`)
+- [x] Post-session summary email (scores, key improvements)
+- [x] Subscription confirmation email (`checkout.session.completed`)
 - [ ] Inactive user nudge (7 days without practice)
-- [ ] Purchase confirmation email (already partially in webhook)
+- [ ] Payment renewal confirmation (invoice.payment_succeeded)
 
 ### 2.2 Dashboard Improvements
 - [ ] Cross-path progress overview (when user owns 2+ paths)
@@ -298,3 +310,4 @@
 | 2026-04-21 | Added 1.2.1 Self-Intro Warm-Up (completed), 1.2.2 Path Recommendation Engine (planned). Re-numbered 1.3–1.8. Updated legal compliance status. |
 | 2026-04-21 | Completed 1.4 Stripe Subscriptions, 1.5 WhatsApp SR Coach (Sandbox). Added 1.8 Twilio Production Config. Re-numbered Legal to 2.0. |
 | 2026-04-27 | Completed 1.6 Scenario Quality Audit. Added 1.6.2 UX & Narration System (45 audio files, A/B landings, situation presets, briefing UX improvements, auth fix). |
+| 2026-04-28 | Completed 1.4 Stripe payments E2E in live mode. Webhook rewrite (checkout.session.completed primary, resolveUserIdFromInvoice, Deno crypto fix). Payment success modal with confetti. Locked path → pricing modal. Subscription unlocks all levels. Manage Subscription via Stripe Customer Portal. Transactional emails operational (Resend). |
