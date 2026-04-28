@@ -206,11 +206,13 @@
 
 ### 1.7 Corporate Infrastructure Migration 🏢
 > **Goal:** Transition from personal to corporate accounts before processing real user data and payments.
+- [ ] **Supabase Pro** ($25/mo) — MUST activate before public launch. Free tier pauses after 7 days of API inactivity, which kills production for paying users. Also provides daily backups.
 - [ ] Incorporate company/entity (if not fully completed).
 - [ ] Migrate/Create Stripe Account under Corporate EIN (critical for payouts and KYC).
 - [ ] Migrate/Create Supabase Project to a corporate email/billing account.
 - [ ] Migrate Vercel, Twilio, OpenAI, Azure, and ElevenLabs to company billing.
 - [ ] Secure corporate domains and email addresses (e.g. `dave@masterytalk.pro`).
+- [ ] Custom domain for Supabase Auth (`auth.masterytalk.pro`) — available on Pro plan.
 
 ### 1.9 Production Hardening ✅ (Partially complete — 2026-04-28)
 - [x] Error monitoring: Sentry (`@sentry/react`, VITE_SENTRY_DSN on Vercel, ErrorBoundary integrated)
