@@ -257,32 +257,42 @@ app.post("/make-server-08b8658d/cron/daily-sr", async (c) => {
             || authUser?.user?.email?.split("@")[0]
             || "there";
 
-          // Build the personalized challenge message
-          const problemHint = card.problem_word
-            ? `\n${copy.weakPoint(card.problem_word, card.phonetic ?? undefined)}`
-            : "";
+          // Use approved template if available (required for business-initiated messages in production)
+          // Templates: TWILIO_TEMPLATE_SR_ES / TWILIO_TEMPLATE_SR_PT / TWILIO_TEMPLATE_SR_EN
+          // Variables: {{1}} = firstName, {{2}} = phrase
+          const templateKey = `TWILIO_TEMPLATE_SR_${lang.toUpperCase()}`;
+          const templateSid = Deno.env.get(templateKey);
 
-          const instruction = audioUrl ? copy.withAudio : copy.withoutAudio;
+          let messageSid: string;
 
-          const message =
-            `[MasteryTalk PRO] ${copy.greeting(firstName)}` +
-            problemHint +
-            `\n\n"${card.phrase}"` +
-            `\n\n${instruction}`;
-
-          // Send text message first
-          const { messageSid } = await sendWhatsAppMessage({
-            to: whatsappNumber,
-            body: message,
-          });
-
-          // Send audio as a separate message
-          if (audioUrl) {
-            await sendWhatsAppMessage({
+          if (templateSid) {
+            const result = await sendWhatsAppMessage({
               to: whatsappNumber,
-              body: `[Audio] ${card.phrase.slice(0, 50)}...`,
-              mediaUrl: audioUrl,
+              contentSid: templateSid,
+              contentVariables: { "1": firstName, "2": card.phrase },
+              mediaUrl: audioUrl || undefined,
             });
+            messageSid = result.messageSid;
+          } else {
+            // Fallback: free-form (sandbox / dev only)
+            const problemHint = card.problem_word
+              ? `\n${copy.weakPoint(card.problem_word, card.phonetic ?? undefined)}`
+              : "";
+            const instruction = audioUrl ? copy.withAudio : copy.withoutAudio;
+            const message =
+              `[MasteryTalk PRO] ${copy.greeting(firstName)}` +
+              problemHint +
+              `\n\n"${card.phrase}"` +
+              `\n\n${instruction}`;
+            const result = await sendWhatsAppMessage({ to: whatsappNumber, body: message });
+            messageSid = result.messageSid;
+            if (audioUrl) {
+              await sendWhatsAppMessage({
+                to: whatsappNumber,
+                body: `[Audio] ${card.phrase.slice(0, 50)}...`,
+                mediaUrl: audioUrl,
+              });
+            }
           }
 
           // Create pending review record

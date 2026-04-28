@@ -34,8 +34,10 @@ function getTwilioCredentials() {
 
 export async function sendWhatsAppMessage(params: {
   to: string;
-  body: string;
+  body?: string;
   mediaUrl?: string;
+  contentSid?: string;
+  contentVariables?: Record<string, string>;
 }): Promise<{ messageSid: string }> {
   const { accountSid, authToken, phoneNumber } = getTwilioCredentials();
 
@@ -47,11 +49,17 @@ export async function sendWhatsAppMessage(params: {
     : `whatsapp:${params.to}`;
 
   const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
-  const formBody = new URLSearchParams({
-    From: fromNumber,
-    To: toNumber,
-    Body: params.body,
-  });
+  const formBody = new URLSearchParams({ From: fromNumber, To: toNumber });
+
+  if (params.contentSid) {
+    // Template message (business-initiated, required for production WhatsApp)
+    formBody.append("ContentSid", params.contentSid);
+    if (params.contentVariables) {
+      formBody.append("ContentVariables", JSON.stringify(params.contentVariables));
+    }
+  } else if (params.body) {
+    formBody.append("Body", params.body);
+  }
 
   if (params.mediaUrl) {
     formBody.append("MediaUrl", params.mediaUrl);
