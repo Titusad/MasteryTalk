@@ -88,6 +88,9 @@ export interface DashboardData {
   openNextSteps: Array<{ title: string; desc: string; pillar: string }>;
   daysSinceLastSession: number;
 
+  /* Cross-path overview */
+  perPathStats: Record<string, { sessions: number; avgScore: number | null }>;
+
   /* Lessons */
   recommendedLessons: ReturnType<typeof getRecommendedLessons>;
 
@@ -303,6 +306,29 @@ export function useDashboardData({
     return Math.floor((Date.now() - new Date(sorted[0].created_at).getTime()) / 86_400_000);
   }, [persistedSessions]);
 
+  /* ─── Per-path stats ─── */
+  const perPathStats = useMemo(() => {
+    const stats: Record<string, { sessions: number; avgScore: number | null }> = {};
+    for (const s of persistedSessions) {
+      const key = s.scenarioType || "unknown";
+      if (!stats[key]) stats[key] = { sessions: 0, avgScore: null };
+      stats[key].sessions += 1;
+      const scores =
+        s.feedback?.pillarScores ?? s.summary?.pillarScores ?? null;
+      if (scores) {
+        const vals = Object.values(scores).filter((v) => typeof v === "number") as number[];
+        if (vals.length > 0) {
+          const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+          stats[key].avgScore =
+            stats[key].avgScore === null
+              ? avg
+              : (stats[key].avgScore! + avg) / 2;
+        }
+      }
+    }
+    return stats;
+  }, [persistedSessions]);
+
   /* ─── Greeting ─── */
   const hour = new Date().getHours();
   const dc = LANDING_COPIES[lang].dashboard;
@@ -334,6 +360,7 @@ export function useDashboardData({
     progressData,
     streak,
     allPracticeDates,
+    perPathStats,
     biggestImprovement,
     focusArea,
     focusAreas,

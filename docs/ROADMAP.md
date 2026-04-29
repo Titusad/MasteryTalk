@@ -245,7 +245,7 @@
 - [x] Payment renewal confirmation (`invoice.payment_succeeded`, billing_reason=subscription_cycle)
 
 ### 2.2 Dashboard Improvements
-- [ ] Cross-path progress overview (when user owns 2+ paths)
+- [x] Cross-path progress overview (when user owns 2+ paths) — `CrossPathCard.tsx`, derived from persistedSessions, hidden when < 2 paths
 - [x] Session streak visualization — `StreakCard.tsx` (7-day grid), WA sessions count via `GET /wa/practice-dates` + merged `allPracticeDates`
 - [x] "Recommended next session" based on weakest pillar — `RecommendedNextCard.tsx`, left column, hidden when 0 sessions
 

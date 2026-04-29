@@ -22,6 +22,7 @@ import { SRDashboardCard } from "./SRDashboardCard";
 import { PracticePathsModule } from "./PracticePathsModule";
 import { RecommendedNextCard } from "./RecommendedNextCard";
 import { StreakCard } from "./StreakCard";
+import { CrossPathCard } from "./CrossPathCard";
 
 interface DashboardPageProps {
   userName?: string;
@@ -157,6 +158,14 @@ export function DashboardPage({
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.32 }}
+            >
+              <CrossPathCard perPathStats={data.perPathStats} />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.38 }}
             >
               <PlatformNewsCard />
             </motion.div>
