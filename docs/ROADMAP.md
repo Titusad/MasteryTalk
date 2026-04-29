@@ -194,13 +194,15 @@
 - [ ] Purchase a dedicated Twilio phone number (Colombian +57 or US +1).
 
 **Step 3 — Message Templates (~24-48h):**
-- [ ] Submit "daily_sr_challenge" template (daily practice message).
-- [ ] Submit "otp_verification" template (phone verification code).
+- [x] Create `sr_daily_challenge_en` template in Twilio Content Template Builder (SID: `HX32bf527caf21336f5eb698574d7e7e1f`). EN-only, single template for all users.
+- [ ] Submit template for WhatsApp approval (blocked until WhatsApp Sender is active).
 - [ ] Wait for Meta template approval.
 
 **Step 4 — Production Cutover:**
 - [ ] Update `TWILIO_PHONE_NUMBER` secret in Supabase with new number.
-- [ ] Update webhook URL in Twilio console.
+- [x] Update webhook URL in Twilio console (`+1 934 221 2868` → `/webhook/twilio`).
+- [x] Set `TWILIO_SKIP_SIG_VALIDATION=true` secret in Supabase.
+- [x] Set `TWILIO_TEMPLATE_SR_EN` secret once template is approved.
 - [ ] Configure `pg_cron` schedule in Supabase (daily at 9 AM).
 - [ ] Test full E2E with production number.
 
@@ -357,3 +359,4 @@
 | 2026-04-28 | Completed 1.4 Stripe payments E2E in live mode. Webhook rewrite. Payment success modal with confetti. Manage Subscription portal. Transactional emails (5 templates). |
 | 2026-04-28 | Completed 1.9 (Sentry + security audit). Completed 2.1 (inactivity nudge + renewal email). FSD violations resolved. p-5 eliminated. PRODUCT_SPEC v2.0. Dead code removed (generate-scenario-data). |
 | 2026-04-28 | Strategic analysis: approved Sales scenario activation (3.1, promoted from Phase 3), Cultural Intelligence feedback (3.1.1), LATAM interference patterns (3.1.1). Plan added to ROADMAP. |
+| 2026-04-28 | 1.6.1 partial: webhook URL configured, sr_daily_challenge_en template created, TWILIO_SKIP_SIG_VALIDATION set, backend EN-only template, WhatsAppActivationCard free-form country code + EN UI. |
