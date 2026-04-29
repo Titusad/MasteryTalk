@@ -308,9 +308,9 @@
 > Loops maneja el nurturing; Resend sigue con los transaccionales. Sin cambios en frontend.
 
 **Setup externo (acciones manuales):**
-- [ ] Crear cuenta en Loops.so + verificar dominio `mail.go.masterytalk.pro` (DNS DKIM/SPF)
-- [ ] Activar integración OAuth Supabase ↔ Loops (sync automático de auth.users → contactos)
-- [ ] Añadir `LOOPS_API_KEY` a Supabase secrets + `supabase/.env.local`
+- [x] Crear cuenta en Loops.so + verificar dominio `mail.go.masterytalk.pro` (DNS DKIM/SPF)
+- [x] Activar integración OAuth Supabase ↔ Loops (sync automático de auth.users → contactos)
+- [x] Añadir `LOOPS_API_KEY` a Supabase secrets + `supabase/.env.local`
 - [ ] Construir 5 secuencias en Loops dashboard (ver PRODUCT_SPEC §9.1)
 
 **Código backend:**
