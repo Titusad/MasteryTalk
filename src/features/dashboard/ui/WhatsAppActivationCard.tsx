@@ -38,7 +38,7 @@ export function WhatsAppActivationCard({
 }: WhatsAppActivationCardProps) {
   const [step, setStep] = useState<Step>(whatsappVerified ? "done" : "idle");
   const [phone, setPhone] = useState(initialNumber || "");
-  const [countryCode, setCountryCode] = useState("+52");
+  const [countryCode, setCountryCode] = useState("+");
   const [otp, setOtp] = useState("");
   const [error, setError] = useState<string | null>(null);
 
@@ -51,13 +51,13 @@ export function WhatsAppActivationCard({
       const res = await apiFetch("/whatsapp/send-otp", { phoneNumber: fullNumber });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "No se pudo enviar el código");
+        setError(data.error || "Could not send the code");
         setStep("input");
         return;
       }
       setStep("verify");
     } catch {
-      setError("Error de conexión. Intenta de nuevo.");
+      setError("Connection error. Please try again.");
       setStep("input");
     }
   };
@@ -72,13 +72,13 @@ export function WhatsAppActivationCard({
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Código inválido");
+        setError(data.error || "Invalid code");
         setStep("verify");
         return;
       }
       setStep("done");
     } catch {
-      setError("Error de conexión. Intenta de nuevo.");
+      setError("Connection error. Please try again.");
       setStep("verify");
     }
   };
@@ -96,10 +96,10 @@ export function WhatsAppActivationCard({
         </span>
         <div className="flex-1 min-w-0">
           <p className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
-            WhatsApp Coach activo
+            WhatsApp Coach active
           </p>
           <p className="text-xs text-[#62748e] truncate">
-            Recibirás frases de práctica diarias en tu WhatsApp
+            You'll receive daily practice phrases on your WhatsApp
           </p>
         </div>
         <ShieldCheck className="w-4 h-4 text-[#10b981] shrink-0" />
@@ -124,10 +124,10 @@ export function WhatsAppActivationCard({
           </span>
           <div className="flex-1 min-w-0">
             <p className="text-white text-sm mb-1" style={{ fontWeight: 600 }}>
-              Activa tu Coach de Pronunciación por WhatsApp
+              Activate your WhatsApp Pronunciation Coach
             </p>
             <p className="text-white/60 text-xs leading-relaxed mb-4">
-              Recibe frases de práctica diarias directo en tu teléfono. Responde con un audio y recibe tu score al instante.
+              Get daily practice phrases sent to your phone. Reply with audio and receive your score instantly.
             </p>
             <button
               onClick={() => setStep("input")}
@@ -135,7 +135,7 @@ export function WhatsAppActivationCard({
               style={{ fontWeight: 600 }}
             >
               <MessageCircle className="w-3.5 h-3.5" />
-              Vincular WhatsApp
+              Link WhatsApp
             </button>
           </div>
         </div>
@@ -156,8 +156,8 @@ export function WhatsAppActivationCard({
         </span>
         <p className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
           {step === "verify" || step === "verifying"
-            ? "Ingresa el código de verificación"
-            : "Ingresa tu número de WhatsApp"}
+            ? "Enter your verification code"
+            : "Enter your WhatsApp number"}
         </p>
       </div>
 
@@ -170,19 +170,20 @@ export function WhatsAppActivationCard({
             exit={{ opacity: 0 }}
           >
             <div className="flex gap-2 mb-3">
-              <select
+              <input
+                type="text"
+                placeholder="+1"
                 value={countryCode}
-                onChange={(e) => setCountryCode(e.target.value)}
-                className="w-24 px-3 py-2.5 rounded-xl border border-[#e2e8f0] bg-[#f8fafc] text-sm text-[#0f172b] focus:outline-none focus:border-[#6366f1]"
-              >
-                <option value="+52">🇲🇽 +52</option>
-                <option value="+57">🇨🇴 +57</option>
-                <option value="+55">🇧🇷 +55</option>
-                <option value="+1">🇺🇸 +1</option>
-              </select>
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^\d+]/g, "");
+                  setCountryCode(val.startsWith("+") ? val : `+${val}`);
+                }}
+                className="w-20 px-3 py-2.5 rounded-xl border border-[#e2e8f0] bg-[#f8fafc] text-sm text-[#0f172b] text-center focus:outline-none focus:border-[#6366f1]"
+                maxLength={5}
+              />
               <input
                 type="tel"
-                placeholder="10 dígitos"
+                placeholder="Phone number"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 className="flex-1 px-4 py-2.5 rounded-xl border border-[#e2e8f0] text-sm text-[#0f172b] placeholder-[#94a3b8] focus:outline-none focus:border-[#6366f1]"
@@ -191,7 +192,7 @@ export function WhatsAppActivationCard({
             </div>
             <button
               onClick={handleSendOTP}
-              disabled={phone.replace(/\D/g, "").length < 8 || step === "sending"}
+              disabled={countryCode.length < 2 || phone.replace(/\D/g, "").length < 6 || step === "sending"}
               className="w-full flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm bg-[#0f172b] text-white hover:bg-[#1e293b] transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
               style={{ fontWeight: 500 }}
             >
@@ -200,7 +201,7 @@ export function WhatsAppActivationCard({
               ) : (
                 <ArrowRight className="w-4 h-4" />
               )}
-              {step === "sending" ? "Enviando código..." : "Enviar código por WhatsApp"}
+              {step === "sending" ? "Sending code..." : "Send code via WhatsApp"}
             </button>
           </motion.div>
         )}
@@ -213,7 +214,7 @@ export function WhatsAppActivationCard({
             exit={{ opacity: 0 }}
           >
             <p className="text-xs text-[#62748e] mb-3">
-              Enviamos un código de 6 dígitos a <span style={{ fontWeight: 600 }}>{fullNumber}</span>
+              We sent a 6-digit code to <span style={{ fontWeight: 600 }}>{fullNumber}</span>
             </p>
             <input
               type="text"
@@ -236,7 +237,7 @@ export function WhatsAppActivationCard({
               ) : (
                 <ShieldCheck className="w-4 h-4" />
               )}
-              {step === "verifying" ? "Verificando..." : "Verificar código"}
+              {step === "verifying" ? "Verifying..." : "Verify code"}
             </button>
           </motion.div>
         )}

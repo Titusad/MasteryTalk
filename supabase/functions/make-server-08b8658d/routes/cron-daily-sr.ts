@@ -257,11 +257,9 @@ app.post("/make-server-08b8658d/cron/daily-sr", async (c) => {
             || authUser?.user?.email?.split("@")[0]
             || "there";
 
-          // Use approved template if available (required for business-initiated messages in production)
-          // Templates: TWILIO_TEMPLATE_SR_ES / TWILIO_TEMPLATE_SR_PT / TWILIO_TEMPLATE_SR_EN
+          // Use approved English template for all users (business-initiated, required for production WhatsApp)
           // Variables: {{1}} = firstName, {{2}} = phrase
-          const templateKey = `TWILIO_TEMPLATE_SR_${lang.toUpperCase()}`;
-          const templateSid = Deno.env.get(templateKey);
+          const templateSid = Deno.env.get("TWILIO_TEMPLATE_SR_EN");
 
           let messageSid: string;
 
