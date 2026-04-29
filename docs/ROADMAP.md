@@ -185,8 +185,8 @@
 **Step 1 — Meta Business Verification (~48h — SUBMITTED 2026-04-21):**
 - [x] Create Meta Business account at business.facebook.com (Spiral Tech Brands LLC).
 - [x] Upload LLC documentation (Articles of Organization or bank statement).
-- [ ] Verify domain `masterytalk.pro` (DNS TXT record or HTML meta tag).
-- [ ] Wait for Meta approval (~48h).
+- [x] Verify domain `masterytalk.pro` (DNS TXT record or HTML meta tag).
+- [x] Business Verification submitted — **In review** (submitted 2026-04-29, ~2 business days).
 
 **Step 2 — Twilio WhatsApp Sender (~1-2 business days):**
 - [ ] In Twilio Console → Messaging → Senders → WhatsApp Senders, start application.

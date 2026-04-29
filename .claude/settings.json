@@ -8,7 +8,9 @@
       "Bash(git -C /Users/dave/masterytalk ls-files src/app/features/)",
       "Bash(git -C /Users/dave/masterytalk add -A)",
       "Bash(git -C /Users/dave/masterytalk commit -m ' *)",
-      "Bash(supabase functions *)"
+      "Bash(supabase functions *)",
+      "WebSearch",
+      "WebFetch(domain:support.twilio.com)"
     ]
   }
 }
