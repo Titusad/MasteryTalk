@@ -306,6 +306,8 @@ Sequential progression (for subscribed users):
 
 ## §9 — Email System
 
+### §9.0 Transaccionales — Resend
+
 Provider: **Resend** (`hello@masterytalk.pro`, domain verified)
 Secret: `RESEND_API_KEY` in Supabase secrets + `supabase/.env.local`
 
@@ -316,6 +318,48 @@ Secret: `RESEND_API_KEY` in Supabase secrets + `supabase/.env.local`
 | Session summary | Post-session feedback | `sessionSummaryEmailHtml()` |
 | Renewal confirmed | `invoice.payment_succeeded` (billing_reason=subscription_cycle) | `renewalConfirmationEmailHtml()` |
 | Inactivity nudge | Cron: 7+ days without session, max 1 per 14 days | `inactivityNudgeEmailHtml()` |
+
+### §9.1 Marketing Automation — Loops.so (Planned — ROADMAP 3.1.3)
+
+Provider: **Loops.so** (`mail.go.masterytalk.pro`, subdominio separado)
+Secret: `LOOPS_API_KEY` in Supabase secrets
+
+**Arquitectura de separación:**
+
+| Canal | Dominio | Proveedor | Tipo |
+|-------|---------|-----------|------|
+| Transaccional | `hello@masterytalk.pro` | Resend | Auth, pagos, sesiones |
+| Marketing | `mail.go.masterytalk.pro` | Loops | Nurturing, lifecycle |
+
+Los subdominios separados protegen la reputación de entrega — un problema de spam en marketing no afecta los transaccionales.
+
+**Integración técnica:**
+- Loops se conecta a Supabase vía OAuth nativo → `auth.users` INSERT crea contacto automáticamente (sin código)
+- Eventos de negocio disparados server-side desde Edge Functions vía `POST /marketing/track`
+- El frontend nunca llama a Loops directamente (API key solo en Supabase secrets)
+
+**Eventos de negocio rastreados:**
+
+| Evento | Disparado desde | Trigger |
+|--------|----------------|---------|
+| `first_session_completed` | `routes/sessions.ts` | Primera sesión guardada (session_index tiene 1 entrada) |
+| `session_milestone_3` | `routes/sessions.ts` | 3 sesiones completadas |
+| `session_milestone_10` | `routes/sessions.ts` | 10 sesiones completadas |
+| `subscription_purchased` | `routes/webhook.ts` | `checkout.session.completed` webhook |
+
+**Secuencias de nurturing (construidas en Loops dashboard):**
+
+| # | Trigger | Delay | Objetivo |
+|---|---------|-------|----------|
+| 1 | contact_created | D+2 | Activación — "¿Completaste tu primera sesión?" |
+| 2 | contact_created | D+5 | Conversión — social proof + CTA suscripción |
+| 3 | contact_created (sin `first_session_completed`) | D+7 | Re-activación — objeción "no tengo tiempo" |
+| 4 | `first_session_completed` | inmediato | Up-sell post-sesión — "¿Qué sigue?" |
+| 5 | contact_created (sin `subscription_purchased`) | D+21 | Urgencia — Early Bird últimos cupos |
+
+Todas las secuencias tienen branch por `language` (es / pt / en) para las 3 versiones de copy.
+El welcome D+0 lo sigue haciendo Resend. Loops arranca desde D+2.
+Base legal: `terms_accepted_at` (aceptación de ToS en signup). Loops añade unsubscribe link automáticamente.
 
 ---
 
@@ -340,6 +384,8 @@ Secret: `RESEND_API_KEY` in Supabase secrets + `supabase/.env.local`
 | POST | `/transcribe` | ✅ JWT | Speech-to-text (Azure) |
 | POST | `/pronunciation-assess` | ✅ JWT | Pronunciation scoring |
 | GET | `/progression` | ✅ JWT | User progression state (auto-unlocks if subscribed) |
+| POST | `/marketing/track` | ✅ JWT | Proxy evento de negocio a Loops (planned — 3.1.3) |
+| POST | `/marketing/contact/update` | ✅ JWT | Enriquecer propiedades de contacto en Loops (planned) |
 | GET | `/admin/users` | ✅ Admin | List all users |
 | GET | `/admin/kpis` | ✅ Admin | Platform KPIs |
 | GET | `/admin/api-usage` | ✅ Admin | API cost tracking |
@@ -427,3 +473,4 @@ Secret: `RESEND_API_KEY` in Supabase secrets + `supabase/.env.local`
 | v2.0 | 2026-04-28 | Full rewrite: 3-tier pricing (Early Bird/Monthly/Quarterly), live Stripe payments, webhook architecture (checkout.session.completed primary), celebration modal, Manage Subscription via Stripe Portal, full email system (5 templates), FSD violations fixed, Sentry monitoring, admin auth, security audit resolved |
 | v2.1 | 2026-04-28 | §2: added `culture` as 4th active scenario (U.S. Business Culture Mastery Path, default recommended path post warm-up). §3.2, §8 updated accordingly. |
 | v2.2 | 2026-04-28 | §2: added `sales` as 5th active scenario (Sales Champion path). Removed from Retired. §3.2, §8 updated. |
+| v2.3 | 2026-04-28 | §9: split en §9.0 Resend (transaccional) + §9.1 Loops.so (marketing automation, planned). §10.1: nuevos endpoints /marketing/*. |

@@ -24,6 +24,7 @@ import webhookTwilio from "./routes/webhook-twilio.ts";
 import cronDailySr from "./routes/cron-daily-sr.ts";
 import whatsappVerify from "./routes/whatsapp-verify.ts";
 import waPractice from "./routes/wa-practice.ts";
+import marketing from "./routes/marketing.ts";
 import { createRateLimiter } from "./kv_store.ts";
 import { getAuthUser } from "./_shared.ts";
 import { getEarlyBirdCount } from "./stripe.ts";
@@ -129,6 +130,7 @@ app.route("", webhookTwilio);
 app.route("", cronDailySr);
 app.route("", whatsappVerify);
 app.route("", waPractice);
+app.route("", marketing);
 
 // ── Start server — intercept OPTIONS before Hono ──
 Deno.serve({

@@ -303,6 +303,25 @@
 - [x] `VITE_ENABLED_SCENARIOS` in Vercel — culture visible in production (confirmed)
 - [x] Update PRODUCT_SPEC §2
 
+### 3.1.3 Email Marketing Automation — Loops.so Integration
+> **Goal:** Activar secuencias de lifecycle marketing post-registro para convertir usuarios free a suscriptores.
+> Loops maneja el nurturing; Resend sigue con los transaccionales. Sin cambios en frontend.
+
+**Setup externo (acciones manuales):**
+- [ ] Crear cuenta en Loops.so + verificar dominio `mail.go.masterytalk.pro` (DNS DKIM/SPF)
+- [ ] Activar integración OAuth Supabase ↔ Loops (sync automático de auth.users → contactos)
+- [ ] Añadir `LOOPS_API_KEY` a Supabase secrets + `supabase/.env.local`
+- [ ] Construir 5 secuencias en Loops dashboard (ver PRODUCT_SPEC §9.1)
+
+**Código backend:**
+- [x] Crear `supabase/functions/make-server-08b8658d/routes/marketing.ts`
+  - `POST /marketing/track` — proxy de eventos de negocio a Loops API
+  - `POST /marketing/contact/update` — enriquecer propiedades del contacto
+- [x] Registrar ruta en `index.ts`
+- [x] `routes/sessions.ts` — disparar `first_session_completed` (1ª sesión) + milestones (3, 10 sesiones)
+- [x] `routes/webhook.ts` — disparar `subscription_purchased` en `checkout.session.completed`
+- [x] `routes/auth.ts` — enriquecer contacto con `language`, `market_focus`, `plan` en `PUT /profile`
+
 ### 3.2 Learning Path Depth
 - [ ] Verify 6-level progression is coherent across all 3 active scenarios
 - [ ] Create level-specific interlocutor profiles (e.g., Level 1 = friendly HR, Level 4 = tough VP)

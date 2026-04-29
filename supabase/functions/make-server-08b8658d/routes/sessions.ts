@@ -1,6 +1,7 @@
 import { Hono } from "npm:hono";
 import * as kv from "../kv_store.ts";
 import { getAuthUser } from "../_shared.ts";
+import { loopsFetch } from "./marketing.ts";
 
 const app = new Hono();
 
@@ -38,6 +39,19 @@ app.post("/make-server-08b8658d/sessions", async (c: any) => {
       stats.sessions_count = (stats.sessions_count || 0) + 1;
       profile.stats = stats;
       await kv.set(`profile:${userId}`, profile);
+    }
+
+    // Fire Loops events for session milestones (fire-and-forget)
+    const sessionCount = index.length;
+    const email = user.email;
+    if (email) {
+      if (sessionCount === 1) {
+        loopsFetch("/events/send", { email, userId, eventName: "first_session_completed" }).catch(() => {});
+      } else if (sessionCount === 3) {
+        loopsFetch("/events/send", { email, userId, eventName: "session_milestone_3" }).catch(() => {});
+      } else if (sessionCount === 10) {
+        loopsFetch("/events/send", { email, userId, eventName: "session_milestone_10" }).catch(() => {});
+      }
     }
 
     console.log(`[Sessions] Saved session ${sessionId} for user ${userId}`);

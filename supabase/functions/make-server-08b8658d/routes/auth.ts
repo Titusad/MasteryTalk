@@ -3,6 +3,7 @@ import * as kv from "../kv_store.ts";
 import { getAdminClient, getAuthUser } from "../_shared.ts";
 import { sendEmail } from "../email.ts";
 import { welcomeEmailHtml } from "../email-templates.ts";
+import { loopsFetch } from "./marketing.ts";
 
 const app = new Hono();
 
@@ -221,6 +222,19 @@ app.put("/make-server-08b8658d/profile", async (c: any) => {
 
     const merged = { ...current, ...safeUpdates, id: user.id };
     await kv.set(`profile:${user.id}`, merged);
+
+    // Enrich Loops contact when onboarding fields arrive (fire-and-forget)
+    if (user.email && (safeUpdates.industry || safeUpdates.position || safeUpdates.market_focus)) {
+      loopsFetch("/contacts/update", {
+        email: user.email,
+        userId: user.id,
+        ...(merged.market_focus ? { language: merged.market_focus === "brazil" ? "pt" : "es" } : {}),
+        ...(merged.market_focus ? { marketFocus: merged.market_focus } : {}),
+        ...(merged.industry ? { industry: merged.industry } : {}),
+        ...(merged.position ? { jobTitle: merged.position } : {}),
+        ...(merged.plan ? { plan: merged.plan } : {}),
+      }).catch(() => {});
+    }
 
     return c.json({ status: "updated", profile: merged });
   } catch (err) {

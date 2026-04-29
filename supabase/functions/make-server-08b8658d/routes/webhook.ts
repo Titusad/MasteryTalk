@@ -28,6 +28,7 @@ import {
 import { sendEmail } from "../email.ts";
 import { subscriptionConfirmationEmailHtml, renewalConfirmationEmailHtml } from "../email-templates.ts";
 import { getAdminClient } from "../_shared.ts";
+import { loopsFetch } from "./marketing.ts";
 
 const app = new Hono();
 
@@ -170,6 +171,19 @@ app.post("/make-server-08b8658d/webhook/stripe", async (c) => {
               amountUsd: tierInfo.price,
               nextBillingDate: "—",
             }),
+          }).catch(() => {});
+        }
+
+        // Loops: subscription purchased event (fire-and-forget)
+        if (email) {
+          loopsFetch("/events/send", {
+            email,
+            userId,
+            eventName: "subscription_purchased",
+            eventProperties: {
+              planName: tierInfo?.label ?? tier,
+              amountUsd: tierInfo?.price ?? 0,
+            },
           }).catch(() => {});
         }
 
