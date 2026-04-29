@@ -21,6 +21,7 @@ import { PlatformNewsCard } from "./PlatformNewsCard";
 import { SRDashboardCard } from "./SRDashboardCard";
 import { PracticePathsModule } from "./PracticePathsModule";
 import { RecommendedNextCard } from "./RecommendedNextCard";
+import { StreakCard } from "./StreakCard";
 
 interface DashboardPageProps {
   userName?: string;
@@ -144,6 +145,18 @@ export function DashboardPage({
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.26 }}
+            >
+              <StreakCard
+                allPracticeDates={data.allPracticeDates}
+                streak={data.streak}
+                totalSessions={data.totalSessions}
+              />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.32 }}
             >
               <PlatformNewsCard />
             </motion.div>

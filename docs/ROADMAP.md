@@ -246,7 +246,7 @@
 
 ### 2.2 Dashboard Improvements
 - [ ] Cross-path progress overview (when user owns 2+ paths)
-- [ ] Session streak visualization
+- [x] Session streak visualization — `StreakCard.tsx` (7-day grid), WA sessions count via `GET /wa/practice-dates` + merged `allPracticeDates`
 - [x] "Recommended next session" based on weakest pillar — `RecommendedNextCard.tsx`, left column, hidden when 0 sessions
 
 ### 2.3 Conversion Optimization

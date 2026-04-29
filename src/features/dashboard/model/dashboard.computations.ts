@@ -195,11 +195,8 @@ export function getLatestBeforeAfter(
 
 /* ── Streak ── */
 
-export function computeStreak(sessions: PersistedSession[]): number {
-  if (sessions.length === 0) return 0;
-  const practiceDays = new Set(
-    sessions.map((s) => new Date(s.created_at).toISOString().slice(0, 10))
-  );
+export function computeStreakFromDates(practiceDays: Set<string>): number {
+  if (practiceDays.size === 0) return 0;
   let streak = 0;
   const now = new Date();
   for (let i = 0; i < 365; i++) {
@@ -213,6 +210,13 @@ export function computeStreak(sessions: PersistedSession[]): number {
     }
   }
   return streak;
+}
+
+export function computeStreak(sessions: PersistedSession[]): number {
+  const practiceDays = new Set(
+    sessions.map((s) => new Date(s.created_at).toISOString().slice(0, 10))
+  );
+  return computeStreakFromDates(practiceDays);
 }
 
 /* ── Professional Proficiency ── */

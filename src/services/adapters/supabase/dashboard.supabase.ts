@@ -72,6 +72,21 @@ export async function fetchSessions(): Promise<PersistedSession[]> {
   }
 }
 
+export async function fetchWAPracticeDates(): Promise<Set<string>> {
+  try {
+    const token = await getAuthToken();
+    const res = await fetch(`${BASE}/wa/practice-dates`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) throw new Error(`${res.status}`);
+    const data = await res.json();
+    return new Set<string>(data.dates ?? []);
+  } catch (err) {
+    console.warn("[DashboardService] fetchWAPracticeDates failed:", err);
+    return new Set();
+  }
+}
+
 /**
  * Fetch profile stats (pillarScores, proficiency, etc.)
  */

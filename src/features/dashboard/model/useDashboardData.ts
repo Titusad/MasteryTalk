@@ -10,7 +10,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { userService, paymentService } from "@/services";
 import type { PracticeHistoryItem } from "@/services/types";
-import { fetchSessions } from "@/services/adapters/supabase/dashboard.supabase";
+import { fetchSessions, fetchWAPracticeDates } from "@/services/adapters/supabase/dashboard.supabase";
 import type { PersistedSession } from "@/services/adapters/supabase/dashboard.supabase";
 import {
   getRecommendedLessons,
@@ -20,7 +20,7 @@ import type { RadarDataPoint } from "./dashboard.constants";
 import {
   computeRadarFromSessions,
   computeProgressOverTime,
-  computeStreak,
+  computeStreakFromDates,
   computeBiggestImprovement,
   computeFocusArea,
   computeFocusAreas,
@@ -61,6 +61,7 @@ export interface DashboardData {
   radarData: RadarDataPoint[];
   progressData: Array<Record<string, string | number>>;
   streak: number;
+  allPracticeDates: Set<string>;
   biggestImprovement: { pillar: string; delta: number } | null;
   focusArea: { pillar: string; score: number } | null;
   focusAreas: Array<{ pillar: string; score: number; tip: string }>;
@@ -116,6 +117,7 @@ export function useDashboardData({
   const [, setSessionsLoaded] = useState(false);
   const [credits, setCredits] = useState<number | null>(null);
   const [freeSessionAvailable, setFreeSessionAvailable] = useState(false);
+  const [waPracticeDates, setWAPracticeDates] = useState<Set<string>>(new Set());
 
   /* ─── Data Fetching ─── */
   const fetchRealSessions = useCallback(async () => {
@@ -131,6 +133,7 @@ export function useDashboardData({
 
   useEffect(() => {
     fetchRealSessions();
+    fetchWAPracticeDates().then(setWAPracticeDates).catch(() => {});
     syncLessonProgress().catch(() => {});
     userService
       .getPracticeHistory("mock-uid")
@@ -185,9 +188,16 @@ export function useDashboardData({
     () => computeProgressOverTime(persistedSessions),
     [persistedSessions]
   );
+  const allPracticeDates = useMemo(() => {
+    const sessionDates = persistedSessions.map((s) =>
+      new Date(s.created_at).toISOString().slice(0, 10)
+    );
+    return new Set<string>([...sessionDates, ...waPracticeDates]);
+  }, [persistedSessions, waPracticeDates]);
+
   const streak = useMemo(
-    () => computeStreak(persistedSessions),
-    [persistedSessions]
+    () => computeStreakFromDates(allPracticeDates),
+    [allPracticeDates]
   );
   const biggestImprovement = useMemo(
     () => computeBiggestImprovement(persistedSessions),
@@ -323,6 +333,7 @@ export function useDashboardData({
     radarData,
     progressData,
     streak,
+    allPracticeDates,
     biggestImprovement,
     focusArea,
     focusAreas,
