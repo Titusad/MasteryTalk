@@ -247,7 +247,7 @@
 ### 2.2 Dashboard Improvements
 - [ ] Cross-path progress overview (when user owns 2+ paths)
 - [ ] Session streak visualization
-- [ ] "Recommended next session" based on weakest pillar
+- [x] "Recommended next session" based on weakest pillar — `RecommendedNextCard.tsx`, left column, hidden when 0 sessions
 
 ### 2.3 Conversion Optimization
 - [ ] A/B test pricing page copy
