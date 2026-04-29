@@ -25,7 +25,8 @@ export type Page =
   | "library"
   | "study-phase"
   | "terms"
-  | "privacy";
+  | "privacy"
+  | "cookies";
 
 const AUTH_PAGES: Record<string, Page> = {
   "#dashboard": "dashboard",
@@ -45,6 +46,7 @@ function resolveInitialPage(): Page {
   if (hashPath === "#admin") return "admin";
   if (hashPath === "#terms") return "terms";
   if (hashPath === "#privacy") return "privacy";
+  if (hashPath === "#cookies") return "cookies";
   if (hashPath === "#landing2") return "landing2";
   if (hashPath === "#landing3") return "landing3";
 

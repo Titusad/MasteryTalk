@@ -30,17 +30,19 @@
 | `interview` | Job Interview | Entrevista de trabajo | ✅ Active |
 | `meeting` | Remote Meetings | Reuniones remotas | ✅ Active |
 | `presentation` | Presentations | Presentaciones | ✅ Active |
+| `sales` | Sales Champion | Ventas B2B | ✅ Active |
+| `culture` | U.S. Business Culture | Cultura empresarial EE.UU. | ✅ Active |
 | `self-intro` | Self-Introduction (Warm-Up) | Auto-presentación | ✅ Active (Free) |
 
 ```typescript
 // Canonical type — src/entities/session/index.ts
-type ScenarioType = "interview" | "meeting" | "presentation" | "self-intro";
+type ScenarioType = "interview" | "meeting" | "presentation" | "sales" | "culture" | "self-intro";
 ```
 
 > `self-intro` is NOT a purchasable Learning Path — it is a free warm-up accessible to all users.
+> `culture` is the **default recommended path** after self-intro warm-up for all users.
 
 ### Retired Scenarios
-- `sales` — planned for Phase 2
 - `client`, `csuite` — future expansion
 
 ---
@@ -59,7 +61,7 @@ All tiers unlock the same features — the difference is price only.
 
 ### §3.2 What a subscription unlocks
 
-- All practice paths and levels (Interview Mastery, Remote Meeting Presence, Presentations, etc.)
+- All practice paths and levels (Interview Mastery, Remote Meeting Presence, Presentations, Sales Champion, U.S. Business Culture)
 - Unlimited sessions
 - AI coaching and detailed feedback on every session
 - WhatsApp Spaced Repetition Coach (daily audio challenges)
@@ -291,7 +293,7 @@ Type `PathRecommendation` lives in `entities/progression`.
 
 ## §8 — Learning Path Structure
 
-6 paths defined, 3 visible in UI (Interview Mastery, Remote Meeting Presence, Presentations).
+6 paths defined, 5 visible in UI (Interview Mastery, Remote Meeting Presence, Presentations, Sales Champion, U.S. Business Culture).
 
 Each path has **6 levels**. Default state: Level 1 unlocked, 2–6 locked.
 When `subscription_active === true`: ALL levels unlocked across ALL paths.
@@ -423,3 +425,5 @@ Secret: `RESEND_API_KEY` in Supabase secrets + `supabase/.env.local`
 | v1.1 | 2026-04-20 | Landing page v4, §6 restructured |
 | v1.2 | 2026-04-21 | Self-intro warm-up §7.4, Path Recommendation §7.5 |
 | v2.0 | 2026-04-28 | Full rewrite: 3-tier pricing (Early Bird/Monthly/Quarterly), live Stripe payments, webhook architecture (checkout.session.completed primary), celebration modal, Manage Subscription via Stripe Portal, full email system (5 templates), FSD violations fixed, Sentry monitoring, admin auth, security audit resolved |
+| v2.1 | 2026-04-28 | §2: added `culture` as 4th active scenario (U.S. Business Culture Mastery Path, default recommended path post warm-up). §3.2, §8 updated accordingly. |
+| v2.2 | 2026-04-28 | §2: added `sales` as 5th active scenario (Sales Champion path). Removed from Retired. §3.2, §8 updated. |

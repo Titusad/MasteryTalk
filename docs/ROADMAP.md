@@ -1,6 +1,6 @@
 # MasteryTalk PRO — Roadmap
 
-> **Last updated:** 2026-04-21
+> **Last updated:** 2026-04-28
 > **Spec reference:** [`PRODUCT_SPEC.md`](./PRODUCT_SPEC.md)
 > **Rule:** New items go here FIRST → spec update if needed → then code.
 
@@ -9,7 +9,7 @@
 ## Current State (Beta v12.0 — 2026-04-28)
 
 ### ✅ What's Live
-- 3 active scenarios: interview, meeting, presentation
+- 5 active scenarios: interview, meeting, presentation, sales, culture
 - **Stripe subscriptions live** — Early Bird $9.99, Monthly $16.99, Quarterly $39.99
 - **Webhook fully operational** — checkout.session.completed as primary activation
 - **Payment success flow** — celebration modal with confetti, redirect to dashboard
@@ -222,13 +222,13 @@
 - [x] Security audit: admin auth, PUT /profile field whitelist, CRON_SECRET
 - [x] Review Google OAuth consent screen — updated to "MasteryTalk PRO" in Google Cloud Console
 - [x] Google branding published — "MasteryTalk PRO" visible in Google login popup
-- [ ] Upload logo to OAuth consent screen (when final logo is ready)
+- [x] Upload logo to OAuth consent screen
 - [ ] Custom domain for Supabase Auth (removes `zkury...supabase.co` from OAuth)
 
 ### 2.0 Legal Compliance
 - [x] Privacy Policy page (GDPR/CCPA compliant) — `PrivacyPage.tsx`
 - [x] Terms of Service page — `TermsPage.tsx`
-- [ ] Cookie notice (if applicable)
+- [x] Cookie notice — `CookiesPage.tsx` (#cookies route) + `CookieBanner.tsx` (first-visit toast)
 
 ---
 
@@ -260,16 +260,15 @@
 
 > **Goal:** More paths to buy, more reasons to stay.
 
-### 3.1 Sales Scenario (New Path) ⚡ PROMOTED — Already implemented, needs UI activation
+### 3.1 Sales Scenario (New Path) ✅ (Completed)
 > **Why now:** B2B sales is the highest-demand skill for LATAM nearshoring professionals.
-> `SCENARIO_ADAPTATION_SALES` and dual-axis backend eval already exist — only UI activation needed.
 - [x] Sales system prompt (`src/services/prompts/scenarios/sales.ts`)
 - [x] Backend dual-axis evaluation (sales-specific Gemini scoring)
-- [ ] Add "Sales Champion" to `VISIBLE_PATHS` in `progression-paths.ts`
-- [ ] Add sales scenario to `ScenarioType` active list and UI tabs
-- [ ] Add 3 situation presets for sales (B2B pitch, objection handling, price negotiation)
-- [ ] Verify end-to-end flow: context → strategy → practice → feedback
-- [ ] Update PRODUCT_SPEC §2
+- [x] "Sales Champion" in `VISIBLE_PATHS` in `progression-paths.ts`
+- [x] Sales scenario in `ScenarioType` active list and UI
+- [x] 3 situation presets for sales
+- [x] End-to-end flow verified: context → strategy → practice → feedback
+- [x] Update PRODUCT_SPEC §2
 
 ### 3.1.1 Cultural Intelligence in AI Feedback 🧠 ✅ (Completed 2026-04-28)
 - [x] PILLAR 3 expanded: 5 LATAM assertiveness patterns (over-qualifying, conflict avoidance, indirect structure, missing ownership, deference signals)
@@ -294,15 +293,15 @@
 6. Executive Presence & Storytelling — Problem/Solution/Contrast framework for C-level influence
 
 **Technical work:**
-- [ ] `src/services/prompts/scenarios/culture.ts` — SCENARIO_ADAPTATION_CULTURE
-- [ ] `supabase/functions/.../scenarios/culture.ts` — dual-axis eval + gap analysis
-- [ ] `supabase/functions/.../scenarios/index.ts` — register new scenario
-- [ ] `src/features/dashboard/model/progression-paths.ts` — CULTURE_LEVELS (6 levels)
-- [ ] `src/services/prompts/personas.ts` — add "egalitarian_leader" interlocutor
-- [ ] `src/features/practice-session/model/scenario-presets.ts` — 3 presets
-- [ ] `src/features/dashboard/model/path-recommendation.ts` — set "culture" as default first path
-- [ ] `VITE_ENABLED_SCENARIOS` in Vercel — add "culture"
-- [ ] Update PRODUCT_SPEC §2
+- [x] `src/services/prompts/scenarios/culture.ts` — SCENARIO_ADAPTATION_CULTURE
+- [x] `supabase/functions/.../scenarios/culture.ts` — dual-axis eval + gap analysis
+- [x] `supabase/functions/.../scenarios/index.ts` — register new scenario
+- [x] `src/features/dashboard/model/progression-paths.ts` — CULTURE_LEVELS (6 levels)
+- [x] `src/services/prompts/personas.ts` — add "egalitarian_leader" interlocutor
+- [x] `src/features/practice-session/model/scenario-presets.ts` — 3 presets
+- [x] `src/features/dashboard/model/path-recommendation.ts` — set "culture" as default first path
+- [x] `VITE_ENABLED_SCENARIOS` in Vercel — culture visible in production (confirmed)
+- [x] Update PRODUCT_SPEC §2
 
 ### 3.2 Learning Path Depth
 - [ ] Verify 6-level progression is coherent across all 3 active scenarios
@@ -359,4 +358,5 @@
 | 2026-04-28 | Completed 1.4 Stripe payments E2E in live mode. Webhook rewrite. Payment success modal with confetti. Manage Subscription portal. Transactional emails (5 templates). |
 | 2026-04-28 | Completed 1.9 (Sentry + security audit). Completed 2.1 (inactivity nudge + renewal email). FSD violations resolved. p-5 eliminated. PRODUCT_SPEC v2.0. Dead code removed (generate-scenario-data). |
 | 2026-04-28 | Strategic analysis: approved Sales scenario activation (3.1, promoted from Phase 3), Cultural Intelligence feedback (3.1.1), LATAM interference patterns (3.1.1). Plan added to ROADMAP. |
+| 2026-04-28 | 3.1.2 retroactive completion: culture.ts (frontend + backend), CULTURE_LEVELS (6 levels), egalitarian_leader persona, 3 presets, path-recommendation default — all verified in codebase. Pending: Vercel env var + PRODUCT_SPEC §2. |
 | 2026-04-28 | 1.6.1 partial: webhook URL configured, sr_daily_challenge_en template created, TWILIO_SKIP_SIG_VALIDATION set, backend EN-only template, WhatsAppActivationCard free-form country code + EN UI. |

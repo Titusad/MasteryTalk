@@ -31,6 +31,7 @@ const LibraryPage = lazyRetry(() => import("../pages/LibraryPage").then(m => ({ 
 const AdminDashboardPage = lazyRetry(() => import("../pages/AdminDashboardPage").then(m => ({ default: m.AdminDashboardPage })));
 const TermsPage = lazyRetry(() => import("../pages/legal/TermsPage").then(m => ({ default: m.TermsPage })));
 const PrivacyPage = lazyRetry(() => import("../pages/legal/PrivacyPage").then(m => ({ default: m.PrivacyPage })));
+const CookiesPage = lazyRetry(() => import("../pages/legal/CookiesPage").then(m => ({ default: m.CookiesPage })));
 const OnboardingProfileScreen = lazyRetry(() => import("@/features/onboarding/ui/OnboardingProfileScreen").then(m => ({ default: m.OnboardingProfileScreen })));
 
 import { LoadingScreen } from "./components/LoadingScreen";
@@ -47,6 +48,7 @@ import type { PurchaseType } from "../services/types";
 import { useUsageGating } from "@/shared/hooks/useUsageGating";
 import { PaymentSuccessHandler } from "@/shared/ui/PaymentSuccessHandler";
 import { NarrationToggle } from "@/shared/ui/NarrationToggle";
+import { CookieBanner } from "@/shared/ui/CookieBanner";
 import { setNarrationMuted } from "@/shared/lib/useNarrationPreference";
 import type { MarketFocus } from "../services/prompts";
 import { projectId } from "../../utils/supabase/info";
@@ -398,6 +400,7 @@ export default function App() {
       else if (hash === "#admin") setPage("admin");
       else if (hash === "#terms") setPage("terms");
       else if (hash === "#privacy") setPage("privacy");
+      else if (hash === "#cookies") setPage("cookies");
       else if (hash === "#landing2") setPage("landing2");
       else if (hash === "#landing3") setPage("landing3");
       else if (hash.startsWith("#study-phase")) setPage("study-phase");
@@ -752,6 +755,7 @@ export default function App() {
           )}
           {page === "terms" && <TermsPage />}
           {page === "privacy" && <PrivacyPage />}
+          {page === "cookies" && <CookiesPage />}
 
           {showLangModal && (
             <LanguageTransitionModal
@@ -820,6 +824,7 @@ export default function App() {
 
         {/* Global narration mute/unmute toggle */}
         <NarrationToggle />
+        <CookieBanner />
 
       </div>
     </ErrorBoundary>
