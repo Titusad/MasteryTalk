@@ -661,24 +661,6 @@ export function AccountPage({ userProfile, authUser, onLogout, onProfileUpdate }
             )}
           </section>
 
-          {/* DANGER ZONE */}
-          <section className="bg-white rounded-2xl border border-red-100 p-6 shadow-sm">
-            <h2 className="text-lg font-medium text-red-600 mb-2 flex items-center gap-2">
-              <ShieldAlert className="w-5 h-5 text-red-500" />
-              Danger Zone
-            </h2>
-            <p className="text-sm text-[#45556c] mb-6">Destructive actions that affect your session or platform access.</p>
-
-            <div className="flex flex-col sm:flex-row gap-4">
-              <button
-                onClick={() => setShowConfirmLogout(true)}
-                className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors text-sm font-medium"
-              >
-                <LogOut className="w-4 h-4" />
-                Sign Out
-              </button>
-            </div>
-          </section>
         </div>
       </main>
 
