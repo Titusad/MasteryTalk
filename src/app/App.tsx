@@ -120,10 +120,17 @@ export default function App() {
   const [isInitializing, setIsInitializing] = useState(true);
   const [authUser, setAuthUser] = useState<User | null>(null);
   // Covers landing during OAuth redirect — true if the key exists at mount time.
-  // Cleared only after navigation actually completes, regardless of Supabase timing.
+  // Cleared by the auth IIFE on success, or after 5s safety timeout.
   const [isOAuthPending, setIsOAuthPending] = useState(
     () => sessionStorage.getItem("masterytalk_oauth_pending") === "true"
   );
+  useEffect(() => {
+    if (!isOAuthPending) return;
+    // Safety: if navigation never completes (auth failure), release after 5s
+    const t = setTimeout(() => setIsOAuthPending(false), 5000);
+    return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // runs once at mount, only when isOAuthPending was initially true
 
   /* ─── Onboarding profile ─── */
   const [userProfile, setUserProfile] = useState<OnboardingProfile | null>(
@@ -373,7 +380,11 @@ export default function App() {
             setIsInitializing(false);
           });
         } else {
-          setIsOAuthPending(false);
+          // During an OAuth return, the first event is null (Supabase still
+          // processing the session). Keep the loader until the IIFE clears it.
+          if (!isOAuthReturn) {
+            setIsOAuthPending(false);
+          }
           setIsInitializing(false);
         }
 
