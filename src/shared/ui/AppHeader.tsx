@@ -9,8 +9,9 @@
  * Landing page header is a separate marketing component (per DESIGN_SYSTEM §6.1).
  */
 
-import { ArrowLeft, LogOut, BookOpen } from "lucide-react";
+import { ArrowLeft, LogOut, BookOpen, User, ChevronDown } from "lucide-react";
 import type React from "react";
+import { useState, useRef, useEffect } from "react";
 import { BrandLogo } from "./BrandLogo";
 
 export interface AppHeaderProps {
@@ -130,30 +131,61 @@ export function AppHeader({
 
             {rightSlot}
 
-            <div className="flex items-center gap-3">
-              {onLogout && (
-                <button
-                  onClick={onLogout}
-                  className="text-[#45556c] hover:text-[#0f172b] transition-colors p-2 rounded-full flex items-center justify-center"
-                  title="Sign out"
-                >
-                  <LogOut className="w-4 h-4" />
-                </button>
-              )}
-              {userName !== undefined && (
-                <div
-                  className={`w-8 h-8 rounded-full bg-[#0f172b] flex items-center justify-center ${
-                    onNavigateToAccount ? "cursor-pointer" : ""
-                  }`}
-                  title="My account"
-                  onClick={() => onNavigateToAccount?.()}
-                >
-                  <span className="text-white text-sm font-medium">
-                    {avatarInitials}
-                  </span>
+            {/* Profile dropdown */}
+            {userName !== undefined && (() => {
+              const [open, setOpen] = useState(false);
+              const ref = useRef<HTMLDivElement>(null);
+              useEffect(() => {
+                if (!open) return;
+                const handler = (e: MouseEvent) => {
+                  if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+                };
+                document.addEventListener("mousedown", handler);
+                return () => document.removeEventListener("mousedown", handler);
+              }, [open]);
+
+              return (
+                <div ref={ref} className="relative">
+                  <button
+                    onClick={() => setOpen(o => !o)}
+                    className="flex items-center gap-1.5 group"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-[#0f172b] flex items-center justify-center">
+                      <span className="text-white text-sm font-medium">{avatarInitials}</span>
+                    </div>
+                    <ChevronDown
+                      className="w-3.5 h-3.5 text-[#94a3b8] group-hover:text-[#0f172b] transition-all"
+                      style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
+                    />
+                  </button>
+
+                  {open && (
+                    <div className="absolute right-0 top-full mt-2 w-44 bg-white rounded-xl border border-[#e2e8f0] shadow-lg overflow-hidden z-50">
+                      {onNavigateToAccount && (
+                        <button
+                          onClick={() => { setOpen(false); onNavigateToAccount(); }}
+                          className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-[#0f172b] hover:bg-[#f8fafc] transition-colors text-left"
+                          style={{ fontWeight: 500 }}
+                        >
+                          <User className="w-4 h-4 text-[#62748e]" />
+                          My Profile
+                        </button>
+                      )}
+                      {onLogout && (
+                        <button
+                          onClick={() => { setOpen(false); onLogout(); }}
+                          className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors text-left border-t border-[#f1f5f9]"
+                          style={{ fontWeight: 500 }}
+                        >
+                          <LogOut className="w-4 h-4" />
+                          Sign out
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              );
+            })()}
           </div>
         </div>
       </header>
