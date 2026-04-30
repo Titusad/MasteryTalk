@@ -223,6 +223,10 @@ export class SupabaseAuthService implements IAuthService {
   async signIn(provider: AuthProvider): Promise<User> {
     const supabase = getSupabaseClient();
 
+    // Flag that we're about to do an OAuth redirect — survives the page reload
+    // so App.tsx can show the loader until navigation completes.
+    sessionStorage.setItem("masterytalk_oauth_pending", "true");
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: toSupabaseProvider(provider),
       options: {
