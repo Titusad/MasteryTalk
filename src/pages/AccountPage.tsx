@@ -204,10 +204,10 @@ export function AccountPage({ userProfile, authUser, onLogout, onProfileUpdate }
         },
       );
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Error al enviar el código");
+      if (!res.ok) throw new Error(data.error || "Failed to send the code");
       setWaStep("otp_sent");
     } catch (err) {
-      setWaError(err instanceof Error ? err.message : "Error al enviar el código");
+      setWaError(err instanceof Error ? err.message : "Failed to send the code");
     } finally {
       setWaLoading(false);
     }
@@ -227,11 +227,11 @@ export function AccountPage({ userProfile, authUser, onLogout, onProfileUpdate }
         },
       );
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Código incorrecto o expirado");
+      if (!res.ok) throw new Error(data.error || "Incorrect or expired code");
       setWaLinkedNumber(waPhoneInput.trim());
       setWaStep("verified");
     } catch (err) {
-      setWaError(err instanceof Error ? err.message : "Error al verificar el código");
+      setWaError(err instanceof Error ? err.message : "Failed to verify the code");
     } finally {
       setWaLoading(false);
     }
@@ -288,7 +288,7 @@ export function AccountPage({ userProfile, authUser, onLogout, onProfileUpdate }
       <main className="relative w-full max-w-[800px] mx-auto px-4 md:px-8 pt-8 pb-20 flex-1">
 
         <h1 className="text-3xl md:text-4xl font-light text-[#0f172b] mb-8">
-          Mi Cuenta
+          My Account
         </h1>
 
         <div className="space-y-6">
@@ -296,7 +296,7 @@ export function AccountPage({ userProfile, authUser, onLogout, onProfileUpdate }
           <section className="bg-white rounded-2xl border border-[#e2e8f0] p-6 hover:border-[#cad5e2] transition-colors shadow-sm">
             <h2 className="text-lg font-medium text-[#0f172b] mb-5 flex items-center gap-2">
               <User className="w-5 h-5 text-[#62748e]" />
-              Perfil Personal
+              Personal Info
             </h2>
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
               <div className="w-20 h-20 rounded-full bg-[#0f172b] flex items-center justify-center shrink-0">
@@ -305,19 +305,19 @@ export function AccountPage({ userProfile, authUser, onLogout, onProfileUpdate }
               <div className="flex-1 space-y-4 w-full">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-medium text-[#62748e] mb-1.5">Nombre Completo</label>
+                    <label className="block text-xs font-medium text-[#62748e] mb-1.5">Full Name</label>
                     <div className="w-full bg-[#f1f5f9] border border-[#e2e8f0] text-[#0f172b] rounded-lg px-4 py-3 text-sm font-medium">
                       {displayName}
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-[#62748e] mb-1.5">Correo Electrónico</label>
+                    <label className="block text-xs font-medium text-[#62748e] mb-1.5">Email</label>
                     <div className="w-full bg-[#f1f5f9] border border-[#e2e8f0] text-[#45556c] rounded-lg px-4 py-3 text-sm">
                       {displayEmail}
                     </div>
                   </div>
                 </div>
-                <p className="text-xs text-[#94a3b8] italic">Miembro desde el 2025.</p>
+                <p className="text-xs text-[#94a3b8] italic">Member since 2025.</p>
               </div>
             </div>
           </section>
@@ -326,7 +326,7 @@ export function AccountPage({ userProfile, authUser, onLogout, onProfileUpdate }
           <section className="bg-white rounded-2xl border border-[#e2e8f0] p-6 hover:border-[#cad5e2] transition-colors shadow-sm">
             <h2 className="text-lg font-medium text-[#0f172b] mb-5 flex items-center gap-2">
               <CreditCard className="w-5 h-5 text-[#62748e]" />
-              Plan y Uso
+              Plan & Usage
             </h2>
 
             {subInfo?.subscription_active ? (
@@ -339,12 +339,12 @@ export function AccountPage({ userProfile, authUser, onLogout, onProfileUpdate }
                         {TIER_LABELS[subInfo.tier ?? ""] ?? "MasteryTalk PRO"}
                       </h3>
                       <span className="bg-[#f0fdf4] text-[#16a34a] border border-[#bbf7d0] text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest">
-                        Activo
+                        Active
                       </span>
                     </div>
                     {subInfo.next_billing_date && (
                       <p className="text-xs text-[#62748e]">
-                        Próxima renovación: {new Date(subInfo.next_billing_date).toLocaleDateString("es-MX", { year: "numeric", month: "long", day: "numeric" })}
+                        Next renewal: {new Date(subInfo.next_billing_date).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
                       </p>
                     )}
                   </div>
@@ -358,38 +358,38 @@ export function AccountPage({ userProfile, authUser, onLogout, onProfileUpdate }
                     ) : (
                       <ExternalLink className="w-4 h-4" />
                     )}
-                    {portalLoading ? "Cargando..." : "Manage Subscription"}
+                    {portalLoading ? "Loading..." : "Manage Subscription"}
                   </button>
                 </div>
 
                 <div className="mt-6 pt-6 border-t border-[#e2e8f0]">
                   <div className="flex items-center gap-2 mb-2 text-sm font-medium text-[#0f172b]">
                     <CheckCircle className="w-4 h-4 text-[#16a34a]" />
-                    Sesiones disponibles
+                    Sessions available
                   </div>
                   <div className="w-full bg-[#f1f5f9] rounded-full h-2 mb-2">
                     <div className="bg-[#00C950] h-2 rounded-full" style={{ width: "100%" }} />
                   </div>
-                  <p className="text-xs text-[#62748e] text-right">Acceso ilimitado a todos los paths</p>
+                  <p className="text-xs text-[#62748e] text-right">Unlimited access to all paths</p>
                 </div>
               </>
             ) : (
               /* ── Beta / no subscription ── */
               <>
                 <div className="flex items-center gap-3 mb-2">
-                  <h3 className="text-xl font-semibold text-[#0f172b]">Pionero (Beta)</h3>
+                  <h3 className="text-xl font-semibold text-[#0f172b]">Pioneer (Beta)</h3>
                   <span className="bg-[#f0fdf4] text-[#16a34a] border border-[#bbf7d0] text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest">Activo</span>
                 </div>
-                <p className="text-sm text-[#45556c] max-w-sm">Mientras hacemos pruebas con usuarios reales, tienes acceso completo y gratuito a las prácticas de idioma de la plataforma.</p>
+                <p className="text-sm text-[#45556c] max-w-sm">During beta, you have full and free access to all practice paths on the platform.</p>
                 <div className="mt-6 pt-6 border-t border-[#e2e8f0]">
                   <div className="flex items-center gap-2 mb-2 text-sm font-medium text-[#0f172b]">
                     <CheckCircle className="w-4 h-4 text-[#16a34a]" />
-                    Sesiones Disponibles
+                    Sessions Available
                   </div>
                   <div className="w-full bg-[#f1f5f9] rounded-full h-2 mb-2">
                     <div className="bg-[#0f172b] h-2 rounded-full" style={{ width: "100%" }} />
                   </div>
-                  <p className="text-xs text-[#62748e] text-right">Uso Ilimitado (Beta test phase)</p>
+                  <p className="text-xs text-[#62748e] text-right">Unlimited (Beta test phase)</p>
                 </div>
               </>
             )}
@@ -579,7 +579,7 @@ export function AccountPage({ userProfile, authUser, onLogout, onProfileUpdate }
               WhatsApp Coach
             </h2>
             <p className="text-sm text-[#62748e] mb-6">
-              Recibe tu ejercicio de pronunciación diario en WhatsApp. Graba tu respuesta en audio y obtén tu score al instante.
+              Receive your daily pronunciation challenge on WhatsApp. Reply with audio and get your score instantly.
             </p>
 
             {waStep === "verified" ? (
@@ -590,7 +590,7 @@ export function AccountPage({ userProfile, authUser, onLogout, onProfileUpdate }
                   </div>
                   <div>
                     <p className="text-sm font-medium text-[#0f172b]">{waLinkedNumber}</p>
-                    <p className="text-xs text-[#16a34a]">Verificado · Recibirás ejercicios diarios</p>
+                    <p className="text-xs text-[#16a34a]">Verified · You'll receive daily challenges</p>
                   </div>
                 </div>
                 <button
@@ -598,14 +598,14 @@ export function AccountPage({ userProfile, authUser, onLogout, onProfileUpdate }
                   disabled={waLoading}
                   className="text-xs text-[#94a3b8] hover:text-[#ef4444] transition-colors disabled:opacity-40"
                 >
-                  Desvincular
+                  Unlink
                 </button>
               </div>
             ) : waStep === "otp_sent" ? (
               <div className="space-y-4">
                 <p className="text-sm text-[#45556c]">
-                  Enviamos un código de 6 dígitos a{" "}
-                  <span className="font-medium text-[#0f172b]">{waPhoneInput}</span> vía WhatsApp.
+                  We sent a 6-digit code to{" "}
+                  <span className="font-medium text-[#0f172b]">{waPhoneInput}</span> via WhatsApp.
                 </p>
                 <input
                   type="text"
@@ -622,13 +622,13 @@ export function AccountPage({ userProfile, authUser, onLogout, onProfileUpdate }
                     disabled={waOtpInput.length < 6 || waLoading}
                     className="flex-1 py-2.5 rounded-lg bg-[#0f172b] text-white text-sm font-medium hover:bg-[#1d293d] transition-colors disabled:opacity-40"
                   >
-                    {waLoading ? "Verificando..." : "Verificar código"}
+                    {waLoading ? "Verifying..." : "Verify code"}
                   </button>
                   <button
                     onClick={() => { setWaStep("idle"); setWaOtpInput(""); setWaError(null); }}
                     className="px-4 py-2.5 rounded-lg border border-[#e2e8f0] text-sm text-[#45556c] hover:bg-[#f8fafc] transition-colors"
                   >
-                    Cambiar número
+                    Change number
                   </button>
                 </div>
               </div>
@@ -636,7 +636,7 @@ export function AccountPage({ userProfile, authUser, onLogout, onProfileUpdate }
               <div className="space-y-4">
                 <div>
                   <label className="block text-xs font-medium text-[#62748e] mb-1.5">
-                    Número de WhatsApp (formato internacional)
+                    WhatsApp number (international format)
                   </label>
                   <input
                     type="tel"
@@ -646,7 +646,7 @@ export function AccountPage({ userProfile, authUser, onLogout, onProfileUpdate }
                     className="w-full bg-[#f8fafc] border border-[#e2e8f0] rounded-lg px-4 py-3 text-sm text-[#0f172b] focus:outline-none focus:border-[#0f172b]"
                   />
                   <p className="text-xs text-[#94a3b8] mt-1.5">
-                    Incluye el código de país: +1 (EE.UU.), +52 (México), +55 (Brasil), +44 (UK), +34 (España)...
+                    Include country code: +1 (US), +52 (Mexico), +55 (Brazil), +44 (UK), +34 (Spain)...
                   </p>
                 </div>
                 {waError && <p className="text-xs text-[#ef4444]">{waError}</p>}
@@ -655,7 +655,7 @@ export function AccountPage({ userProfile, authUser, onLogout, onProfileUpdate }
                   disabled={!waPhoneInput.trim() || waLoading}
                   className="w-full py-2.5 rounded-lg bg-[#0f172b] text-white text-sm font-medium hover:bg-[#1d293d] transition-colors disabled:opacity-40"
                 >
-                  {waLoading ? "Enviando..." : "Enviar código de verificación"}
+                  {waLoading ? "Sending..." : "Send verification code"}
                 </button>
               </div>
             )}
@@ -665,9 +665,9 @@ export function AccountPage({ userProfile, authUser, onLogout, onProfileUpdate }
           <section className="bg-white rounded-2xl border border-red-100 p-6 shadow-sm">
             <h2 className="text-lg font-medium text-red-600 mb-2 flex items-center gap-2">
               <ShieldAlert className="w-5 h-5 text-red-500" />
-              Zona de Peligro
+              Danger Zone
             </h2>
-            <p className="text-sm text-[#45556c] mb-6">Acciones destructivas que afectan tu sesión o acceso a la plataforma.</p>
+            <p className="text-sm text-[#45556c] mb-6">Destructive actions that affect your session or platform access.</p>
 
             <div className="flex flex-col sm:flex-row gap-4">
               <button
@@ -675,7 +675,7 @@ export function AccountPage({ userProfile, authUser, onLogout, onProfileUpdate }
                 className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors text-sm font-medium"
               >
                 <LogOut className="w-4 h-4" />
-                Cerrar Sesión
+                Sign Out
               </button>
             </div>
           </section>
@@ -704,8 +704,8 @@ export function AccountPage({ userProfile, authUser, onLogout, onProfileUpdate }
               <div className="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <LogOut className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-semibold text-[#0f172b] mb-2">¿Cerrar sesión?</h3>
-              <p className="text-[#45556c] text-sm mb-6">Tendrás que volver a ingresar tus credenciales para acceder a tus prácticas.</p>
+              <h3 className="text-xl font-semibold text-[#0f172b] mb-2">Sign out?</h3>
+              <p className="text-[#45556c] text-sm mb-6">You'll need to sign in again to access your practice sessions.</p>
 
               <div className="flex flex-col gap-2">
                 <button
@@ -715,13 +715,13 @@ export function AccountPage({ userProfile, authUser, onLogout, onProfileUpdate }
                   }}
                   className="w-full py-3 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors text-sm font-medium"
                 >
-                  Sí, cerrar sesión
+                  Yes, sign out
                 </button>
                 <button
                   onClick={() => setShowConfirmLogout(false)}
                   className="w-full py-3 rounded-lg bg-[#f1f5f9] text-[#45556c] hover:bg-[#e2e8f0] transition-colors text-sm font-medium"
                 >
-                  Cancelar
+                  Cancel
                 </button>
               </div>
             </motion.div>
