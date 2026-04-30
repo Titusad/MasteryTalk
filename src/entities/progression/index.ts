@@ -19,7 +19,8 @@ export interface LevelState {
 }
 
 export interface ProgressionState {
-  activeGoal: ScenarioType;
+  activeGoal: string; // PathId — "self-intro" | "interview" | "sales" | etc.
+  "self-intro": Record<string, LevelState>;
   interview: Record<string, LevelState>;
   sales: Record<string, LevelState>;
   meeting: Record<string, LevelState>;

@@ -73,14 +73,13 @@ interface ProgressionTreeProps {
 }
 
 export function ProgressionTree({ onStartLevel, onDrillComplete, onLockedClick }: ProgressionTreeProps) {
-  const [activeTab, setActiveTab] = useState<PathId>("interview");
+  const [activeTab, setActiveTab] = useState<PathId>("self-intro");
   const { state, loading, refetch: fetchState } = useProgressionState();
 
   useEffect(() => {
     if (state.activeGoal) {
-      // Only switch to activeGoal if it has a visible tab
       const isVisible = VISIBLE_PATHS.some(p => p.id === state.activeGoal);
-      if (isVisible) setActiveTab(state.activeGoal as PathId);
+      setActiveTab(isVisible ? state.activeGoal as PathId : "self-intro");
     }
   }, [state.activeGoal]);
 

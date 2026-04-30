@@ -89,7 +89,7 @@ describe("Header Consolidation QA", () => {
     const src = readSrc("app/App.tsx");
     expect(src).toContain('variant="dashboard"');
     expect(src).toContain("onNavigateToDashboard");
-    expect(src).toContain("onLogoClick");
+    expect(src).toContain("onNavigateToAccount");
     expect(src).toContain("handleLogout");
     // Dashboard family grouping
     expect(src).toContain('"dashboard" || page === "account" || page === "practice-history" || page === "library"');

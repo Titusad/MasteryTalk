@@ -55,6 +55,14 @@ const REASON_TEMPLATES: Record<PathId, {
   primary: string;
   withContext: Record<SelfIntroContextId, string>;
 }> = {
+  "self-intro": {
+    primary: "Start with the foundation — a sharp self-introduction is the entry point for every professional conversation.",
+    withContext: {
+      networking: "A confident elevator pitch is the foundation. Master this and every other path becomes easier.",
+      team: "How you introduce yourself to a new team sets the tone for every interaction that follows.",
+      client: "Client relationships start at the first impression. This is where to begin.",
+    },
+  },
   interview: {
     primary: "Your vocabulary precision needs strengthening — using the right terms at the right moment is what separates a good answer from a memorable one.",
     withContext: {
@@ -116,6 +124,7 @@ const REASON_TEMPLATES: Record<PathId, {
 /* ── Focus Detail Templates ── */
 
 const FOCUS_DETAILS: Record<PathId, string> = {
+  "self-intro": "3 contexts: Networking Event, Team Introduction, and Client Meeting.",
   interview: "Levels 1-2 focus on articulating your experience with precision and confidence.",
   sales: "Levels 1-2 focus on value framing and objection handling frameworks.",
   meeting: "Levels 1-2 focus on real-time response clarity and turn management.",

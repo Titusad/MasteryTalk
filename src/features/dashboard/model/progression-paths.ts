@@ -13,6 +13,7 @@
 
 import type { ProgressionState, LevelState, LevelStatus } from "@/services/types";
 import type { LevelMethodology, SelfIntroContext } from "@/entities/session";
+import { SELF_INTRO_CONTEXTS } from "@/shared/lib/self-intro-contexts";
 
 // Re-export shared types from entities (canonical location)
 export type {
@@ -46,7 +47,7 @@ export interface ProgressionLevel {
 }
 
 export interface ProgressionPath {
-  id: "interview" | "sales" | "meeting" | "presentation" | "client" | "csuite" | "culture";
+  id: "self-intro" | "interview" | "sales" | "meeting" | "presentation" | "client" | "csuite" | "culture";
   title: string;
   icon: string;
   levels: ProgressionLevel[];
@@ -1602,7 +1603,31 @@ const CULTURE_LEVELS: ProgressionLevel[] = [
 
 /* ── Exported Paths ── */
 
+/* ── Self-Introduction levels — one per context, always unlocked ── */
+const SELF_INTRO_LEVELS: ProgressionLevel[] = SELF_INTRO_CONTEXTS.map((ctx, i) => ({
+  id: `si-${i + 1}`,
+  level: i + 1,
+  title: ctx.label,
+  scenario: ctx.scenario,
+  interlocutorBehavior: ctx.interlocutorBehavior,
+  interlocutor: ctx.interlocutor,
+  unlockRequirement: "Always open",
+  introHeadline: ctx.introHeadline,
+  introValue: ctx.description,
+  measurableObjective: `Deliver a confident self-introduction for a ${ctx.label.toLowerCase()} in under 90 seconds.`,
+  anchorPhrases: ctx.methodology.anchorPhrases,
+  methodology: {
+    name: ctx.methodology.name,
+    tagline: ctx.methodology.tagline,
+    explanation: ctx.methodology.explanation,
+    pattern: ctx.methodology.pattern,
+    anchorPhrases: ctx.methodology.anchorPhrases,
+    coachTip: ctx.methodology.coachTip,
+  },
+}));
+
 export const PROGRESSION_PATHS: ProgressionPath[] = [
+  { id: "self-intro", title: "Self-Introduction", icon: "mic", levels: SELF_INTRO_LEVELS },
   { id: "culture", title: "U.S. Business Culture", icon: "crown", levels: CULTURE_LEVELS },
   { id: "interview", title: "Interview Mastery", icon: "target", levels: INTERVIEW_LEVELS },
   { id: "sales", title: "Sales Champion", icon: "briefcase", levels: SALES_LEVELS },
@@ -1620,17 +1645,23 @@ const _enabledRaw = (import.meta.env.VITE_ENABLED_SCENARIOS as string | undefine
 const ENABLED_SCENARIO_IDS = _enabledRaw.split(",").map(s => s.trim()).filter(Boolean);
 
 /** Paths visible to users — filtered by feature flag in production */
+// Self-intro is always visible (free warm-up). Other paths filtered by env flag.
 export const VISIBLE_PATHS: ProgressionPath[] = ENABLED_SCENARIO_IDS.length > 0
-  ? PROGRESSION_PATHS.filter(p => ENABLED_SCENARIO_IDS.includes(p.id))
+  ? PROGRESSION_PATHS.filter(p => p.id === "self-intro" || ENABLED_SCENARIO_IDS.includes(p.id))
   : PROGRESSION_PATHS;
 
 /* ── Helpers ── */
 
-export type PathId = "interview" | "sales" | "meeting" | "presentation" | "client" | "csuite" | "culture";
+export type PathId = "self-intro" | "interview" | "sales" | "meeting" | "presentation" | "client" | "csuite" | "culture";
 
 export function getDefaultProgressionState(): ProgressionState {
   return {
-    activeGoal: "interview",
+    activeGoal: "self-intro",
+    "self-intro": {
+      "si-1": { status: "unlocked" },
+      "si-2": { status: "unlocked" },
+      "si-3": { status: "unlocked" },
+    },
     interview: {
       "int-1": { status: "unlocked" },
       "int-2": { status: "locked" },
