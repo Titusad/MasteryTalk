@@ -182,33 +182,32 @@ export function DashboardPage({
           <PlatformNewsCard />
         </motion.div>
 
-        {/* ── Row 3: Your Practice Paths ──
-            Desktop: 1/4 sidebar (title + CrossPathCard) | 3/4 main (ProgressionTree)
-            Mobile:  stacks vertically, title first */}
-        <div className="grid grid-cols-1 md:grid-cols-[1fr_3fr] gap-6 items-start">
+        {/* ── Row 3: Your Practice Paths ── */}
+        <div className="space-y-4">
+          {/* Title row — spans the full width, heading for both columns below */}
+          <h2 className="text-xl font-semibold text-[#0f172b]">Your Practice Paths</h2>
 
-          {/* Sidebar 1/4 — title + progress across paths */}
-          <motion.div
-            className="flex flex-col gap-4"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.08 }}
-          >
-            <h2 className="text-xl font-semibold text-[#0f172b]">Your Practice Paths</h2>
-            <CrossPathCard perPathStats={data.perPathStats} />
-          </motion.div>
+          {/* Content row: 1/4 CrossPathCard | 3/4 ProgressionTree — both start at same height */}
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_3fr] gap-6 items-start">
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.08 }}
+            >
+              <CrossPathCard perPathStats={data.perPathStats} />
+            </motion.div>
 
-          {/* Main 3/4 — ProgressionTree */}
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.1 }}
-          >
-            <PracticePathsModule
-              onStartSession={handleStartSession}
-              onLockedClick={() => setUpsellOpen(true)}
-            />
-          </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.1 }}
+            >
+              <PracticePathsModule
+                onStartSession={handleStartSession}
+                onLockedClick={() => setUpsellOpen(true)}
+              />
+            </motion.div>
+          </div>
         </div>
 
       </main>
