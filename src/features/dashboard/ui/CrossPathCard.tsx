@@ -19,8 +19,10 @@ export function CrossPathCard({ perPathStats }: CrossPathCardProps) {
 
   if (entries.length < 2) return null;
 
+  // Each path has 6 levels — completion % = unique levels done / 6
+  // Sessions are capped at 6 since repeating a level doesn't add new progress
+  const TOTAL_LEVELS = 6;
   const sorted = [...entries].sort((a, b) => b[1].sessions - a[1].sessions);
-  const maxSessions = sorted[0][1].sessions;
 
   return (
     <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-6">
@@ -38,9 +40,10 @@ export function CrossPathCard({ perPathStats }: CrossPathCardProps) {
       </div>
 
       <div className="space-y-3">
-        {sorted.map(([key, { sessions, avgScore }]) => {
-          const barWidth = maxSessions > 0 ? Math.round((sessions / maxSessions) * 100) : 0;
-          const scoreLabel = avgScore !== null ? `${Math.round(avgScore)}%` : null;
+        {sorted.map(([key, { sessions }]) => {
+          // Unique levels completed (each level counted once, max 6)
+          const uniqueLevels = Math.min(sessions, TOTAL_LEVELS);
+          const completionPct = Math.round((uniqueLevels / TOTAL_LEVELS) * 100);
 
           return (
             <div key={key}>
@@ -49,18 +52,18 @@ export function CrossPathCard({ perPathStats }: CrossPathCardProps) {
                   {PATH_LABEL[key]}
                 </span>
                 <div className="flex items-center gap-2">
-                  {scoreLabel && (
-                    <span className="text-xs text-[#62748e]">{scoreLabel}</span>
-                  )}
-                  <span className="text-xs font-medium text-[#45556c]">
-                    {sessions} {sessions === 1 ? "session" : "sessions"}
+                  <span className="text-xs font-semibold text-[#6366f1]">
+                    {completionPct}%
+                  </span>
+                  <span className="text-xs text-[#94a3b8]">
+                    {uniqueLevels}/{TOTAL_LEVELS} levels
                   </span>
                 </div>
               </div>
               <div className="h-1.5 bg-[#f0f4f8] rounded-full overflow-hidden">
                 <div
                   className="h-full bg-[#6366f1] rounded-full transition-all duration-500"
-                  style={{ width: `${barWidth}%` }}
+                  style={{ width: `${completionPct}%` }}
                 />
               </div>
             </div>
