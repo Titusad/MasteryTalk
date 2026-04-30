@@ -173,8 +173,8 @@ export function HeroCard({
               </button>
             </div>
 
-            {/* Streak — 7-day grid with day labels */}
-            <div>
+            {/* Streak — 7-day grid with day labels (50% width on desktop) */}
+            <div className="w-full md:w-1/2">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-xs font-medium uppercase tracking-wider text-[#94a3b8]">Streak</span>
                 {streak > 0 && (
@@ -246,7 +246,7 @@ export function HeroCard({
             {totalSessions > 0 && (
               <button
                 onClick={() => setExpandedMetrics(!expandedMetrics)}
-                className="flex items-center gap-1 text-xs text-[#62748e] cursor-pointer border border-[#e2e8f0] rounded-lg px-3 py-1.5 mt-2 hover:bg-[#f8fafc] transition-colors"
+                className="flex items-center gap-1 text-xs text-white cursor-pointer bg-[#0f172b] rounded-lg px-3 py-1.5 mt-2 hover:bg-[#1d293d] transition-colors"
               >
                 <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${expandedMetrics ? "rotate-180" : ""}`} />
                 <span>{expandedMetrics ? "Hide metrics" : "View all metrics"}</span>
