@@ -34,34 +34,44 @@ const EXAMPLE_LABELS: Record<string, string> = {
     culture:      "A Strong Response Looks Like",
 };
 
-// Continuation scaffold — shown when only a suggestedOpener is available (no full exampleAnswer)
-const RESPONSE_STEPS: Record<string, Array<{ step: string; hint: string }>> = {
+// Fill-in-the-blank templates — brackets signal what the user needs to slot in.
+// Shown when only a suggestedOpener is available (no full exampleAnswer from backend).
+const RESPONSE_STEPS: Record<string, Array<{ step: string; template: string }>> = {
     interview: [
-        { step: "Situation",  hint: "When and where — set the scene in one sentence" },
-        { step: "Action",     hint: "What YOU specifically did — use 'I', not 'we'" },
-        { step: "Result",     hint: "Quantify the outcome — metric, timeline, or impact" },
+        { step: "Situation", template: "At [company / team], I was responsible for [challenge or goal in one sentence]." },
+        { step: "Action",    template: "I specifically [verb + what you did] — my role was [your concrete contribution, not the team's]." },
+        { step: "Result",    template: "The outcome was [metric, timeline, or business impact] — and here's what I learned from it." },
     ],
     sales: [
-        { step: "Pain acknowledgment", hint: "Name their specific challenge — shows you listened" },
-        { step: "Your solution",       hint: "One clear capability that directly addresses it" },
-        { step: "Proof",               hint: "A number or example that backs your claim" },
+        { step: "Pain",      template: "I understand your team is dealing with [their specific challenge] — and that's costing you [time / revenue / efficiency]." },
+        { step: "Solution",  template: "Our [feature / approach] directly addresses that by [how it works in plain language, no jargon]." },
+        { step: "Proof",     template: "[Similar client / comparable case] went from [before state] to [after metric] in [timeframe]." },
     ],
     meeting: [
-        { step: "Main point",   hint: "What you accomplished or need — one sentence, no fluff" },
-        { step: "Why it matters", hint: "Business impact or dependency — why relevant NOW" },
-        { step: "Next step",    hint: "The decision or action you need from the room" },
+        { step: "Main point",     template: "This [week / sprint], I [completed / unblocked / need input on] [specific deliverable], which [enabled / affects] [team or project outcome]." },
+        { step: "Why it matters", template: "This is relevant now because [dependency, deadline, or risk it removes]." },
+        { step: "Next step",      template: "What I need from the room is [decision / resource / approval] — ideally by [date or end of this meeting]." },
     ],
     presentation: [
-        { step: "Core insight", hint: "The one thing the audience must remember" },
-        { step: "Evidence",     hint: "One data point or example that makes it undeniable" },
-        { step: "Call to action", hint: "What you need them to do, decide, or believe" },
+        { step: "Core insight",   template: "The key finding is [insight in one sentence] — and it changes how we approach [topic or decision]." },
+        { step: "Evidence",       template: "[Data point or example]: [what it shows] — which means [implication for this audience]." },
+        { step: "Call to action", template: "I'm asking you to [decide / approve / commit to] [specific action] by [date or next touchpoint]." },
     ],
     culture: [
-        { step: "Acknowledge",   hint: "Name what's happening — shows situational awareness" },
-        { step: "Your position", hint: "State your view directly — no hedging" },
-        { step: "Forward step",  hint: "Propose what happens next — own the resolution" },
+        { step: "Acknowledge",    template: "I want to make sure we're aligned on [what the expectation or situation is] — because I'm seeing it differently." },
+        { step: "Your position",  template: "From where I stand, [your view in one direct sentence — no softeners, no 'I think maybe']." },
+        { step: "Forward step",   template: "I'd suggest [concrete action] — I can own [your specific part of it] and have [deliverable] by [date]." },
     ],
 };
+
+// Render a template string, highlighting [placeholders] in indigo so they stand out visually.
+function renderTemplate(template: string): React.ReactNode {
+    return template.split(/(\[[^\]]+\])/g).map((part, i) =>
+        part.startsWith("[") && part.endsWith("]")
+            ? <span key={i} className="text-[#6366f1] not-italic" style={{ fontWeight: 600 }}>{part}</span>
+            : <span key={i}>{part}</span>
+    );
+}
 
 const CTA_LABELS: Record<string, string> = {
     interview:    "Record My Answer",
@@ -197,7 +207,7 @@ export function StrategyCard({
                                     )}
                                 </div>
 
-                                {/* Continuation scaffold — only when showing opener, not full answer */}
+                                {/* Fill-in-the-blank scaffold — only when showing opener, not full answer */}
                                 {!isFullAnswer && continuationSteps.length > 0 && (
                                     <div className="mt-3 space-y-2">
                                         <p className="text-[10px] text-[#94a3b8] uppercase tracking-wider mb-1" style={{ fontWeight: 600 }}>
@@ -206,22 +216,27 @@ export function StrategyCard({
                                         {continuationSteps.map((step, i) => (
                                             <div
                                                 key={i}
-                                                className="flex items-start gap-2.5 px-3 py-2.5 rounded-lg border border-[#e2e8f0] bg-[#f8fafc]"
+                                                className="px-3 py-3 rounded-lg border border-[#e2e8f0] bg-[#f8fafc] space-y-1.5"
                                             >
-                                                <span
-                                                    className="w-5 h-5 rounded-full bg-[#0f172b] text-white text-[10px] flex items-center justify-center shrink-0 mt-0.5"
-                                                    style={{ fontWeight: 700 }}
-                                                >
-                                                    {i + 2}
-                                                </span>
-                                                <p className="text-xs text-[#45556c] leading-relaxed">
-                                                    <span className="text-[#0f172b]" style={{ fontWeight: 600 }}>
+                                                <div className="flex items-center gap-2">
+                                                    <span
+                                                        className="w-5 h-5 rounded-full bg-[#0f172b] text-white text-[10px] flex items-center justify-center shrink-0"
+                                                        style={{ fontWeight: 700 }}
+                                                    >
+                                                        {i + 2}
+                                                    </span>
+                                                    <span className="text-[11px] text-[#0f172b] uppercase tracking-wider" style={{ fontWeight: 600 }}>
                                                         {step.step}
                                                     </span>
-                                                    {" — "}{step.hint}
+                                                </div>
+                                                <p className="text-sm text-[#45556c] leading-relaxed pl-7 italic">
+                                                    "{renderTemplate(step.template)}"
                                                 </p>
                                             </div>
                                         ))}
+                                        <p className="text-[10px] text-[#94a3b8] pl-1 pt-1">
+                                            Fill in the <span className="text-[#6366f1]" style={{ fontWeight: 600 }}>[brackets]</span> with your specifics before you speak.
+                                        </p>
                                     </div>
                                 )}
                             </div>
