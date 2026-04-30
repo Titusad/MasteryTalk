@@ -101,7 +101,7 @@ export function DashboardPage({
       aria-label="DashboardPage"
       className="w-full min-h-screen flex flex-col bg-[#f0f4f8]"
     >
-      <main className="w-full px-6 md:px-8 lg:px-12 pt-6 pb-20 space-y-6">
+      <main className="w-full px-6 md:px-8 lg:px-12 pt-6 pb-20 space-y-12">
 
         {/* ── Row 1: Hero Card ── */}
         <HeroCard
