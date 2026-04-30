@@ -367,8 +367,13 @@ export default function App() {
             // Reveal the app only after profile fetch + navigation are ready
             setIsInitializing(false);
           });
+        } else if (!user && !hadUser && isOAuthReturn) {
+          // Supabase fired null BEFORE resolving the OAuth session — keep loading.
+          // The next event will carry the real user. Do NOT reveal the app here.
+          // Safety fallback: reveal after 8s in case OAuth fails silently.
+          setTimeout(() => setIsInitializing(false), 8000);
         } else {
-          // No async work (user already logged in on reload, or logged out)
+          // Returning user already initialized, or genuine anonymous first load
           setIsInitializing(false);
         }
 
