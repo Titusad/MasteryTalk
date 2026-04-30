@@ -7,7 +7,17 @@
  */
 
 import { motion } from "motion/react";
-import { Lock, Unlock, BookOpen, CheckCircle2, ChevronRight, X } from "lucide-react";
+import { Lock, Unlock, BookOpen, CheckCircle2, ChevronRight, X, Target, Briefcase, Video, Mic, Handshake, Crown } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+
+const PATH_ICONS: Record<string, LucideIcon> = {
+  target: Target,
+  briefcase: Briefcase,
+  video: Video,
+  mic: Mic,
+  handshake: Handshake,
+  crown: Crown,
+};
 import { useProgressionState } from "@/features/dashboard/model/useProgressionState";
 import {
   PROGRESSION_PATHS,
@@ -82,7 +92,14 @@ export function PracticeSideNav({
       <div className="px-5 pt-5 pb-3 border-b border-[#e2e8f0] shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-lg">{activePath.icon}</span>
+            {(() => {
+              const Icon = PATH_ICONS[activePath.icon];
+              return Icon ? (
+                <span className="w-7 h-7 rounded-full bg-[#0f172b] flex items-center justify-center shrink-0">
+                  <Icon size={13} color="#fff" />
+                </span>
+              ) : null;
+            })()}
             <h3 className="text-sm font-bold text-[#0f172b] leading-tight">
               {activePath.title}
             </h3>
