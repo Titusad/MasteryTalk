@@ -4,7 +4,7 @@
 > Any code change MUST be consistent with this spec.
 > If the spec needs to change, update THIS FILE FIRST → get approval → then code.
 >
-> Last updated: 2026-04-28 (v2.0 — Subscription tiers, live payments, full email system, Sentry)
+> Last updated: 2026-04-29 (v2.4 — Habit loop sprints 1-4: WA SR Coach onboarding, Mastery Audit feature, renewal email ROI, new KV fields)
 
 ---
 
@@ -109,6 +109,15 @@ interface KVProfile {
     pillarScores?: Record<string, number>;
     professionalProficiency?: number;
   };
+  // WhatsApp SR Coach
+  wa_preferred_hour: number | null;        // 7 | 12 | 18 — user's preferred send hour (local TZ)
+  wa_timezone: string | null;             // IANA timezone, auto-detected from browser
+  wa_phrases_mastered: number;            // increments when WA score ≥ 80
+  wa_dismissed_at_session_count: number | null; // sessions_count at time of first dismiss
+  wa_card_permanently_dismissed: boolean; // true after second dismiss
+  // Mastery Audit
+  profession: string | null;             // "product_designer" | "software_engineer" | etc.
+  audit_booked_at: string | null;        // ISO timestamp of last audit booking (30-day cooldown)
 }
 ```
 
@@ -255,6 +264,24 @@ type Step =
   | "upsell";           // Subscription CTA
 ```
 
+### §7.1.1 FeedbackScreen — post-session cards (bottom slot)
+
+The FeedbackScreen renders additional cards below the progression gate, in this order:
+
+1. **WhatsApp SR Coach card** — visible when `!whatsapp_verified && !wa_card_permanently_dismissed`
+   and (`wa_dismissed_at_session_count === null` OR `sessions_since_dismiss >= 3`).
+   - First dismiss → cooldown of 3 sessions (`wa_dismissed_at_session_count`)
+   - Second dismiss → `wa_card_permanently_dismissed = true` (never shows again)
+   - After OTP verification: time preference step (Morning 7AM / Midday 12PM / Evening 6PM)
+   - Saves `wa_preferred_hour` + `wa_timezone` (auto-detected) to KV
+
+2. **Path Recommendation card** — visible only for `scenarioType === "self-intro"` with feedback data
+
+3. **Mastery Audit card** — visible when ALL of:
+   - `profession === "product_designer"` (Fase 1 only)
+   - ≥ 3 Interview sessions in the last 14 days
+   - No audit booked in the last 30 days (`audit_booked_at`)
+
 ### §7.2 Situation Presets (ContextScreen)
 
 Each scenario has 3 presets describing the situation (company, stakes, context) without assuming the user's role. Presets inject `{ situationContext }` into the session prompt via `processGuidedFields()`.
@@ -316,7 +343,7 @@ Secret: `RESEND_API_KEY` in Supabase secrets + `supabase/.env.local`
 | Welcome | New user profile created | `welcomeEmailHtml()` |
 | Subscription confirmed | `checkout.session.completed` | `subscriptionConfirmationEmailHtml()` |
 | Session summary | Post-session feedback | `sessionSummaryEmailHtml()` |
-| Renewal confirmed | `invoice.payment_succeeded` (billing_reason=subscription_cycle) | `renewalConfirmationEmailHtml()` |
+| Renewal confirmed | `invoice.payment_succeeded` (billing_reason=subscription_cycle) | `renewalConfirmationEmailHtml()` — two branches: ROI format (sessions > 0) or Reactivation (0 sessions) |
 | Inactivity nudge | Cron: 7+ days without session, max 1 per 14 days | `inactivityNudgeEmailHtml()` |
 
 ### §9.1 Marketing Automation — Loops.so (Planned — ROADMAP 3.1.3)
@@ -390,6 +417,22 @@ Base legal: `terms_accepted_at` (aceptación de ToS en signup). Loops añade uns
 | GET | `/admin/kpis` | ✅ Admin | Platform KPIs |
 | GET | `/admin/api-usage` | ✅ Admin | API cost tracking |
 
+### §10.1.1 PUT /profile — Whitelisted fields
+
+Fields the user can update via `PUT /profile` (backend enforced whitelist):
+
+```
+industry, position, seniority, role, company, keyExperience, cvSummary,
+cvFileName, cvConsentGiven, deckSummary, deckFileName, lastJobDescription,
+narrationCompleted, sessionMode, activeGoal, market_focus,
+whatsapp_number, whatsapp_verified,
+wa_preferred_hour, wa_timezone,
+wa_dismissed_at_session_count, wa_card_permanently_dismissed,
+profession, audit_booked_at
+```
+
+Non-whitelisted fields (plan, tier, subscription_active, etc.) can only be written by server-side Edge Functions.
+
 ### §10.2 Security
 
 | Endpoint group | Auth mechanism |
@@ -428,6 +471,42 @@ Base legal: `terms_accepted_at` (aceptación de ToS en signup). Loops añade uns
 | `ADMIN_EMAILS` | Comma-separated admin emails |
 | `CRON_SECRET` | Shared secret for pg_cron endpoint |
 | `SUPABASE_SERVICE_ROLE_KEY` | Service role (auto-injected by Supabase) |
+
+---
+
+## §10.4 — Mastery Audit Feature
+
+> Decision: MasteryTalk is an app with a premium service. The Mastery Audit is a **feature**, not a product. Success is measured by its effect on retention, not by direct revenue.
+
+### Eligibility (Fase 1 — product_designer vertical only)
+
+A user sees the `MasteryAuditCard` in FeedbackScreen when ALL of:
+1. `profile.profession === "product_designer"`
+2. ≥ 3 sessions with `scenarioType === "interview"` in the last 14 days
+3. `profile.audit_booked_at === null` OR `daysSince(audit_booked_at) > 30`
+
+### Booking flow
+
+1. User clicks "Book my session →" in `MasteryAuditCard` (Calendly link)
+2. On click: `PUT /profile` sets `audit_booked_at = now()`
+3. Card disappears for 30 days (cooldown)
+4. Calendly handles scheduling (30 min / 90 min, Wednesdays 9AM–1PM only)
+5. Payment via Stripe Payment Link (required before confirmation)
+
+### Operational rules (non-negotiable)
+
+- Product first: if tension between a session and Audit work, product wins
+- Product design vertical only in Fase 1
+- 4 hours/week max (Wednesday 9AM–1PM, 4 slots)
+- Contextual placement only — not a generic upsell
+
+### Phases
+
+| Phase | Sessions | Objective |
+|-------|---------|-----------|
+| Fase 1 | 1–5 audits | Validate format and price |
+| Fase 2 | 10–15 audits | Measure retention effect; define coach rubric |
+| Fase 3 | 20–25 audits | Binary decision: Continue / Expand / Reformat / Close |
 
 ---
 
@@ -474,3 +553,4 @@ Base legal: `terms_accepted_at` (aceptación de ToS en signup). Loops añade uns
 | v2.1 | 2026-04-28 | §2: added `culture` as 4th active scenario (U.S. Business Culture Mastery Path, default recommended path post warm-up). §3.2, §8 updated accordingly. |
 | v2.2 | 2026-04-28 | §2: added `sales` as 5th active scenario (Sales Champion path). Removed from Retired. §3.2, §8 updated. |
 | v2.3 | 2026-04-28 | §9: split en §9.0 Resend (transaccional) + §9.1 Loops.so (marketing automation, planned). §10.1: nuevos endpoints /marketing/*. |
+| v2.4 | 2026-04-29 | §4.1: new KV fields (WA onboarding: wa_preferred_hour, wa_timezone, wa_phrases_mastered, wa_dismissed_at_session_count, wa_card_permanently_dismissed; Mastery Audit: profession, audit_booked_at). §7.1.1: FeedbackScreen post-session cards spec. §9.0: renewal email two-branch behavior. §10.1.1: PUT /profile whitelist documented. §10.4: Mastery Audit feature spec. |
