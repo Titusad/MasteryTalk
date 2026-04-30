@@ -150,12 +150,19 @@ export default function App() {
   /* ─── Onboarding gate ─── */
   const [showOnboarding, setShowOnboarding] = useState(false);
 
-  /** Navigate first, then overlay onboarding modal if user has no professional context */
-  const navigateWithOnboardingCheck = (navigateFn: () => void) => {
+  /**
+   * Navigate first, then check backend to decide if onboarding modal is needed.
+   * Source of truth: backend KV. Modal only opens for genuine first-time users.
+   * backendProfile is passed in from the auth handler that already fetched it.
+   */
+  const navigateWithOnboardingCheck = (
+    navigateFn: () => void,
+    backendProfile?: Record<string, unknown> | null,
+  ) => {
     navigateFn();
-    const profile = JSON.parse(localStorage.getItem("masterytalk_profile") || "null");
-    const needsOnboarding = !profile?.cvSummary && !profile?.keyExperience && !profile?.position;
-    if (needsOnboarding) {
+    const hasProfile = backendProfile?.profile_completed || backendProfile?.position ||
+      backendProfile?.industry || backendProfile?.keyExperience || backendProfile?.cvSummary;
+    if (!hasProfile) {
       setShowOnboarding(true);
     }
   };
@@ -216,137 +223,145 @@ export default function App() {
         setAuthUser(user);
 
         if (user && !hadUser) {
-          // Check if returning from OAuth with persisted setup
-          const pendingRaw = sessionStorage.getItem(PENDING_SETUP_KEY);
-          const isReturning = sessionStorage.getItem(OAUTH_PENDING_KEY) === "true";
-
-          if (isReturning && pendingRaw) {
-            // Flow B: OAuth return — recover setup and navigate to practice
-            sessionStorage.removeItem(OAUTH_PENDING_KEY);
-            sessionStorage.removeItem(PENDING_SETUP_KEY);
-
+          // Wrap in async IIFE: fetch backend profile FIRST, then navigate
+          (async () => {
+            // ── Step 1: Fetch profile from backend (source of truth) ──
+            let backendProfile: Record<string, unknown> | null = null;
             try {
-              const setup = JSON.parse(pendingRaw);
-              const sType = setup.scenarioType || "interview";
-              setFlowState({
-                scenario: setup.scenario || "",
-                interlocutor: setup.interlocutor || "recruiter",
-                scenarioType: sType,
-                guidedFields: setup.guidedFields,
-                progressionPathId: sType as PathId,
-                progressionLevelId: setup.progressionLevelId || (sType === "interview" ? "int-1" : "sal-1"),
-              });
+              const { getAuthToken } = await import("../services/supabase");
+              const token = await getAuthToken();
+              const res = await fetch(
+                `${SUPABASE_URL}/functions/v1/make-server-08b8658d/profile`,
+                { headers: { Authorization: `Bearer ${token}` } }
+              );
+              if (res.ok) {
+                const data = await res.json();
+                // Only use if backend has actual profile content
+                const hasContent = data.profile_completed || data.position ||
+                  data.industry || data.keyExperience || data.cvSummary;
+                if (hasContent) {
+                  backendProfile = data;
+                  setUserProfile(data as OnboardingProfile);
+                }
+              }
+            } catch { /* silent — proceed without backend profile */ }
 
-              // Show language modal (or skip for EN users)
+            // ── Step 2: Navigate, passing fetched profile to onboarding gate ──
+            const pendingRaw = sessionStorage.getItem(PENDING_SETUP_KEY);
+            const isReturning = sessionStorage.getItem(OAUTH_PENDING_KEY) === "true";
+
+            if (isReturning && pendingRaw) {
+              // Flow B: OAuth return — recover setup and navigate to practice
+              sessionStorage.removeItem(OAUTH_PENDING_KEY);
+              sessionStorage.removeItem(PENDING_SETUP_KEY);
+
+              try {
+                const setup = JSON.parse(pendingRaw);
+                const sType = setup.scenarioType || "interview";
+                setFlowState({
+                  scenario: setup.scenario || "",
+                  interlocutor: setup.interlocutor || "recruiter",
+                  scenarioType: sType,
+                  guidedFields: setup.guidedFields,
+                  progressionPathId: sType as PathId,
+                  progressionLevelId: setup.progressionLevelId || (sType === "interview" ? "int-1" : "sal-1"),
+                });
+
+                const savedLang = localStorage.getItem("masterytalk_lang") || "es";
+                pendingNavigationRef.current = () => {
+                  setPage("practice-session");
+                  window.location.hash = "#practice-session";
+                };
+                if (savedLang === "en") {
+                  navigateWithOnboardingCheck(() => {
+                    pendingNavigationRef.current?.();
+                    pendingNavigationRef.current = null;
+                  }, backendProfile);
+                } else {
+                  langModalDismissedRef.current = false;
+                  setShowLangModal(true);
+                }
+              } catch (err) {
+                console.warn("[MasteryTalk] Failed to parse pending setup:", err);
+                setPage("dashboard");
+                window.location.hash = "#dashboard";
+              }
+              return;
+            }
+
+            if (isReturning && !pendingRaw) {
+              // OAuth return but no setup data — "Probar Gratis" flow → Dashboard
+              sessionStorage.removeItem(OAUTH_PENDING_KEY);
+              setFlowState({ scenario: "", interlocutor: "" });
+
               const savedLang = localStorage.getItem("masterytalk_lang") || "es";
               pendingNavigationRef.current = () => {
-                setPage("practice-session");
-                window.location.hash = "#practice-session";
+                setPage("dashboard");
+                window.location.hash = "#dashboard";
               };
-              console.log("[DEBUG] pendingNavigationRef SET at Flow B (OAuth return, line ~264)");
+
               if (savedLang === "en") {
-                // EN users skip lang modal — navigate and check onboarding
                 navigateWithOnboardingCheck(() => {
                   pendingNavigationRef.current?.();
                   pendingNavigationRef.current = null;
-                });
+                }, backendProfile);
               } else {
-                langModalDismissedRef.current = false; // Reset guard before showing modal
+                langModalDismissedRef.current = false;
                 setShowLangModal(true);
-                console.log("[DEBUG] setShowLangModal(true) at Flow B (OAuth return)");
               }
-            } catch (err) {
-              console.warn("[MasteryTalk] Failed to parse pending setup:", err);
-              setPage("dashboard");
-              window.location.hash = "#dashboard";
+              return;
             }
-            return;
-          }
 
-          if (isReturning && !pendingRaw) {
-            // OAuth return but no setup data — "Probar Gratis" flow → Dashboard
-            sessionStorage.removeItem(OAUTH_PENDING_KEY);
-            setFlowState({ scenario: "", interlocutor: "" });
+            // Mock auth path: user appeared via signIn() (no redirect)
+            const mockPendingRaw = sessionStorage.getItem(PENDING_SETUP_KEY);
+            if (mockPendingRaw) {
+              sessionStorage.removeItem(OAUTH_PENDING_KEY);
+              sessionStorage.removeItem(PENDING_SETUP_KEY);
 
-            const savedLang = localStorage.getItem("masterytalk_lang") || "es";
-            pendingNavigationRef.current = () => {
-              setPage("dashboard");
-              window.location.hash = "#dashboard";
-            };
+              try {
+                const setup = JSON.parse(mockPendingRaw);
+                setFlowState({
+                  scenario: setup.scenario || "",
+                  interlocutor: setup.interlocutor || "recruiter",
+                  scenarioType: setup.scenarioType || "interview",
+                  guidedFields: setup.guidedFields,
+                });
 
-            if (savedLang === "en") {
+                const savedLang = localStorage.getItem("masterytalk_lang") || "es";
+                pendingNavigationRef.current = () => {
+                  setPage("practice-session");
+                  window.location.hash = "#practice-session";
+                };
+                if (savedLang === "en") {
+                  navigateWithOnboardingCheck(() => {
+                    pendingNavigationRef.current?.();
+                    pendingNavigationRef.current = null;
+                  }, backendProfile);
+                } else {
+                  langModalDismissedRef.current = false;
+                  setShowLangModal(true);
+                }
+              } catch {
+                setPage("dashboard");
+                window.location.hash = "#dashboard";
+              }
+              return;
+            }
+
+            // No pending setup — returning user goes to dashboard
+            if (!window.location.hash || window.location.hash === "#" || window.location.hash === "#/") {
+              const hasPurchaseIntent = sessionStorage.getItem("masterytalk_purchase_intent") === "true";
+              if (hasPurchaseIntent) sessionStorage.removeItem("masterytalk_purchase_intent");
+
               navigateWithOnboardingCheck(() => {
-                pendingNavigationRef.current?.();
-                pendingNavigationRef.current = null;
-              });
-            } else {
-              langModalDismissedRef.current = false;
-              setShowLangModal(true);
+                setPage("dashboard");
+                window.location.hash = "#dashboard";
+                if (hasPurchaseIntent) setTimeout(() => setShowNewSessionPaywall(true), 400);
+              }, backendProfile);
+            } else if (window.location.hash === "#admin") {
+              setPage("admin");
             }
-            return;
-          }
-
-          // Mock auth path: user appeared via signIn() (no redirect).
-          // Check sessionStorage (PracticeSetupModal saves before signIn)
-          const mockPendingRaw = sessionStorage.getItem(PENDING_SETUP_KEY);
-          if (mockPendingRaw) {
-            sessionStorage.removeItem(OAUTH_PENDING_KEY);
-            sessionStorage.removeItem(PENDING_SETUP_KEY);
-
-            try {
-              const setup = JSON.parse(mockPendingRaw);
-              setFlowState({
-                scenario: setup.scenario || "",
-                interlocutor: setup.interlocutor || "recruiter",
-                scenarioType: setup.scenarioType || "interview",
-                guidedFields: setup.guidedFields,
-              });
-
-              const savedLang = localStorage.getItem("masterytalk_lang") || "es";
-              pendingNavigationRef.current = () => {
-                setPage("practice-session");
-                window.location.hash = "#practice-session";
-              };
-              console.log("[DEBUG] pendingNavigationRef SET at Mock auth path (line ~312)");
-              if (savedLang === "en") {
-                navigateWithOnboardingCheck(() => {
-                  pendingNavigationRef.current?.();
-                  pendingNavigationRef.current = null;
-                });
-              } else {
-                langModalDismissedRef.current = false; // Reset guard before showing modal
-                setShowLangModal(true);
-                console.log("[DEBUG] setShowLangModal(true) at Mock auth path");
-              }
-            } catch {
-              setPage("dashboard");
-              window.location.hash = "#dashboard";
-            }
-            return;
-          }
-
-          // No pending setup at all. If user is on the landing page (hash is empty), auto-redirect to dashboard.
-          // This ensures returning users don't stay on the landing page.
-          if (!window.location.hash || window.location.hash === "#" || window.location.hash === "#/") {
-            // Check if user arrived via pricing CTA — show purchase modal on dashboard
-            const hasPurchaseIntent = sessionStorage.getItem("masterytalk_purchase_intent") === "true";
-            if (hasPurchaseIntent) {
-              sessionStorage.removeItem("masterytalk_purchase_intent");
-            }
-
-            const navigateToDash = () => {
-              setPage("dashboard");
-              window.location.hash = "#dashboard";
-              if (hasPurchaseIntent) {
-                setTimeout(() => setShowNewSessionPaywall(true), 400);
-              }
-            };
-
-            navigateWithOnboardingCheck(navigateToDash);
-          } else if (window.location.hash === "#admin") {
-            // Admin direct access — page already set to admin, just ensure it stays
-            setPage("admin");
-          }
+          })();
         }
 
         if (!user && hadUser) {
@@ -379,8 +394,9 @@ export default function App() {
         );
         if (!res.ok) return;
         const backendProfile = await res.json();
-        // Only merge if backend has any professional profile data
-        const hasData = backendProfile.position || backendProfile.industry ||
+        // Check if backend has any meaningful profile data
+        const hasData = backendProfile.profile_completed ||
+          backendProfile.position || backendProfile.industry ||
           backendProfile.keyExperience || backendProfile.cvSummary;
         if (!hasData) return;
         setUserProfile(prev => {
@@ -512,6 +528,7 @@ export default function App() {
     // Professional profile fields — persisted so they survive cache clears
     if ("position" in profile && profile.position) kvFields.position = profile.position;
     if ("industry" in profile && profile.industry) kvFields.industry = profile.industry;
+    if ("profile_completed" in profile) kvFields.profile_completed = profile.profile_completed;
     if ("seniority" in profile && profile.seniority) kvFields.seniority = profile.seniority;
     if ("keyExperience" in profile && profile.keyExperience) kvFields.keyExperience = profile.keyExperience;
 
@@ -536,7 +553,8 @@ export default function App() {
 
   /** Onboarding complete — save profile and close modal (page already navigated) */
   const handleOnboardingComplete = (profile: OnboardingProfile) => {
-    handleProfileUpdate(profile);
+    // Mark as completed so future logins skip the form even without localStorage
+    handleProfileUpdate({ ...profile, profile_completed: true } as OnboardingProfile);
     setShowOnboarding(false);
   };
 
