@@ -9,6 +9,7 @@
 
 import { motion } from "motion/react";
 import { ArrowLeft, ArrowRight, Lightbulb, Target, MessageSquare } from "lucide-react";
+import type { ResponseStep } from "@/services/types";
 
 const WHY_LABELS: Record<string, string> = {
     interview:    "Why They'll Ask This",
@@ -90,6 +91,8 @@ interface StrategyCardProps {
     framework?: { name: string; description: string };
     pivot: string;
     scenarioType?: string;
+    /** Context-specific steps from backend — takes priority over hardcoded fallbacks */
+    responseSteps?: ResponseStep[];
     onNext: () => void;
     onBack: () => void;
 }
@@ -103,6 +106,7 @@ export function StrategyCard({
     framework,
     pivot,
     scenarioType,
+    responseSteps,
     onNext,
     onBack,
 }: StrategyCardProps) {
@@ -168,8 +172,9 @@ export function StrategyCard({
                 {/* Example answer / opening line + continuation scaffold */}
                 {(exampleAnswer || suggestedOpener) && (() => {
                     const isFullAnswer = !!exampleAnswer;
-                    const continuationSteps = !isFullAnswer
-                        ? (RESPONSE_STEPS[s] ?? RESPONSE_STEPS.interview)
+                    // Backend-generated steps take priority; fall back to hardcoded per-scenario defaults
+                    const continuationSteps: ResponseStep[] = !isFullAnswer
+                        ? (responseSteps?.length ? responseSteps : (RESPONSE_STEPS[s] ?? RESPONSE_STEPS.interview))
                         : [];
                     const sectionLabel = isFullAnswer ? exampleLabel : "Your Opening Line";
 

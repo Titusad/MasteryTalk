@@ -271,6 +271,12 @@ Respond with ONLY a valid JSON object. No markdown, no code fences.
     {
       "num": 1,
       "title": "Section title (English, action-oriented, max 5 words)",
+      "responseSteps": [
+        {
+          "step": "Step name (1-2 words, e.g. Acknowledge / Main point / Next step)",
+          "template": "Fill-in-the-blank sentence the user says — use [brackets] for what they must slot in from their own context. 1 sentence, natural spoken English, first person."
+        }
+      ],
       "paragraphs": [
         {
           "text": "Coaching context in English (1 sentence that sets up the highlights below)",
@@ -295,6 +301,19 @@ Respond with ONLY a valid JSON object. No markdown, no code fences.
 - Highlights are the CORE DELIVERABLE — these are what the user practices saying aloud
 - Color coding: green (#dcfce7) = key openers, blue (#dbeafe) = data/metrics, purple (#f3e8ff) = strategic phrases, amber (#fef3c7) = closing/transition
 - Total word count across all highlights: 200-400 words (this will be spoken via TTS shadowing)
+
+=== RESPONSE STEPS RULES (CRITICAL) ===
+Each section MUST include "responseSteps": exactly 3 fill-in-the-blank sentence templates.
+These steps teach the user HOW to build their full spoken response for THIS specific key moment.
+Rules:
+- Step names: short action labels (Acknowledge / Main point / Ask / Plan / Position / etc.)
+- Templates: 1 sentence each, first person, natural spoken English, ready to say out loud
+- [Brackets]: mark EXACTLY what the user must slot in from their own situation — be specific
+  BAD: "[add your info here]" — too vague
+  GOOD: "[number of days] behind on [deliverable name] due to [root cause]" — actionable
+- Templates must be SPECIFIC to this section's topic — not generic meeting advice
+- The 3 steps must build a logical arc: setup → core message → close/ask
+- Do NOT use the same templates across sections — each key moment is unique
 
 === QUALITY CHECKLIST ===
 - [ ] Every highlight phrase sounds natural when spoken aloud (no written-English artifacts)

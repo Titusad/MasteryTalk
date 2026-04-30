@@ -220,6 +220,7 @@ export function BriefingStepperCarousel({
                             framework={currentCard.framework}
                             pivot={currentCard.pivot}
                             scenarioType={scenarioType}
+                            responseSteps={currentCard.responseSteps}
                             onNext={() => goToStep("answer")}
                             onBack={() => goToStep("question")}
                         />

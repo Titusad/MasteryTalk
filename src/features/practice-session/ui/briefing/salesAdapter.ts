@@ -91,6 +91,7 @@ function sectionToCard(section: ScriptSection): InterviewQuestionCard {
       ? allHighlights
       : [{ phrase: section.title, color: "#c4b5fd", tooltip: "Key talking point" }],
     pivot,
+    responseSteps: section.responseSteps,
   };
 }
 
