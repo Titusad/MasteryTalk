@@ -34,6 +34,15 @@ import type {
   TurnPronunciationData,
 } from "@/services/types";
 
+const INTERLOCUTOR_DISPLAY: Record<string, string> = {
+  recruiter: "The Recruiter", hiring_manager: "Hiring Manager", sme: "Technical Expert",
+  hr: "HR / Culture", gatekeeper: "The Gatekeeper", technical_buyer: "Technical Buyer",
+  champion: "The Champion", decision_maker: "Decision Maker",
+  meeting_facilitator: "Meeting Facilitator", senior_stakeholder: "Senior Stakeholder",
+  egalitarian_leader: "Egalitarian Leader",
+};
+const displayLabel = (key: string) => INTERLOCUTOR_DISPLAY[key] ?? key.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+
 const SCENARIO_LABELS_MAP: Record<string, string> = {
   sales: "Sales Pitch",
   interview: "Job Interview",
@@ -104,10 +113,17 @@ function VoicePractice({
   const pendingPronPromisesRef = useRef<Promise<void>[]>([]);
   /** Actual audio duration (seconds) for calibrating typewriter speed */
   const ttsDurationRef = useRef<number>(0);
+  /** TTS queue for streaming path — sentences enqueued as they're detected */
+  const ttsQueueRef = useRef<string[]>([]);
+  const ttsQueueRunningRef = useRef(false);
+  /** Sentence accumulator for streaming SSE tokens */
+  const sentenceBufferRef = useRef("");
+  /** Accumulated full text during streaming (for final message update) */
+  const streamingFullTextRef = useRef("");
 
   const playAiTts = useCallback(
-    async (text: string, msgIndex?: number) => {
-      try {
+    (text: string, msgIndex?: number): Promise<void> => new Promise((resolveTts) => {
+      (async () => { try {
         if (ttsAudioRef.current) {
           ttsAudioRef.current.pause();
           ttsAudioRef.current.onended = null;
@@ -151,6 +167,7 @@ function VoicePractice({
           ttsTargetMsgRef.current = null;
           URL.revokeObjectURL(revokeUrl);
           ttsAudioRef.current = null;
+          resolveTts();
         };
         const handleError = (revokeUrl: string) => {
           setIsTtsPlaying(false);
@@ -158,6 +175,7 @@ function VoicePractice({
           ttsTargetMsgRef.current = null;
           URL.revokeObjectURL(revokeUrl);
           ttsAudioRef.current = null;
+          resolveTts();
         };
 
         // ── Path A: MediaSource streaming (Chrome, Firefox, Edge) ──
@@ -252,11 +270,9 @@ function VoicePractice({
         });
         setTtsReady(true);
 
-      } catch {
-        setIsTtsPlaying(false);
-        setTtsReady(true);
-      }
-    },
+      } catch { setIsTtsPlaying(false); setTtsReady(true); resolveTts(); }
+      })();
+    }),
     [],
   );
 
@@ -439,6 +455,45 @@ function VoicePractice({
     await recorder.start();
   }, [recorder]);
 
+  /* ── Streaming helpers ── */
+
+  // Drain the TTS queue: play each sentence sequentially.
+  const drainTtsQueue = useCallback(async () => {
+    if (ttsQueueRunningRef.current) return;
+    ttsQueueRunningRef.current = true;
+    while (ttsQueueRef.current.length > 0) {
+      const sentence = ttsQueueRef.current.shift()!;
+      await playAiTts(sentence);
+    }
+    ttsQueueRunningRef.current = false;
+  }, [playAiTts]);
+
+  // Extract complete sentences from the streaming buffer.
+  // Returns extracted sentences and leaves the incomplete tail in the buffer.
+  const flushSentences = useCallback((flush = false) => {
+    const buf = sentenceBufferRef.current;
+    const re = /[.!?](?=\s|$)/g;
+    let lastIdx = 0;
+    let match;
+    while ((match = re.exec(buf)) !== null) {
+      const sentence = buf.slice(lastIdx, match.index + 1).trim();
+      // Ignore likely abbreviations: single uppercase letter or "Mr." "Dr." etc.
+      const wordBefore = buf.slice(0, match.index).split(/\s+/).pop() ?? "";
+      const isAbbrev = /^[A-Z]$|^(Mr|Dr|Ms|Mrs|Prof|Sr|Jr|vs|etc|Fig|Eq)$/i.test(wordBefore.replace(/\.$/, ""));
+      if (!isAbbrev && sentence.length >= 6) {
+        ttsQueueRef.current.push(sentence);
+        drainTtsQueue();
+      }
+      lastIdx = match.index + 1;
+      while (lastIdx < buf.length && buf[lastIdx] === " ") lastIdx++;
+    }
+    sentenceBufferRef.current = flush ? "" : buf.slice(lastIdx);
+    if (flush && lastIdx < buf.length) {
+      const tail = buf.slice(lastIdx).trim();
+      if (tail.length >= 3) { ttsQueueRef.current.push(tail); drainTtsQueue(); }
+    }
+  }, [drainTtsQueue]);
+
   /* Handle recording stop — REAL pipeline: record → Whisper → GPT-4o → TTS */
   const handleRecordingStop = useCallback(async () => {
     // Guard against double-tap / touch+click submissions — lock ref IMMEDIATELY
@@ -532,52 +587,102 @@ function VoicePractice({
       });
       setIsProcessing(false);
 
-      // 3. Send transcription to GPT-4o for AI response
+      // 3. Send transcription to GPT-4o via streaming endpoint
       setIsAiTyping(true);
-      const turnResult =
-        await realConversationService.processTurn(
-          sessionId,
-          transcription.text,
-        );
 
-      // NOTE: Do NOT setIsAiTyping(false) here.  The AI message is added to
-      // the array below and will show typing-bars inside its own bubble
-      // (aiWaiting state).  isAiTyping is cleared later when the typewriter
-      // starts, keeping the mic disabled throughout the transition.
-      const aiMsg = turnResult.aiMessage;
-      let aiMsgIndex = 0;
+      // Add an empty AI message placeholder — text grows as tokens arrive
+      const aiLabel = displayLabel(interlocutor);
+      let streamAiMsgIndex = 0;
       setMessages((prev) => {
-        // Dedup guard: prevent adding the same AI message twice
-        // (React 18 StrictMode replays updaters; batching races can also cause this)
-        const lastMsg = prev[prev.length - 1];
-        if (
-          lastMsg &&
-          lastMsg.role === "ai" &&
-          lastMsg.text === aiMsg.text
-        ) {
-          aiMsgIndex = prev.length - 1;
-          ttsTargetMsgRef.current = aiMsgIndex;
-          return prev;
-        }
-        const newMsgs = [...prev, aiMsg];
-        aiMsgIndex = newMsgs.length - 1;
-        // Set ref INSIDE updater where index is guaranteed correct.
-        // React 18 batching defers updater execution, so setting aiMsgIndex
-        // outside the updater would use a stale value (0).
-        ttsTargetMsgRef.current = aiMsgIndex;
+        const newMsgs = [...prev, {
+          role: "ai" as const,
+          label: aiLabel,
+          time: new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false }),
+          text: "",
+        }];
+        streamAiMsgIndex = newMsgs.length - 1;
+        ttsTargetMsgRef.current = streamAiMsgIndex;
         return newMsgs;
       });
-      // 4. Play AI response via ElevenLabs TTS — called OUTSIDE state updater to prevent double execution
-      // NOTE: msgIndex is intentionally omitted — ttsTargetMsgRef is already set correctly inside the updater above.
-      if (aiMsg.text) {
-        playAiTts(aiMsg.text);
-      }
 
-      if (turnResult.isComplete) {
-        setIsConversationComplete(true);
-        // Pre-warm feedback analysis in background — gives Gemini a ~15-30s head
-        // start while the user reads the last AI message and clicks "Analyze".
-        onConversationComplete?.();
+      // Reset streaming state
+      sentenceBufferRef.current = "";
+      streamingFullTextRef.current = "";
+      ttsQueueRef.current = [];
+      ttsQueueRunningRef.current = false;
+      setTtsReady(true); // Typewriter not needed in streaming — text grows live
+
+      const streamUrl = `${SUPABASE_URL}/functions/v1/make-server-08b8658d/process-turn-stream`;
+      const streamToken = await getAuthToken();
+      const streamRes = await fetch(streamUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${streamToken}` },
+        body: JSON.stringify({ sessionId, userMessage: transcription.text }),
+      });
+
+      if (!streamRes.ok || !streamRes.body) throw new Error(`Stream failed: ${streamRes.status}`);
+
+      const reader = streamRes.body.getReader();
+      const decoder = new TextDecoder();
+      let lineBuf = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        lineBuf += decoder.decode(value, { stream: true });
+        const lines = lineBuf.split("\n");
+        lineBuf = lines.pop() ?? "";
+
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          const data = line.slice(6).trim();
+          try {
+            const evt = JSON.parse(data);
+
+            if (evt.t === "s" && evt.v) {
+              // Token arrived — grow message text and check for sentences
+              streamingFullTextRef.current += evt.v;
+              sentenceBufferRef.current += evt.v;
+              flushSentences(false);
+              // Update message text in state (batched by React 18)
+              const currentText = streamingFullTextRef.current;
+              setMessages((prev) => {
+                const updated = [...prev];
+                const idx = streamAiMsgIndex;
+                if (updated[idx]) updated[idx] = { ...updated[idx], text: currentText };
+                return updated;
+              });
+            } else if (evt.t === "end") {
+              // Stream done — flush remaining sentence buffer, mark complete
+              flushSentences(true);
+              // Final message text sync
+              setMessages((prev) => {
+                const updated = [...prev];
+                if (updated[streamAiMsgIndex]) {
+                  updated[streamAiMsgIndex] = { ...updated[streamAiMsgIndex], text: evt.text || streamingFullTextRef.current };
+                }
+                return updated;
+              });
+              // Mark message as fully revealed (for feedback gate)
+              revealedMsgsRef.current.add(streamAiMsgIndex);
+              setRevealingMsgIndex(null);
+              if (evt.isComplete) {
+                setIsConversationComplete(true);
+                onConversationComplete?.();
+              }
+              // Wait for all queued sentences to finish playing, then unblock mic
+              const waitForQueue = async () => {
+                while (ttsQueueRunningRef.current || ttsQueueRef.current.length > 0) {
+                  await new Promise(r => setTimeout(r, 80));
+                }
+                setIsAiTyping(false);
+              };
+              waitForQueue();
+            } else if (evt.t === "error") {
+              throw new Error("Streaming error from server");
+            }
+          } catch (parseErr) { /* skip malformed SSE events */ }
+        }
       }
     } catch (err) {
       setIsProcessing(false);

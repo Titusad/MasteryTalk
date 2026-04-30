@@ -219,4 +219,143 @@ The user is performing well. Push them to their ceiling. Be more skeptical, dire
   }
 });
 
+// POST /process-turn-stream — Streaming GPT-4o response with SSE
+// Returns text tokens immediately, computes metadata deterministically after stream ends.
+// Each SSE event: {"t":"s","v":"token"} for text, {"t":"end",...metadata} when done.
+app.post("/make-server-08b8658d/process-turn-stream", async (c: any) => {
+  try {
+    const user = await getAuthUser(c.req.header("Authorization"));
+    if (!user) return c.json({ error: "Unauthorized" }, 401);
+
+    const { sessionId, userMessage } = await c.req.json();
+    if (!sessionId || !userMessage) return c.json({ error: "Missing sessionId or userMessage" }, 400);
+
+    const raw = await kv.get(`practice:${sessionId}`);
+    if (!raw) return c.json({ error: `Session ${sessionId} not found` }, 404);
+
+    const session = raw as any;
+
+    if (session.isComplete) {
+      const body = `data: ${JSON.stringify({ t: "end", text: "This conversation has concluded.", isComplete: true, arenaPhase: session.arenaPhase || "support" })}\n\n`;
+      return new Response(body, { headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-cache", "Access-Control-Allow-Origin": "*" } });
+    }
+
+    session.messages.push({ role: "user", content: userMessage });
+    session.turnCount += 1;
+
+    const currentPhase = session.arenaPhase || "support";
+    const ARENA_DIRECTIVES: Record<string, string> = {
+      support: `=== DIFFICULTY LEVEL: SUPPORTIVE ===\nAsk straightforward questions. Give space to develop arguments. Assess foundational skills.`,
+      guidance: `=== DIFFICULTY LEVEL: GUIDED CHALLENGE ===\nChallenge claims with follow-ups. Push one level deeper. Don't accept surface-level answers.`,
+      challenge: `=== DIFFICULTY LEVEL: HIGH PRESSURE ===\nPush to their ceiling. Be skeptical, direct, demanding. Create realistic pressure.`,
+    };
+
+    const messagesForStream = [
+      ...session.messages.slice(0, 1),
+      { role: "system", content: ARENA_DIRECTIVES[currentPhase] || ARENA_DIRECTIVES.support },
+      ...session.messages.slice(1),
+      // Override JSON output format — streaming mode returns plain text
+      { role: "system", content: `=== STREAMING MODE ===\nIgnore JSON output instructions. Respond with ONLY your conversational reply as plain spoken English. Maximum 3 sentences. No JSON, no formatting.` },
+    ];
+
+    const openaiKey = (globalThis as any).Deno.env.get("OPENAI_API_KEY");
+    if (!openaiKey) return c.json({ error: "OPENAI_API_KEY not configured" }, 500);
+
+    const openaiRes = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${openaiKey}` },
+      body: JSON.stringify({ model: "gpt-4o", messages: messagesForStream, temperature: 0.85, max_tokens: 300, stream: true }),
+    });
+
+    if (!openaiRes.ok || !openaiRes.body) {
+      const errBody = await openaiRes.text();
+      return c.json({ error: `OpenAI streaming failed: ${errBody.slice(0, 200)}` }, 502);
+    }
+
+    // Heuristic performanceSignal from user message (avoids a second API call)
+    const computeSignal = (msg: string): number => {
+      let s = 50;
+      const w = msg.split(/\s+/).length;
+      if (w > 20) s += 10;
+      if (w > 40) s += 8;
+      if (/\d+/.test(msg)) s += 7;
+      if (/(leverage|ROI|stakeholder|deliverable|strategy|impact|align|pipeline|metric|outcome)/i.test(msg)) s += 12;
+      if (/(umm+|uh+|like,|you know|I mean|basically,)/i.test(msg)) s -= 12;
+      if (/^(well,|so,|um,|I think maybe)/i.test(msg.trim())) s -= 5;
+      return Math.max(20, Math.min(88, s));
+    };
+
+    const detectComplete = (text: string, turns: number): boolean => {
+      if (turns < 4) return false;
+      if (turns >= 8) return true;
+      const t = text.toLowerCase();
+      return ["thank you for your time", "i'll be in touch", "we'll circle back", "that wraps up", "good luck with", "let's schedule", "you'll hear from us", "pleasure speaking"].some(p => t.includes(p));
+    };
+
+    const encoder = new TextEncoder();
+    const readable = new ReadableStream({
+      async start(controller) {
+        try {
+          const reader = openaiRes.body!.getReader();
+          const decoder = new TextDecoder();
+          let lineBuf = "";
+          let fullText = "";
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            lineBuf += decoder.decode(value, { stream: true });
+            const lines = lineBuf.split("\n");
+            lineBuf = lines.pop() ?? "";
+            for (const line of lines) {
+              if (!line.startsWith("data: ")) continue;
+              const data = line.slice(6).trim();
+              if (data === "[DONE]") continue;
+              try {
+                const token = JSON.parse(data).choices?.[0]?.delta?.content ?? "";
+                if (!token) continue;
+                fullText += token;
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ t: "s", v: token })}\n\n`));
+              } catch { /* skip malformed */ }
+            }
+          }
+
+          // Update KV and emit final metadata event
+          const perfSignal = computeSignal(userMessage);
+          const isComplete = detectComplete(fullText, session.turnCount);
+          const perfHistory = [...(session.performanceHistory || []), perfSignal];
+          let nextPhase = currentPhase;
+          if (session.turnCount >= 2) {
+            const avg = perfHistory.slice(-2).reduce((a: number, b: number) => a + b, 0) / Math.min(2, perfHistory.length);
+            if (avg >= 72 && currentPhase === "support") nextPhase = "guidance";
+            else if (avg >= 72 && currentPhase === "guidance") nextPhase = "challenge";
+            else if (avg < 45 && currentPhase === "challenge") nextPhase = "guidance";
+            else if (avg < 45 && currentPhase === "guidance") nextPhase = "support";
+          }
+
+          session.arenaPhase = nextPhase;
+          session.performanceHistory = perfHistory;
+          session.messages.push({ role: "assistant", content: fullText });
+          session.isComplete = isComplete;
+          await kv.set(`practice:${sessionId}`, session);
+
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ t: "end", text: fullText, isComplete, arenaPhase: nextPhase })}\n\n`));
+          controller.close();
+        } catch (err) {
+          console.error("[ProcessTurnStream] Stream error:", err);
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ t: "error" })}\n\n`));
+          controller.close();
+        }
+      },
+    });
+
+    return new Response(readable, {
+      headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-cache", "Connection": "keep-alive", "Access-Control-Allow-Origin": "*" },
+    });
+  } catch (err) {
+    console.error("[ProcessTurnStream Error]", err);
+    return c.json({ error: `Streaming turn failed: ${err}` }, 500);
+  }
+});
+
 export default app;
