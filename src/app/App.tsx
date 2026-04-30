@@ -366,6 +366,32 @@ export default function App() {
   }, []);
 
   /* ─── Hash-based routing ─── */
+  // Restore profile from backend after login (survives cache clears)
+  useEffect(() => {
+    if (!authUser) return;
+    (async () => {
+      try {
+        const { getAuthToken } = await import("../services/supabase");
+        const token = await getAuthToken();
+        const res = await fetch(
+          `${SUPABASE_URL}/functions/v1/make-server-08b8658d/profile`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (!res.ok) return;
+        const backendProfile = await res.json();
+        // Only merge if backend has any professional profile data
+        const hasData = backendProfile.position || backendProfile.industry ||
+          backendProfile.keyExperience || backendProfile.cvSummary;
+        if (!hasData) return;
+        setUserProfile(prev => {
+          const merged = { ...(prev ?? {}), ...backendProfile } as OnboardingProfile;
+          try { localStorage.setItem("masterytalk_profile", JSON.stringify(merged)); } catch { /* ignore */ }
+          return merged;
+        });
+      } catch { /* silent — localStorage fallback still works */ }
+    })();
+  }, [authUser?.uid]); // re-runs only when the logged-in user changes
+
   useEffect(() => {
     // Prevent browser from restoring scroll position on hash navigation
     if ('scrollRestoration' in history) {
@@ -478,11 +504,16 @@ export default function App() {
       localStorage.setItem("masterytalk_profile", JSON.stringify(profile));
     } catch { /* ignore */ }
 
-    // Sync CV-related fields to backend KV store (fire-and-forget)
+    // Sync profile fields to backend KV store (fire-and-forget)
     const kvFields: Record<string, unknown> = {};
     if ("cvConsentGiven" in profile) kvFields.cvConsentGiven = profile.cvConsentGiven;
     if ("cvSummary" in profile) kvFields.cvSummary = profile.cvSummary;
     if ("cvFileName" in profile) kvFields.cvFileName = profile.cvFileName;
+    // Professional profile fields — persisted so they survive cache clears
+    if ("position" in profile && profile.position) kvFields.position = profile.position;
+    if ("industry" in profile && profile.industry) kvFields.industry = profile.industry;
+    if ("seniority" in profile && profile.seniority) kvFields.seniority = profile.seniority;
+    if ("keyExperience" in profile && profile.keyExperience) kvFields.keyExperience = profile.keyExperience;
 
     if (Object.keys(kvFields).length > 0) {
       import("../services/supabase").then(({ getAuthToken }) => {

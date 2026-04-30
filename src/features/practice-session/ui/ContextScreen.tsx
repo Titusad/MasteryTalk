@@ -82,12 +82,49 @@ const SCENARIO_SUBTITLES: Record<string, string> = {
    PERSONALIZE PRESETS — inject user role into context
    ═══════════════════════════════════════════════════════════ */
 
-function personalizePresets(presets: SituationPreset[], position?: string): SituationPreset[] {
-    if (!position) return presets;
-    return presets.map((p) => ({
-        ...p,
-        context: `${p.context} The open role is aligned with your background as a ${position}.`,
-    }));
+// Maps user industry to a company type label — no geographic references
+const INDUSTRY_COMPANY_LABEL: Record<string, string> = {
+    "Technology / Software":    "tech company",
+    "Healthcare / Biotech":     "healthcare company",
+    "Finance / Banking":        "financial services firm",
+    "E-commerce / Retail":      "retail company",
+    "Manufacturing":            "manufacturing company",
+    "Education / EdTech":       "education company",
+    "Government / NGO":         "public sector organization",
+    "Consulting":               "consulting firm",
+    "Media / Entertainment":    "media company",
+    "Real Estate":              "real estate firm",
+    "Legal":                    "law firm",
+    "Energy / Utilities":       "energy company",
+    "Logistics / Supply Chain": "logistics company",
+};
+
+// Tech-related terms to replace when user is in a different industry
+const TECH_COMPANY_PATTERN = /\b(tech company|SaaS company|software company|tech startup|startup)\b/gi;
+
+function personalizePresets(
+    presets: SituationPreset[],
+    position?: string,
+    industry?: string,
+): SituationPreset[] {
+    const companyLabel = industry ? (INDUSTRY_COMPANY_LABEL[industry] ?? null) : null;
+
+    return presets.map((p) => {
+        // Replace tech company references in the company field when user is in a different industry
+        const company = companyLabel && !INDUSTRY_COMPANY_LABEL[industry ?? ""]?.includes("tech")
+            ? p.company
+                .replace(TECH_COMPANY_PATTERN, companyLabel)
+                .replace(/\bU\.S\.\s+/g, "")   // remove geographic prefix
+                .replace(/\bU\.S\b\.?/g, "")    // catch trailing U.S. without space
+                .trim()
+            : p.company.replace(/\bU\.S\.\s+/g, "").replace(/\bU\.S\b\.?/g, "").trim();
+
+        const context = position
+            ? `${p.context} The participant's background is in ${position}${industry ? ` within ${industry}` : ""}.`
+            : p.context;
+
+        return { ...p, company, context };
+    });
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -168,7 +205,7 @@ function ContextScreen({
 }) {
     const fields   = scenarioType ? EXTRA_CONTEXT_FIELDS[scenarioType] ?? [] : [];
     const rawPresets = getPresetsForScenario(scenarioType);
-    const presets  = personalizePresets(rawPresets, userProfile?.position);
+    const presets  = personalizePresets(rawPresets, userProfile?.position, userProfile?.industry);
     useNarration(narratorUrl || null);
     const storageKey = `masterytalk_extra_ctx_${scenarioType || "default"}`;
 
