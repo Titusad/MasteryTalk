@@ -35,6 +35,7 @@ const CookiesPage = lazyRetry(() => import("../pages/legal/CookiesPage").then(m 
 const OnboardingProfileScreen = lazyRetry(() => import("@/features/onboarding/ui/OnboardingProfileScreen").then(m => ({ default: m.OnboardingProfileScreen })));
 
 import { LoadingScreen } from "./components/LoadingScreen";
+import { AuthLoadingScreen } from "./components/AuthLoadingScreen";
 import { LanguageTransitionModal } from "./components/LanguageTransitionModal";
 import type { User, OnboardingProfile, ScenarioType, SessionSummary, TurnPronunciationData, ScriptSection, InterviewBriefingData } from "@/services/types";
 import type { PathId } from "@/features/dashboard/model/progression-paths";
@@ -217,13 +218,14 @@ export default function App() {
 
       // Now subscribe to auth state changes
       unsubscribe = authService.onAuthStateChanged((user) => {
-        setIsInitializing(false);
         const hadUser = prevAuthUserRef.current !== null;
         prevAuthUserRef.current = user;
         setAuthUser(user);
 
         if (user && !hadUser) {
-          // Wrap in async IIFE: fetch backend profile FIRST, then navigate
+          // Wrap in async IIFE: fetch backend profile FIRST, then navigate.
+          // setIsInitializing(false) fires AFTER the IIFE so the branded
+          // loading screen covers the entire auth transition — no landing flash.
           (async () => {
             // ── Step 1: Fetch profile from backend (source of truth) ──
             let backendProfile: Record<string, unknown> | null = null;
@@ -361,7 +363,13 @@ export default function App() {
             } else if (window.location.hash === "#admin") {
               setPage("admin");
             }
-          })();
+          })().finally(() => {
+            // Reveal the app only after profile fetch + navigation are ready
+            setIsInitializing(false);
+          });
+        } else {
+          // No async work (user already logged in on reload, or logged out)
+          setIsInitializing(false);
         }
 
         if (!user && hadUser) {
@@ -634,17 +642,13 @@ export default function App() {
   };
 
   if (isInitializing) {
-    return (
-      <div aria-label="App" className="w-full min-h-screen flex items-center justify-center bg-[#f8fafc]">
-        <div className="w-8 h-8 rounded-full border-2 border-[#0f172b] border-t-transparent animate-spin" />
-      </div>
-    );
+    return <AuthLoadingScreen />;
   }
 
   return (
     <ErrorBoundary>
       <div className="size-full">
-        <Suspense fallback={<LoadingScreen scenario="" />}>
+        <Suspense fallback={<AuthLoadingScreen />}>
           {/* ─── Onboarding modal overlay (renders ON TOP of current page) ─── */}
           {showOnboarding && (
             <OnboardingProfileScreen
