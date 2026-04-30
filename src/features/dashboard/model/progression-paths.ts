@@ -49,6 +49,7 @@ export interface ProgressionLevel {
 export interface ProgressionPath {
   id: "self-intro" | "interview" | "sales" | "meeting" | "presentation" | "client" | "csuite" | "culture";
   title: string;
+  description?: string;
   icon: string;
   levels: ProgressionLevel[];
 }
@@ -1627,13 +1628,55 @@ const SELF_INTRO_LEVELS: ProgressionLevel[] = SELF_INTRO_CONTEXTS.map((ctx, i) =
 }));
 
 export const PROGRESSION_PATHS: ProgressionPath[] = [
-  { id: "self-intro", title: "Self-Introduction", icon: "mic", levels: SELF_INTRO_LEVELS },
-  { id: "culture", title: "U.S. Business Culture", icon: "crown", levels: CULTURE_LEVELS },
-  { id: "interview", title: "Interview Mastery", icon: "target", levels: INTERVIEW_LEVELS },
-  { id: "sales", title: "Sales Champion", icon: "briefcase", levels: SALES_LEVELS },
-  { id: "meeting", title: "Remote Meeting Presence", icon: "video", levels: MEETING_LEVELS },
-  { id: "presentation", title: "Presentations", icon: "mic", levels: PRESENTATION_LEVELS },
-  { id: "client", title: "Dealing with Clients", icon: "handshake", levels: CLIENT_LEVELS },
+  {
+    id: "self-intro",
+    title: "Self-Introduction",
+    description: "Master how to introduce yourself with clarity and confidence in any professional setting — networking events, new teams, and client meetings.",
+    icon: "mic",
+    levels: SELF_INTRO_LEVELS,
+  },
+  {
+    id: "culture",
+    title: "U.S. Business Culture",
+    description: "Operate with confidence in U.S. corporate culture — direct communication, individual ownership, and executive presence across 6 real-world scenarios.",
+    icon: "crown",
+    levels: CULTURE_LEVELS,
+  },
+  {
+    id: "interview",
+    title: "Interview Mastery",
+    description: "Land the role you want by communicating your experience with precision, structure, and conviction — from the phone screen to the final round.",
+    icon: "target",
+    levels: INTERVIEW_LEVELS,
+  },
+  {
+    id: "sales",
+    title: "Sales Champion",
+    description: "Win more deals by mastering how to frame value, handle objections, and close with confidence — from the first call to the C-suite.",
+    icon: "briefcase",
+    levels: SALES_LEVELS,
+  },
+  {
+    id: "meeting",
+    title: "Remote Meeting Presence",
+    description: "Lead and participate in remote meetings with authority — speak clearly, redirect diplomatically, and close every meeting with concrete decisions.",
+    icon: "video",
+    levels: MEETING_LEVELS,
+  },
+  {
+    id: "presentation",
+    title: "Presentations",
+    description: "Deliver presentations that move people to action — structure your message, command the room, and handle tough Q&A without losing your thread.",
+    icon: "mic",
+    levels: PRESENTATION_LEVELS,
+  },
+  {
+    id: "client",
+    title: "Dealing with Clients",
+    description: "Build lasting client relationships through professional communication — set expectations, deliver difficult feedback, and navigate high-stakes conversations.",
+    icon: "handshake",
+    levels: CLIENT_LEVELS,
+  },
 ];
 
 /* ── Feature Flag: Visible Paths in Production ──

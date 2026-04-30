@@ -161,6 +161,15 @@ export function ProgressionTree({ onStartLevel, onDrillComplete, onLockedClick }
           </div>
         </div>
 
+        {/* Path description */}
+        {activePath?.description && (
+          <div className="px-5 pt-3 pb-0">
+            <p className="text-sm text-[#62748e] leading-relaxed">
+              {activePath.description}
+            </p>
+          </div>
+        )}
+
         {/* Level Cards */}
         <div className="px-5 pb-5 pt-4">
           {loading ? (
