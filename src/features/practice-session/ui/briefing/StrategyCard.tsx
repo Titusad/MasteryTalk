@@ -7,6 +7,7 @@
  * ==============================================================
  */
 
+import { useState } from "react";
 import { motion } from "motion/react";
 import { ArrowLeft, ArrowRight, Lightbulb, Target, MessageSquare } from "lucide-react";
 import type { ResponseStep } from "@/services/types";
@@ -65,13 +66,65 @@ const RESPONSE_STEPS: Record<string, Array<{ step: string; template: string }>> 
     ],
 };
 
-// Render a template string, highlighting [placeholders] in indigo so they stand out visually.
-function renderTemplate(template: string): React.ReactNode {
-    return template.split(/(\[[^\]]+\])/g).map((part, i) =>
-        part.startsWith("[") && part.endsWith("]")
-            ? <span key={i} className="text-[#6366f1] not-italic" style={{ fontWeight: 600 }}>{part}</span>
-            : <span key={i}>{part}</span>
+// Inline input fields for each [bracket] in a template string.
+function BracketInput({ template, stepIdx, values, onChange }: {
+    template: string;
+    stepIdx: number;
+    values: Record<number, Record<number, string>>;
+    onChange: (stepIdx: number, bracketIdx: number, value: string) => void;
+}) {
+    const parts = template.split(/(\[[^\]]+\])/g);
+    let bracketCount = 0;
+    return (
+        <>
+            {parts.map((part, i) => {
+                if (part.startsWith("[") && part.endsWith("]")) {
+                    const placeholder = part.slice(1, -1);
+                    const bIdx = bracketCount++;
+                    const val = values[stepIdx]?.[bIdx] ?? "";
+                    const displayWidth = val
+                        ? Math.max(60, val.length * 8 + 8)
+                        : Math.max(60, placeholder.length * 7);
+                    return (
+                        <input
+                            key={i}
+                            type="text"
+                            value={val}
+                            placeholder={placeholder}
+                            onChange={e => onChange(stepIdx, bIdx, e.target.value)}
+                            className="inline-block border-b-2 border-[#6366f1] bg-transparent placeholder-[#6366f1]/40 text-[#6366f1] focus:outline-none mx-0.5 text-sm not-italic align-baseline"
+                            style={{
+                                width: `${displayWidth}px`,
+                                fontWeight: val ? 600 : 400,
+                                fontSize: "0.875rem",
+                            }}
+                        />
+                    );
+                }
+                return <span key={i}>{part}</span>;
+            })}
+        </>
     );
+}
+
+// Assemble the full response from opener + filled-in steps.
+function assembleResponse(
+    opener: string,
+    steps: ResponseStep[],
+    values: Record<number, Record<number, string>>,
+): string {
+    const parts = [opener];
+    steps.forEach((step, stepIdx) => {
+        let text = step.template;
+        const stepVals = values[stepIdx] ?? {};
+        let bIdx = 0;
+        text = text.replace(/\[[^\]]+\]/g, () => {
+            const v = stepVals[bIdx++]?.trim();
+            return v || "___";
+        });
+        parts.push(text);
+    });
+    return parts.join(" ");
 }
 
 const CTA_LABELS: Record<string, string> = {
@@ -93,7 +146,7 @@ interface StrategyCardProps {
     scenarioType?: string;
     /** Context-specific steps from backend — takes priority over hardcoded fallbacks */
     responseSteps?: ResponseStep[];
-    onNext: () => void;
+    onNext: (assembled?: string) => void;
     onBack: () => void;
 }
 
@@ -115,6 +168,19 @@ export function StrategyCard({
     const strategyLabel = STRATEGY_LABELS[s] ?? "Your Strategy";
     const exampleLabel  = EXAMPLE_LABELS[s]  ?? "A Strong Answer Looks Like";
     const ctaLabel      = CTA_LABELS[s]      ?? "Record My Answer";
+    // [stepIdx][bracketIdx] = user typed value
+    const [inputs, setInputs] = useState<Record<number, Record<number, string>>>({});
+    const handleInputChange = (stepIdx: number, bracketIdx: number, value: string) => {
+        setInputs(prev => ({
+            ...prev,
+            [stepIdx]: { ...(prev[stepIdx] ?? {}), [bracketIdx]: value },
+        }));
+    };
+
+    // Compute continuation steps here so they're accessible in the CTA button handler
+    const continuationSteps: ResponseStep[] = !exampleAnswer
+        ? (responseSteps?.length ? responseSteps : (RESPONSE_STEPS[s] ?? RESPONSE_STEPS.interview))
+        : [];
     return (
         <motion.div aria-label="StrategyCard"
             className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden"
@@ -172,10 +238,6 @@ export function StrategyCard({
                 {/* Example answer / opening line + continuation scaffold */}
                 {(exampleAnswer || suggestedOpener) && (() => {
                     const isFullAnswer = !!exampleAnswer;
-                    // Backend-generated steps take priority; fall back to hardcoded per-scenario defaults
-                    const continuationSteps: ResponseStep[] = !isFullAnswer
-                        ? (responseSteps?.length ? responseSteps : (RESPONSE_STEPS[s] ?? RESPONSE_STEPS.interview))
-                        : [];
                     const sectionLabel = isFullAnswer ? exampleLabel : "Your Opening Line";
 
                     return (
@@ -189,18 +251,8 @@ export function StrategyCard({
                                 </h3>
                             </div>
 
-                            {/* Step 1 — the example or opener */}
+                            {/* Opener — shown as-is, no Opening badge */}
                             <div className="ml-9">
-                                {!isFullAnswer && (
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <span className="w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] flex items-center justify-center shrink-0" style={{ fontWeight: 700 }}>
-                                            1
-                                        </span>
-                                        <p className="text-[11px] text-emerald-600 uppercase tracking-wider" style={{ fontWeight: 600 }}>
-                                            Opening
-                                        </p>
-                                    </div>
-                                )}
                                 <div className="px-4 py-4 bg-emerald-50/50 rounded-xl border border-emerald-100 space-y-2">
                                     <p className="text-sm text-[#0f172b] leading-relaxed italic" style={{ fontWeight: 500 }}>
                                         "{exampleAnswer || suggestedOpener}"
@@ -212,7 +264,7 @@ export function StrategyCard({
                                     )}
                                 </div>
 
-                                {/* Fill-in-the-blank scaffold — only when showing opener, not full answer */}
+                                {/* Fill-in-the-blank steps — inline inputs for each [bracket] */}
                                 {!isFullAnswer && continuationSteps.length > 0 && (
                                     <div className="mt-3 space-y-2">
                                         <p className="text-[10px] text-[#94a3b8] uppercase tracking-wider mb-1" style={{ fontWeight: 600 }}>
@@ -221,7 +273,7 @@ export function StrategyCard({
                                         {continuationSteps.map((step, i) => (
                                             <div
                                                 key={i}
-                                                className="px-3 py-3 rounded-lg border border-[#e2e8f0] bg-[#f8fafc] space-y-1.5"
+                                                className="px-3 py-3 rounded-lg border border-[#e2e8f0] bg-[#f8fafc] space-y-2"
                                             >
                                                 <div className="flex items-center gap-2">
                                                     <span
@@ -235,12 +287,17 @@ export function StrategyCard({
                                                     </span>
                                                 </div>
                                                 <p className="text-sm text-[#45556c] leading-relaxed pl-7 italic">
-                                                    "{renderTemplate(step.template)}"
+                                                    "<BracketInput
+                                                        template={step.template}
+                                                        stepIdx={i}
+                                                        values={inputs}
+                                                        onChange={handleInputChange}
+                                                    />"
                                                 </p>
                                             </div>
                                         ))}
                                         <p className="text-[10px] text-[#94a3b8] pl-1 pt-1">
-                                            Fill in the <span className="text-[#6366f1]" style={{ fontWeight: 600 }}>[brackets]</span> with your specifics before you speak.
+                                            Type in the <span className="text-[#6366f1]" style={{ fontWeight: 600 }}>[fields]</span> — then record your full response.
                                         </p>
                                     </div>
                                 )}
@@ -253,7 +310,13 @@ export function StrategyCard({
             {/* Navigation */}
             <div className="px-6 py-6 border-t border-[#f1f5f9] flex flex-col items-center">
                 <button
-                    onClick={onNext}
+                    onClick={() => {
+                        const steps = !exampleAnswer ? continuationSteps : [];
+                        const assembled = steps.length > 0
+                            ? assembleResponse(suggestedOpener, steps, inputs)
+                            : undefined;
+                        onNext(assembled);
+                    }}
                     className="flex items-center gap-3 px-10 py-5 rounded-full text-xl bg-[#0f172b] text-white hover:bg-[#1d293d] transition-colors shadow-[0px_10px_15px_rgba(0,0,0,0.1)]"
                     style={{ fontWeight: 500 }}
                 >

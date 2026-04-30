@@ -56,6 +56,8 @@ export function BriefingStepperCarousel({
 
     /* Store user drafts per question for the AI feedback call */
     const userDraftsRef = useRef<Record<number, string>>({});
+    /* Store assembled responses per question (from StrategyCard fill-in inputs) */
+    const [assembledResponses, setAssembledResponses] = useState<Record<number, string>>({});
 
     const visibleCards = cards.slice(0, Math.min(5, cards.length));
     const currentCard = visibleCards[activeQuestionIdx];
@@ -221,7 +223,12 @@ export function BriefingStepperCarousel({
                             pivot={currentCard.pivot}
                             scenarioType={scenarioType}
                             responseSteps={currentCard.responseSteps}
-                            onNext={() => goToStep("answer")}
+                            onNext={(assembled) => {
+                                if (assembled) {
+                                    setAssembledResponses(prev => ({ ...prev, [activeQuestionIdx]: assembled }));
+                                }
+                                goToStep("answer");
+                            }}
                             onBack={() => goToStep("question")}
                         />
                     )}
@@ -231,6 +238,7 @@ export function BriefingStepperCarousel({
                             key={`q-${activeQuestionIdx}-answer`}
                             question={currentCard.question}
                             scenarioType={scenarioType}
+                            preparedResponse={assembledResponses[activeQuestionIdx]}
                             onNext={handleAnswerSubmit}
                             onBack={() => goToStep("strategy")}
                         />

@@ -42,11 +42,13 @@ const PLACEHOLDER_LABELS: Record<string, string> = {
 interface AnswerCardProps {
     question: string;
     scenarioType?: string;
+    /** Assembled response from StrategyCard fill-in inputs */
+    preparedResponse?: string;
     onNext: (userDraft: string) => void;
     onBack: () => void;
 }
 
-export function AnswerCard({ question, scenarioType, onNext, onBack }: AnswerCardProps) {
+export function AnswerCard({ question, scenarioType, preparedResponse, onNext, onBack }: AnswerCardProps) {
     const promptLabel      = PROMPT_LABELS[scenarioType ?? "interview"]      ?? "How would you respond to:";
     const placeholderLabel = PLACEHOLDER_LABELS[scenarioType ?? "interview"] ?? "Type how you would respond...";
     const recorder = useMediaRecorder();
@@ -128,13 +130,28 @@ export function AnswerCard({ question, scenarioType, onNext, onBack }: AnswerCar
         >
 
             <div className="px-6 py-6 md:px-8">
-                {/* Question reminder */}
-                <p className="text-sm text-[#45556c] mb-1" style={{ fontWeight: 500 }}>
-                    {promptLabel}
-                </p>
-                <p className="text-base text-[#0f172b] mb-6" style={{ fontWeight: 600 }}>
-                    "{question}"
-                </p>
+                {/* Prepared response — shown when user filled in the template */}
+                {preparedResponse ? (
+                    <div className="mb-5">
+                        <p className="text-xs text-[#94a3b8] uppercase tracking-wider mb-2" style={{ fontWeight: 600 }}>
+                            Your prepared response — say this out loud:
+                        </p>
+                        <div className="px-4 py-4 bg-[#f0fdf4] rounded-xl border border-[#bbf7d0]">
+                            <p className="text-sm text-[#0f172b] leading-relaxed" style={{ fontWeight: 500 }}>
+                                {preparedResponse}
+                            </p>
+                        </div>
+                    </div>
+                ) : (
+                    <>
+                        <p className="text-sm text-[#45556c] mb-1" style={{ fontWeight: 500 }}>
+                            {promptLabel}
+                        </p>
+                        <p className="text-base text-[#0f172b] mb-6" style={{ fontWeight: 600 }}>
+                            "{question}"
+                        </p>
+                    </>
+                )}
 
                 {/* Mode toggle */}
                 <div className="flex items-center gap-2 mb-5">
