@@ -23,13 +23,32 @@ import { realSpeechService } from "@/services";
 import { useMediaRecorder } from "@/shared/hooks/useMediaRecorder";
 import { RecordingWaveformBars, RecordingTimer } from "@/shared/ui";
 
+const PROMPT_LABELS: Record<string, string> = {
+    interview:    "How would you respond to:",
+    sales:        "How would you pitch this:",
+    meeting:      "How would you handle this moment:",
+    presentation: "How would you deliver this:",
+    culture:      "How would you navigate this:",
+};
+
+const PLACEHOLDER_LABELS: Record<string, string> = {
+    interview:    "Type how you would respond to this question...",
+    sales:        "Type how you would pitch this...",
+    meeting:      "Type how you would handle this moment...",
+    presentation: "Type how you would deliver this...",
+    culture:      "Type how you would navigate this...",
+};
+
 interface AnswerCardProps {
     question: string;
+    scenarioType?: string;
     onNext: (userDraft: string) => void;
     onBack: () => void;
 }
 
-export function AnswerCard({ question, onNext, onBack }: AnswerCardProps) {
+export function AnswerCard({ question, scenarioType, onNext, onBack }: AnswerCardProps) {
+    const promptLabel      = PROMPT_LABELS[scenarioType ?? "interview"]      ?? "How would you respond to:";
+    const placeholderLabel = PLACEHOLDER_LABELS[scenarioType ?? "interview"] ?? "Type how you would respond...";
     const recorder = useMediaRecorder();
     const [mode, setMode] = useState<"voice" | "text">("voice");
     const [status, setStatus] = useState<"idle" | "recording" | "processing" | "done">("idle");
@@ -111,7 +130,7 @@ export function AnswerCard({ question, onNext, onBack }: AnswerCardProps) {
             <div className="px-6 py-6 md:px-8">
                 {/* Question reminder */}
                 <p className="text-sm text-[#45556c] mb-1" style={{ fontWeight: 500 }}>
-                    How would you respond to:
+                    {promptLabel}
                 </p>
                 <p className="text-base text-[#0f172b] mb-6" style={{ fontWeight: 600 }}>
                     "{question}"
@@ -222,7 +241,7 @@ export function AnswerCard({ question, onNext, onBack }: AnswerCardProps) {
                         <textarea
                             value={textDraft}
                             onChange={(e) => setTextDraft(e.target.value)}
-                            placeholder="Type how you would respond to this question..."
+                            placeholder={placeholderLabel}
                             className="w-full h-[120px] bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-4 text-[#0f172b] placeholder:text-[#94a3b8] focus:outline-none focus:border-[#0f172b] focus:bg-white transition-all resize-none"
                             style={{ fontSize: "14px", lineHeight: "22px" }}
                         />

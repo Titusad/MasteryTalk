@@ -229,6 +229,7 @@ export function BriefingStepperCarousel({
                         <AnswerCard
                             key={`q-${activeQuestionIdx}-answer`}
                             question={currentCard.question}
+                            scenarioType={scenarioType}
                             onNext={handleAnswerSubmit}
                             onBack={() => goToStep("strategy")}
                         />
