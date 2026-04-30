@@ -13,6 +13,7 @@ import { ArrowLeft, LogOut, BookOpen, User, ChevronDown } from "lucide-react";
 import type React from "react";
 import { useState, useRef, useEffect } from "react";
 import { BrandLogo } from "./BrandLogo";
+import { NarrationToggle } from "./NarrationToggle";
 
 /* ── Profile dropdown — extracted as a proper component so hooks are always
    called in the same order regardless of the parent's conditional render. ── */
@@ -219,14 +220,17 @@ export function AppHeader({
           {leftSlot}
           <BrandLogo />
         </div>
-        {onGoToDashboard && (
-          <button
-            onClick={onGoToDashboard}
-            className="text-sm text-[#45556c] hover:text-[#0f172b] transition-colors font-medium"
-          >
-            Go to Dashboard
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+          <NarrationToggle />
+          {onGoToDashboard && (
+            <button
+              onClick={onGoToDashboard}
+              className="text-sm text-[#45556c] hover:text-[#0f172b] transition-colors font-medium"
+            >
+              Go to Dashboard
+            </button>
+          )}
+        </div>
       </div>
     </header>
   );

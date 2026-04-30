@@ -897,8 +897,6 @@ export default function App() {
           />
         </Suspense>
 
-        {/* Global narration mute/unmute toggle */}
-        <NarrationToggle />
         <CookieBanner />
 
       </div>
