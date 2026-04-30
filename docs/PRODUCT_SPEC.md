@@ -4,7 +4,7 @@
 > Any code change MUST be consistent with this spec.
 > If the spec needs to change, update THIS FILE FIRST → get approval → then code.
 >
-> Last updated: 2026-04-29 (v2.4 — Habit loop sprints 1-4: WA SR Coach onboarding, Mastery Audit feature, renewal email ROI, new KV fields)
+> Last updated: 2026-04-30 (v2.5 — Font system, dashboard 3-row layout, ProgressionTree redesign, self-intro first path, auth hardening)
 
 ---
 
@@ -517,6 +517,7 @@ A user sees the `MasteryAuditCard` in FeedbackScreen when ALL of:
 | Frontend | React 18 + TypeScript + Tailwind CSS v4 + Vite 6 |
 | Architecture | Feature-Sliced Design (FSD): app→pages→widgets→features→entities→shared |
 | Animations | `motion/react` |
+| Font | Poppins (global via `body` in `theme.css`) + Montserrat (logo accent, `.font-montserrat` utility) |
 | Backend | Supabase Edge Functions (Deno + Hono) |
 | Scheduler | Supabase `pg_cron` (daily 9AM) |
 | Database | Supabase PostgreSQL + KV store (`kv_store_4e8a5b39`) |
@@ -554,3 +555,4 @@ A user sees the `MasteryAuditCard` in FeedbackScreen when ALL of:
 | v2.2 | 2026-04-28 | §2: added `sales` as 5th active scenario (Sales Champion path). Removed from Retired. §3.2, §8 updated. |
 | v2.3 | 2026-04-28 | §9: split en §9.0 Resend (transaccional) + §9.1 Loops.so (marketing automation, planned). §10.1: nuevos endpoints /marketing/*. |
 | v2.4 | 2026-04-29 | §4.1: new KV fields (WA onboarding: wa_preferred_hour, wa_timezone, wa_phrases_mastered, wa_dismissed_at_session_count, wa_card_permanently_dismissed; Mastery Audit: profession, audit_booked_at). §7.1.1: FeedbackScreen post-session cards spec. §9.0: renewal email two-branch behavior. §10.1.1: PUT /profile whitelist documented. §10.4: Mastery Audit feature spec. |
+| v2.5 | 2026-04-30 | §11: Font row added (Poppins global + Montserrat accent). No other spec changes — all 2026-04-30 work is implementation/UX (dashboard layout, font system, auth hardening, ProgressionTree redesign). |

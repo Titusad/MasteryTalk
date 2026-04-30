@@ -1,12 +1,12 @@
 # MasteryTalk PRO — Roadmap
 
-> **Last updated:** 2026-04-28
+> **Last updated:** 2026-04-30
 > **Spec reference:** [`PRODUCT_SPEC.md`](./PRODUCT_SPEC.md)
 > **Rule:** New items go here FIRST → spec update if needed → then code.
 
 ---
 
-## Current State (Beta v12.0 — 2026-04-28)
+## Current State (Beta v14.0 — 2026-04-30)
 
 ### ✅ What's Live
 - 5 active scenarios: interview, meeting, presentation, sales, culture
@@ -25,6 +25,16 @@
 - **Transactional emails** — Resend: welcome, subscription confirmation, session summary, renewal, inactivity nudge
 - **Error monitoring** — Sentry (`@sentry/react`, production only, ErrorBoundary integrated)
 - **Security hardened** — admin auth, PUT /profile whitelist, CRON_SECRET
+- **Font system** — Poppins global via `body` in `theme.css`; `.font-montserrat` utility; zero inline `fontFamily` in codebase
+- **Dashboard 3-row layout** — WA banner → HeroCard → 4 widgets → (1/4 SideNav + 3/4 ProgressionTree); full `DashboardSkeleton` while loading
+- **ProgressionTree redesign** — path title + description per path; level taglines; Lock icon + hint for locked levels
+- **Self-intro first path** — `activeGoal: "self-intro"` default; all 3 si-* levels unlocked from start; visible regardless of env flag
+- **CrossPathCard** — real completion % from `progressionState` (not sessions proxy)
+- **AccountPage** — full English, all profile fields editable (role, industry, seniority, key achievements, CV); saves to KV backend, not localStorage
+- **Auth flow hardening** — `masterytalk_auth_loading` flag prevents OAuth flash to landing; `AuthLoadingScreen` branded component; `ProfileDropdown` extracted as proper React component (hooks fix)
+- **AppHeader** — logo no longer navigates to landing from app interior
+- **ElevenLabs turbo** — `eleven_turbo_v2_5` model (lower latency)
+- **GPT-4o streaming** — `POST /process-turn-stream` SSE endpoint
 
 ### ⚠️ Known Gaps
 - WhatsApp in sandbox mode (requires Meta Business approval for production)
@@ -303,6 +313,52 @@
 - [x] `VITE_ENABLED_SCENARIOS` in Vercel — culture visible in production (confirmed)
 - [x] Update PRODUCT_SPEC §2
 
+### 1.8 UX Polish & Habit Loop ✅ (Completed 2026-04-30)
+> Full implementation of docs/UX_POLISH.md sprints 1–5 and UI system hardening.
+
+**Dashboard & Navigation:**
+- [x] 3-row dashboard layout: WA banner → HeroCard → 4-widget row → SideNav (1/4) + ProgressionTree (3/4)
+- [x] Full `DashboardSkeleton` — shimmer placeholders for all rows while `data.loading || progressionLoading`
+- [x] `CrossPathCard` uses real `progressionState` completion (completed levels / 6) — not session count proxy
+- [x] `PracticeSideNav` — `PATH_ICONS` map renders actual Lucide icons (was rendering icon key as string)
+- [x] `AppHeader` logo no longer navigates to landing from internal pages
+
+**ProgressionTree:**
+- [x] Path title (`h3`) + description displayed above level list
+- [x] Level taglines from `introValue` or `methodology.tagline` — shown in every LevelNode
+- [x] LevelNode restructured: Row 1 (title + badge + chevron always visible), Row 2 (tagline), Row 3 (locked hint + Lock icon)
+
+**Self-Introduction Path:**
+- [x] Self-intro added as first visible path (`VISIBLE_PATHS` first entry, regardless of env flag)
+- [x] `activeGoal: "self-intro"` as default progression state
+- [x] All 3 si-* levels set to `"unlocked"` in `getDefaultProgressionState()`
+- [x] Guard in ProgressionTree: invalid `activeGoal` (hidden path) falls back to "self-intro"
+
+**Account Page:**
+- [x] Full English translation (no Spanish copy remaining)
+- [x] All profile fields editable: role, industry, seniority, key achievements, CV upload/delete
+- [x] All saves go to KV backend via `PUT /profile` (removed localStorage-only pattern)
+- [x] Section order: Personal Info → WhatsApp → Professional Profile → Plan & Usage
+
+**Auth Hardening:**
+- [x] `masterytalk_auth_loading` flag set in `authService.signIn()` → survives Supabase double null event → prevents flash to landing during OAuth return
+- [x] `AuthLoadingScreen.tsx` — branded dark screen with BrandLogo + dual-ring spinner; used for `isInitializing` and `Suspense` fallback
+- [x] `ProfileDropdown` extracted as proper React component (fixes Rules of Hooks violation in conditional IIFE)
+- [x] `onLogoClick` prop removed from internal `AppHeader` instances
+
+**Font System:**
+- [x] Poppins imported in `fonts.css`, set globally on `body` in `theme.css`
+- [x] `.font-montserrat` utility class added to `theme.css` for logo accent
+- [x] All 30 files with inline `fontFamily: 'Inter'/'Poppins'` references cleaned — zero inline fontFamily in codebase
+- [x] `SectionHeading`: `font-light leading-[1.2]` Tailwind classes replace style prop
+- [x] `DesignSystemPage`: `font-montserrat` class replaces Montserrat inline style in weight showcase
+
+**Backend:**
+- [x] ElevenLabs model → `eleven_turbo_v2_5` (lower TTS latency)
+- [x] `POST /process-turn-stream` — SSE endpoint for GPT-4o streaming responses
+
+---
+
 ### 3.1.3 Email Marketing Automation — Loops.so Integration
 > **Goal:** Activar secuencias de lifecycle marketing post-registro para convertir usuarios free a suscriptores.
 > Loops maneja el nurturing; Resend sigue con los transaccionales. Sin cambios en frontend.
@@ -379,3 +435,4 @@
 | 2026-04-28 | Strategic analysis: approved Sales scenario activation (3.1, promoted from Phase 3), Cultural Intelligence feedback (3.1.1), LATAM interference patterns (3.1.1). Plan added to ROADMAP. |
 | 2026-04-28 | 3.1.2 retroactive completion: culture.ts (frontend + backend), CULTURE_LEVELS (6 levels), egalitarian_leader persona, 3 presets, path-recommendation default — all verified in codebase. Pending: Vercel env var + PRODUCT_SPEC §2. |
 | 2026-04-28 | 1.6.1 partial: webhook URL configured, sr_daily_challenge_en template created, TWILIO_SKIP_SIG_VALIDATION set, backend EN-only template, WhatsAppActivationCard free-form country code + EN UI. |
+| 2026-04-30 | 1.8 UX Polish & Habit Loop completed: dashboard 3-row layout + skeleton, ProgressionTree redesign (path descriptions + level taglines), self-intro first path, CrossPathCard real data, AccountPage English + full KV saves, auth OAuth flash fix (AuthLoadingScreen + masterytalk_auth_loading flag), ProfileDropdown hooks fix, AppHeader no-landing-logo, font system (Poppins global via CSS, .font-montserrat utility, zero inline fontFamily). Backend: eleven_turbo_v2_5 + GPT-4o SSE streaming endpoint. Current state → Beta v14.0. |

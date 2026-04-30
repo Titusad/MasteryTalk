@@ -767,7 +767,7 @@ GET  /sessions/count        ← total de sesiones del usuario (para Dashboard ad
 
 ---
 
-## 15. Estado actual del proyecto (2026-04-26)
+## 15. Estado actual del proyecto (2026-04-30)
 
 ### ✅ Completado y estable
 
@@ -776,28 +776,30 @@ GET  /sessions/count        ← total de sesiones del usuario (para Dashboard ad
 | FSD Architecture | ✅ 90%+ | `app/components/` legacy es el único residuo |
 | AppHeader + AppModal | ✅ | Canónicos en `src/shared/ui/` |
 | Design tokens | ✅ | Centralizados en `shared/design-tokens.ts` |
-| Auth security | ✅ | `getAuthToken()` en todos los Edge Function calls — `publicAnonKey` eliminado de 11 archivos |
+| Font system | ✅ | Poppins global en `body` vía `theme.css`; `.font-montserrat` utility; cero `fontFamily` inline |
+| Auth security | ✅ | `getAuthToken()` en todos los Edge Function calls; OAuth flash resuelto con `masterytalk_auth_loading` flag |
+| Auth UX | ✅ | `AuthLoadingScreen` branded; `ProfileDropdown` como componente propio (hooks fix) |
 | Service adapters | ✅ | 6 adapters reales (auth, conversation, speech, feedback, user, SR) |
 | Test coverage | ✅ 90 tests | Vitest: SR logic (22), Auth flow (7), Feedback adapter (7), Scenario presets (20), Assembler scenarios (22) |
 | Error handling | ✅ | FeedbackError, retry/backoff, timeouts |
-| Edge Functions | ✅ | TTS, STT, Feedback, Briefing, Pronunciation |
+| Edge Functions | ✅ | TTS (turbo_v2_5), STT, Feedback, Briefing, Pronunciation, SSE streaming |
 | Scenario system | ✅ | Meeting + presentation: SCENARIO_ADAPTATION, dual-axis evaluación, gap analysis — ver §16 |
 | Situation Presets | ✅ | ContextScreen con 12 presets (3 × 4 escenarios), sin asunción de rol |
+| Dashboard layout | ✅ | 3 filas: WA banner → HeroCard → 4 widgets → (1/4 SideNav + 3/4 paths); DashboardSkeleton completo |
+| ProgressionTree | ✅ | Path title + description; level taglines; Lock icon + hint; self-intro como primer path |
+| AccountPage | ✅ | 100% inglés; todos los campos editables y guardados en KV backend |
 
 ### ⚠️ Pendiente — próximas sesiones
 
 | Prioridad | Tarea | Notas |
 |-----------|-------|-------|
-| 🔴 Alta | **SupabasePaymentService** | Payment flow es 100% mock — sin esto no hay revenue |
-| 🔴 Alta | **Loading skeletons** | Dashboard y Library sin skeletons |
-| 🔴 Alta | **Fases UX 1-2** | Quick Prep/Conversational Path widget (Fase 1), ConversationalPathOffer (Fase 2) |
-| 🔴 Alta | **Fase 4 — Dashboard adaptivo** | Vista por sesiones + banner de transición |
-| 🟡 Media | **Fase 3 remanente** | Persistir `cvSummary` en perfil + preview de preguntas en tiempo real |
+| 🔴 Alta | **Supabase Pro** | Free tier se pausa tras 7 días sin actividad — CRÍTICO antes de usuarios pagos |
+| 🔴 Alta | **Twilio WhatsApp producción** | Meta verification en revisión (enviado 2026-04-29); pasos 2-4 bloqueados |
 | 🟡 Media | **E2E tests** | Playwright: onboarding → practice → feedback |
 | 🟡 Media | **Mobile responsiveness** | Revisar todos los flujos en mobile |
 | 🟡 Media | **Supabase CLI migrations** | Schema no está versionado |
 | 🟢 Baja | **WCAG accessibility** | Sin auditoría a11y actual |
-| 🟢 Baja | **Strip console.log** | 123 statements en producción — agregar vite-plugin-remove-console |
+| 🟢 Baja | **Strip console.log** | Statements en producción — agregar vite-plugin-remove-console |
 
 ### 🔴 Issues TypeScript conocidos (pre-existentes, no tocar sin plan)
 
@@ -870,5 +872,5 @@ Cada escenario activo (`interview`, `sales`, `meeting`, `presentation`) tiene do
 
 ---
 
-*v1.4 — 2026-04-26*
-*Cambios: Scenario Registry (§16) · meeting/presentation audit + bugs corregidos · separación en archivos independientes (frontend + backend) · Situation Presets en ContextScreen · test coverage 36 → 90 tests*
+*v1.5 — 2026-04-30*
+*Cambios: §15 actualizado a Beta v14.0 · Font system (Poppins global, cero inline) · Dashboard 3-row layout + skeleton · ProgressionTree redesign (taglines, path descriptions, self-intro first) · AccountPage full KV · Auth OAuth fix · ElevenLabs turbo · GPT-4o SSE*
