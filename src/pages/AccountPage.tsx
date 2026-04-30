@@ -322,76 +322,92 @@ export function AccountPage({ userProfile, authUser, onLogout, onProfileUpdate }
             </div>
           </section>
 
-          {/* SUBSCRIPTION CARD */}
+          {/* WHATSAPP COACH CARD */}
           <section className="bg-white rounded-2xl border border-[#e2e8f0] p-6 hover:border-[#cad5e2] transition-colors shadow-sm">
-            <h2 className="text-lg font-medium text-[#0f172b] mb-5 flex items-center gap-2">
-              <CreditCard className="w-5 h-5 text-[#62748e]" />
-              Plan & Usage
+            <h2 className="text-lg font-medium text-[#0f172b] mb-2 flex items-center gap-2">
+              <MessageCircle className="w-5 h-5 text-[#25D366]" />
+              WhatsApp Coach
             </h2>
+            <p className="text-sm text-[#62748e] mb-6">
+              Receive your daily pronunciation challenge on WhatsApp. Reply with audio and get your score instantly.
+            </p>
 
-            {subInfo?.subscription_active ? (
-              /* ── Active subscription ── */
-              <>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-3 mb-1.5">
-                      <h3 className="text-xl font-semibold text-[#0f172b]">
-                        {TIER_LABELS[subInfo.tier ?? ""] ?? "MasteryTalk PRO"}
-                      </h3>
-                      <span className="bg-[#f0fdf4] text-[#16a34a] border border-[#bbf7d0] text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest">
-                        Active
-                      </span>
-                    </div>
-                    {subInfo.next_billing_date && (
-                      <p className="text-xs text-[#62748e]">
-                        Next renewal: {new Date(subInfo.next_billing_date).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
-                      </p>
-                    )}
+            {waStep === "verified" ? (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-[#f0fdf4] flex items-center justify-center shrink-0">
+                    <CheckCircle className="w-5 h-5 text-[#16a34a]" />
                   </div>
+                  <div>
+                    <p className="text-sm font-medium text-[#0f172b]">{waLinkedNumber}</p>
+                    <p className="text-xs text-[#16a34a]">Verified · You'll receive daily challenges</p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleWaUnlink}
+                  disabled={waLoading}
+                  className="text-xs text-[#94a3b8] hover:text-[#ef4444] transition-colors disabled:opacity-40"
+                >
+                  Unlink
+                </button>
+              </div>
+            ) : waStep === "otp_sent" ? (
+              <div className="space-y-4">
+                <p className="text-sm text-[#45556c]">
+                  We sent a 6-digit code to{" "}
+                  <span className="font-medium text-[#0f172b]">{waPhoneInput}</span> via WhatsApp.
+                </p>
+                <input
+                  type="text"
+                  value={waOtpInput}
+                  onChange={e => setWaOtpInput(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  placeholder="123456"
+                  maxLength={6}
+                  className="w-full bg-[#f8fafc] border border-[#e2e8f0] rounded-lg px-4 py-3 text-sm text-[#0f172b] text-center tracking-widest font-medium focus:outline-none focus:border-[#0f172b]"
+                />
+                {waError && <p className="text-xs text-[#ef4444]">{waError}</p>}
+                <div className="flex gap-3">
                   <button
-                    onClick={handleManageSubscription}
-                    disabled={portalLoading}
-                    className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg border border-[#e2e8f0] text-sm font-medium text-[#0f172b] hover:bg-[#f8fafc] transition-colors shrink-0 disabled:opacity-50"
+                    onClick={handleVerifyOtp}
+                    disabled={waOtpInput.length < 6 || waLoading}
+                    className="flex-1 py-2.5 rounded-lg bg-[#0f172b] text-white text-sm font-medium hover:bg-[#1d293d] transition-colors disabled:opacity-40"
                   >
-                    {portalLoading ? (
-                      <div className="w-4 h-4 rounded-full border-2 border-[#0f172b] border-t-transparent animate-spin" />
-                    ) : (
-                      <ExternalLink className="w-4 h-4" />
-                    )}
-                    {portalLoading ? "Loading..." : "Manage Subscription"}
+                    {waLoading ? "Verifying..." : "Verify code"}
+                  </button>
+                  <button
+                    onClick={() => { setWaStep("idle"); setWaOtpInput(""); setWaError(null); }}
+                    className="px-4 py-2.5 rounded-lg border border-[#e2e8f0] text-sm text-[#45556c] hover:bg-[#f8fafc] transition-colors"
+                  >
+                    Change number
                   </button>
                 </div>
-
-                <div className="mt-6 pt-6 border-t border-[#e2e8f0]">
-                  <div className="flex items-center gap-2 mb-2 text-sm font-medium text-[#0f172b]">
-                    <CheckCircle className="w-4 h-4 text-[#16a34a]" />
-                    Sessions available
-                  </div>
-                  <div className="w-full bg-[#f1f5f9] rounded-full h-2 mb-2">
-                    <div className="bg-[#00C950] h-2 rounded-full" style={{ width: "100%" }} />
-                  </div>
-                  <p className="text-xs text-[#62748e] text-right">Unlimited access to all paths</p>
-                </div>
-              </>
+              </div>
             ) : (
-              /* ── Beta / no subscription ── */
-              <>
-                <div className="flex items-center gap-3 mb-2">
-                  <h3 className="text-xl font-semibold text-[#0f172b]">Pioneer (Beta)</h3>
-                  <span className="bg-[#f0fdf4] text-[#16a34a] border border-[#bbf7d0] text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest">Activo</span>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium text-[#62748e] mb-1.5">
+                    WhatsApp number (international format)
+                  </label>
+                  <input
+                    type="tel"
+                    value={waPhoneInput}
+                    onChange={e => setWaPhoneInput(e.target.value)}
+                    placeholder="+521234567890"
+                    className="w-full bg-[#f8fafc] border border-[#e2e8f0] rounded-lg px-4 py-3 text-sm text-[#0f172b] focus:outline-none focus:border-[#0f172b]"
+                  />
+                  <p className="text-xs text-[#94a3b8] mt-1.5">
+                    Include country code: +1 (US), +52 (Mexico), +55 (Brazil), +44 (UK), +34 (Spain)...
+                  </p>
                 </div>
-                <p className="text-sm text-[#45556c] max-w-sm">During beta, you have full and free access to all practice paths on the platform.</p>
-                <div className="mt-6 pt-6 border-t border-[#e2e8f0]">
-                  <div className="flex items-center gap-2 mb-2 text-sm font-medium text-[#0f172b]">
-                    <CheckCircle className="w-4 h-4 text-[#16a34a]" />
-                    Sessions Available
-                  </div>
-                  <div className="w-full bg-[#f1f5f9] rounded-full h-2 mb-2">
-                    <div className="bg-[#0f172b] h-2 rounded-full" style={{ width: "100%" }} />
-                  </div>
-                  <p className="text-xs text-[#62748e] text-right">Unlimited (Beta test phase)</p>
-                </div>
-              </>
+                {waError && <p className="text-xs text-[#ef4444]">{waError}</p>}
+                <button
+                  onClick={handleSendOtp}
+                  disabled={!waPhoneInput.trim() || waLoading}
+                  className="w-full py-2.5 rounded-lg bg-[#0f172b] text-white text-sm font-medium hover:bg-[#1d293d] transition-colors disabled:opacity-40"
+                >
+                  {waLoading ? "Sending..." : "Send verification code"}
+                </button>
+              </div>
             )}
           </section>
 
@@ -572,92 +588,76 @@ export function AccountPage({ userProfile, authUser, onLogout, onProfileUpdate }
             </div>
           </section>
 
-          {/* WHATSAPP COACH CARD */}
+          {/* SUBSCRIPTION CARD */}
           <section className="bg-white rounded-2xl border border-[#e2e8f0] p-6 hover:border-[#cad5e2] transition-colors shadow-sm">
-            <h2 className="text-lg font-medium text-[#0f172b] mb-2 flex items-center gap-2">
-              <MessageCircle className="w-5 h-5 text-[#25D366]" />
-              WhatsApp Coach
+            <h2 className="text-lg font-medium text-[#0f172b] mb-5 flex items-center gap-2">
+              <CreditCard className="w-5 h-5 text-[#62748e]" />
+              Plan & Usage
             </h2>
-            <p className="text-sm text-[#62748e] mb-6">
-              Receive your daily pronunciation challenge on WhatsApp. Reply with audio and get your score instantly.
-            </p>
 
-            {waStep === "verified" ? (
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-[#f0fdf4] flex items-center justify-center shrink-0">
-                    <CheckCircle className="w-5 h-5 text-[#16a34a]" />
-                  </div>
+            {subInfo?.subscription_active ? (
+              /* ── Active subscription ── */
+              <>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <p className="text-sm font-medium text-[#0f172b]">{waLinkedNumber}</p>
-                    <p className="text-xs text-[#16a34a]">Verified · You'll receive daily challenges</p>
+                    <div className="flex items-center gap-3 mb-1.5">
+                      <h3 className="text-xl font-semibold text-[#0f172b]">
+                        {TIER_LABELS[subInfo.tier ?? ""] ?? "MasteryTalk PRO"}
+                      </h3>
+                      <span className="bg-[#f0fdf4] text-[#16a34a] border border-[#bbf7d0] text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest">
+                        Active
+                      </span>
+                    </div>
+                    {subInfo.next_billing_date && (
+                      <p className="text-xs text-[#62748e]">
+                        Next renewal: {new Date(subInfo.next_billing_date).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+                      </p>
+                    )}
                   </div>
-                </div>
-                <button
-                  onClick={handleWaUnlink}
-                  disabled={waLoading}
-                  className="text-xs text-[#94a3b8] hover:text-[#ef4444] transition-colors disabled:opacity-40"
-                >
-                  Unlink
-                </button>
-              </div>
-            ) : waStep === "otp_sent" ? (
-              <div className="space-y-4">
-                <p className="text-sm text-[#45556c]">
-                  We sent a 6-digit code to{" "}
-                  <span className="font-medium text-[#0f172b]">{waPhoneInput}</span> via WhatsApp.
-                </p>
-                <input
-                  type="text"
-                  value={waOtpInput}
-                  onChange={e => setWaOtpInput(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                  placeholder="123456"
-                  maxLength={6}
-                  className="w-full bg-[#f8fafc] border border-[#e2e8f0] rounded-lg px-4 py-3 text-sm text-[#0f172b] text-center tracking-widest font-medium focus:outline-none focus:border-[#0f172b]"
-                />
-                {waError && <p className="text-xs text-[#ef4444]">{waError}</p>}
-                <div className="flex gap-3">
                   <button
-                    onClick={handleVerifyOtp}
-                    disabled={waOtpInput.length < 6 || waLoading}
-                    className="flex-1 py-2.5 rounded-lg bg-[#0f172b] text-white text-sm font-medium hover:bg-[#1d293d] transition-colors disabled:opacity-40"
+                    onClick={handleManageSubscription}
+                    disabled={portalLoading}
+                    className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg border border-[#e2e8f0] text-sm font-medium text-[#0f172b] hover:bg-[#f8fafc] transition-colors shrink-0 disabled:opacity-50"
                   >
-                    {waLoading ? "Verifying..." : "Verify code"}
-                  </button>
-                  <button
-                    onClick={() => { setWaStep("idle"); setWaOtpInput(""); setWaError(null); }}
-                    className="px-4 py-2.5 rounded-lg border border-[#e2e8f0] text-sm text-[#45556c] hover:bg-[#f8fafc] transition-colors"
-                  >
-                    Change number
+                    {portalLoading ? (
+                      <div className="w-4 h-4 rounded-full border-2 border-[#0f172b] border-t-transparent animate-spin" />
+                    ) : (
+                      <ExternalLink className="w-4 h-4" />
+                    )}
+                    {portalLoading ? "Loading..." : "Manage Subscription"}
                   </button>
                 </div>
-              </div>
+
+                <div className="mt-6 pt-6 border-t border-[#e2e8f0]">
+                  <div className="flex items-center gap-2 mb-2 text-sm font-medium text-[#0f172b]">
+                    <CheckCircle className="w-4 h-4 text-[#16a34a]" />
+                    Sessions available
+                  </div>
+                  <div className="w-full bg-[#f1f5f9] rounded-full h-2 mb-2">
+                    <div className="bg-[#00C950] h-2 rounded-full" style={{ width: "100%" }} />
+                  </div>
+                  <p className="text-xs text-[#62748e] text-right">Unlimited access to all paths</p>
+                </div>
+              </>
             ) : (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-medium text-[#62748e] mb-1.5">
-                    WhatsApp number (international format)
-                  </label>
-                  <input
-                    type="tel"
-                    value={waPhoneInput}
-                    onChange={e => setWaPhoneInput(e.target.value)}
-                    placeholder="+521234567890"
-                    className="w-full bg-[#f8fafc] border border-[#e2e8f0] rounded-lg px-4 py-3 text-sm text-[#0f172b] focus:outline-none focus:border-[#0f172b]"
-                  />
-                  <p className="text-xs text-[#94a3b8] mt-1.5">
-                    Include country code: +1 (US), +52 (Mexico), +55 (Brazil), +44 (UK), +34 (Spain)...
-                  </p>
+              /* ── Beta / no subscription ── */
+              <>
+                <div className="flex items-center gap-3 mb-2">
+                  <h3 className="text-xl font-semibold text-[#0f172b]">Pioneer (Beta)</h3>
+                  <span className="bg-[#f0fdf4] text-[#16a34a] border border-[#bbf7d0] text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest">Activo</span>
                 </div>
-                {waError && <p className="text-xs text-[#ef4444]">{waError}</p>}
-                <button
-                  onClick={handleSendOtp}
-                  disabled={!waPhoneInput.trim() || waLoading}
-                  className="w-full py-2.5 rounded-lg bg-[#0f172b] text-white text-sm font-medium hover:bg-[#1d293d] transition-colors disabled:opacity-40"
-                >
-                  {waLoading ? "Sending..." : "Send verification code"}
-                </button>
-              </div>
+                <p className="text-sm text-[#45556c] max-w-sm">During beta, you have full and free access to all practice paths on the platform.</p>
+                <div className="mt-6 pt-6 border-t border-[#e2e8f0]">
+                  <div className="flex items-center gap-2 mb-2 text-sm font-medium text-[#0f172b]">
+                    <CheckCircle className="w-4 h-4 text-[#16a34a]" />
+                    Sessions Available
+                  </div>
+                  <div className="w-full bg-[#f1f5f9] rounded-full h-2 mb-2">
+                    <div className="bg-[#0f172b] h-2 rounded-full" style={{ width: "100%" }} />
+                  </div>
+                  <p className="text-xs text-[#62748e] text-right">Unlimited (Beta test phase)</p>
+                </div>
+              </>
             )}
           </section>
 
