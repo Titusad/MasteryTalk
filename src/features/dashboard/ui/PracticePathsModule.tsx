@@ -19,10 +19,6 @@ export function PracticePathsModule({ onStartSession, onLockedClick }: PracticeP
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: 0.1 }}
     >
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-xl font-semibold text-[#0f172b]">Your Practice Paths</h2>
-      </div>
-
       <ProgressionTree
         onStartLevel={(scenario, scenarioType, levelId, interlocutor) => {
           onStartSession(scenario, scenarioType, levelId, interlocutor);

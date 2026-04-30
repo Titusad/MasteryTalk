@@ -9,7 +9,7 @@
  */
 import { useState } from "react";
 import { motion } from "motion/react";
-import { Zap } from "lucide-react";
+import { Zap, MessageCircle } from "lucide-react";
 import { MiniFooter } from "@/shared/ui";
 import type { LandingLang } from "@/shared/i18n/landing-i18n";
 import { PathPurchaseModal } from "@/widgets/PathPurchaseModal";
@@ -17,7 +17,6 @@ import type { PurchaseType, OnboardingProfile } from "@/services/types";
 
 import { useDashboardData } from "../model";
 import { HeroCard } from "./HeroCard";
-import { WhatsAppActivationCard } from "./WhatsAppActivationCard";
 import { PlatformNewsCard } from "./PlatformNewsCard";
 import { SRDashboardCard } from "./SRDashboardCard";
 import { PracticePathsModule } from "./PracticePathsModule";
@@ -103,6 +102,32 @@ export function DashboardPage({
     >
       <main className="w-full px-6 md:px-8 lg:px-12 pt-6 pb-20 space-y-12">
 
+        {/* ── Row 0: WhatsApp notification banner (only when not yet activated) ── */}
+        {!waVerified && (
+          <motion.div
+            className="bg-gradient-to-r from-[#0f172b] to-[#1e293b] rounded-2xl px-6 py-4 flex items-center gap-4 relative overflow-hidden"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="absolute -top-8 -right-8 w-32 h-32 bg-[#25d366]/10 rounded-full blur-2xl pointer-events-none" />
+            <span className="w-9 h-9 rounded-full bg-[#25d366]/15 flex items-center justify-center shrink-0">
+              <MessageCircle className="w-4.5 h-4.5 text-[#25d366]" />
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-white">Activate your WhatsApp Pronunciation Coach</p>
+              <p className="text-xs text-white/60 mt-0.5">Get daily practice phrases on your phone. Reply with audio and get your score instantly.</p>
+            </div>
+            <button
+              onClick={() => { /* opens WhatsApp activation in Account */ }}
+              className="shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg bg-[#25d366] text-white text-xs font-semibold hover:bg-[#22c55e] transition-colors"
+            >
+              <MessageCircle className="w-3.5 h-3.5" />
+              Link WhatsApp
+            </button>
+          </motion.div>
+        )}
+
         {/* ── Row 1: Hero Card ── */}
         <HeroCard
           userName={userName}
@@ -121,10 +146,9 @@ export function DashboardPage({
           onStartPractice={handleQuickStart}
         />
 
-        {/* ── Row 2: Actionable widgets ──
-            WhatsApp only shown when not yet verified — others auto-fill the grid. */}
+        {/* ── Row 2: 4 actionable cards (WhatsApp moved to banner above) ── */}
         <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+          className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.08 }}
@@ -136,20 +160,12 @@ export function DashboardPage({
             bestPillarDelta={data.biggestImprovement}
           />
 
-          {!waVerified && (
-            <WhatsAppActivationCard />
-          )}
-
           <SRDashboardCard totalSessions={data.totalSessions} />
 
           {/* Emergency Prep */}
           <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-5 flex flex-col">
-            <p className="text-xs font-medium uppercase tracking-wider text-[#94a3b8] mb-3">
-              Emergency Prep
-            </p>
-            <p className="text-sm font-semibold text-[#0f172b] mb-1">
-              Meeting in 30 minutes?
-            </p>
+            <p className="text-xs font-medium uppercase tracking-wider text-[#94a3b8] mb-3">Emergency Prep</p>
+            <p className="text-sm font-semibold text-[#0f172b] mb-1">Meeting in 30 minutes?</p>
             <p className="text-xs text-[#62748e] leading-relaxed mb-4 flex-1">
               Paste the agenda or invite — I'll build a targeted session right now.
             </p>
@@ -161,16 +177,29 @@ export function DashboardPage({
               Start emergency prep
             </button>
           </div>
+
+          {/* News */}
+          <PlatformNewsCard />
         </motion.div>
 
-        {/* ── Row 3: Practice Paths + Sidebar ──
-            Desktop: sidebar on left (260px) | practice paths on right (1fr)
-            Mobile:  practice paths first (DOM order), sidebar below */}
-        <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-6 items-start">
+        {/* ── Row 3: Your Practice Paths ──
+            Desktop: 1/4 sidebar (title + CrossPathCard) | 3/4 main (ProgressionTree)
+            Mobile:  stacks vertically, title first */}
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_3fr] gap-6 items-start">
 
-          {/* Practice Paths — first in DOM so it appears first on mobile */}
+          {/* Sidebar 1/4 — title + progress across paths */}
           <motion.div
-            className="md:col-start-2 md:row-start-1"
+            className="flex flex-col gap-4"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.08 }}
+          >
+            <h2 className="text-xl font-semibold text-[#0f172b]">Your Practice Paths</h2>
+            <CrossPathCard perPathStats={data.perPathStats} />
+          </motion.div>
+
+          {/* Main 3/4 — ProgressionTree */}
+          <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.1 }}
@@ -179,17 +208,6 @@ export function DashboardPage({
               onStartSession={handleStartSession}
               onLockedClick={() => setUpsellOpen(true)}
             />
-          </motion.div>
-
-          {/* Sidebar — second in DOM (mobile: below practice paths) | desktop: left column */}
-          <motion.div
-            className="md:col-start-1 md:row-start-1 flex flex-col gap-4"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.15 }}
-          >
-            <CrossPathCard perPathStats={data.perPathStats} />
-            <PlatformNewsCard />
           </motion.div>
         </div>
 
