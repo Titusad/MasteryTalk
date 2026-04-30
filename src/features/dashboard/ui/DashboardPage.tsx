@@ -175,11 +175,9 @@ export function DashboardPage({
                       </p>
                       <button
                         onClick={() => {
-                          const lastScenario = data.persistedSessions[data.persistedSessions.length - 1];
-                          const scenarioType = lastScenario?.scenarioType ?? "meeting";
                           handleStartSession(
                             "Emergency practice session",
-                            scenarioType,
+                            "meeting",
                             undefined,
                             undefined,
                             true,
