@@ -34,6 +34,35 @@ const EXAMPLE_LABELS: Record<string, string> = {
     culture:      "A Strong Response Looks Like",
 };
 
+// Continuation scaffold — shown when only a suggestedOpener is available (no full exampleAnswer)
+const RESPONSE_STEPS: Record<string, Array<{ step: string; hint: string }>> = {
+    interview: [
+        { step: "Situation",  hint: "When and where — set the scene in one sentence" },
+        { step: "Action",     hint: "What YOU specifically did — use 'I', not 'we'" },
+        { step: "Result",     hint: "Quantify the outcome — metric, timeline, or impact" },
+    ],
+    sales: [
+        { step: "Pain acknowledgment", hint: "Name their specific challenge — shows you listened" },
+        { step: "Your solution",       hint: "One clear capability that directly addresses it" },
+        { step: "Proof",               hint: "A number or example that backs your claim" },
+    ],
+    meeting: [
+        { step: "Main point",   hint: "What you accomplished or need — one sentence, no fluff" },
+        { step: "Why it matters", hint: "Business impact or dependency — why relevant NOW" },
+        { step: "Next step",    hint: "The decision or action you need from the room" },
+    ],
+    presentation: [
+        { step: "Core insight", hint: "The one thing the audience must remember" },
+        { step: "Evidence",     hint: "One data point or example that makes it undeniable" },
+        { step: "Call to action", hint: "What you need them to do, decide, or believe" },
+    ],
+    culture: [
+        { step: "Acknowledge",   hint: "Name what's happening — shows situational awareness" },
+        { step: "Your position", hint: "State your view directly — no hedging" },
+        { step: "Forward step",  hint: "Propose what happens next — own the resolution" },
+    ],
+};
+
 const CTA_LABELS: Record<string, string> = {
     interview:    "Record My Answer",
     sales:        "Record My Answer",
@@ -126,29 +155,79 @@ export function StrategyCard({
                     </div>
                 )}
 
-                {/* Example answer */}
-                {(exampleAnswer || suggestedOpener) && (
-                    <div>
-                        <div className="flex items-center gap-2 mb-2">
-                            <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
-                                <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+                {/* Example answer / opening line + continuation scaffold */}
+                {(exampleAnswer || suggestedOpener) && (() => {
+                    const isFullAnswer = !!exampleAnswer;
+                    const continuationSteps = !isFullAnswer
+                        ? (RESPONSE_STEPS[s] ?? RESPONSE_STEPS.interview)
+                        : [];
+                    const sectionLabel = isFullAnswer ? exampleLabel : "Your Opening Line";
+
+                    return (
+                        <div>
+                            <div className="flex items-center gap-2 mb-2">
+                                <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
+                                    <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+                                </div>
+                                <h3 className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
+                                    {sectionLabel}
+                                </h3>
                             </div>
-                            <h3 className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
-                                {exampleLabel}
-                            </h3>
+
+                            {/* Step 1 — the example or opener */}
+                            <div className="ml-9">
+                                {!isFullAnswer && (
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <span className="w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] flex items-center justify-center shrink-0" style={{ fontWeight: 700 }}>
+                                            1
+                                        </span>
+                                        <p className="text-[11px] text-emerald-600 uppercase tracking-wider" style={{ fontWeight: 600 }}>
+                                            Opening
+                                        </p>
+                                    </div>
+                                )}
+                                <div className="px-4 py-4 bg-emerald-50/50 rounded-xl border border-emerald-100 space-y-2">
+                                    <p className="text-sm text-[#0f172b] leading-relaxed italic" style={{ fontWeight: 500 }}>
+                                        "{exampleAnswer || suggestedOpener}"
+                                    </p>
+                                    {isFullAnswer && (
+                                        <p className="text-[11px] text-emerald-600" style={{ fontWeight: 500 }}>
+                                            Built from your profile · Use this as your model, not a script
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Continuation scaffold — only when showing opener, not full answer */}
+                                {!isFullAnswer && continuationSteps.length > 0 && (
+                                    <div className="mt-3 space-y-2">
+                                        <p className="text-[10px] text-[#94a3b8] uppercase tracking-wider mb-1" style={{ fontWeight: 600 }}>
+                                            Continue with:
+                                        </p>
+                                        {continuationSteps.map((step, i) => (
+                                            <div
+                                                key={i}
+                                                className="flex items-start gap-2.5 px-3 py-2.5 rounded-lg border border-[#e2e8f0] bg-[#f8fafc]"
+                                            >
+                                                <span
+                                                    className="w-5 h-5 rounded-full bg-[#0f172b] text-white text-[10px] flex items-center justify-center shrink-0 mt-0.5"
+                                                    style={{ fontWeight: 700 }}
+                                                >
+                                                    {i + 2}
+                                                </span>
+                                                <p className="text-xs text-[#45556c] leading-relaxed">
+                                                    <span className="text-[#0f172b]" style={{ fontWeight: 600 }}>
+                                                        {step.step}
+                                                    </span>
+                                                    {" — "}{step.hint}
+                                                </p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                        <div className="ml-9 px-4 py-4 bg-emerald-50/50 rounded-xl border border-emerald-100 space-y-2">
-                            <p className="text-sm text-[#0f172b] leading-relaxed italic" style={{ fontWeight: 500 }}>
-                                "{exampleAnswer || suggestedOpener}"
-                            </p>
-                            {exampleAnswer && (
-                                <p className="text-[11px] text-emerald-600" style={{ fontWeight: 500 }}>
-                                    Built from your profile · Use this as your model, not a script
-                                </p>
-                            )}
-                        </div>
-                    </div>
-                )}
+                    );
+                })()}
             </div>
 
             {/* Navigation */}
