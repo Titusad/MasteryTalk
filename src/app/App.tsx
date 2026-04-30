@@ -765,7 +765,6 @@ export default function App() {
                 variant="dashboard"
                 userName={authUser?.displayName}
                 onLogout={handleLogout}
-                onLogoClick={() => { setPage("landing"); window.location.hash = ""; }}
                 onNavigateToDashboard={page !== "dashboard" ? handleBackToDashboard : undefined}
                 onNavigateToAccount={() => {
                   setPage("account");
