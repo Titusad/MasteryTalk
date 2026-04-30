@@ -16,6 +16,7 @@ import { PathPurchaseModal } from "@/widgets/PathPurchaseModal";
 import type { PurchaseType, OnboardingProfile } from "@/services/types";
 
 import { useDashboardData } from "../model";
+import { useProgressionState } from "../model/useProgressionState";
 import { HeroCard } from "./HeroCard";
 import { PlatformNewsCard } from "./PlatformNewsCard";
 import { SRDashboardCard } from "./SRDashboardCard";
@@ -53,6 +54,7 @@ export function DashboardPage({
 
   const [upsellOpen, setUpsellOpen] = useState(false);
   const [pendingScenario, setPendingScenario] = useState<string | null>(null);
+  const { state: progressionState } = useProgressionState();
 
   const handleStartSession = (
     scenario: string,
@@ -194,7 +196,7 @@ export function DashboardPage({
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.08 }}
             >
-              <CrossPathCard perPathStats={data.perPathStats} />
+              <CrossPathCard perPathStats={data.perPathStats} progressionState={progressionState} />
             </motion.div>
 
             <motion.div
