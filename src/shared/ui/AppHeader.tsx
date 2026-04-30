@@ -195,10 +195,11 @@ export function AppHeader({
 
             {rightSlot}
 
-            {/* Profile dropdown — proper component to satisfy Rules of Hooks */}
-            {userName !== undefined && (
+            {/* Profile dropdown — shows whenever user is authenticated (has logout handler)
+                regardless of whether displayName has loaded yet */}
+            {(userName !== undefined || onLogout !== undefined) && (
               <ProfileDropdown
-                initials={avatarInitials}
+                initials={avatarInitials || "•"}
                 onNavigateToAccount={onNavigateToAccount}
                 onLogout={onLogout}
               />

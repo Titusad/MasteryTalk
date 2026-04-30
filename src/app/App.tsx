@@ -776,7 +776,7 @@ export default function App() {
             <>
               <AppHeader
                 variant="dashboard"
-                userName={authUser?.displayName}
+                userName={authUser?.displayName || authUser?.email?.split("@")[0]}
                 onLogout={handleLogout}
                 onNavigateToDashboard={page !== "dashboard" ? handleBackToDashboard : undefined}
                 onNavigateToAccount={() => {
@@ -788,7 +788,7 @@ export default function App() {
               />
               {page === "dashboard" && (
                 <DashboardPage
-                  userName={authUser?.displayName}
+                  userName={authUser?.displayName || authUser?.email?.split("@")[0]}
                   firstPracticeScenario={flowState.scenario}
                   firstPracticeInterlocutor={flowState.interlocutor}
                   onNavigateToHistory={handleNavigateToHistory}
