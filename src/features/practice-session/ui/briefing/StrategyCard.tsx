@@ -9,7 +9,7 @@
 
 import { useState } from "react";
 import { motion } from "motion/react";
-import { ArrowLeft, ArrowRight, Lightbulb, Target, MessageSquare } from "lucide-react";
+import { ArrowLeft, ArrowRight, Lightbulb, Target, MessageSquare, Pencil, Check } from "lucide-react";
 import type { ResponseStep } from "@/services/types";
 
 const WHY_LABELS: Record<string, string> = {
@@ -168,13 +168,33 @@ export function StrategyCard({
     const strategyLabel = STRATEGY_LABELS[s] ?? "Your Strategy";
     const exampleLabel  = EXAMPLE_LABELS[s]  ?? "A Strong Answer Looks Like";
     const ctaLabel      = CTA_LABELS[s]      ?? "Record My Answer";
-    // [stepIdx][bracketIdx] = user typed value
+    // [stepIdx][bracketIdx] = user typed value (bracket mode)
     const [inputs, setInputs] = useState<Record<number, Record<number, string>>>({});
+    // [stepIdx] = whether step is in free-text edit mode
+    const [editMode, setEditMode] = useState<Record<number, boolean>>({});
+    // [stepIdx] = free-text value when in edit mode
+    const [freeText, setFreeText] = useState<Record<number, string>>({});
+
     const handleInputChange = (stepIdx: number, bracketIdx: number, value: string) => {
         setInputs(prev => ({
             ...prev,
             [stepIdx]: { ...(prev[stepIdx] ?? {}), [bracketIdx]: value },
         }));
+    };
+
+    // Toggle edit mode — pre-fill textarea with current bracket state
+    const toggleEdit = (stepIdx: number, template: string) => {
+        if (editMode[stepIdx]) {
+            setEditMode(prev => ({ ...prev, [stepIdx]: false }));
+        } else {
+            const stepInputs = inputs[stepIdx] ?? {};
+            let bIdx = 0;
+            const prefilled = template.replace(/\[[^\]]+\]/g, match =>
+                stepInputs[bIdx++]?.trim() || match.slice(1, -1)
+            );
+            setFreeText(prev => ({ ...prev, [stepIdx]: prefilled }));
+            setEditMode(prev => ({ ...prev, [stepIdx]: true }));
+        }
     };
 
     // Compute continuation steps here so they're accessible in the CTA button handler
@@ -235,57 +255,86 @@ export function StrategyCard({
                     </div>
                 )}
 
-                {/* Example answer / opening line + continuation scaffold */}
+                {/* Opening line section */}
                 {(exampleAnswer || suggestedOpener) && (() => {
                     const isFullAnswer = !!exampleAnswer;
-                    const sectionLabel = isFullAnswer ? exampleLabel : "Your Opening Line";
 
                     return (
                         <div>
-                            <div className="flex items-center gap-2 mb-2">
+                            <div className="flex items-center gap-2 mb-3">
                                 <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
                                     <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
                                 </div>
                                 <h3 className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
-                                    {sectionLabel}
+                                    {isFullAnswer ? exampleLabel : "Your Opening Line"}
                                 </h3>
                             </div>
 
-                            {/* Opener — shown as-is, no Opening badge */}
-                            <div className="ml-9">
-                                <div className="px-4 py-4 bg-emerald-50/50 rounded-xl border border-emerald-100 space-y-2">
+                            {/* Full example answer (interview with profile data) */}
+                            {isFullAnswer && (
+                                <div className="ml-9 px-4 py-4 bg-emerald-50/50 rounded-xl border border-emerald-100 space-y-2">
                                     <p className="text-sm text-[#0f172b] leading-relaxed italic" style={{ fontWeight: 500 }}>
-                                        "{exampleAnswer || suggestedOpener}"
+                                        "{exampleAnswer}"
                                     </p>
-                                    {isFullAnswer && (
-                                        <p className="text-[11px] text-emerald-600" style={{ fontWeight: 500 }}>
-                                            Built from your profile · Use this as your model, not a script
-                                        </p>
-                                    )}
+                                    <p className="text-[11px] text-emerald-600" style={{ fontWeight: 500 }}>
+                                        Built from your profile · Use this as your model, not a script
+                                    </p>
                                 </div>
+                            )}
 
-                                {/* Fill-in-the-blank steps — inline inputs for each [bracket] */}
-                                {!isFullAnswer && continuationSteps.length > 0 && (
-                                    <div className="mt-3 space-y-2">
-                                        <p className="text-[10px] text-[#94a3b8] uppercase tracking-wider mb-1" style={{ fontWeight: 600 }}>
-                                            Continue with:
-                                        </p>
-                                        {continuationSteps.map((step, i) => (
-                                            <div
-                                                key={i}
-                                                className="px-3 py-3 rounded-lg border border-[#e2e8f0] bg-[#f8fafc] space-y-2"
-                                            >
+                            {/* Fill-in steps numbered 1→N, each with edit-mode toggle */}
+                            {!isFullAnswer && continuationSteps.length > 0 && (
+                                <div className="ml-9 space-y-2">
+                                    {continuationSteps.map((step, i) => (
+                                        <div
+                                            key={i}
+                                            className="px-3 py-3 rounded-lg border border-[#e2e8f0] bg-[#f8fafc] space-y-2"
+                                        >
+                                            {/* Step header: number + label + edit toggle */}
+                                            <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-2">
                                                     <span
                                                         className="w-5 h-5 rounded-full bg-[#0f172b] text-white text-[10px] flex items-center justify-center shrink-0"
                                                         style={{ fontWeight: 700 }}
                                                     >
-                                                        {i + 2}
+                                                        {i + 1}
                                                     </span>
                                                     <span className="text-[11px] text-[#0f172b] uppercase tracking-wider" style={{ fontWeight: 600 }}>
                                                         {step.step}
                                                     </span>
                                                 </div>
+
+                                                {/* Edit toggle with tooltip */}
+                                                <div className="relative group">
+                                                    <button
+                                                        onClick={() => toggleEdit(i, step.template)}
+                                                        className="p-1.5 rounded-md hover:bg-[#e2e8f0] transition-colors"
+                                                        aria-label="Rewrite in your own words"
+                                                    >
+                                                        {editMode[i]
+                                                            ? <Check className="w-3.5 h-3.5 text-emerald-500" />
+                                                            : <Pencil className="w-3.5 h-3.5 text-[#94a3b8]" />
+                                                        }
+                                                    </button>
+                                                    {!editMode[i] && (
+                                                        <span className="pointer-events-none absolute right-0 top-8 w-max max-w-[160px] px-2.5 py-1.5 bg-[#0f172b] text-white text-[11px] rounded-lg opacity-0 group-hover:opacity-100 transition-opacity z-10 text-center leading-snug">
+                                                            Rewrite in your own words
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* Bracket inputs OR free-text textarea */}
+                                            {editMode[i] ? (
+                                                <textarea
+                                                    value={freeText[i] ?? ""}
+                                                    onChange={e => setFreeText(prev => ({ ...prev, [i]: e.target.value }))}
+                                                    rows={3}
+                                                    className="w-full text-sm text-[#0f172b] bg-white border border-[#6366f1] rounded-lg px-3 py-2 focus:outline-none resize-none leading-relaxed"
+                                                    style={{ fontWeight: 400 }}
+                                                    placeholder="Write the sentence in your own words..."
+                                                />
+                                            ) : (
                                                 <p className="text-sm text-[#45556c] leading-relaxed pl-7 italic">
                                                     "<BracketInput
                                                         template={step.template}
@@ -294,14 +343,15 @@ export function StrategyCard({
                                                         onChange={handleInputChange}
                                                     />"
                                                 </p>
-                                            </div>
-                                        ))}
-                                        <p className="text-[10px] text-[#94a3b8] pl-1 pt-1">
-                                            Type in the <span className="text-[#6366f1]" style={{ fontWeight: 600 }}>[fields]</span> — then record your full response.
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
+                                            )}
+                                        </div>
+                                    ))}
+
+                                    <p className="text-[10px] text-[#94a3b8] pl-1 pt-1">
+                                        Type in the <span className="text-[#6366f1]" style={{ fontWeight: 600 }}>[fields]</span> — then record your full response.
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     );
                 })()}
@@ -311,11 +361,20 @@ export function StrategyCard({
             <div className="px-6 py-6 border-t border-[#f1f5f9] flex flex-col items-center">
                 <button
                     onClick={() => {
-                        const steps = !exampleAnswer ? continuationSteps : [];
-                        const assembled = steps.length > 0
-                            ? assembleResponse(suggestedOpener, steps, inputs)
-                            : undefined;
-                        onNext(assembled);
+                        if (!exampleAnswer && continuationSteps.length > 0) {
+                            // Build response from steps — each step uses edit mode or bracket inputs
+                            const parts = continuationSteps.map((step, i) => {
+                                if (editMode[i]) return freeText[i]?.trim() || "___";
+                                let text = step.template;
+                                const stepVals = inputs[i] ?? {};
+                                let bIdx = 0;
+                                text = text.replace(/\[[^\]]+\]/g, () => stepVals[bIdx++]?.trim() || "___");
+                                return text;
+                            });
+                            onNext(parts.join(" "));
+                        } else {
+                            onNext(undefined);
+                        }
                     }}
                     className="flex items-center gap-3 px-10 py-5 rounded-full text-xl bg-[#0f172b] text-white hover:bg-[#1d293d] transition-colors shadow-[0px_10px_15px_rgba(0,0,0,0.1)]"
                     style={{ fontWeight: 500 }}
