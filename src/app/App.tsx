@@ -119,6 +119,11 @@ export default function App() {
   /* ─── Auth state ─── */
   const [isInitializing, setIsInitializing] = useState(true);
   const [authUser, setAuthUser] = useState<User | null>(null);
+  // Covers landing during OAuth redirect — true if the key exists at mount time.
+  // Cleared only after navigation actually completes, regardless of Supabase timing.
+  const [isOAuthPending, setIsOAuthPending] = useState(
+    () => sessionStorage.getItem("masterytalk_oauth_pending") === "true"
+  );
 
   /* ─── Onboarding profile ─── */
   const [userProfile, setUserProfile] = useState<OnboardingProfile | null>(
@@ -364,16 +369,11 @@ export default function App() {
               setPage("admin");
             }
           })().finally(() => {
-            // Reveal the app only after profile fetch + navigation are ready
+            setIsOAuthPending(false);
             setIsInitializing(false);
           });
-        } else if (!user && !hadUser && isOAuthReturn) {
-          // Supabase fired null BEFORE resolving the OAuth session — keep loading.
-          // The next event will carry the real user. Do NOT reveal the app here.
-          // Safety fallback: reveal after 8s in case OAuth fails silently.
-          setTimeout(() => setIsInitializing(false), 8000);
         } else {
-          // Returning user already initialized, or genuine anonymous first load
+          setIsOAuthPending(false);
           setIsInitializing(false);
         }
 
@@ -646,7 +646,7 @@ export default function App() {
     window.location.hash = "#admin";
   };
 
-  if (isInitializing) {
+  if (isInitializing || isOAuthPending) {
     return <AuthLoadingScreen />;
   }
 
