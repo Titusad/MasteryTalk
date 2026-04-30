@@ -1,4 +1,4 @@
-import { Flame } from "lucide-react";
+import { Flame, Zap } from "lucide-react";
 
 interface StreakCardProps {
   allPracticeDates: Set<string>;
@@ -10,7 +10,24 @@ interface StreakCardProps {
 const DAY_LABELS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
 export function StreakCard({ allPracticeDates, streak, totalSessions, waPhrasesMastered = 0 }: StreakCardProps) {
-  if (totalSessions === 0) return null;
+  if (totalSessions === 0) {
+    return (
+      <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-6">
+        <p className="text-xs font-medium uppercase tracking-wider text-[#94a3b8] mb-4">
+          Practice Streak
+        </p>
+        <div className="flex flex-col items-center justify-center text-center gap-3 py-2">
+          <span className="w-12 h-12 rounded-full bg-[#f8fafc] border border-[#e2e8f0] flex items-center justify-center">
+            <Zap className="w-5 h-5 text-[#62748e]" />
+          </span>
+          <p className="text-sm font-semibold text-[#0f172b]">No streak yet</p>
+          <p className="text-sm text-[#62748e] leading-relaxed max-w-[200px]">
+            Complete your first session to start building your daily practice streak.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const todayKey = new Date().toISOString().slice(0, 10);
 
