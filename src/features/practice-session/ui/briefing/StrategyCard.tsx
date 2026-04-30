@@ -18,7 +18,6 @@ interface StrategyCardProps {
     exampleAnswer?: string;
     framework?: { name: string; description: string };
     pivot: string;
-    isSales?: boolean;
     onNext: () => void;
     onBack: () => void;
 }
@@ -31,7 +30,6 @@ export function StrategyCard({
     exampleAnswer,
     framework,
     pivot,
-    isSales,
     onNext,
     onBack,
 }: StrategyCardProps) {

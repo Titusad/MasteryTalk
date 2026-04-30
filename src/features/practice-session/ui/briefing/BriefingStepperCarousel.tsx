@@ -33,7 +33,6 @@ interface BriefingStepperCarouselProps {
     cards: InterviewQuestionCard[];
     onAllComplete: (completedCount: number) => void;
     onDraftChange?: (questionId: number, text: string) => void;
-    isSales?: boolean;
     scenarioType?: string;
     interlocutor?: string;
     cardLabel?: string;
@@ -44,7 +43,6 @@ export function BriefingStepperCarousel({
     cards,
     onAllComplete,
     onDraftChange,
-    isSales,
     scenarioType,
     interlocutor,
     cardLabel = "Question",
@@ -206,7 +204,7 @@ export function BriefingStepperCarousel({
                             question={currentCard.question}
                             questionNumber={activeQuestionIdx + 1}
                             totalQuestions={totalQuestions}
-                            isSales={isSales}
+                            scenarioType={scenarioType}
                             onNext={() => goToStep("strategy")}
                         />
                     )}
@@ -221,7 +219,6 @@ export function BriefingStepperCarousel({
                             exampleAnswer={currentCard.exampleAnswer}
                             framework={currentCard.framework}
                             pivot={currentCard.pivot}
-                            isSales={isSales}
                             onNext={() => goToStep("answer")}
                             onBack={() => goToStep("question")}
                         />

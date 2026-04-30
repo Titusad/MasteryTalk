@@ -150,7 +150,6 @@ export function PracticePrepScreen({
                         cards={briefingData.anticipatedQuestions}
                         onAllComplete={handleAllComplete}
                         onDraftChange={handleDraftChange}
-                        isSales={scenarioType === "sales"}
                         scenarioType={scenarioType}
                         cardLabel={(SCENARIO_PREP_CONFIG[scenarioType ?? "interview"] ?? SCENARIO_PREP_CONFIG.interview).cardLabel}
                         completedLabel={(SCENARIO_PREP_CONFIG[scenarioType ?? "interview"] ?? SCENARIO_PREP_CONFIG.interview).completedLabel}

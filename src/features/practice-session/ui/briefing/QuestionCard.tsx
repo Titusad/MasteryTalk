@@ -10,11 +10,20 @@
 import { motion } from "motion/react";
 import { MessageCircleQuestion, ArrowRight } from "lucide-react";
 
+const QUESTION_LABELS: Record<string, string> = {
+    interview:    "The Interviewer Will Ask",
+    sales:        "The Client Will Ask",
+    meeting:      "Key Moment to Handle",
+    presentation: "Your Audience Will Expect",
+    culture:      "Situation You'll Face",
+    "self-intro": "You'll Need to Say",
+};
+
 interface QuestionCardProps {
     question: string;
     questionNumber: number;
     totalQuestions: number;
-    isSales?: boolean;
+    scenarioType?: string;
     onNext: () => void;
 }
 
@@ -22,9 +31,10 @@ export function QuestionCard({
     question,
     questionNumber,
     totalQuestions,
-    isSales,
+    scenarioType,
     onNext,
 }: QuestionCardProps) {
+    const questionLabel = QUESTION_LABELS[scenarioType ?? "interview"] ?? "You'll Be Asked";
     return (
         <motion.div aria-label="QuestionCard"
             className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden"
@@ -41,14 +51,14 @@ export function QuestionCard({
                 </div>
 
                 <p className="text-xs text-[#94a3b8] mb-3 uppercase tracking-wider" style={{ fontWeight: 600 }}>
-                    {isSales ? "The Prospect Will Ask" : "The Interviewer Will Ask"}
+                    {questionLabel}
                 </p>
 
                 <h2
                     className="text-lg md:text-xl text-[#0f172b] leading-relaxed max-w-lg mx-auto"
                     style={{ fontWeight: 600, lineHeight: 1.5 }}
                 >
-                    {isSales ? question : `"${question}"`}
+                    {scenarioType === "sales" ? question : `"${question}"`}
                 </h2>
             </div>
 
