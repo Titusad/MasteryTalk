@@ -22,6 +22,7 @@ import {
 import { realSpeechService } from "@/services";
 import { useMediaRecorder } from "@/shared/hooks/useMediaRecorder";
 import { RecordingWaveformBars, RecordingTimer } from "@/shared/ui";
+import type { AzurePronunciationAssessment } from "@/services/types";
 
 const PROMPT_LABELS: Record<string, string> = {
     interview:    "How would you respond to:",
@@ -44,7 +45,7 @@ interface AnswerCardProps {
     scenarioType?: string;
     /** Assembled response from StrategyCard fill-in inputs */
     preparedResponse?: string;
-    onNext: (userDraft: string) => void;
+    onNext: (userDraft: string, pronAssessment?: AzurePronunciationAssessment) => void;
     onBack: () => void;
 }
 
@@ -82,10 +83,16 @@ export function AnswerCard({ question, scenarioType, preparedResponse, onNext, o
                 return;
             }
 
-            // Transcribe using existing Whisper endpoint
-            const result = await realSpeechService.transcribeBlob(blob);
-            const text = result.text?.trim() || "";
+            // Run transcription + pronunciation assessment in parallel
+            // Assessment only runs when preparedResponse is available (reference text required)
+            const [result, pronAssessment] = await Promise.all([
+                realSpeechService.transcribeBlob(blob),
+                preparedResponse
+                    ? realSpeechService.assessPronunciation(blob, preparedResponse).catch(() => null)
+                    : Promise.resolve(null),
+            ]);
 
+            const text = result.text?.trim() || "";
             if (!text) {
                 setError("Couldn't catch what you said. Try again or switch to text.");
                 setStatus("idle");
@@ -94,6 +101,9 @@ export function AnswerCard({ question, scenarioType, preparedResponse, onNext, o
 
             setTranscript(text);
             setStatus("done");
+            // Auto-advance to feedback immediately
+            onNext(text, pronAssessment ?? undefined);
+            return;
         } catch (err: any) {
             console.error("[AnswerCard] Transcription failed:", err);
             const isAuthError = err?.message?.includes("session") || err?.message?.includes("sign in");
@@ -114,7 +124,7 @@ export function AnswerCard({ question, scenarioType, preparedResponse, onNext, o
     const handleContinue = useCallback(() => {
         const draft = mode === "voice" ? transcript : textDraft.trim();
         if (draft) {
-            onNext(draft);
+            onNext(draft); // text mode: no pronunciation data
         }
     }, [mode, transcript, textDraft, onNext]);
 

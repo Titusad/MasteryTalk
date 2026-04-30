@@ -18,7 +18,7 @@
 import { useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { PartyPopper } from "lucide-react";
-import type { InterviewQuestionCard } from "@/services/types";
+import type { InterviewQuestionCard, AzurePronunciationAssessment } from "@/services/types";
 import { QuestionCard } from "./QuestionCard";
 import { StrategyCard } from "./StrategyCard";
 import { AnswerCard } from "./AnswerCard";
@@ -58,6 +58,8 @@ export function BriefingStepperCarousel({
     const userDraftsRef = useRef<Record<number, string>>({});
     /* Store assembled responses per question (from StrategyCard fill-in inputs) */
     const [assembledResponses, setAssembledResponses] = useState<Record<number, string>>({});
+    /* Store pronunciation assessment per question (Azure, only when preparedResponse exists) */
+    const pronDataRef = useRef<Record<number, AzurePronunciationAssessment>>({});
 
     const visibleCards = cards.slice(0, Math.min(5, cards.length));
     const currentCard = visibleCards[activeQuestionIdx];
@@ -72,8 +74,9 @@ export function BriefingStepperCarousel({
     }, []);
 
     /* ── Answer submission → stores draft, advances to feedback ── */
-    const handleAnswerSubmit = useCallback((draft: string) => {
+    const handleAnswerSubmit = useCallback((draft: string, pronAssessment?: AzurePronunciationAssessment) => {
         userDraftsRef.current[activeQuestionIdx] = draft;
+        if (pronAssessment) pronDataRef.current[activeQuestionIdx] = pronAssessment;
         if (onDraftChange) {
             onDraftChange(currentCard.id, draft);
         }
@@ -239,7 +242,7 @@ export function BriefingStepperCarousel({
                             question={currentCard.question}
                             scenarioType={scenarioType}
                             preparedResponse={assembledResponses[activeQuestionIdx]}
-                            onNext={handleAnswerSubmit}
+                            onNext={(draft, pron) => handleAnswerSubmit(draft, pron)}
                             onBack={() => goToStep("strategy")}
                         />
                     )}
@@ -252,6 +255,8 @@ export function BriefingStepperCarousel({
                             strategy={currentCard.approach}
                             framework={currentCard.framework}
                             suggestedOpener={currentCard.suggestedOpener}
+                            preparedResponse={assembledResponses[activeQuestionIdx]}
+                            pronAssessment={pronDataRef.current[activeQuestionIdx]}
                             scenarioType={scenarioType}
                             interlocutor={interlocutor}
                             onComplete={handleQuestionComplete}

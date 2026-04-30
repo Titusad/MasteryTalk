@@ -1,4 +1,5 @@
 import { SUPABASE_URL } from "@/services/supabase";
+import type { AzurePronunciationAssessment } from "@/services/types";
 /**
  * ==============================================================
  *  FeedbackCard — Step 4 of the 4-step per-question stepper
@@ -20,6 +21,9 @@ import {
     Sparkles,
     Loader2,
     Headphones,
+    Mic,
+    CheckCircle2,
+    AlertCircle,
 } from "lucide-react";
 import { projectId } from "@/../utils/supabase/info";
 import { getAuthToken } from "@/services/supabase";
@@ -57,9 +61,12 @@ interface FeedbackCardProps {
     strategy: string;
     framework?: { name: string; description: string };
     suggestedOpener: string;
+    /** Assembled prepared response from StrategyCard inputs */
+    preparedResponse?: string;
+    /** Azure pronunciation assessment — when present, switches to pronunciation feedback mode */
+    pronAssessment?: AzurePronunciationAssessment;
     scenarioType?: string;
     interlocutor?: string;
-    /** Called when user finishes this card (advance to next question) */
     onComplete: () => void;
     onBack: () => void;
     isLastQuestion?: boolean;
@@ -71,19 +78,22 @@ export function FeedbackCard({
     strategy,
     framework,
     suggestedOpener,
+    preparedResponse,
+    pronAssessment,
     scenarioType,
     interlocutor,
     onComplete,
     onBack,
     isLastQuestion,
 }: FeedbackCardProps) {
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(!pronAssessment); // skip loading when we have pron data
     const [feedback, setFeedback] = useState<FeedbackResult | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [showShadowingModal, setShowShadowingModal] = useState(false);
 
-    /* Fetch feedback from /evaluate-briefing-draft endpoint */
+    /* Fetch AI text feedback — only when no pronunciation assessment is available */
     useEffect(() => {
+        if (pronAssessment) return; // pronunciation mode: skip AI text feedback
         let cancelled = false;
 
         async function fetchFeedback() {
@@ -127,7 +137,7 @@ export function FeedbackCard({
 
         fetchFeedback();
         return () => { cancelled = true; };
-    }, [question, userDraft, strategy, framework, suggestedOpener, scenarioType, interlocutor]);
+    }, [pronAssessment, question, userDraft, strategy, framework, suggestedOpener, scenarioType, interlocutor]);
 
     /* ── Convert GPT shadowingPhrases → ShadowingPhrase[] for modal ── */
     const shadowingPhrases: ShadowingPhrase[] = useMemo(() => {
@@ -226,6 +236,152 @@ export function FeedbackCard({
                     </button>
                 </div>
             </motion.div>
+        );
+    }
+
+    /* ── Pronunciation feedback mode (when Azure assessment is available) ── */
+    if (pronAssessment) {
+        const overallScore = Math.round(pronAssessment.pronScore);
+        const accuracyScore = Math.round(pronAssessment.accuracyScore);
+        const fluencyScore = Math.round(pronAssessment.fluencyScore);
+
+        // Words with errors or accuracy < 70 are flagged for practice
+        const weakWords = pronAssessment.words.filter(
+            w => w.errorType !== "None" || w.accuracyScore < 70
+        );
+
+        // Build shadowing phrases from the prepared response sentences
+        const pronShadowingPhrases: ShadowingPhrase[] = useMemo(() => {
+            const text = preparedResponse || userDraft;
+            return text.split(/(?<=[.!?])\s+/).filter(s => s.length > 4).slice(0, 4).map((sentence, i) => {
+                const stressed = computeStressedWords(sentence);
+                const linked = computeLinkedPairs(sentence);
+                const problemWords = pronAssessment.words
+                    .filter(w => sentence.toLowerCase().includes(w.word.toLowerCase()) && w.accuracyScore < 70)
+                    .map(w => ({ word: w.word, score: w.accuracyScore, errorType: w.errorType }));
+                return {
+                    id: `pron-${i}`,
+                    sentence,
+                    focusWord: weakWords[i]?.word || "",
+                    ipa: "",
+                    originalScore: overallScore,
+                    problemWords,
+                    turnIndex: i,
+                    stressedWords: stressed,
+                    linkedPairs: linked,
+                };
+            });
+        }, [pronAssessment, preparedResponse, userDraft]);
+
+        const scoreColor = overallScore >= 80 ? "text-emerald-600" : overallScore >= 60 ? "text-amber-600" : "text-red-600";
+        const scoreBg = overallScore >= 80 ? "bg-emerald-50 border-emerald-200" : overallScore >= 60 ? "bg-amber-50 border-amber-200" : "bg-red-50 border-red-200";
+
+        return (
+            <>
+                <motion.div
+                    className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden"
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -12 }}
+                    transition={{ duration: 0.35 }}
+                >
+                    <div className="px-6 py-6 md:px-8 space-y-5">
+                        {/* Score overview */}
+                        <div className={`flex items-center justify-between px-4 py-3 rounded-xl border ${scoreBg}`}>
+                            <div>
+                                <p className="text-xs text-[#94a3b8] uppercase tracking-wider mb-0.5" style={{ fontWeight: 600 }}>
+                                    Pronunciation Score
+                                </p>
+                                <p className={`text-3xl ${scoreColor}`} style={{ fontWeight: 700 }}>
+                                    {overallScore}<span className="text-base font-normal">/100</span>
+                                </p>
+                            </div>
+                            <div className="text-right space-y-0.5">
+                                <p className="text-xs text-[#62748e]">Accuracy <span className="font-semibold text-[#0f172b]">{accuracyScore}</span></p>
+                                <p className="text-xs text-[#62748e]">Fluency <span className="font-semibold text-[#0f172b]">{fluencyScore}</span></p>
+                            </div>
+                        </div>
+
+                        {/* Problem words */}
+                        {weakWords.length > 0 ? (
+                            <div>
+                                <div className="flex items-center gap-2 mb-3">
+                                    <AlertCircle className="w-4 h-4 text-amber-500" />
+                                    <h3 className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
+                                        Words to work on
+                                    </h3>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    {weakWords.map((w, i) => (
+                                        <div key={i} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#fff7ed] border border-[#fed7aa]">
+                                            <span className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>{w.word}</span>
+                                            <span className={`text-xs ${w.accuracyScore < 50 ? "text-red-500" : "text-amber-500"}`} style={{ fontWeight: 500 }}>
+                                                {Math.round(w.accuracyScore)}%
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200">
+                                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                                <p className="text-sm text-emerald-700" style={{ fontWeight: 500 }}>
+                                    Clean pronunciation — no problem words detected.
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Shadowing practice */}
+                        <div>
+                            <div className="flex items-center gap-2 mb-2">
+                                <Headphones className="w-4 h-4 text-[#6366f1]" />
+                                <h3 className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
+                                    Practice saying it again
+                                </h3>
+                            </div>
+                            <p className="text-xs text-[#62748e] mb-3">
+                                Shadow each phrase — listen, then record. Focus on the flagged words.
+                            </p>
+                            <button
+                                onClick={() => setShowShadowingModal(true)}
+                                className="flex items-center gap-2 px-5 py-3 rounded-xl bg-[#6366f1] text-white text-sm hover:bg-[#4f46e5] transition-colors"
+                                style={{ fontWeight: 600 }}
+                            >
+                                <Mic className="w-4 h-4" />
+                                Open Shadowing Practice
+                                <span className="text-[11px] bg-white/20 px-1.5 py-0.5 rounded" style={{ fontWeight: 500 }}>
+                                    {pronShadowingPhrases.length} phrases
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Navigation */}
+                    <div className="px-6 py-5 border-t border-[#f1f5f9] flex items-center justify-between">
+                        <button onClick={onBack} className="flex items-center gap-1.5 text-sm text-[#62748e] hover:text-[#0f172b] transition-colors" style={{ fontWeight: 500 }}>
+                            <ArrowLeft className="w-3.5 h-3.5" />
+                            Try again
+                        </button>
+                        <button
+                            onClick={onComplete}
+                            className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#0f172b] text-white text-sm hover:bg-[#1d293d] transition-colors"
+                            style={{ fontWeight: 500 }}
+                        >
+                            {isLastQuestion ? "Start Practice" : "Next moment"}
+                            <ArrowRight className="w-4 h-4" />
+                        </button>
+                    </div>
+                </motion.div>
+
+                {showShadowingModal && pronShadowingPhrases.length > 0 && (
+                    <ShadowingModal
+                        phrases={pronShadowingPhrases}
+                        scenarioLabel={question}
+                        scenarioType={scenarioType as any}
+                        onClose={() => setShowShadowingModal(false)}
+                    />
+                )}
+            </>
         );
     }
 
