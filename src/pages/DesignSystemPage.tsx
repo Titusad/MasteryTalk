@@ -150,7 +150,7 @@ export function DesignSystemPage() {
   return (
     <div
       className="w-full min-h-full bg-white overflow-x-hidden"
-      style={{ fontFamily: "'Poppins', sans-serif" }}
+     
     >
       {/* ───── HEADER ───── */}
       <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
@@ -431,8 +431,8 @@ export function DesignSystemPage() {
         <div className="grid md:grid-cols-2 gap-6 mb-12">
           <div className="bg-white rounded-3xl p-8 border border-gray-200">
             <p className="text-xs text-[#4B505B] mb-3 uppercase tracking-wider" style={{ fontWeight: 600 }}>Principal</p>
-            <p className="text-4xl text-gray-900 mb-2" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 300 }}>
-              Inter
+            <p className="text-4xl text-gray-900 mb-2 font-light">
+              Poppins
             </p>
             <p className="text-sm text-[#4B505B] mb-4">Toda la UI: encabezados, cuerpo, botones, labels</p>
             <p className="text-sm text-gray-900 font-mono bg-gray-50 rounded-lg px-3 py-2">
@@ -441,7 +441,7 @@ export function DesignSystemPage() {
           </div>
           <div className="bg-white rounded-3xl p-8 border border-gray-200">
             <p className="text-xs text-[#4B505B] mb-3 uppercase tracking-wider" style={{ fontWeight: 600 }}>Branding</p>
-            <p className="text-4xl text-gray-900 mb-2" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700 }}>
+            <p className="text-4xl text-gray-900 mb-2 font-montserrat font-bold">
               Montserrat
             </p>
             <p className="text-sm text-[#4B505B] mb-4">Exclusivo para el texto "pro" en el logo</p>
@@ -473,8 +473,8 @@ export function DesignSystemPage() {
                   <span className="text-sm text-[#4B505B]" style={{ fontWeight: 500 }}>{w.label}</span>
                 </div>
                 <p
-                  className="text-2xl text-gray-900 flex-1"
-                  style={{ fontWeight: w.weight, fontFamily: w.weight === 700 ? "'Montserrat', sans-serif" : "'Poppins', sans-serif" }}
+                  className={`text-2xl text-gray-900 flex-1 ${w.weight === 700 ? "font-montserrat" : ""}`}
+                  style={{ fontWeight: w.weight }}
                 >
                   {w.sample}
                 </p>

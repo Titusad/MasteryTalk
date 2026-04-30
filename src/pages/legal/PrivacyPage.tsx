@@ -14,7 +14,7 @@ const CONTACT_EMAIL = "legal@masterytalk.pro";
 
 export function PrivacyPage() {
   return (
-    <div aria-label="PrivacyPage" className="min-h-screen bg-white" style={{ fontFamily: "'Poppins', sans-serif" }}>
+    <div aria-label="PrivacyPage" className="min-h-screen bg-white">
       <AppHeader
         variant="public"
         showBackButton

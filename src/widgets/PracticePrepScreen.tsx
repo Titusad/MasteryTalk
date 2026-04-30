@@ -122,7 +122,7 @@ export function PracticePrepScreen({
     return (
         <div aria-label="PracticePrepScreen"
             className="w-full min-h-full flex flex-col bg-[#f0f4f8] relative overflow-hidden"
-            style={{ fontFamily: "'Poppins', sans-serif" }}
+           
         >
 
 

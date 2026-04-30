@@ -837,7 +837,7 @@ export function PracticeSessionPage({
 
   return (
     <ProgressionProvider value={{ levelTitle: progressionLevelTitle }}>
-    <div aria-label="PracticeSessionPage" className="w-full min-h-screen flex flex-col" style={{ fontFamily: "'Poppins', sans-serif" }}>
+    <div aria-label="PracticeSessionPage" className="w-full min-h-screen flex flex-col">
       <AppHeader
         variant="session"
         leftSlot={

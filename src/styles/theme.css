@@ -1,5 +1,9 @@
 @custom-variant dark (&:is(.dark *));
 
+.font-montserrat {
+  font-family: 'Montserrat', sans-serif;
+}
+
 /* ── inFluentia PRO: Decorative CSS animations ──
    Used instead of motion.div for rapid mount/unmount elements
    to avoid "send was called before connect" errors. ── */
@@ -187,6 +191,7 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Poppins', sans-serif;
   }
 
   /**

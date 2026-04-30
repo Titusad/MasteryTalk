@@ -255,7 +255,7 @@ function ConversationFeedback({
   return (
     <div aria-label="ConversationFeedback"
       className="w-full min-h-full flex flex-col bg-[#f0f4f8] relative overflow-hidden"
-      style={{ fontFamily: "'Poppins', sans-serif" }}
+     
     >
 
 

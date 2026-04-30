@@ -822,7 +822,7 @@ export default function App() {
                 onBack={handleBackToDashboard}
               />
             ) : (
-              <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" as const, alignItems: "center", justifyContent: "center", background: "#0f172a", color: "#e2e8f0", fontFamily: "'Poppins', sans-serif", gap: 16 }}>
+              <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" as const, alignItems: "center", justifyContent: "center", background: "#0f172a", color: "#e2e8f0", gap: 16 }}>
                 {!authUser ? (
                   <>
                     <div style={{ width: 32, height: 32, border: "3px solid #334155", borderTopColor: "#6366f1", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />

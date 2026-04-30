@@ -5,7 +5,7 @@ export function AuthLoadingScreen() {
   return (
     <div
       className="w-full min-h-screen bg-[#0f172b] flex flex-col items-center justify-center"
-      style={{ fontFamily: "'Poppins', sans-serif" }}
+     
     >
       <motion.div
         className="flex flex-col items-center gap-10"

@@ -158,7 +158,7 @@ export function LandingPage({
 
   return (
     <LandingLangProvider value={{ lang, copy }}>
-      <div className="w-full min-h-full bg-white overflow-x-hidden" style={{ fontFamily: "'Poppins', sans-serif" }}>
+      <div className="w-full min-h-full bg-white overflow-x-hidden">
         {/* ───── HEADER ───── */}
         <header className="fixed top-0 left-0 w-full z-50 bg-white border-b border-gray-200">
           <div className="flex items-center justify-between px-6 md:px-8 h-16">

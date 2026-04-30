@@ -43,7 +43,7 @@ export function SelfIntroContextScreen({ onSelect }: SelfIntroContextScreenProps
       {/* Heading */}
       <h1
         className="text-2xl font-bold text-center text-[#0f172b] leading-snug mb-2"
-        style={{ fontFamily: "'Poppins', system-ui, sans-serif" }}
+       
       >
         Where are you introducing yourself?
       </h1>

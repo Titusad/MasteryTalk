@@ -5,7 +5,7 @@ const CONTACT_EMAIL = "legal@masterytalk.pro";
 
 export function CookiesPage() {
   return (
-    <div aria-label="CookiesPage" className="min-h-screen bg-white" style={{ fontFamily: "'Poppins', sans-serif" }}>
+    <div aria-label="CookiesPage" className="min-h-screen bg-white">
       <AppHeader
         variant="public"
         showBackButton

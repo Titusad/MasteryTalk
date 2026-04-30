@@ -91,7 +91,7 @@ export function IntroductionScreen({
       {/* Greeting + headline — animated word by word */}
       <h1
         className="text-2xl font-bold text-center text-[#0f172b] leading-snug mb-2"
-        style={{ fontFamily: "'Poppins', system-ui, sans-serif" }}
+       
       >
         Hey {firstName}, <br />
         in this practice you'll master how to{" "}

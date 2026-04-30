@@ -234,7 +234,7 @@ export function Landing3Page({
 
   return (
     <LandingLangProvider value={{ lang, copy }}>
-      <div className="w-full min-h-full bg-white overflow-x-hidden" style={{ fontFamily: "'Poppins', sans-serif" }}>
+      <div className="w-full min-h-full bg-white overflow-x-hidden">
 
         {/* ═══ HEADER ═══ */}
         <header className="fixed top-0 left-0 w-full z-50 bg-white border-b border-gray-200">
