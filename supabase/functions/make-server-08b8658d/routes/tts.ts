@@ -64,7 +64,7 @@ app.post("/make-server-08b8658d/tts", async (c) => {
             },
             body: JSON.stringify({
               text,
-              model_id: "eleven_multilingual_v2",
+              model_id: "eleven_turbo_v2_5",
               voice_settings: {
                 stability: profile.stability,
                 similarity_boost: profile.similarity,

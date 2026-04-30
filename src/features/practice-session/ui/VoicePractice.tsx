@@ -108,7 +108,6 @@ function VoicePractice({
   const playAiTts = useCallback(
     async (text: string, msgIndex?: number) => {
       try {
-        // Stop any currently playing TTS before starting new one (prevents overlapping audio)
         if (ttsAudioRef.current) {
           ttsAudioRef.current.pause();
           ttsAudioRef.current.onended = null;
@@ -116,10 +115,11 @@ function VoicePractice({
           ttsAudioRef.current = null;
         }
         setIsTtsPlaying(true);
-        setTtsReady(false); // Gate typewriter — don't reveal text until audio plays
+        setTtsReady(false);
         ttsDurationRef.current = 0;
         if (msgIndex !== undefined)
           ttsTargetMsgRef.current = msgIndex;
+
         const ttsUrl = `${SUPABASE_URL}/functions/v1/make-server-08b8658d/tts`;
         const token = await getAuthToken();
         const res = await fetch(ttsUrl, {
@@ -130,59 +130,131 @@ function VoicePractice({
           },
           body: JSON.stringify({ text, role: "user_line" }),
         });
+
         if (!res.ok) {
-          console.error(
-            `[VoicePractice TTS] Error ${res.status}`,
-          );
+          console.error(`[VoicePractice TTS] Error ${res.status}`);
           setIsTtsPlaying(false);
-          setTtsReady(true); // Ungate on error — let typewriter run without audio
+          setTtsReady(true);
           return;
         }
+
+        // Shared cleanup for both paths
+        const handleEnded = (revokeUrl: string) => {
+          setIsTtsPlaying(false);
+          if (revealIntervalRef.current) {
+            clearInterval(revealIntervalRef.current);
+            revealIntervalRef.current = null;
+          }
+          if (ttsTargetMsgRef.current !== null)
+            revealedMsgsRef.current.add(ttsTargetMsgRef.current);
+          setRevealingMsgIndex(null);
+          ttsTargetMsgRef.current = null;
+          URL.revokeObjectURL(revokeUrl);
+          ttsAudioRef.current = null;
+        };
+        const handleError = (revokeUrl: string) => {
+          setIsTtsPlaying(false);
+          setTtsReady(true);
+          ttsTargetMsgRef.current = null;
+          URL.revokeObjectURL(revokeUrl);
+          ttsAudioRef.current = null;
+        };
+
+        // ── Path A: MediaSource streaming (Chrome, Firefox, Edge) ──
+        // Starts playing on first audio chunk — no need to buffer the full file.
+        const supportsStreaming =
+          res.body != null &&
+          typeof MediaSource !== "undefined" &&
+          MediaSource.isTypeSupported("audio/mpeg");
+
+        if (supportsStreaming) {
+          const mediaSource = new MediaSource();
+          const audioUrl = URL.createObjectURL(mediaSource);
+          const audio = new Audio(audioUrl);
+          ttsAudioRef.current = audio;
+
+          audio.addEventListener("loadedmetadata", () => {
+            if (audio.duration && isFinite(audio.duration))
+              ttsDurationRef.current = audio.duration;
+          });
+          audio.onended = () => handleEnded(audioUrl);
+          audio.onerror = () => handleError(audioUrl);
+
+          mediaSource.addEventListener("sourceopen", async () => {
+            try {
+              const sourceBuffer = mediaSource.addSourceBuffer("audio/mpeg");
+              const queue: ArrayBuffer[] = [];
+              let draining = false;
+
+              const drain = () => {
+                if (draining || sourceBuffer.updating || queue.length === 0) return;
+                draining = true;
+                try { sourceBuffer.appendBuffer(queue.shift()!); }
+                catch { draining = false; }
+              };
+
+              sourceBuffer.addEventListener("updateend", () => {
+                draining = false;
+                drain();
+              });
+
+              // Start playback immediately — browser plays as soon as first chunks buffer
+              audio.play()
+                .then(() => setTtsReady(true))
+                .catch(() => { setIsTtsPlaying(false); setTtsReady(true); });
+
+              const reader = res.body!.getReader();
+              while (true) {
+                const { done, value } = await reader.read();
+                if (done) {
+                  // Drain remaining queue then close the stream
+                  const finish = () => {
+                    if (queue.length > 0 || sourceBuffer.updating) {
+                      sourceBuffer.addEventListener("updateend", finish, { once: true });
+                      drain();
+                      return;
+                    }
+                    if (mediaSource.readyState === "open") {
+                      try { mediaSource.endOfStream(); } catch { /* already closed */ }
+                    }
+                  };
+                  finish();
+                  break;
+                }
+                queue.push(value.buffer);
+                drain();
+              }
+            } catch (err) {
+              console.warn("[VoicePractice TTS] MediaSource error:", err);
+              handleError(audioUrl);
+            }
+          }, { once: true });
+
+          return;
+        }
+
+        // ── Path B: Blob fallback (Safari, unsupported browsers) ──
         const blob = await res.blob();
         const audioUrl = URL.createObjectURL(blob);
         const audio = new Audio(audioUrl);
         ttsAudioRef.current = audio;
 
-        // Capture actual audio duration for typewriter calibration
         audio.addEventListener("loadedmetadata", () => {
-          if (audio.duration && isFinite(audio.duration)) {
+          if (audio.duration && isFinite(audio.duration))
             ttsDurationRef.current = audio.duration;
-          }
         });
+        audio.onended = () => handleEnded(audioUrl);
+        audio.onerror = () => handleError(audioUrl);
 
-        audio.onended = () => {
-          setIsTtsPlaying(false);
-          // Fast-forward typewriter to completion when audio finishes
-          if (revealIntervalRef.current) {
-            clearInterval(revealIntervalRef.current);
-            revealIntervalRef.current = null;
-          }
-          if (ttsTargetMsgRef.current !== null) {
-            revealedMsgsRef.current.add(
-              ttsTargetMsgRef.current,
-            );
-          }
-          setRevealingMsgIndex(null);
-          ttsTargetMsgRef.current = null;
-          URL.revokeObjectURL(audioUrl);
-          ttsAudioRef.current = null;
-        };
-        audio.onerror = () => {
-          setIsTtsPlaying(false);
-          setTtsReady(true); // Ungate on error
-          ttsTargetMsgRef.current = null;
-          URL.revokeObjectURL(audioUrl);
-          ttsAudioRef.current = null;
-        };
         await audio.play().catch(() => {
           setIsTtsPlaying(false);
-          setTtsReady(true); // Ungate on play failure
+          setTtsReady(true);
         });
-        // Audio is NOW playing — ungate typewriter so text starts revealing in sync
         setTtsReady(true);
+
       } catch {
         setIsTtsPlaying(false);
-        setTtsReady(true); // Ungate on any error
+        setTtsReady(true);
       }
     },
     [],
