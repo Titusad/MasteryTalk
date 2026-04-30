@@ -775,6 +775,7 @@ export default function App() {
                   userProfile={userProfile}
                   authUser={authUser}
                   onLogout={handleLogout}
+                  onProfileUpdate={handleProfileUpdate}
                 />
               )}
             </>
