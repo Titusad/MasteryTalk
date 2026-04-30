@@ -389,7 +389,20 @@ export default function App() {
           if (!isAuthLoading) {
             setIsOAuthPending(false);
           }
-          setIsInitializing(false);
+
+          // If there's no user but the URL is a protected page (e.g. #dashboard),
+          // Supabase may fire a transient null before the real session arrives.
+          // Keep isInitializing=true briefly to avoid a flash of the page with
+          // authUser=null (which hides the profile avatar).
+          const isProtectedHash = ["#dashboard", "#account", "#practice-history", "#library", "#admin"]
+            .some(h => window.location.hash.startsWith(h));
+
+          if (!user && !hadUser && isProtectedHash) {
+            // Safety release after 2s in case the real user event never comes
+            setTimeout(() => setIsInitializing(false), 2000);
+          } else {
+            setIsInitializing(false);
+          }
         }
 
         if (!user && hadUser) {
