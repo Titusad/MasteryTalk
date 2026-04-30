@@ -200,6 +200,8 @@ app.put("/make-server-08b8658d/profile", async (c: any) => {
       "deckSummary", "deckFileName", "lastJobDescription",
       "narrationCompleted", "sessionMode", "activeGoal",
       "market_focus", "whatsapp_number", "whatsapp_verified",
+      "wa_preferred_hour", "wa_timezone",
+      "wa_dismissed_at_session_count", "wa_card_permanently_dismissed",
     ]);
     const safeUpdates: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(updates)) {

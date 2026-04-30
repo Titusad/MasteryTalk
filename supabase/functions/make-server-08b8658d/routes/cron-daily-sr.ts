@@ -195,7 +195,7 @@ app.post("/make-server-08b8658d/cron/daily-sr", async (c) => {
         problem_word,
         phonetic,
         interval_step,
-        profiles!inner(whatsapp_number, whatsapp_verified, market_focus, stats)
+        profiles!inner(whatsapp_number, whatsapp_verified, market_focus, stats, wa_preferred_hour, wa_timezone)
       `)
       .lte("next_review_at", now)
       .lt("interval_step", 4)
@@ -212,10 +212,31 @@ app.post("/make-server-08b8658d/cron/daily-sr", async (c) => {
     }
 
     // 2. Group by user and filter to verified WhatsApp users
+    // Honor wa_preferred_hour + wa_timezone when set.
+    // Falls back to sending for all verified users when preference is absent
+    // (backward compat — requires pg_cron to run hourly: `0 * * * *`).
+    const nowDate = new Date();
     const userCards = new Map<string, Array<typeof dueCards[0]>>();
     for (const card of dueCards) {
       const profile = (card as any).profiles;
       if (!profile?.whatsapp_verified || !profile?.whatsapp_number) continue;
+
+      // If user set a preferred hour, check it matches the current hour in their timezone
+      if (profile.wa_preferred_hour != null && profile.wa_timezone) {
+        try {
+          const userHour = parseInt(
+            new Intl.DateTimeFormat("en-US", {
+              hour: "numeric",
+              hour12: false,
+              timeZone: profile.wa_timezone,
+            }).format(nowDate),
+            10,
+          );
+          if (userHour !== profile.wa_preferred_hour) continue;
+        } catch {
+          // Invalid timezone string — send anyway
+        }
+      }
 
       const userId = card.user_id;
       if (!userCards.has(userId)) {

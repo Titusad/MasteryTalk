@@ -366,29 +366,70 @@ export interface RenewalEmailData {
   planName: string;
   amountUsd: number;
   nextBillingDate: string;
+  /* Optional stats — populate from KV profile at send time */
+  sessionsThisMonth?: number;
+  bestPillar?: string;
+  bestPillarScore?: number;
+  waPhrasesMastered?: number;
+  weakestPillar?: string;
 }
 
 export function renewalConfirmationEmailHtml(data: RenewalEmailData): string {
-  const content = `
-    <div class="body-content">
-      <h1>Subscription Renewed</h1>
-      <p class="strong-text">
-        Hi ${data.userName}! Your ${data.planName} subscription has been successfully renewed.
-        Your access continues without interruption.
-      </p>
+  const hasActivity = (data.sessionsThisMonth ?? 0) > 0;
 
-      <div class="card" style="background: ${B.surface}; border: 1px solid ${B.border}; border-radius: 12px; overflow: hidden;">
+  /* ── Branch A: user had sessions this cycle → ROI first, bill second ── */
+  if (hasActivity) {
+    const statsRows = [
+      data.sessionsThisMonth != null && `
+        <tr>
+          <td style="padding: 12px 16px; border-bottom: 1px solid ${B.border};">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="color: ${B.textMuted}; font-size: 13px;">Sessions this month</td>
+                <td style="color: ${B.text}; font-size: 14px; font-weight: 600; text-align: right;">${data.sessionsThisMonth}</td>
+              </tr>
+            </table>
+          </td>
+        </tr>`,
+      data.bestPillar && data.bestPillarScore != null && `
+        <tr>
+          <td style="padding: 12px 16px; border-bottom: 1px solid ${B.border};">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="color: ${B.textMuted}; font-size: 13px;">Strongest area</td>
+                <td style="color: ${B.success}; font-size: 14px; font-weight: 600; text-align: right;">${data.bestPillar} — ${data.bestPillarScore}%</td>
+              </tr>
+            </table>
+          </td>
+        </tr>`,
+      data.waPhrasesMastered != null && data.waPhrasesMastered > 0 && `
+        <tr>
+          <td style="padding: 12px 16px; border-bottom: 1px solid ${B.border};">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="color: ${B.textMuted}; font-size: 13px;">WhatsApp phrases drilled</td>
+                <td style="color: ${B.text}; font-size: 14px; font-weight: 600; text-align: right;">${data.waPhrasesMastered}</td>
+              </tr>
+            </table>
+          </td>
+        </tr>`,
+    ].filter(Boolean).join("");
+
+    const content = `
+    <div class="body-content">
+      <h1>Month ${data.planName} — here's what you built.</h1>
+      <p class="strong-text">Hi ${data.userName} — your subscription renewed and your access continues.</p>
+
+      <p class="section-title">Your progress this month</p>
+      <div class="card">
         <table width="100%" cellpadding="0" cellspacing="0" border="0">
-          <tr>
-            <td style="padding: 12px 16px; border-bottom: 1px solid ${B.border};">
-              <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                <tr>
-                  <td style="color: ${B.textMuted}; font-size: 13px;">Plan</td>
-                  <td style="color: ${B.accent}; font-size: 14px; font-weight: 700; text-align: right;">${data.planName}</td>
-                </tr>
-              </table>
-            </td>
-          </tr>
+          ${statsRows}
+        </table>
+      </div>
+
+      <p class="section-title">Billing</p>
+      <div class="card">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0">
           <tr>
             <td style="padding: 12px 16px; border-bottom: 1px solid ${B.border};">
               <table width="100%" cellpadding="0" cellspacing="0" border="0">
@@ -412,19 +453,49 @@ export function renewalConfirmationEmailHtml(data: RenewalEmailData): string {
         </table>
       </div>
 
-      <p>
-        Keep up the momentum — every session brings you closer to executive-level English fluency.
-      </p>
       <div class="cta-wrapper">
-        <a href="${B.url}/#dashboard" class="cta">Practice Now &rarr;</a>
+        <a href="${B.url}/#dashboard" class="cta">Keep Going &rarr;</a>
       </div>
-      <div class="divider" style="height: 1px; background: ${B.border}; margin: 24px 0;"></div>
+      <div class="divider"></div>
       <p style="font-size: 13px; color: ${B.textMuted};">
-        To manage your subscription, visit your <a href="${B.url}/#account" style="color: ${B.accent};">account settings</a>.
+        Manage your subscription in <a href="${B.url}/#account" style="color: ${B.accent};">account settings</a>.
+        Cancel anytime.
       </p>
     </div>`;
 
-  return baseLayout(content, `${data.planName} renewed — your access continues!`);
+    return baseLayout(content, `Your ${data.planName} renewed — ${data.sessionsThisMonth} sessions this month.`);
+  }
+
+  /* ── Branch B: 0 sessions this cycle → reactivation, no empty stats ── */
+  const focusCopy = data.weakestPillar
+    ? `Your sessions show <strong>${data.weakestPillar}</strong> is the area to work on next. One session is enough to make a dent.`
+    : `Your next session is ready — pick up where you left off.`;
+
+  const content = `
+    <div class="body-content">
+      <h1>Your subscription renewed — we haven't seen you this month.</h1>
+      <p class="strong-text">Hi ${data.userName} — your ${data.planName} access is active, but you haven't practiced yet this cycle.</p>
+
+      <div class="focus-card">
+        <p>${focusCopy}</p>
+      </div>
+
+      <p>
+        15 minutes is all it takes. The AI interlocutor is ready when you are.
+      </p>
+
+      <div class="cta-wrapper">
+        <a href="${B.url}/#dashboard" class="cta">Start a session &rarr;</a>
+      </div>
+
+      <div class="divider"></div>
+      <p style="font-size: 13px; color: ${B.textMuted};">
+        Amount charged: <strong>$${data.amountUsd.toFixed(2)} USD</strong> &nbsp;·&nbsp; Next renewal: <strong>${data.nextBillingDate}</strong>
+        &nbsp;·&nbsp; <a href="${B.url}/#account" style="color: ${B.accent};">Manage subscription</a>
+      </p>
+    </div>`;
+
+  return baseLayout(content, `Your ${data.planName} renewed — your session is waiting.`);
 }
 
 /* ── Inactivity nudge ── */

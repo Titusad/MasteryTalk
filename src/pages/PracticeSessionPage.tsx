@@ -72,6 +72,7 @@ import { scriptSectionsToBriefingData } from "@/features/practice-session/ui/bri
 import type { SelfIntroContext } from "@/entities/session";
 import { recommendPath } from "@/features/dashboard/model/path-recommendation";
 import { PathRecommendationCard } from "@/features/practice-session/ui/PathRecommendationCard";
+import { WhatsAppActivationCard } from "@/features/dashboard/ui/WhatsAppActivationCard";
 
 /* ═══════════════════════════════════════════════════════════
    TYPES & DATA (MVP-simplified)
@@ -1349,6 +1350,60 @@ export function PracticeSessionPage({
                 />
               ) : null;
 
+              /* WhatsApp SR Coach activation card */
+              const waVerified = !!(userProfile as any)?.whatsapp_verified;
+              const waPermanentlyDismissed = !!(userProfile as any)?.wa_card_permanently_dismissed;
+              const dismissedAtCount = (userProfile as any)?.wa_dismissed_at_session_count ?? null;
+              const currentSessionCount = (userProfile as any)?.stats?.sessions_count ?? 0;
+              const sessionsSinceDismiss = dismissedAtCount !== null
+                ? currentSessionCount - dismissedAtCount
+                : null;
+              const showWaCard = !waVerified
+                && !waPermanentlyDismissed
+                && (dismissedAtCount === null || sessionsSinceDismiss !== null && sessionsSinceDismiss >= 3);
+
+              const dismissCount = dismissedAtCount !== null ? 1 : 0;
+
+              const handleWaDismiss = () => {
+                if (dismissCount >= 1) {
+                  // Second dismiss → permanent
+                  const updated = { ...(userProfile as any), wa_card_permanently_dismissed: true };
+                  onProfileUpdate?.(updated as any);
+                  getAuthToken().then((token) => {
+                    fetch(`https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/profile`, {
+                      method: "PUT",
+                      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, apikey: publicAnonKey },
+                      body: JSON.stringify({ wa_card_permanently_dismissed: true }),
+                    }).catch(() => {});
+                  }).catch(() => {});
+                } else {
+                  // First dismiss → cooldown of 3 sessions
+                  const updated = { ...(userProfile as any), wa_dismissed_at_session_count: currentSessionCount };
+                  onProfileUpdate?.(updated as any);
+                  getAuthToken().then((token) => {
+                    fetch(`https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/profile`, {
+                      method: "PUT",
+                      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, apikey: publicAnonKey },
+                      body: JSON.stringify({ wa_dismissed_at_session_count: currentSessionCount }),
+                    }).catch(() => {});
+                  }).catch(() => {});
+                }
+              };
+
+              const waCardSlot = showWaCard ? (
+                <div className="mt-6">
+                  <WhatsAppActivationCard
+                    variant="feedback"
+                    dismissCount={dismissCount}
+                    onDismiss={handleWaDismiss}
+                  />
+                </div>
+              ) : null;
+
+              const combinedBottomSlot = (waCardSlot || recommendationSlot)
+                ? <>{waCardSlot}{recommendationSlot}</>
+                : null;
+
               return (
                 <FeedbackScreen
                   scenarioType={scenarioType}
@@ -1405,7 +1460,7 @@ export function PracticeSessionPage({
                     onFinish();
                   }}
                   canRetryFree={canRepeat}
-                  bottomSlot={recommendationSlot}
+                  bottomSlot={combinedBottomSlot}
                 />
               );
             })()}

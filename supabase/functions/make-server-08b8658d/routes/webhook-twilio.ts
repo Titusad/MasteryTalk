@@ -15,6 +15,7 @@
 import { Hono } from "npm:hono";
 import { getAdminClient } from "../_shared.ts";
 import { sendWhatsAppMessage, downloadTwilioMedia, validateTwilioSignature } from "../twilio.ts";
+import * as kv from "../kv_store.ts";
 
 const app = new Hono();
 
@@ -348,7 +349,23 @@ app.post("/make-server-08b8658d/webhook/twilio", async (c) => {
       .update({ status: "completed" })
       .eq("id", pendingReview.id);
 
-    // 8. Build and send feedback message
+    // 8. Update wa_phrases_mastered in KV when score is strong (≥80)
+    if (overallScore >= 80) {
+      try {
+        const profileRaw = await kv.get(`profile:${profile.id}`);
+        if (profileRaw) {
+          const p = profileRaw as Record<string, unknown>;
+          await kv.set(`profile:${profile.id}`, {
+            ...p,
+            wa_phrases_mastered: ((p.wa_phrases_mastered as number) ?? 0) + 1,
+          });
+        }
+      } catch (kvErr) {
+        console.error("[WA Webhook] KV update failed (non-blocking):", kvErr);
+      }
+    }
+
+    // 9. Build and send feedback message
     let feedbackMsg: string;
 
     if (passed && newStep >= 4) {

@@ -23,6 +23,7 @@ import { PracticePathsModule } from "./PracticePathsModule";
 import { RecommendedNextCard } from "./RecommendedNextCard";
 import { StreakCard } from "./StreakCard";
 import { CrossPathCard } from "./CrossPathCard";
+import { ProgressSummaryCard } from "./ProgressSummaryCard";
 
 interface DashboardPageProps {
   userName?: string;
@@ -41,6 +42,7 @@ export function DashboardPage({
   firstPracticeScenario,
   firstPracticeInterlocutor,
   onStartNewPractice,
+  userProfile,
   lang = "en",
   ownedPaths = [],
 }: DashboardPageProps) {
@@ -113,63 +115,112 @@ export function DashboardPage({
         <div className="grid grid-cols-1 md:grid-cols-[340px_1fr] gap-6 items-start">
 
           {/* Left Column */}
-          <div className="flex flex-col gap-4">
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.08 }}
-            >
-              <WhatsAppActivationCard />
-            </motion.div>
+          {(() => {
+            const waPhrasesMastered = (userProfile as any)?.wa_phrases_mastered ?? 0;
+            const isEarlyUser = data.totalSessions <= 2;
 
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.14 }}
-            >
-              <RecommendedNextCard
-                focusArea={data.focusArea}
-                totalSessions={data.totalSessions}
-                onStartSession={handleStartSession}
-              />
-            </motion.div>
+            // Derive most practiced scenario from session history
+            const scenarioCounts = data.persistedSessions.reduce<Record<string, number>>((acc, s) => {
+              const t = s.scenarioType ?? "interview";
+              acc[t] = (acc[t] ?? 0) + 1;
+              return acc;
+            }, {});
+            const mostPracticed = Object.keys(scenarioCounts).length > 0
+              ? Object.keys(scenarioCounts).reduce((a, b) => scenarioCounts[a] > scenarioCounts[b] ? a : b)
+              : null;
 
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.2 }}
-            >
-              <SRDashboardCard totalSessions={data.totalSessions} />
-            </motion.div>
+            return (
+              <div className="flex flex-col gap-4">
+                {/* HeroNextStep: RecommendedNextCard first for early users (≤2 sessions) */}
+                {isEarlyUser && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: 0.08 }}
+                  >
+                    <RecommendedNextCard
+                      focusArea={data.focusArea}
+                      totalSessions={data.totalSessions}
+                      onStartSession={handleStartSession}
+                    />
+                  </motion.div>
+                )}
 
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.26 }}
-            >
-              <StreakCard
-                allPracticeDates={data.allPracticeDates}
-                streak={data.streak}
-                totalSessions={data.totalSessions}
-              />
-            </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: isEarlyUser ? 0.14 : 0.08 }}
+                >
+                  <WhatsAppActivationCard />
+                </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.32 }}
-            >
-              <CrossPathCard perPathStats={data.perPathStats} />
-            </motion.div>
+                {/* RecommendedNextCard in normal position for returning users */}
+                {!isEarlyUser && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: 0.14 }}
+                  >
+                    <RecommendedNextCard
+                      focusArea={data.focusArea}
+                      totalSessions={data.totalSessions}
+                      onStartSession={handleStartSession}
+                    />
+                  </motion.div>
+                )}
 
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.38 }}
-            >
-              <PlatformNewsCard />
-            </motion.div>
-          </div>
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.2 }}
+                >
+                  <ProgressSummaryCard
+                    totalSessions={data.totalSessions}
+                    waPhrasesMastered={waPhrasesMastered}
+                    mostPracticed={mostPracticed}
+                    bestPillarDelta={data.biggestImprovement}
+                  />
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.26 }}
+                >
+                  <SRDashboardCard totalSessions={data.totalSessions} />
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.32 }}
+                >
+                  <StreakCard
+                    allPracticeDates={data.allPracticeDates}
+                    streak={data.streak}
+                    totalSessions={data.totalSessions}
+                    waPhrasesMastered={waPhrasesMastered}
+                  />
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.38 }}
+                >
+                  <CrossPathCard perPathStats={data.perPathStats} />
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.44 }}
+                >
+                  <PlatformNewsCard />
+                </motion.div>
+              </div>
+            );
+          })()}
 
           {/* Right Column */}
           <PracticePathsModule

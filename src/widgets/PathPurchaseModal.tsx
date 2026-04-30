@@ -257,7 +257,7 @@ export function PathPurchaseModal({
         </button>
 
         <p className="text-[10px] text-[#94a3b8] text-center mt-3">
-          Pago seguro con Stripe · Cancela cuando quieras
+          Pago seguro con Stripe · Cancela cuando quieras desde tu cuenta · Sin cargos ocultos
         </p>
       </div>
     </AppModal>

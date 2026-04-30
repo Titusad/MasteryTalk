@@ -344,14 +344,41 @@ app.post("/make-server-08b8658d/webhook/stripe", async (c) => {
           const nextDate = invoice.period_end
             ? new Date(invoice.period_end * 1000).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
             : "—";
+
+          // Pull stats from KV profile for ROI email
+          const sessionsThisMonth = (profile.monthly_sessions_used as number) ?? 0;
+          const pillarScores = (profile.stats as any)?.pillarScores as Record<string, number> | undefined;
+          const waPhrasesMastered = (profile.wa_phrases_mastered as number) ?? 0;
+
+          // Best pillar = highest score; weakest pillar = lowest score
+          let bestPillar: string | undefined;
+          let bestPillarScore: number | undefined;
+          let weakestPillar: string | undefined;
+          if (pillarScores && Object.keys(pillarScores).length > 0) {
+            const entries = Object.entries(pillarScores).filter(([, v]) => v > 0);
+            if (entries.length > 0) {
+              const sorted = entries.sort(([, a], [, b]) => b - a);
+              bestPillar = sorted[0][0];
+              bestPillarScore = Math.round(sorted[0][1]);
+              weakestPillar = sorted[sorted.length - 1][0];
+            }
+          }
+
           sendEmail({
             to: customerEmail,
-            subject: `MasteryTalk PRO renewed — ${tierInfo?.label ?? "your plan"} is active`,
+            subject: sessionsThisMonth > 0
+              ? `MasteryTalk PRO renewed — ${sessionsThisMonth} sessions this month`
+              : `MasteryTalk PRO renewed — your session is waiting`,
             html: renewalConfirmationEmailHtml({
               userName: customerEmail.split("@")[0],
               planName: tierInfo?.label ?? "MasteryTalk PRO",
               amountUsd: (invoice.amount_paid ?? 0) / 100,
               nextBillingDate: nextDate,
+              sessionsThisMonth,
+              bestPillar,
+              bestPillarScore,
+              waPhrasesMastered: waPhrasesMastered > 0 ? waPhrasesMastered : undefined,
+              weakestPillar,
             }),
           }).catch(() => {});
         }

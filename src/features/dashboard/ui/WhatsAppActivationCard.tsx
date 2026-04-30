@@ -8,7 +8,7 @@
  */
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { MessageCircle, Check, Loader2, ArrowRight, ShieldCheck } from "lucide-react";
+import { MessageCircle, Check, Loader2, ArrowRight, ShieldCheck, Clock } from "lucide-react";
 import { SUPABASE_URL, getAuthToken } from "@/services/supabase";
 
 const BASE = `${SUPABASE_URL}/functions/v1/make-server-08b8658d`;
@@ -25,22 +25,50 @@ async function apiFetch(path: string, body?: Record<string, unknown>) {
   });
 }
 
-type Step = "idle" | "input" | "sending" | "verify" | "verifying" | "done";
+async function putProfile(updates: Record<string, unknown>) {
+  const token = await getAuthToken();
+  return fetch(`${BASE}/profile`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(updates),
+  });
+}
+
+type Step = "idle" | "input" | "sending" | "verify" | "verifying" | "time-pref" | "done";
+
+const TIME_OPTIONS: { label: string; hour: number; sublabel: string }[] = [
+  { label: "Morning", hour: 7, sublabel: "7:00 AM" },
+  { label: "Midday", hour: 12, sublabel: "12:00 PM" },
+  { label: "Evening", hour: 18, sublabel: "6:00 PM" },
+];
 
 interface WhatsAppActivationCardProps {
   whatsappVerified?: boolean;
   whatsappNumber?: string;
+  /** "dashboard" (default) = dark card · "feedback" = white card + dismiss */
+  variant?: "dashboard" | "feedback";
+  /** Number of previous dismissals (0 = first, 1 = second → permanent) */
+  dismissCount?: number;
+  onDismiss?: () => void;
 }
 
 export function WhatsAppActivationCard({
   whatsappVerified = false,
   whatsappNumber: initialNumber,
+  variant = "dashboard",
+  dismissCount = 0,
+  onDismiss,
 }: WhatsAppActivationCardProps) {
   const [step, setStep] = useState<Step>(whatsappVerified ? "done" : "idle");
   const [phone, setPhone] = useState(initialNumber || "");
   const [countryCode, setCountryCode] = useState("+");
   const [otp, setOtp] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [selectedHour, setSelectedHour] = useState<number | null>(null);
+  const [savingPref, setSavingPref] = useState(false);
 
   const fullNumber = `${countryCode}${phone.replace(/\D/g, "")}`;
 
@@ -76,10 +104,25 @@ export function WhatsAppActivationCard({
         setStep("verify");
         return;
       }
-      setStep("done");
+      // Go to time preference step before completing
+      setStep("time-pref");
     } catch {
       setError("Connection error. Please try again.");
       setStep("verify");
+    }
+  };
+
+  const handleSaveTimePref = async (hour: number) => {
+    setSelectedHour(hour);
+    setSavingPref(true);
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    try {
+      await putProfile({ wa_preferred_hour: hour, wa_timezone: timezone });
+    } catch {
+      // Non-blocking — preference saved best-effort
+    } finally {
+      setSavingPref(false);
+      setStep("done");
     }
   };
 
@@ -107,8 +150,52 @@ export function WhatsAppActivationCard({
     );
   }
 
-  // Idle — promotional CTA
+  // Idle — promotional CTA (two visual variants)
   if (step === "idle") {
+    // Feedback variant: white card, contextual copy, dismissible
+    if (variant === "feedback") {
+      return (
+        <motion.div
+          className="bg-white border border-[#e2e8f0] rounded-2xl p-5 flex items-start gap-4"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35 }}
+        >
+          <span className="flex items-center justify-center w-10 h-10 rounded-full bg-[#25d366]/10 shrink-0 mt-0.5">
+            <MessageCircle className="w-5 h-5 text-[#25d366]" />
+          </span>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-[#0f172b] mb-1" style={{ fontWeight: 600 }}>
+              Practice this phrase tomorrow on WhatsApp
+            </p>
+            <p className="text-xs text-[#62748e] leading-relaxed mb-3">
+              Activate your coach in 30 seconds — receive daily audio challenges and get your pronunciation score instantly.
+            </p>
+            <div className="flex items-center gap-3 flex-wrap">
+              <button
+                onClick={() => setStep("input")}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs bg-[#0f172b] text-white hover:bg-[#1d293d] transition-colors cursor-pointer"
+                style={{ fontWeight: 600 }}
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+                Activate coach
+              </button>
+              {onDismiss && (
+                <button
+                  onClick={onDismiss}
+                  className="text-xs text-[#94a3b8] hover:text-[#62748e] transition-colors cursor-pointer"
+                  style={{ fontWeight: 500 }}
+                >
+                  {dismissCount >= 1 ? "Don't show again" : "Maybe later"}
+                </button>
+              )}
+            </div>
+          </div>
+        </motion.div>
+      );
+    }
+
+    // Dashboard variant: dark gradient card (original)
     return (
       <motion.div
         className="bg-gradient-to-br from-[#0f172b] to-[#1e293b] rounded-2xl p-6 relative overflow-hidden"
@@ -139,6 +226,55 @@ export function WhatsAppActivationCard({
             </button>
           </div>
         </div>
+      </motion.div>
+    );
+  }
+
+  // Time preference step — shown after OTP verified, before "done"
+  if (step === "time-pref") {
+    return (
+      <motion.div
+        className="bg-white border border-[#e2e8f0] rounded-2xl p-6"
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <div className="flex items-center gap-3 mb-4">
+          <span className="flex items-center justify-center w-9 h-9 rounded-full bg-[#6366f1]/10">
+            <Clock className="w-4 h-4 text-[#6366f1]" />
+          </span>
+          <div>
+            <p className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
+              When should your coach reach you?
+            </p>
+            <p className="text-xs text-[#62748e]">We'll send your daily challenge at this time.</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2 mb-2">
+          {TIME_OPTIONS.map((opt) => (
+            <button
+              key={opt.hour}
+              onClick={() => !savingPref && handleSaveTimePref(opt.hour)}
+              disabled={savingPref}
+              className={`flex flex-col items-center gap-1 py-3 rounded-xl border text-xs transition-all cursor-pointer disabled:opacity-50 ${
+                selectedHour === opt.hour
+                  ? "border-[#6366f1] bg-[#6366f1]/5 text-[#6366f1]"
+                  : "border-[#e2e8f0] text-[#45556c] hover:border-[#94a3b8]"
+              }`}
+              style={{ fontWeight: selectedHour === opt.hour ? 600 : 500 }}
+            >
+              {savingPref && selectedHour === opt.hour ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : null}
+              <span>{opt.label}</span>
+              <span className="text-[10px] opacity-60">{opt.sublabel}</span>
+            </button>
+          ))}
+        </div>
+
+        <p className="text-[10px] text-[#94a3b8] text-center mt-2">
+          Timezone detected automatically · Change anytime from your account
+        </p>
       </motion.div>
     );
   }

@@ -4,20 +4,25 @@ interface StreakCardProps {
   allPracticeDates: Set<string>;
   streak: number;
   totalSessions: number;
+  waPhrasesMastered?: number;
 }
 
 const DAY_LABELS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
-export function StreakCard({ allPracticeDates, streak, totalSessions }: StreakCardProps) {
+export function StreakCard({ allPracticeDates, streak, totalSessions, waPhrasesMastered = 0 }: StreakCardProps) {
   if (totalSessions === 0) return null;
+
+  const todayKey = new Date().toISOString().slice(0, 10);
 
   // Last 7 calendar days (today = index 6)
   const days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - (6 - i));
     const key = d.toISOString().slice(0, 10);
-    return { key, label: DAY_LABELS[d.getDay()], practiced: allPracticeDates.has(key) };
+    return { key, label: DAY_LABELS[d.getDay()], practiced: allPracticeDates.has(key), isToday: key === todayKey };
   });
+
+  const practicedToday = allPracticeDates.has(todayKey);
 
   return (
     <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-6">
@@ -40,15 +45,17 @@ export function StreakCard({ allPracticeDates, streak, totalSessions }: StreakCa
       </div>
 
       {/* 7-day grid */}
-      <div className="grid grid-cols-7 gap-1">
-        {days.map(({ key, label, practiced }) => (
+      <div className="grid grid-cols-7 gap-1 mb-1">
+        {days.map(({ key, label, practiced, isToday }) => (
           <div key={key} className="flex flex-col items-center gap-1.5">
             <span className="text-[10px] font-medium text-[#94a3b8]">{label}</span>
             <div
               className={`w-7 h-7 rounded-full flex items-center justify-center ${
                 practiced
                   ? "bg-[#00C950]"
-                  : "bg-[#f0f4f8] border border-[#e2e8f0]"
+                  : isToday
+                    ? "bg-[#f1f5f9] border border-dashed border-[#c7d2e0]"
+                    : "bg-[#f0f4f8] border border-[#e2e8f0]"
               }`}
             >
               {practiced && (
@@ -58,6 +65,21 @@ export function StreakCard({ allPracticeDates, streak, totalSessions }: StreakCa
           </div>
         ))}
       </div>
+
+      {/* Today closing hint — only when today is empty */}
+      {!practicedToday && (
+        <p className="text-[10px] text-[#94a3b8] text-center mb-3">
+          Day closes at 11:59 PM
+        </p>
+      )}
+
+      {/* WA phrases drilled this month */}
+      {waPhrasesMastered > 0 && (
+        <div className="border-t border-[#f1f5f9] pt-3 mt-1 flex items-center justify-between">
+          <p className="text-xs text-[#62748e]">WhatsApp phrases drilled</p>
+          <p className="text-xs font-semibold text-[#0f172b]">{waPhrasesMastered}</p>
+        </div>
+      )}
     </div>
   );
 }

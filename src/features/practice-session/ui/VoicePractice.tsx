@@ -1110,26 +1110,45 @@ function VoicePractice({
             </div>
           </div>
 
-          {/* Mic button */}
-          <RecordButton
-            isRecording={recorder.isRecording}
-            onClick={() => {
-              if (recorder.isRecording) {
-                handleRecordingStop();
-              } else {
-                handleRecordingStart();
-              }
-            }}
-            size="sm"
-            label={
-              recorder.isRecording
-                ? "Listening... tap when done"
-                : isProcessing
-                  ? undefined
-                  : "Your turn — tap to speak"
-            }
-            disabled={micDisabled}
-          />
+          {/* Mic button — pulses when it's the user's turn */}
+          {(() => {
+            const isUserTurn = !recorder.isRecording && !isProcessing
+              && !isAiTyping && !isTtsPlaying && !isConversationComplete
+              && revealingMsgIndex === null
+              && messages.length > 0
+              && messages[messages.length - 1]?.role === "ai";
+            return (
+              <motion.div
+                animate={isUserTurn ? { scale: 1.04 } : { scale: 1 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                className={`rounded-full transition-shadow duration-300 ${
+                  isUserTurn
+                    ? "shadow-[0_0_0_6px_rgba(99,102,241,0.15),0_0_0_12px_rgba(99,102,241,0.06)]"
+                    : ""
+                }`}
+              >
+                <RecordButton
+                  isRecording={recorder.isRecording}
+                  onClick={() => {
+                    if (recorder.isRecording) {
+                      handleRecordingStop();
+                    } else {
+                      handleRecordingStart();
+                    }
+                  }}
+                  size="sm"
+                  label={
+                    recorder.isRecording
+                      ? "Listening... tap when done"
+                      : isProcessing
+                        ? undefined
+                        : "Your turn — tap to speak"
+                  }
+                  disabled={micDisabled}
+                />
+              </motion.div>
+            );
+          })()}
           {/* Status hint */}
           <div className="h-5 flex items-center justify-center">
             {isProcessing && !recorder.isRecording && (

@@ -303,6 +303,15 @@ export function FeedbackScreen({
                             items={beforeAfter.slice(0, 3)}
                             shadowStates={shadowStates}
                             onPractice={handleOpenShadowModal}
+                            onShadowingStarted={() => {
+                                // [Analytics] shadowing_started_from_feedback
+                                // Replace with real tracking SDK when available
+                                console.log("[Analytics] shadowing_started_from_feedback", {
+                                    scenarioType,
+                                    pillarScore_pronunciation: radarData.find(d => d.skill === "Pronunciation")?.score ?? 0,
+                                    source: "feedback_screen_primary",
+                                });
+                            }}
                         />
                     );
                 })()}
@@ -457,9 +466,10 @@ interface FocusBubbleProps {
     items: BeforeAfterComparison[];
     shadowStates: Record<number, ShadowState>;
     onPractice: (idx: number) => void;
+    onShadowingStarted?: () => void;
 }
 
-function FocusBubbleCarousel({ focusLabel, focusScore, items, shadowStates, onPractice }: FocusBubbleProps) {
+function FocusBubbleCarousel({ focusLabel, focusScore, items, shadowStates, onPractice, onShadowingStarted }: FocusBubbleProps) {
     const [idx, setIdx] = useState(0);
     const total = items.length;
     const item = items[idx];
@@ -490,6 +500,10 @@ function FocusBubbleCarousel({ focusLabel, focusScore, items, shadowStates, onPr
                     </span>
                 )}
             </div>
+
+            <p className="text-[10px] text-[#94a3b8] uppercase tracking-wider mb-3" style={{ fontWeight: 500 }}>
+                Extracted from your session — exactly what you said.
+            </p>
 
             <h3 className="text-lg text-[#0f172b] mb-5" style={{ fontWeight: 700 }}>
                 {focusLabel} — {Math.round(focusScore)}%
@@ -537,30 +551,36 @@ function FocusBubbleCarousel({ focusLabel, focusScore, items, shadowStates, onPr
                         </div>
                     </div>
 
-                    {/* Practice button */}
-                    <div className="flex justify-center gap-2 pt-1">
+                    {/* Practice button — primary CTA of the card */}
+                    <div className="pt-3 border-t border-[#f1f5f9] mt-3">
                         {ss === "done" ? (
-                            <>
-                                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#f0fdf4] border border-[#bbf7d0] text-[11px] text-emerald-600" style={{ fontWeight: 500 }}>
-                                    <Check className="w-3 h-3" /> Practiced
+                            <div className="flex items-center justify-between">
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#f0fdf4] border border-[#bbf7d0] text-xs text-emerald-600" style={{ fontWeight: 600 }}>
+                                    <Check className="w-3.5 h-3.5" /> Pronunciation drilled
                                 </span>
                                 <button
-                                    onClick={() => onPractice(idx)}
-                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] border border-[#e2e8f0] text-[#45556c] hover:bg-[#f8fafc] hover:border-[#c7d2e0] transition-all"
+                                    onClick={() => {
+                                        onShadowingStarted?.();
+                                        onPractice(idx);
+                                    }}
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs border border-[#e2e8f0] text-[#45556c] hover:bg-[#f8fafc] hover:border-[#c7d2e0] transition-all"
                                     style={{ fontWeight: 500 }}
                                 >
                                     <RotateCcw className="w-3 h-3" />
                                     Repeat
                                 </button>
-                            </>
+                            </div>
                         ) : (
                             <button
-                                onClick={() => onPractice(idx)}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] bg-[#0f172b] text-white hover:bg-[#1d293d] transition-all"
-                                style={{ fontWeight: 500 }}
+                                onClick={() => {
+                                    onShadowingStarted?.();
+                                    onPractice(idx);
+                                }}
+                                className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-lg bg-[#0f172b] text-white text-sm hover:bg-[#1d293d] transition-colors"
+                                style={{ fontWeight: 600 }}
                             >
-                                <Headphones className="w-3 h-3" />
-                                Practice Pronunciation
+                                <Headphones className="w-4 h-4" />
+                                Drill this phrase now
                             </button>
                         )}
                     </div>
