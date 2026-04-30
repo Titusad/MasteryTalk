@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { CheckCircle2, ChevronRight } from "lucide-react";
+import { CheckCircle2, ChevronRight, Lock } from "lucide-react";
 
 interface StatusConfig {
   label: string;
@@ -15,17 +15,18 @@ interface LevelNodeProps {
     level: string | number;
     title: string;
     scenario: string;
-    interlocutor: any; // Keeping any for now
+    interlocutor: any;
     introValue?: string;
   };
   status: "locked" | "unlocked" | "study" | "completed";
   config: StatusConfig;
   isLast: boolean;
   isExpanded?: boolean;
+  tagline?: string;
   onClick: () => void;
 }
 
-export function LevelNode({ level, status, config, isLast, isExpanded = false, onClick }: LevelNodeProps) {
+export function LevelNode({ level, status, config, isLast, isExpanded = false, tagline, onClick }: LevelNodeProps) {
   const StatusIcon = config.icon;
 
   return (
@@ -88,41 +89,47 @@ export function LevelNode({ level, status, config, isLast, isExpanded = false, o
           } ${isExpanded ? "border-[#cbd5e1] shadow-md ring-2 ring-[#cbd5e1]/20" : ""}`}
           onClick={onClick}
         >
-          <div className="flex items-start justify-between mb-1">
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 mb-0.5">
-                <h4 className="text-[15px] font-bold text-[#0f172b] truncate">
-                  {level.title}
-                </h4>
-                <span
-                  className="text-[10px] px-2 py-0.5 rounded-full shrink-0 flex items-center gap-1 font-semibold"
-                  style={{
-                    backgroundColor: status === "locked" ? "#f1f5f9" : config.bg,
-                    color: status === "locked" ? "#94a3b8" : config.color,
-                    border: `1px solid ${status === "locked" ? "#e2e8f0" : config.border}`,
-                  }}
-                >
-                  <StatusIcon className="w-3 h-3" />
-                  {config.label}
-                </span>
-              </div>
-              <p className="text-sm text-[#62748e]">
-                {status === "study" 
-                  ? "Review your approach, then practice again" 
-                  : status === "locked"
-                    ? (level.introValue || "Complete previous level to unlock")
-                    : status === "completed"
-                      ? "Level mastered - review or retake"
-                      : "Ready to start your session"}
-              </p>
+          {/* Row 1: title + badge + chevron */}
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <h4 className="text-[15px] font-bold text-[#0f172b] truncate">
+                {level.title}
+              </h4>
+              <span
+                className="text-[10px] px-2 py-0.5 rounded-full shrink-0 flex items-center gap-1 font-semibold"
+                style={{
+                  backgroundColor: status === "locked" ? "#f1f5f9" : config.bg,
+                  color: status === "locked" ? "#94a3b8" : config.color,
+                  border: `1px solid ${status === "locked" ? "#e2e8f0" : config.border}`,
+                }}
+              >
+                <StatusIcon className="w-3 h-3" />
+                {config.label}
+              </span>
             </div>
-
-            {status !== "locked" && (
-              <div className="w-8 h-8 rounded-full bg-[#f8fafc] flex items-center justify-center shrink-0 border border-[#e2e8f0] group-hover:bg-[#f1f5f9] transition-colors">
-                <ChevronRight className="w-4 h-4 text-[#64748b]" />
-              </div>
-            )}
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border transition-colors ${
+              status === "locked"
+                ? "bg-[#f1f5f9] border-[#e2e8f0]"
+                : "bg-[#f8fafc] border-[#e2e8f0] group-hover:bg-[#f1f5f9]"
+            }`}>
+              <ChevronRight className={`w-4 h-4 ${status === "locked" ? "text-[#c7d2e0]" : "text-[#64748b]"}`} />
+            </div>
           </div>
+
+          {/* Row 2: tagline */}
+          {tagline && (
+            <p className="text-sm text-[#62748e] leading-snug mb-1">
+              {tagline}
+            </p>
+          )}
+
+          {/* Row 3: locked hint (only when locked) */}
+          {status === "locked" && (
+            <p className="text-[11px] text-[#94a3b8] flex items-center gap-1 mt-1">
+              <Lock className="w-3 h-3 shrink-0" />
+              Complete the previous level first
+            </p>
+          )}
         </div>
       </motion.div>
     </div>

@@ -161,12 +161,11 @@ export function ProgressionTree({ onStartLevel, onDrillComplete, onLockedClick }
           </div>
         </div>
 
-        {/* Path description */}
+        {/* Path title + description */}
         {activePath?.description && (
-          <div className="px-5 pt-3 pb-0">
-            <p className="text-sm text-[#62748e] leading-relaxed">
-              {activePath.description}
-            </p>
+          <div className="px-5 pt-3 pb-0 space-y-0.5">
+            <h3 className="text-base font-semibold text-[#0f172b]">{activePath.title}</h3>
+            <p className="text-sm text-[#62748e] leading-relaxed">{activePath.description}</p>
           </div>
         )}
 
@@ -191,6 +190,9 @@ export function ProgressionTree({ onStartLevel, onDrillComplete, onLockedClick }
                   const config = STATUS_CONFIG[lvl.status];
                   const isLast = i === activePath.levels.length - 1;
 
+                  // Short description: introValue for self-intro, methodology.tagline for others
+                  const tagline = (level as any).introValue || (level as any).methodology?.tagline;
+
                   return (
                     <LevelNode
                       key={level.id}
@@ -198,7 +200,8 @@ export function ProgressionTree({ onStartLevel, onDrillComplete, onLockedClick }
                       status={lvl.status}
                       config={config}
                       isLast={isLast}
-                    onClick={() => handleNodeClick(level.id, lvl.status, level)}
+                      tagline={tagline}
+                      onClick={() => handleNodeClick(level.id, lvl.status, level)}
                     />
                   );
                 })}
