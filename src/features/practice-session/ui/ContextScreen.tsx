@@ -173,7 +173,7 @@ function ContextScreen({
     const storageKey = `masterytalk_extra_ctx_${scenarioType || "default"}`;
 
     const [selectedPreset, setSelectedPreset] = useState<SituationPreset | null>(null);
-    const [presetsOpen, setPresetsOpen] = useState(false);
+    const [presetsOpen, setPresetsOpen] = useState(true);
     const [values, setValues] = useState<Record<string, string>>(() => {
         // Restore from sessionStorage first (current session draft)
         if (typeof window !== "undefined") {
@@ -308,7 +308,7 @@ function ContextScreen({
                             onClick={() => setPresetsOpen((p) => !p)}
                             className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-[#e2e8f0] bg-white text-sm text-[#45556c] hover:border-[#94a3b8] transition-colors"
                         >
-                            <span className="font-medium">Or pick a scenario</span>
+                            <span className="font-medium">Or pick a simulated scenario</span>
                             {presetsOpen
                                 ? <ChevronUp className="w-4 h-4 shrink-0" />
                                 : <ChevronDown className="w-4 h-4 shrink-0" />
