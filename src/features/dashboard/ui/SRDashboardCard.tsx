@@ -43,7 +43,16 @@ export function SRDashboardCard({ totalSessions, onPracticeAll }: SRDashboardCar
 
   useEffect(() => { fetchPhrases(); }, [fetchPhrases]);
 
-  if (loading) return null;
+  if (loading) return (
+    <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-6 animate-pulse">
+      <div className="h-2.5 w-32 bg-[#f0f4f8] rounded mb-4" />
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-8 h-8 rounded-full bg-[#f0f4f8] shrink-0" />
+        <div className="h-3.5 w-40 bg-[#f0f4f8] rounded" />
+      </div>
+      <div className="h-2.5 w-24 bg-[#f0f4f8] rounded" />
+    </div>
+  );
 
   const todayDue = phrases.filter((p) => {
     const due = new Date(p.dueDate);
