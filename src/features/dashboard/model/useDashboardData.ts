@@ -50,6 +50,7 @@ export interface UseDashboardDataProps {
 
 /* ── Hook Return Type ── */
 export interface DashboardData {
+  loading: boolean;
   /* Raw data */
   persistedSessions: PersistedSession[];
   recentPractices: PracticeHistoryItem[];
@@ -117,7 +118,7 @@ export function useDashboardData({
   const [persistedSessions, setPersistedSessions] = useState<
     PersistedSession[]
   >([]);
-  const [, setSessionsLoaded] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [credits, setCredits] = useState<number | null>(null);
   const [freeSessionAvailable, setFreeSessionAvailable] = useState(false);
   const [waPracticeDates, setWAPracticeDates] = useState<Set<string>>(new Set());
@@ -127,10 +128,10 @@ export function useDashboardData({
     try {
       const sessions = await fetchSessions();
       setPersistedSessions(sessions);
-      setSessionsLoaded(true);
+      setLoading(false);
     } catch (err) {
       console.warn("[Dashboard] Failed to load real sessions:", err);
-      setSessionsLoaded(true);
+      setLoading(false);
     }
   }, []);
 
@@ -351,6 +352,7 @@ export function useDashboardData({
   const hasRealData = persistedSessions.length > 0;
 
   return {
+    loading,
     persistedSessions,
     recentPractices,
     credits,

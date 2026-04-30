@@ -17,6 +17,7 @@ import type { PurchaseType, OnboardingProfile } from "@/services/types";
 
 import { useDashboardData } from "../model";
 import { useProgressionState } from "../model/useProgressionState";
+import { DashboardSkeleton } from "./DashboardSkeleton";
 import { HeroCard } from "./HeroCard";
 import { PlatformNewsCard } from "./PlatformNewsCard";
 import { SRDashboardCard } from "./SRDashboardCard";
@@ -55,6 +56,7 @@ export function DashboardPage({
   const [upsellOpen, setUpsellOpen] = useState(false);
   const [pendingScenario, setPendingScenario] = useState<string | null>(null);
   const { state: progressionState, loading: progressionLoading } = useProgressionState();
+  const isDashboardReady = !data.loading && !progressionLoading;
 
   const handleStartSession = (
     scenario: string,
@@ -102,7 +104,8 @@ export function DashboardPage({
       aria-label="DashboardPage"
       className="w-full min-h-screen flex flex-col bg-[#f0f4f8]"
     >
-      <main className="w-full px-6 md:px-8 lg:px-12 pt-6 pb-20 space-y-12">
+      {!isDashboardReady && <DashboardSkeleton />}
+      <main className={`w-full px-6 md:px-8 lg:px-12 pt-6 pb-20 space-y-12 ${!isDashboardReady ? "hidden" : ""}`}>
 
         {/* ── Row 0: WhatsApp notification banner (only when not yet activated) ── */}
         {!waVerified && (
