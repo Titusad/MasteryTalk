@@ -78,7 +78,9 @@ export function ProgressionTree({ onStartLevel, onDrillComplete, onLockedClick }
 
   useEffect(() => {
     if (state.activeGoal) {
-      setActiveTab(state.activeGoal as PathId);
+      // Only switch to activeGoal if it has a visible tab
+      const isVisible = VISIBLE_PATHS.some(p => p.id === state.activeGoal);
+      if (isVisible) setActiveTab(state.activeGoal as PathId);
     }
   }, [state.activeGoal]);
 

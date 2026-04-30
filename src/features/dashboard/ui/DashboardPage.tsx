@@ -54,7 +54,7 @@ export function DashboardPage({
 
   const [upsellOpen, setUpsellOpen] = useState(false);
   const [pendingScenario, setPendingScenario] = useState<string | null>(null);
-  const { state: progressionState } = useProgressionState();
+  const { state: progressionState, loading: progressionLoading } = useProgressionState();
 
   const handleStartSession = (
     scenario: string,
@@ -196,7 +196,10 @@ export function DashboardPage({
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.08 }}
             >
-              <CrossPathCard perPathStats={data.perPathStats} progressionState={progressionState} />
+              <CrossPathCard
+              perPathStats={data.perPathStats}
+              progressionState={progressionLoading ? null : progressionState}
+            />
             </motion.div>
 
             <motion.div
