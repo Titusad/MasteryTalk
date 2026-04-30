@@ -32,6 +32,7 @@ interface HeroCardProps {
   proficiencyDelta: number;
   cefrApprox: { level: string; label: string };
   streak: number;
+  allPracticeDates?: Set<string>;
   radarData: RadarDataPoint[];
   progressData: Array<Record<string, string | number>>;
   totalSessions: number;
@@ -55,6 +56,7 @@ export function HeroCard({
   proficiencyDelta,
   cefrApprox,
   streak,
+  allPracticeDates,
   radarData,
   progressData,
   totalSessions,
@@ -101,19 +103,21 @@ export function HeroCard({
     };
   }, [userState, churnGap, focusArea, onStartPractice]);
 
-  const streakDots = useMemo(() => {
-    const dots = [];
-    for (let i = 0; i < 7; i++) {
-      if (i < streak - 1) {
-        dots.push(<div key={i} className="w-2.5 h-2.5 rounded-full bg-[#0f172b]" />);
-      } else if (i === streak - 1 && streak > 0) {
-        dots.push(<div key={i} className="w-2.5 h-2.5 rounded-full bg-[#6366f1] ring-2 ring-indigo-100" />);
-      } else {
-        dots.push(<div key={i} className="w-2.5 h-2.5 rounded-full bg-[#e2e8f0]" />);
-      }
-    }
-    return dots;
-  }, [streak]);
+  const streakDays = useMemo(() => {
+    const DAY_LABELS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+    const todayKey = new Date().toISOString().slice(0, 10);
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (6 - i));
+      const key = d.toISOString().slice(0, 10);
+      return {
+        key,
+        label: DAY_LABELS[d.getDay()],
+        practiced: allPracticeDates?.has(key) ?? false,
+        isToday: key === todayKey,
+      };
+    });
+  }, [allPracticeDates]);
 
   const diagnosisHTML = useMemo(() => {
     let text = diagnosis.text;
@@ -169,14 +173,34 @@ export function HeroCard({
               </button>
             </div>
 
-            {/* Streak */}
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-medium uppercase tracking-wider text-[#94a3b8]">Streak</span>
-              <div className="flex items-center gap-1">{streakDots}</div>
-              {streak > 0 ? (
-                <span className="text-sm font-bold text-[#0f172b]">{streak}d</span>
-              ) : (
-                <span className="text-xs text-[#94a3b8]">— start today</span>
+            {/* Streak — 7-day grid with day labels */}
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xs font-medium uppercase tracking-wider text-[#94a3b8]">Streak</span>
+                {streak > 0 && (
+                  <span className="text-xs font-semibold text-[#0f172b]">{streak}-day</span>
+                )}
+              </div>
+              <div className="grid grid-cols-7 gap-1.5">
+                {streakDays.map(({ key, label, practiced, isToday }) => (
+                  <div key={key} className="flex flex-col items-center gap-1">
+                    <span className="text-[10px] font-medium text-[#94a3b8]">{label}</span>
+                    <div
+                      className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                        practiced
+                          ? "bg-[#00C950]"
+                          : isToday
+                            ? "bg-[#f1f5f9] border border-dashed border-[#c7d2e0]"
+                            : "bg-[#f0f4f8] border border-[#e2e8f0]"
+                      }`}
+                    >
+                      {practiced && <div className="w-1.5 h-1.5 rounded-full bg-white opacity-80" />}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {!streakDays[6]?.practiced && (
+                <p className="text-[10px] text-[#94a3b8] mt-1.5">Day closes at 11:59 PM</p>
               )}
             </div>
           </div>

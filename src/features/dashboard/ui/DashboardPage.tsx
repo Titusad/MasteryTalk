@@ -22,7 +22,6 @@ import { PlatformNewsCard } from "./PlatformNewsCard";
 import { SRDashboardCard } from "./SRDashboardCard";
 import { PracticePathsModule } from "./PracticePathsModule";
 import { RecommendedNextCard } from "./RecommendedNextCard";
-import { StreakCard } from "./StreakCard";
 import { CrossPathCard } from "./CrossPathCard";
 import { ProgressSummaryCard } from "./ProgressSummaryCard";
 
@@ -105,6 +104,7 @@ export function DashboardPage({
             proficiencyDelta={data.proficiencyDelta}
             cefrApprox={data.cefrApprox}
             streak={data.streak}
+            allPracticeDates={data.allPracticeDates}
             radarData={data.radarData}
             progressData={data.progressData}
             totalSessions={data.totalSessions}
@@ -232,19 +232,6 @@ export function DashboardPage({
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: 0.32 }}
-                >
-                  <StreakCard
-                    allPracticeDates={data.allPracticeDates}
-                    streak={data.streak}
-                    totalSessions={data.totalSessions}
-                    waPhrasesMastered={waPhrasesMastered}
-                  />
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: 0.38 }}
                 >
                   <CrossPathCard perPathStats={data.perPathStats} />
                 </motion.div>
