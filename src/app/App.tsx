@@ -119,10 +119,10 @@ export default function App() {
   /* ─── Auth state ─── */
   const [isInitializing, setIsInitializing] = useState(true);
   const [authUser, setAuthUser] = useState<User | null>(null);
-  // Covers landing during OAuth redirect — true if the key exists at mount time.
-  // Cleared by the auth IIFE on success, or after 5s safety timeout.
+  // Covers landing during OAuth redirect — uses a SEPARATE key from the
+  // practice-setup key so it doesn't interfere with the PracticeWidget flow.
   const [isOAuthPending, setIsOAuthPending] = useState(
-    () => sessionStorage.getItem("masterytalk_oauth_pending") === "true"
+    () => sessionStorage.getItem("masterytalk_auth_loading") === "true"
   );
   useEffect(() => {
     if (!isOAuthPending) return;
@@ -224,7 +224,10 @@ export default function App() {
     let cancelled = false;
 
     const init = async () => {
+      // isOAuthReturn: controls practice-setup flow (PracticeWidget key)
       const isOAuthReturn = sessionStorage.getItem(OAUTH_PENDING_KEY) === "true";
+      // isAuthLoading: controls the branded loading screen (set for ALL signIn() calls)
+      const isAuthLoading = sessionStorage.getItem("masterytalk_auth_loading") === "true";
 
       if (cancelled) return;
 
@@ -376,13 +379,14 @@ export default function App() {
               setPage("admin");
             }
           })().finally(() => {
+            sessionStorage.removeItem("masterytalk_auth_loading");
             setIsOAuthPending(false);
             setIsInitializing(false);
           });
         } else {
-          // During an OAuth return, the first event is null (Supabase still
-          // processing the session). Keep the loader until the IIFE clears it.
-          if (!isOAuthReturn) {
+          // If auth_loading key was set (any signIn() call), keep the loader.
+          // Only the IIFE .finally() clears isOAuthPending after navigation.
+          if (!isAuthLoading) {
             setIsOAuthPending(false);
           }
           setIsInitializing(false);
