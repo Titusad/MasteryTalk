@@ -535,7 +535,7 @@ export default function App() {
     window.location.hash = "";
   };
 
-  const handleStartNewPractice = (scenario: string, scenarioType?: string, levelId?: string, interlocutor?: string) => {
+  const handleStartNewPractice = (scenario: string, scenarioType?: string, levelId?: string, interlocutor?: string, startAtContext?: boolean) => {
     const validPaths = new Set<string>(["interview", "sales", "meeting", "presentation", "client", "csuite", "self-intro"]);
     if (scenarioType && validPaths.has(scenarioType)) {
       // Dashboard → direct to practice-session (skip widget)
@@ -554,6 +554,7 @@ export default function App() {
         scenarioType: scenarioType as ScenarioType,
         progressionLevelId: levelId,
         progressionPathId: levelId ? (scenarioType as PathId) : undefined,
+        startAtContext,
       });
       setPage("practice-session");
       window.location.hash = "#practice-session";
@@ -661,6 +662,7 @@ export default function App() {
               interlocutor={flowState.interlocutor || "recruiter"}
               scenarioType={flowState.scenarioType || "interview"}
               guidedFields={flowState.guidedFields}
+              startAtContext={flowState.startAtContext}
               progressionLevelId={flowState.progressionLevelId}
               progressionPathId={flowState.progressionPathId}
               marketFocus={marketFocus}

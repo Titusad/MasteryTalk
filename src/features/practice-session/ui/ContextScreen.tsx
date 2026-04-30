@@ -156,6 +156,7 @@ function ContextScreen({
     userProfile,
     onProfileUpdate,
     narratorUrl,
+    warRoomMode,
 }: {
     scenarioType?: ScenarioType;
     onContinue: (extraData: Record<string, string>) => void;
@@ -163,6 +164,7 @@ function ContextScreen({
     userProfile?: OnboardingProfile | null;
     onProfileUpdate?: (profile: OnboardingProfile) => void; // reserved for future use
     narratorUrl?: string;
+    warRoomMode?: boolean;
 }) {
     const fields   = scenarioType ? EXTRA_CONTEXT_FIELDS[scenarioType] ?? [] : [];
     const rawPresets = getPresetsForScenario(scenarioType);
@@ -274,7 +276,10 @@ function ContextScreen({
                                     <textarea
                                         value={currentValue}
                                         onChange={(e) => handleFieldChange(field.label, e.target.value)}
-                                        placeholder={field.placeholder}
+                                        placeholder={warRoomMode && i === 0
+                                            ? "Paste your meeting invite, agenda, or slides — I'll tailor the session."
+                                            : field.placeholder}
+                                        autoFocus={warRoomMode && i === 0}
                                         className="w-full h-[110px] bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-4 text-[#0f172b] placeholder:text-[#94a3b8] focus:outline-none focus:border-[#0f172b] focus:bg-white transition-all resize-none"
                                         style={{ fontSize: "14px", lineHeight: "22px" }}
                                     />

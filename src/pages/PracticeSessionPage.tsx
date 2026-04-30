@@ -99,6 +99,8 @@ interface PracticeSessionPageProps {
 
   /** Callback to navigate to dashboard (session header) */
   onGoToDashboard?: () => void;
+  /** Skip intro/experience steps — jump straight to context (War Room mode) */
+  startAtContext?: boolean;
 }
 
 import { MAX_REPEATS, SCENARIO_LABELS_MAP } from "@/features/practice-session/model/session.constants";
@@ -140,6 +142,7 @@ export function PracticeSessionPage({
   userProfile,
   onProfileUpdate,
   onGoToDashboard,
+  startAtContext,
 }: PracticeSessionPageProps) {
 
 
@@ -177,6 +180,9 @@ export function PracticeSessionPage({
       ? getLevelDefinition(progressionPathId, progressionLevelId)
       : null;
     if (levelDef?.introHeadline) return "intro";
+
+    // War Room mode — skip intro and experience, go directly to context
+    if (startAtContext) return "context";
 
     // Auto-skip "experience" if user already has profile data from onboarding
     const hasProfileContext = userProfile?.cvSummary || (userProfile?.position && userProfile?.industry);
@@ -987,6 +993,7 @@ export function PracticeSessionPage({
                 scenarioType={scenarioType}
                 userProfile={userProfile}
                 onProfileUpdate={onProfileUpdate}
+                warRoomMode={startAtContext}
                 narratorUrl={NARRATOR_URLS.context[scenarioType as keyof typeof NARRATOR_URLS.context] || ""}
                 onContinue={(extraData) => {
                   // Inject profile data into guided fields for AI generation

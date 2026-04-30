@@ -9,6 +9,7 @@
  */
 import { useState } from "react";
 import { motion } from "motion/react";
+import { Zap } from "lucide-react";
 import { MiniFooter } from "@/shared/ui";
 import type { LandingLang } from "@/shared/i18n/landing-i18n";
 import { PathPurchaseModal } from "@/widgets/PathPurchaseModal";
@@ -30,7 +31,7 @@ interface DashboardPageProps {
   firstPracticeScenario?: string;
   firstPracticeInterlocutor?: string;
   onNavigateToHistory?: () => void;
-  onStartNewPractice?: (scenario: string, scenarioType?: string, levelId?: string, interlocutor?: string) => void;
+  onStartNewPractice?: (scenario: string, scenarioType?: string, levelId?: string, interlocutor?: string, startAtContext?: boolean) => void;
   userProfile?: OnboardingProfile | null;
   onProfileUpdate?: (profile: OnboardingProfile) => void;
   lang?: LandingLang;
@@ -60,9 +61,10 @@ export function DashboardPage({
     scenario: string,
     scenarioType?: string,
     levelId?: string,
-    interlocutor?: string
+    interlocutor?: string,
+    startAtContext?: boolean,
   ) => {
-    onStartNewPractice?.(scenario, scenarioType, levelId, interlocutor);
+    onStartNewPractice?.(scenario, scenarioType, levelId, interlocutor, startAtContext);
   };
 
   const handleQuickStart = () => {
@@ -153,6 +155,44 @@ export function DashboardPage({
                 >
                   <WhatsAppActivationCard />
                 </motion.div>
+
+                {/* War Room — only for returning users */}
+                {data.totalSessions > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: 0.17 }}
+                  >
+                    <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-5">
+                      <p className="text-xs font-medium uppercase tracking-wider text-[#94a3b8] mb-3">
+                        Emergency Prep
+                      </p>
+                      <p className="text-sm font-semibold text-[#0f172b] mb-1">
+                        Meeting in 30 minutes?
+                      </p>
+                      <p className="text-xs text-[#62748e] leading-relaxed mb-4">
+                        Paste the agenda or invite — I'll build a targeted session right now.
+                      </p>
+                      <button
+                        onClick={() => {
+                          const lastScenario = data.persistedSessions[data.persistedSessions.length - 1];
+                          const scenarioType = lastScenario?.scenarioType ?? "meeting";
+                          handleStartSession(
+                            "Emergency practice session",
+                            scenarioType,
+                            undefined,
+                            undefined,
+                            true,
+                          );
+                        }}
+                        className="w-full flex items-center justify-center gap-2 bg-[#0f172b] text-white rounded-lg text-sm font-medium py-2.5 hover:bg-[#1d293d] transition-colors"
+                      >
+                        <Zap className="w-3.5 h-3.5" />
+                        Start emergency prep
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
 
                 {/* RecommendedNextCard in normal position for returning users */}
                 {!isEarlyUser && (

@@ -11,68 +11,98 @@ interface InterlocutorMeta {
   role: string;
   hook: string;
   initials: string;
+  color: string;
+  tagline: string;
 }
 
 const INTERLOCUTOR_META: Record<string, InterlocutorMeta> = {
   recruiter: {
-    name: "The Recruiter",
+    name: "Sarah Chen",
     role: "Corporate Talent Acquisition",
     hook: "15-20 candidates a day. You have 60 seconds to make her remember you.",
-    initials: "RC",
+    initials: "SC",
+    color: "#6366f1",
+    tagline: "Fast, evaluative, remembers everything.",
   },
   hiring_manager: {
-    name: "The Hiring Manager",
+    name: "Marcus Rivera",
     role: "Your Future Direct Manager",
     hook: "He speaks in outcomes. Show him what you've delivered, not what you've done.",
-    initials: "HM",
+    initials: "MR",
+    color: "#0ea5e9",
+    tagline: "Outcome-focused. No time for backstory.",
   },
   sme: {
-    name: "The Subject Matter Expert",
+    name: "Dr. Priya Nair",
     role: "Senior Technical Evaluator",
-    hook: "He'll probe until he finds the edge of your knowledge. Don't fake it.",
-    initials: "SM",
+    hook: "She'll probe until she finds the edge of your knowledge. Don't fake it.",
+    initials: "PN",
+    color: "#14b8a6",
+    tagline: "Precise, patient, relentless on depth.",
   },
   hr: {
-    name: "HR / People & Culture",
+    name: "Jordan Lee",
     role: "Culture & Sustainability Evaluator",
-    hook: "She wants the real story. Corporate answers will work against you.",
-    initials: "HR",
+    hook: "They want the real story. Corporate answers will work against you.",
+    initials: "JL",
+    color: "#a78bfa",
+    tagline: "Reads between the lines. Authenticity wins.",
   },
   gatekeeper: {
-    name: "The Gatekeeper",
+    name: "Chris Avery",
     role: "Sales Development Representative",
     hook: "He filters 15 vendors a day. You have 5 minutes. Lead with value.",
-    initials: "GK",
+    initials: "CA",
+    color: "#f59e0b",
+    tagline: "Skeptical by design. Earn the next call.",
   },
   technical_buyer: {
-    name: "The Technical Buyer",
+    name: "Elena Kovacs",
     role: "Internal Technical Specialist",
     hook: "Marketing promises mean nothing. She wants proof of concept.",
-    initials: "TB",
+    initials: "EK",
+    color: "#10b981",
+    tagline: "Data over narrative. Show, don't tell.",
   },
   champion: {
-    name: "The Champion",
+    name: "Diana Park",
     role: "Department Head & Internal Ally",
     hook: "She wants to buy. Help her build the business case for her VP.",
-    initials: "CH",
+    initials: "DP",
+    color: "#22c55e",
+    tagline: "On your side — if you give her the right ammunition.",
   },
   decision_maker: {
-    name: "The Decision Maker",
+    name: "Robert Walsh",
     role: "C-Level Executive",
-    hook: "15 minutes. Cost, savings, risk. That's all she wants to hear.",
-    initials: "DM",
+    hook: "15 minutes. Cost, savings, risk. That's all he wants to hear.",
+    initials: "RW",
+    color: "#ef4444",
+    tagline: "Impatient, strategic, unforgiving of vagueness.",
   },
   meeting_facilitator: {
-    name: "The Meeting Facilitator",
+    name: "Alex Morgan",
     role: "Structured Timekeeper",
-    hook: "He keeps the agenda moving. Ramble and he'll cut you off.",
-    initials: "MF",
+    hook: "They keep the agenda moving. Ramble and they'll cut you off.",
+    initials: "AM",
+    color: "#0ea5e9",
+    tagline: "Process over politics. Conciseness is respect.",
   },
   senior_stakeholder: {
-    name: "The Senior Stakeholder",
+    name: "Victoria Osei",
     role: "VP / Director",
     hook: "She goes on tangents. Your job: redirect diplomatically and close with decisions.",
-    initials: "SS",
+    initials: "VO",
+    color: "#8b5cf6",
+    tagline: "Strategic vision, scattered attention. Guide her.",
+  },
+  egalitarian_leader: {
+    name: "Sam Torres",
+    role: "Flat-Hierarchy U.S. Leader",
+    hook: "Titles mean nothing here. Ideas and ownership are what count.",
+    initials: "ST",
+    color: "#06b6d4",
+    tagline: "Direct, inclusive, allergic to hierarchy theatre.",
   },
 };
 
@@ -165,9 +195,12 @@ export function InterlocutorIntroScreen({
             animate={{ scale: [1, 1.15, 1], opacity: [0.2, 0, 0.2] }}
             transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut", delay: 0.4 }}
           />
-          {/* Avatar circle */}
-          <div className="w-24 h-24 rounded-full bg-white/10 border border-white/20 flex items-center justify-center">
-            <span className="text-white text-xl" style={{ fontWeight: 600 }}>
+          {/* Avatar circle — unique color per interlocutor */}
+          <div
+            className="w-24 h-24 rounded-full flex items-center justify-center border-2 border-white/20"
+            style={{ backgroundColor: `${meta.color}22`, boxShadow: `0 0 0 1px ${meta.color}44` }}
+          >
+            <span className="text-xl" style={{ fontWeight: 700, color: meta.color }}>
               {meta.initials}
             </span>
           </div>
@@ -186,12 +219,23 @@ export function InterlocutorIntroScreen({
 
         {/* Role */}
         <motion.p
-          className="text-white/45 text-sm mb-8"
+          className="text-white/45 text-sm mb-1"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.65 }}
         >
           {meta.role}
+        </motion.p>
+
+        {/* Tagline — coaching style in one line */}
+        <motion.p
+          className="text-xs mb-8"
+          style={{ color: meta.color, fontWeight: 500 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.75 }}
+        >
+          {meta.tagline}
         </motion.p>
 
         {/* Waveform or hook text */}

@@ -471,10 +471,12 @@ interface FocusBubbleProps {
 
 function FocusBubbleCarousel({ focusLabel, focusScore, items, shadowStates, onPractice, onShadowingStarted }: FocusBubbleProps) {
     const [idx, setIdx] = useState(0);
+    const [revealed, setRevealed] = useState<Record<number, boolean>>({});
     const total = items.length;
     const item = items[idx];
     if (!item) return null;
 
+    const isRevealed = !!revealed[idx];
     const ss = shadowStates[idx] || "idle";
     const prev = () => setIdx(i => Math.max(0, i - 1));
     const next = () => setIdx(i => Math.min(total - 1, i + 1));
@@ -519,37 +521,81 @@ function FocusBubbleCarousel({ focusLabel, focusScore, items, shadowStates, onPr
                     transition={{ duration: 0.25 }}
                     className="space-y-3"
                 >
-                    {/* User bubble (wrong) */}
+                    {/* User bubble — strikethrough only after reveal */}
                     <div className="flex items-start gap-2.5 justify-end">
-                        <div className="max-w-[80%] bg-[#fef2f2] border border-[#fecaca] rounded-2xl rounded-tr-sm px-4 py-3">
-                            <p className="text-sm text-[#991b1b] leading-relaxed line-through decoration-[#fca5a5]">
+                        <div className={`max-w-[80%] border rounded-2xl rounded-tr-sm px-4 py-3 transition-colors duration-300 ${
+                            isRevealed
+                                ? "bg-[#fef2f2] border-[#fecaca]"
+                                : "bg-[#fff7ed] border-[#fed7aa]"
+                        }`}>
+                            <p className={`text-sm leading-relaxed transition-all duration-300 ${
+                                isRevealed
+                                    ? "text-[#991b1b] line-through decoration-[#fca5a5]"
+                                    : "text-[#9a3412]"
+                            }`}>
                                 {item.userOriginal}
                             </p>
                         </div>
-                        <div className="w-7 h-7 rounded-full bg-[#fef2f2] border border-[#fecaca] flex items-center justify-center shrink-0 mt-1">
-                            <X className="w-3.5 h-3.5 text-[#ef4444]" />
+                        <div className={`w-7 h-7 rounded-full border flex items-center justify-center shrink-0 mt-1 transition-colors duration-300 ${
+                            isRevealed ? "bg-[#fef2f2] border-[#fecaca]" : "bg-[#fff7ed] border-[#fed7aa]"
+                        }`}>
+                            <X className={`w-3.5 h-3.5 transition-colors ${isRevealed ? "text-[#ef4444]" : "text-[#ea580c]"}`} />
                         </div>
                     </div>
 
-                    {/* Technique label */}
-                    {item.technique && (
-                        <p className="text-[11px] text-[#92400e] flex items-center gap-1.5 ml-10" style={{ fontWeight: 500 }}>
-                            <Lightbulb className="w-3 h-3 text-[#f59e0b]" />
-                            {item.technique}
-                        </p>
+                    {/* Reveal correction button — only before revealed */}
+                    {!isRevealed && (
+                        <motion.div
+                            className="flex justify-center"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.15 }}
+                        >
+                            <button
+                                onClick={() => setRevealed(prev => ({ ...prev, [idx]: true }))}
+                                className="flex items-center gap-1.5 text-xs text-[#0f172b] border border-[#e2e8f0] rounded-lg px-3 py-1.5 hover:bg-[#f8fafc] transition-colors"
+                                style={{ fontWeight: 500 }}
+                            >
+                                <Sparkles className="w-3 h-3 text-[#f59e0b]" />
+                                Reveal correction
+                            </button>
+                        </motion.div>
                     )}
 
-                    {/* Coach bubble (correct) */}
-                    <div className="flex items-start gap-2.5">
-                        <div className="w-7 h-7 rounded-full bg-[#f0fdf4] border border-[#bbf7d0] flex items-center justify-center shrink-0 mt-1">
-                            <Check className="w-3.5 h-3.5 text-[#22c55e]" />
-                        </div>
-                        <div className="max-w-[80%] bg-[#f0fdf4] border border-[#bbf7d0] rounded-2xl rounded-tl-sm px-4 py-3">
-                            <p className="text-sm text-[#166534] leading-relaxed" style={{ fontWeight: 500 }}>
-                                {item.professionalVersion}
-                            </p>
-                        </div>
-                    </div>
+                    {/* Technique label */}
+                    {isRevealed && item.technique && (
+                        <motion.p
+                            className="text-[11px] text-[#92400e] flex items-center gap-1.5 ml-10"
+                            style={{ fontWeight: 500 }}
+                            initial={{ opacity: 0, y: -4 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.2 }}
+                        >
+                            <Lightbulb className="w-3 h-3 text-[#f59e0b]" />
+                            {item.technique}
+                        </motion.p>
+                    )}
+
+                    {/* Coach bubble (correct) — slides in on reveal */}
+                    <AnimatePresence>
+                        {isRevealed && (
+                            <motion.div
+                                className="flex items-start gap-2.5"
+                                initial={{ opacity: 0, y: 8, scale: 0.97 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                transition={{ type: "spring", stiffness: 400, damping: 28 }}
+                            >
+                                <div className="w-7 h-7 rounded-full bg-[#f0fdf4] border border-[#bbf7d0] flex items-center justify-center shrink-0 mt-1">
+                                    <Check className="w-3.5 h-3.5 text-[#22c55e]" />
+                                </div>
+                                <div className="max-w-[80%] bg-[#f0fdf4] border border-[#bbf7d0] rounded-2xl rounded-tl-sm px-4 py-3">
+                                    <p className="text-sm text-[#166534] leading-relaxed" style={{ fontWeight: 500 }}>
+                                        {item.professionalVersion}
+                                    </p>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
                     {/* Practice button — primary CTA of the card */}
                     <div className="pt-3 border-t border-[#f1f5f9] mt-3">

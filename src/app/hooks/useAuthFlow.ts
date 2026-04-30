@@ -27,6 +27,7 @@ export interface FlowState {
   guidedFields?: Record<string, string>;
   progressionPathId?: PathId;
   progressionLevelId?: string;
+  startAtContext?: boolean;
 }
 
 interface UseAuthFlowOptions {
