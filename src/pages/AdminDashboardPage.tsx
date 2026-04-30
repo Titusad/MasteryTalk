@@ -677,7 +677,7 @@ const styles: Record<string, React.CSSProperties> = {
     minHeight: "100vh",
     background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
     color: "#e2e8f0",
-    fontFamily: "'Inter', system-ui, sans-serif",
+    fontFamily: "'Poppins', system-ui, sans-serif",
   },
   header: {
     padding: "20px 32px",

@@ -158,7 +158,7 @@ export function InterlocutorIntroScreen({
   return (
     <div
       className="w-full min-h-[calc(100dvh-4rem)] bg-[#0f172b] flex flex-col items-center justify-center px-6"
-      style={{ fontFamily: "'Inter', sans-serif" }}
+      style={{ fontFamily: "'Poppins', sans-serif" }}
     >
       <motion.div
         className="text-center max-w-md w-full"

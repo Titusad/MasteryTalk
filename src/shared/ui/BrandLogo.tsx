@@ -6,7 +6,7 @@ export function BrandLogo({ light = false }: { light?: boolean }) {
             <span
                 className="text-xl tracking-tight"
                 style={{
-                    fontFamily: "'Inter', sans-serif",
+                    fontFamily: "'Poppins', sans-serif",
                     fontWeight: 700,
                     color: light ? "#fff" : "#1C0B1E",
                 }}

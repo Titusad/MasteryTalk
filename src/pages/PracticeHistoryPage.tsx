@@ -132,7 +132,7 @@ export function PracticeHistoryPage({
   return (
     <div aria-label="PracticeHistoryPage"
       className="w-full min-h-full flex flex-col bg-[#f8fafc] relative overflow-hidden"
-      style={{ fontFamily: "'Inter', sans-serif" }}
+      style={{ fontFamily: "'Poppins', sans-serif" }}
     >
       <PastelBlobs />
 

@@ -281,7 +281,7 @@ export function AccountPage({ userProfile, authUser, onLogout, onProfileUpdate }
   const avatarInitials = displayName.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "U";
   
   return (
-    <div className="w-full min-h-full flex flex-col bg-[#f8fafc] relative overflow-hidden" style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div className="w-full min-h-full flex flex-col bg-[#f8fafc] relative overflow-hidden" style={{ fontFamily: "'Poppins', sans-serif" }}>
       <PastelBlobs />
 
       {/* MAIN CONTENT */}

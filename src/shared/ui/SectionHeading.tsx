@@ -11,7 +11,7 @@ export function SectionHeading({
         <div className="text-center max-w-3xl mx-auto mb-16">
             <h2
                 className={`text-3xl md:text-4xl mb-4 ${light ? "text-white" : "text-gray-900"}`}
-                style={{ fontFamily: "'Inter', sans-serif", fontWeight: 300, lineHeight: 1.2 }}
+                style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 300, lineHeight: 1.2 }}
             >
                 {title}
             </h2>

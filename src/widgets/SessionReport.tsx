@@ -157,7 +157,7 @@ export function SessionReport({
   return (
     <div
       className={`w-full min-h-full flex flex-col ${embedded ? "" : "bg-[#f0f4f8] relative overflow-hidden"}`}
-      style={{ fontFamily: "'Inter', sans-serif" }}
+      style={{ fontFamily: "'Poppins', sans-serif" }}
     >
       {!embedded && <PastelBlobs />}
 

@@ -14,7 +14,7 @@ const CONTACT_EMAIL = "legal@masterytalk.pro";
 
 export function TermsPage() {
   return (
-    <div aria-label="TermsPage" className="min-h-screen bg-white" style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div aria-label="TermsPage" className="min-h-screen bg-white" style={{ fontFamily: "'Poppins', sans-serif" }}>
       <AppHeader
         variant="public"
         showBackButton

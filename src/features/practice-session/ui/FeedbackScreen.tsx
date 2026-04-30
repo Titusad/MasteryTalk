@@ -207,7 +207,7 @@ export function FeedbackScreen({
     return (
         <div
             className="w-full min-h-full flex flex-col bg-[#f0f4f8] relative overflow-hidden"
-            style={{ fontFamily: "'Inter', sans-serif" }}
+            style={{ fontFamily: "'Poppins', sans-serif" }}
         >
 
 

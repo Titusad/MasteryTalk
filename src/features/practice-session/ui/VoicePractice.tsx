@@ -756,7 +756,7 @@ function VoicePractice({
   return (
     <div
       className="flex flex-col h-[calc(100dvh-4rem)] relative"
-      style={{ fontFamily: "'Inter', sans-serif" }}
+      style={{ fontFamily: "'Poppins', sans-serif" }}
     >
       {/* Arena sub-toolbar */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-[#e2e8f0]/60 px-6 py-2">

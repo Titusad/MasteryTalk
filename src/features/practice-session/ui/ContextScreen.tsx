@@ -266,7 +266,7 @@ function ContextScreen({
     const subtitle = scenarioType ? SCENARIO_SUBTITLES[scenarioType] ?? "The more you tell me, the more realistic this gets." : "The more you tell me, the more realistic this gets.";
 
     return (
-        <div className="w-full min-h-full flex flex-col bg-[#f0f4f8] relative overflow-hidden" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <div className="w-full min-h-full flex flex-col bg-[#f0f4f8] relative overflow-hidden" style={{ fontFamily: "'Poppins', sans-serif" }}>
             <main className="relative w-full max-w-[768px] mx-auto px-6 pt-6 pb-24">
 
                 {/* Header */}
