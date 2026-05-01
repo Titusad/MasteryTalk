@@ -1,17 +1,17 @@
-# MasteryTalk PRO - System Prompts Architecture v1.1
+# MasteryTalk PRO - System Prompts Architecture v1.4
 
 > Documento de ingenieria de prompts para el "cerebro" de MasteryTalk PRO.
-> Define los 7 bloques del system prompt, perfiles de interlocutor, contexto regional,
-> variante GPT-4o-mini, voice mapping, y logica de sub-perfiles dinamicos.
+> Define los bloques del system prompt, perfiles de interlocutor, contexto regional,
+> voice mapping, y logica de sub-perfiles dinamicos.
 > Referencia cruzada: PRODUCT_SPEC.md §7
 > Codigo fuente: `src/services/prompts/` (assembler.ts, templates.ts, personas.ts, regions.ts, voice-map.ts, analyst.ts)
-> Actualizado: 17 abril 2026
+> Actualizado: 2026-05-01
 
 ---
 
 ## Tabla de Contenidos
 
-1. [Arquitectura de 7 Bloques](#1-arquitectura-de-7-bloques)
+1. [Arquitectura de Bloques](#1-arquitectura-de-bloques)
 2. [Bloque 1: Master System Prompt](#2-bloque-1-master-system-prompt)
 3. [Bloque 2: Interlocutor Persona](#3-bloque-2-interlocutor-persona)
 4. [Bloque 3: Regional Context](#4-bloque-3-regional-context)
@@ -19,40 +19,49 @@
 6. [Bloque 5: Extracted Context](#6-bloque-5-extracted-context)
 7. [Bloque 6: Output Format + isComplete Rules](#7-bloque-6-output-format)
 8. [Bloque 7: First Message Instruction](#8-bloque-7-first-message)
-9. [Variante GPT-4o-mini (Free Users)](#9-variante-gpt-4o-mini)
+9. [GPT-4o para todos los usuarios](#9-gpt-4o-todos)
 10. [Voice Mapping](#10-voice-mapping)
 11. [Dynamic Sub-Profile Activation](#11-sub-perfiles-dinamicos)
 12. [Assembly Example](#12-assembly-example)
 13. [Token Budget](#13-token-budget)
+14. [Block 4.6: Session Focus + Confidence](#14-block-46-session-focus--confidence)
 
 ---
 
-## 1. Arquitectura de 7 Bloques
+## 1. Arquitectura de Bloques
 
-El system prompt se ensambla dinamicamente en la Edge Function `prepare-session`
-concatenando 7 bloques. Cada bloque tiene variables que se inyectan en runtime.
+El system prompt se ensambla dinamicamente en `src/services/prompts/assembler.ts`
+concatenando hasta 11 bloques. Cada bloque tiene variables que se inyectan en runtime.
+Los bloques con numero decimal (.5, .6, .7) son opcionales y se omiten cuando no aplican.
 
 ```
-+---------------------------------------+
-|  BLOCK 1: MASTER SYSTEM PROMPT        |  <- Reglas base (actuacion, brevedad, tono, idioma)
-|  BLOCK 2: INTERLOCUTOR PERSONA        |  <- Perfil psicologico + sub-perfil si aplica
-|  BLOCK 3: REGIONAL CONTEXT            |  <- Mexico o Colombia directives
-|  BLOCK 4: USER SCENARIO               |  <- {scenario} del PracticeWidget
-|  BLOCK 5: EXTRACTED CONTEXT           |  <- Gemini Flash extrajo esto del PDF/URL (opcional)
-|  BLOCK 6: OUTPUT FORMAT + RULES       |  <- JSON stricto + reglas de isComplete
-|  BLOCK 7: FIRST MESSAGE INSTRUCTION   |  <- Como abrir la conversacion
-+---------------------------------------+
++-------------------------------------------+
+|  BLOCK 1:   MASTER SYSTEM PROMPT          |  <- Reglas base (actuacion, brevedad, tono, idioma)
+|  BLOCK 2:   INTERLOCUTOR PERSONA          |  <- Perfil psicologico + sub-perfil si aplica
+|  BLOCK 3:   REGIONAL CONTEXT              |  <- Mexico / Colombia / Brazil / Global
+|  BLOCK 4:   USER SCENARIO                 |  <- Texto del preset o job description
+|  BLOCK 4.5: SCENARIO ADAPTATION          |  <- Vocabulario/comportamiento por tipo de escenario
+|  BLOCK 4.6: SESSION FOCUS + CONFIDENCE   |  <- Prioridad de coaching + tono por confianza (§14)
+|  BLOCK 4.7: BRIEFING QUESTIONS + DRAFTS  |  <- Preguntas preparadas + borradores del usuario
+|  BLOCK 5:   EXTRACTED CONTEXT            |  <- Gemini Flash extrajo del PDF/URL (opcional)
+|  BLOCK 5.5: TTS TEXT OPTIMIZATION        |  <- Instrucciones para output speech-friendly
+|  BLOCK 6:   OUTPUT FORMAT + RULES        |  <- JSON estricto + reglas de isComplete
+|  BLOCK 6.5: ARENA PHASE DIRECTIVE        |  <- Scaffolding progresivo (support/guidance/challenge)
+|  BLOCK 7:   FIRST MESSAGE INSTRUCTION    |  <- Solo en prepare-session; omitido en turnos
++-------------------------------------------+
 ```
 
-**Variables de inyeccion** (resueltas por `prepare-session`):
+**Variables de inyeccion** (resueltas por `assembler.ts`):
 
 | Variable              | Fuente                           | Ejemplo                             |
 | --------------------- | -------------------------------- | ----------------------------------- |
-| `{interlocutor}`      | PracticeSetupModal selection     | `"client"`, `"manager"`, `"recruiter"` |
+| `{interlocutor}`      | Scenario config                  | `"client"`, `"manager"`, `"recruiter"` |
 | `{market_focus}`      | profiles.market_focus            | `"mexico"`, `"colombia"`            |
-| `{scenario}`          | User input (topic + context)     | `"Sales pitch for B2B SaaS platform..."` |
+| `{scenario}`          | Preset o job description         | `"Sales pitch for B2B SaaS platform..."` |
 | `{extracted_context}` | Gemini 1.5 Flash (si hay archivo) | `"Key pain points: pricing concerns..."` |
 | `{sub_profile}`       | Keyword analysis del escenario   | `"NEGOTIATOR"`, `"LEADERSHIP"`, `null` |
+| `{sessionFocus}`      | ContextScreen — selector de pilar | `"Fluency"`, `"Vocabulary"`, etc.  |
+| `{confidenceScore}`   | ContextScreen — slider 1–5       | `1`, `3`, `5`                       |
 
 ---
 
@@ -497,10 +506,69 @@ El modelo de suscripción ($12.99–$19.99/mo) cubre el costo de IA (~$4.03/usua
 
 ---
 
+## 14. Block 4.6: Session Focus + Confidence
+
+Este bloque es **opcional** — solo se inyecta si el usuario seleccionó un focus area y/o
+reportó un nivel de confianza en `ContextScreen`. Se omite completamente si ambos son null.
+
+**Fuente de datos:** `ContextScreen.tsx` → `ContextScreenMeta` → `SessionConfig.sessionFocus` + `SessionConfig.confidenceScore`
+
+**Posición en el prompt:** entre Block 4.5 (Scenario Adaptation) y Block 4.7 (Briefing Questions).
+
+### 14.1 Focus Area
+
+El usuario puede seleccionar uno de los 6 pilares como prioridad de coaching para la sesión:
+`Vocabulary` · `Grammar` · `Fluency` · `Pronunciation` · `Professional Tone` · `Persuasion`
+
+```
+=== SESSION COACHING PARAMETERS ===
+
+FOCUS AREA: The user has selected "{sessionFocus}" as their coaching priority for this session.
+- Pay special attention to the quality of the user's {sessionFocus} throughout the conversation.
+- In your coachingHint messages, bias toward actionable advice related to {sessionFocus}.
+- In your internalAnalysis, explicitly flag evidence of progress or gaps in {sessionFocus}.
+- Design your questions to create natural opportunities for the user to demonstrate {sessionFocus}.
+```
+
+**Por qué:** Implementa Deliberate Practice (Gap 6 de `LEARNING_METHODOLOGY.md §5`).
+El usuario con un objetivo específico genera más transferencia de aprendizaje que
+uno que practica sin dirección.
+
+### 14.2 Confidence Score
+
+El usuario reporta su nivel de confianza de 1 a 5 antes de la sesión.
+
+**Score ≤ 2 — nervioso:**
+
+```
+CONFIDENCE LEVEL: {score}/5 — The user is feeling nervous today.
+- Open with a warmer, more patient tone. Build rapport before applying any pressure.
+- Allow slightly longer pauses before redirecting.
+- Use more encouragement in your coachingHint messages.
+- Do not escalate to "challenge" phase pressure in this session.
+```
+
+**Score ≥ 4 — confiado:**
+
+```
+CONFIDENCE LEVEL: {score}/5 — The user is feeling confident today.
+- Apply standard or slightly elevated challenge — they are ready for it.
+- Fewer softening openers; move to the substance of the scenario faster.
+```
+
+**Score 3 (neutral):** No se inyecta nada — comportamiento estándar del interlocutor.
+
+**Por qué:** Implementa WTC — Willingness to Communicate (Gap 1 de `LEARNING_METHODOLOGY.md §5`).
+El tono del interlocutor se adapta al estado emocional del usuario para maximizar
+la participación sin aumentar la ansiedad percibida.
+
+---
+
 ## Changelog
 
 | Version | Fecha | Cambios |
 |---------|-------|---------|
+| v1.4 | 2026-05-01 | Arquitectura actualizada a 11 bloques (añadidos 4.5, 4.6, 4.7, 5.5, 6.5). Añadido §14 — Block 4.6: Session Focus + Confidence (Sprint A.1 + A.2 de Phase 2.5). Variables de inyección actualizadas con sessionFocus y confidenceScore. |
 | v1.3 | 2026-04-28 | PILLAR 3 (Cultural Alignment) expanded with 5 explicit LATAM assertiveness patterns: over-qualifying, conflict avoidance, indirect structure, missing ownership, deference signals. Professional Tone scoring now includes cultural directness. languageInsights extended with 4 LATAM interference pattern categories: false cognates, Spanish calques, filler words, pronoun drops — each triggers named pattern detection in feedback. |
 | v1.2 | 2026-04-28 | §9 rewritten: GPT-4o for ALL users — no degradation to mini. Removed GPT-4o-mini variant section. Updated cost analysis to reflect subscription model. |
 | v1.1 | Feb 2026 | Updated source code paths, token budget. |

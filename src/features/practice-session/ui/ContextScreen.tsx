@@ -60,6 +60,15 @@ const EXTRA_CONTEXT_FIELDS: Record<string, ExtraContextField[]> = {
     ],
 };
 
+const PILLARS = [
+    "Vocabulary",
+    "Grammar",
+    "Fluency",
+    "Pronunciation",
+    "Professional Tone",
+    "Persuasion",
+] as const;
+
 const SCENARIO_TITLES: Record<string, string> = {
     interview: "The Opportunity",
     sales: "The Prospect",
@@ -186,6 +195,11 @@ function PresetCard({
    CONTEXT SCREEN
    ═══════════════════════════════════════════════════════════ */
 
+export interface ContextScreenMeta {
+    sessionFocus?: string;
+    confidenceScore?: number;
+}
+
 function ContextScreen({
     scenarioType,
     onContinue,
@@ -196,7 +210,7 @@ function ContextScreen({
     warRoomMode,
 }: {
     scenarioType?: ScenarioType;
-    onContinue: (extraData: Record<string, string>) => void;
+    onContinue: (extraData: Record<string, string>, meta?: ContextScreenMeta) => void;
     onBack?: () => void;
     userProfile?: OnboardingProfile | null;
     onProfileUpdate?: (profile: OnboardingProfile) => void; // reserved for future use
@@ -209,6 +223,8 @@ function ContextScreen({
     useNarration(narratorUrl || null);
     const storageKey = `masterytalk_extra_ctx_${scenarioType || "default"}`;
 
+    const [sessionFocus, setSessionFocus] = useState<string | null>(null);
+    const [confidenceScore, setConfidenceScore] = useState<number | null>(null);
     const [selectedPreset, setSelectedPreset] = useState<SituationPreset | null>(null);
     const [presetsOpen, setPresetsOpen] = useState(true);
     const [values, setValues] = useState<Record<string, string>>(() => {
@@ -254,11 +270,18 @@ function ContextScreen({
     const hasCustomContent = Object.values(values).some((v) => v.trim().length > 0);
     const canContinue = selectedPreset !== null || hasCustomContent;
 
+    const buildMeta = (): ContextScreenMeta | undefined => {
+        const meta: ContextScreenMeta = {};
+        if (sessionFocus) meta.sessionFocus = sessionFocus;
+        if (confidenceScore !== null) meta.confidenceScore = confidenceScore;
+        return Object.keys(meta).length > 0 ? meta : undefined;
+    };
+
     const handleContinue = () => {
         if (selectedPreset) {
-            onContinue({ situationContext: selectedPreset.context });
+            onContinue({ situationContext: selectedPreset.context }, buildMeta());
         } else {
-            onContinue(values);
+            onContinue(values, buildMeta());
         }
     };
 
@@ -383,12 +406,70 @@ function ContextScreen({
                     </motion.div>
                 )}
 
+                {/* ── Coaching parameters: focus + confidence ── */}
+                <motion.div
+                    className="mb-8 bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-4"
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.3 }}
+                >
+                    {/* Focus selector */}
+                    <div className="mb-5">
+                        <p className="text-sm font-medium text-[#0f172b] mb-2.5">
+                            Focus area{" "}
+                            <span className="text-[#94a3b8] font-normal">(optional)</span>
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                            {PILLARS.map((pillar) => (
+                                <button
+                                    key={pillar}
+                                    onClick={() => setSessionFocus(sessionFocus === pillar ? null : pillar)}
+                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                                        sessionFocus === pillar
+                                            ? "bg-[#0f172b] text-white"
+                                            : "border border-[#e2e8f0] text-[#45556c] hover:border-[#94a3b8] bg-white"
+                                    }`}
+                                >
+                                    {pillar}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Confidence check */}
+                    <div>
+                        <p className="text-sm font-medium text-[#0f172b] mb-2.5">
+                            How are you feeling about this session?{" "}
+                            <span className="text-[#94a3b8] font-normal">(optional)</span>
+                        </p>
+                        <div className="flex items-center gap-2">
+                            {[1, 2, 3, 4, 5].map((score) => (
+                                <button
+                                    key={score}
+                                    onClick={() => setConfidenceScore(confidenceScore === score ? null : score)}
+                                    className={`w-10 h-10 rounded-lg text-sm font-medium transition-colors ${
+                                        confidenceScore === score
+                                            ? "bg-[#0f172b] text-white"
+                                            : "border border-[#e2e8f0] text-[#45556c] hover:border-[#94a3b8] bg-white"
+                                    }`}
+                                >
+                                    {score}
+                                </button>
+                            ))}
+                        </div>
+                        <div className="flex justify-between mt-1.5 px-0.5">
+                            <span className="text-xs text-[#94a3b8]">Nervous</span>
+                            <span className="text-xs text-[#94a3b8]">Confident</span>
+                        </div>
+                    </div>
+                </motion.div>
+
                 {/* CTAs */}
                 <motion.div
                     className="flex flex-col items-center gap-3"
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: 0.25 }}
+                    transition={{ duration: 0.4, delay: 0.35 }}
                 >
                     <button
                         onClick={handleContinue}
@@ -404,7 +485,7 @@ function ContextScreen({
                     </button>
 
                     <button
-                        onClick={() => onContinue({})}
+                        onClick={() => onContinue({}, buildMeta())}
                         className="text-sm text-[#94a3b8] hover:text-[#62748e] transition-colors py-1"
                     >
                         Skip — use a generic scenario

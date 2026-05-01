@@ -483,6 +483,29 @@ IntroductionScreen
 
 **Oportunidad:** La persistencia del JD en el perfil (`cvSummary`) es invisible para el usuario. Una señal explícita de "Usando tu perfil de: [extracto de JD]" haría que el usuario perciba que la app lo recuerda — clave para el hábito de retorno.
 
+#### TP-15a.1 · Focus Area + Confidence Check-in (ContextScreen — sección inferior)
+
+**Contexto:** Inmediatamente después de seleccionar el preset o ingresar el JD, el usuario ve dos selectores opcionales antes del botón Continue.
+
+| | |
+|---|---|
+| **Acción** | Opcionalmente selecciona un pilar de foco (1 de 6) y/o reporta su nivel de confianza (1–5). Hace clic en Continue. |
+| **Pensando** | "¿Estos campos cambian algo de verdad? ¿Vale la pena llenarlo?" |
+| **Siente** | Ligera sorpresa positiva. *"Me están preguntando cómo me siento — esto no es un app genérico."* |
+| **Queremos que sienta** | Agency sobre su propio proceso de aprendizaje. El usuario dirige la sesión, no solo la ejecuta. |
+
+**Sistema interviene:**
+
+| Elemento | Tipo | Descripción |
+|----------|------|-------------|
+| Focus Area selector | UI interactiva | 6 pillar chips (Vocabulary / Grammar / Fluency / Pronunciation / Professional Tone / Persuasion); toggle — solo uno activo; estado visual activo: `bg-[#0f172b] text-white` |
+| Confidence slider | UI interactiva | Escala 1–5 con etiquetas; persiste como `confidenceScore` en `SessionConfig` |
+| Sección marcada "optional" | Texto estático + label | Deja claro que ambos campos son opcionales — reduce la fricción |
+| Datos → `SessionConfig` | Lógica de frontend | `sessionFocus` y `confidenceScore` pasan via `ContextScreenMeta` al assembler |
+| Block 4.6 en system prompt | Lógica de assembler | `buildSessionFocusBlock()` inyecta instrucciones de foco y tono al interlocutor |
+
+**Oportunidad:** Los campos son optativos, pero no hay feedback visible de que el AI los está usando. Una micro-confirmación post-selección ("Got it — I'll prioritize your Fluency coaching today") antes del Continue reforzaría la causalidad percibida y aumentaría la tasa de uso de esta feature.
+
 #### TP-15b · PracticePrepScreen (briefing por pregunta con stepper)
 
 | | |
@@ -649,5 +672,7 @@ Los siguientes son los 5 touchpoints con mayor impacto en la formación del háb
 
 ---
 
+*v1.1 — 2026-05-01*
+*Cambios: Añadido TP-15a.1 (Focus Area + Confidence Check-in) en Fase 3 › ContextScreen — documenta Sprint A.1 + A.2 de Phase 2.5 Pedagogical Depth.*
 *v1.0 — 2026-04-29*
 *Scope: Flujo completo desde landing hasta renovación. Basado en análisis de código fuente, PRODUCT_SPEC v2.0, BRAND_VOICE v1.0, DESIGN_SYSTEM v1.4, SYSTEM_PROMPTS v1.1.*

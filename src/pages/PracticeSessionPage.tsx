@@ -60,7 +60,7 @@ const _detectedLocale = detectLanguageBackground();
 
 /* ── Sub-screens extracted to session/ ── */
 import { ExperienceScreen } from "@/features/practice-session/ui/ExperienceScreen";
-import { ContextScreen } from "@/features/practice-session/ui/ContextScreen";
+import { ContextScreen, type ContextScreenMeta } from "@/features/practice-session/ui/ContextScreen";
 import { InterlocutorIntroScreen } from "@/features/practice-session/ui/InterlocutorIntroScreen";
 import { NARRATOR_URLS, INTRO_URLS, STRATEGY_URLS, PREP_URLS, FEEDBACK_URLS } from "@/features/practice-session/model/narrator-audio";
 import { setNarrationMuted } from "@/shared/lib/useNarrationPreference";
@@ -219,6 +219,12 @@ export function PracticeSessionPage({
 
   /* ── Cleanup expired cache entries on mount ── */
   useEffect(() => { cleanupExpiredCache(); }, []);
+
+  /* Refs for session coaching parameters (A.1 + A.2) — updated synchronously in
+     onContinue before setExtraContext fires, so the prepareSession effect reads
+     the correct values without needing them as deps. */
+  const sessionFocusRef = useRef<string | undefined>(undefined);
+  const confidenceScoreRef = useRef<number | undefined>(undefined);
 
   /* Merge setup guidedFields with ContextScreen data
      IMPORTANT: useMemo with serialized deps prevents infinite re-render loop.
@@ -768,6 +774,9 @@ export function PracticeSessionPage({
         guidedFields: mergedGuidedFields,
         // Gap A+B: pass briefing data to assembler via SessionConfig
         interviewBriefing: briefingForSession ?? undefined,
+        // Sprint A.1 + A.2: coaching parameters from ContextScreen
+        sessionFocus: sessionFocusRef.current,
+        confidenceScore: confidenceScoreRef.current,
       })
       .then((prepared) => {
         if (!cancelled) {
@@ -1003,7 +1012,10 @@ export function PracticeSessionPage({
                 onProfileUpdate={onProfileUpdate}
                 warRoomMode={startAtContext}
                 narratorUrl={NARRATOR_URLS.context[scenarioType as keyof typeof NARRATOR_URLS.context] || ""}
-                onContinue={(extraData) => {
+                onContinue={(extraData, meta?: ContextScreenMeta) => {
+                  // Capture coaching parameters synchronously before state updates fire
+                  sessionFocusRef.current = meta?.sessionFocus;
+                  confidenceScoreRef.current = meta?.confidenceScore;
                   // Inject profile data into guided fields for AI generation
                   const enriched = { ...extraData };
                   if (scenarioType === "interview") {

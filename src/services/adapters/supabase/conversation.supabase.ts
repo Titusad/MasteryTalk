@@ -150,6 +150,9 @@ export class SupabaseConversationService implements IConversationService {
                     // Gap A+B: inject briefing questions + user drafts into interviewer prompt
                     anticipatedQuestions: config.interviewBriefing?.anticipatedQuestions,
                     userDrafts: config.interviewBriefing?.userDrafts,
+                    // Sprint A.1 + A.2: session focus pillar + confidence level
+                    sessionFocus: config.sessionFocus,
+                    confidenceScore: config.confidenceScore,
                 });
 
             console.log(

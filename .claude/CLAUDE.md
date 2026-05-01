@@ -324,6 +324,8 @@ Cada escenario activo tiene dos registros independientes:
 
 ### Estado actual
 
+> Leyenda columnas: **Frontend** = tiene `src/services/prompts/scenarios/{scenario}.ts` · **Backend** = tiene `supabase/functions/.../scenarios/{scenario}.ts` con dual-axis eval · **Presets** = tiene entradas en `scenario-presets.ts` · **UI** = visible en la app
+
 | ScenarioType | Frontend | Backend | Presets | UI |
 |-------------|:--------:|:-------:|:-------:|:--:|
 | `interview` | ✅ | ✅ | ✅ 3 | ✅ |
@@ -331,8 +333,10 @@ Cada escenario activo tiene dos registros independientes:
 | `meeting` | ✅ | ✅ | ✅ 3 | ✅ |
 | `presentation` | ✅ | ✅ | ✅ 3 | ✅ |
 | `culture` | ✅ | ✅ | ✅ 3 | ✅ |
-| `self-intro` | ❌ | ❌ | ❌ | ✅ (free) |
+| `self-intro` | ❌¹ | ❌¹ | ❌ | ✅ (free) |
 | `client`, `csuite` | ❌ | ❌ | ❌ | ❌ future |
+
+> ¹ `self-intro` tiene flujo propio (`SelfIntroContextScreen`, `PathRecommendationCard`) pero no usa el sistema de prompts de escenario ni el evaluador dual-axis de Gemini — usa el prompt base sin adaptación de escenario.
 
 ---
 

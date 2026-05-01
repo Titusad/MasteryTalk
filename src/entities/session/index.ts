@@ -57,6 +57,10 @@ export interface SessionConfig {
   guidedFields?: Record<string, string>;
   /** Market focus / target geography (optional, passed to assembler) */
   marketFocus?: string;
+  /** Pillar the user chose to focus on this session (e.g. "Fluency") — injected into system prompt as coaching priority */
+  sessionFocus?: string;
+  /** User's self-reported confidence level 1–5 before the session — influences interlocutor tone */
+  confidenceScore?: number;
   /** Interview briefing data for coherence: anticipated questions + user drafts → injected into interviewer prompt (Gap A+B) */
   interviewBriefing?: {
     anticipatedQuestions: Array<{
