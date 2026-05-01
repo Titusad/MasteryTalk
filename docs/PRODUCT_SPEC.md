@@ -4,7 +4,7 @@
 > Any code change MUST be consistent with this spec.
 > If the spec needs to change, update THIS FILE FIRST → get approval → then code.
 >
-> Last updated: 2026-04-30 (v2.5 — Font system, dashboard 3-row layout, ProgressionTree redesign, self-intro first path, auth hardening)
+> Last updated: 2026-04-30 (v2.7 — Pricing revised: Early Bird $9.99/25 slots, Monthly $19.99, Quarterly $47.99/3mo; CAC/LTV rationale added; Annual deferred)
 
 ---
 
@@ -53,33 +53,54 @@ type ScenarioType = "interview" | "meeting" | "presentation" | "sales" | "cultur
 
 | Tier | Price | Billing | Notes | Stripe Price ID |
 |------|-------|---------|-------|-----------------|
-| **Early Bird** | $9.99/mo | Monthly | Max 20 slots, lifetime price | `price_1TR1YXQhSs1CWakEaoaqW0y7` |
-| **Monthly Pro** | $16.99/mo | Monthly | Standard monthly | `price_1TR1abQhSs1CWakEClg1lG0D` |
-| **Quarterly Pro** | $39.99/3mo | Quarterly | ~$13.33/mo | `price_1TR1b9QhSs1CWakEd0CGOhM4` |
+| **Monthly Early Bird** | $12.99/mo | Monthly | Max 25 slots shared, auto-applied | `price_1TS7LTQhSs1CWakEw52C4aze` |
+| **Quarterly Early Bird** | $29.99/3mo | Quarterly | Max 25 slots shared, $9.99/mo effective | `price_1TS7OKQhSs1CWakEX4XZ3aYD` |
+| **Monthly Pro** | $19.99/mo | Monthly | Regular price (after 25 slots gone) | `price_1TS7PuQhSs1CWakESriRaNKl` |
+| **Quarterly Pro** | $47.99/3mo | Quarterly | Regular price, ~$15.99/mo | `price_1TS7S4QhSs1CWakE3gKaFvjk` |
+
+> **⚠️ Action required:** All 4 prices must be created in Stripe. Old prices (`price_1TR1YXQhSs1CWakEaoaqW0y7`, `price_1TR1abQhSs1CWakEClg1lG0D`, `price_1TR1b9QhSs1CWakEd0CGOhM4`) must be archived. Update `STRIPE_PRICE_*` env vars in Supabase secrets once done.
+>
+> Early Bird slots (25 total, shared between Monthly EB and Quarterly EB) are tracked in KV: `global:early_bird_count`. When exhausted, checkout automatically switches to regular prices — no user action required.
 
 All tiers unlock the same features — the difference is price only.
 
 ### §3.2 What a subscription unlocks
 
 - All practice paths and levels (Interview Mastery, Remote Meeting Presence, Presentations, Sales Champion, U.S. Business Culture)
-- Unlimited sessions
+- Unlimited sessions (War Room capped at 5/month — see §7.7)
 - AI coaching and detailed feedback on every session
 - WhatsApp Spaced Repetition Coach (daily audio challenges)
 - Spaced repetition system
+- Lessons Library (50 micro-lessons, dual-axis recommendations)
 
 ### §3.3 Early Bird rules
 
-- Maximum 20 slots globally (tracked in KV: `global:early_bird_count`)
+- Maximum **25 slots** globally (tracked in KV: `global:early_bird_count`)
 - Counter increments on `checkout.session.completed` for `tier=early_bird`
 - Counter decrements on `customer.subscription.deleted` for `tier=early_bird`
 - `/pricing` endpoint returns live slot count
+- Price is **lifetime** — locked forever at $9.99/mo regardless of future price increases
 
-### §3.4 What does NOT exist
+### §3.4 Pricing rationale
+
+| Metric | Early Bird | Monthly | Quarterly |
+|--------|:----------:|:-------:|:---------:|
+| Cost/user active (15 ses/mo) | $4.03 | $4.03 | $4.03 |
+| Gross margin | 60% | 80% | 75% |
+| LTV estimate (5 mo avg) | ~$50 | ~$100 | ~$120 |
+| Target CAC (3:1 LTV ratio) | <$17 | <$33 | <$40 |
+
+Benchmark: Talaera charges $20/mo for live sessions with human coaches. MasteryTalk at $19.99 offers AI practice 24/7 with no scheduling — same price, more accessibility.
+
+Annual tier: deferred until 6-month retention data is available.
+
+### §3.5 What does NOT exist
 
 - ❌ One-time purchases
 - ❌ Pay-per-session credits
 - ❌ Trial periods
 - ❌ Free tier with path access (only self-intro warm-up is free)
+- ❌ Annual plan (pending retention data)
 
 ---
 
@@ -118,6 +139,9 @@ interface KVProfile {
   // Mastery Audit
   profession: string | null;             // "product_designer" | "software_engineer" | etc.
   audit_booked_at: string | null;        // ISO timestamp of last audit booking (30-day cooldown)
+  // War Room monthly limit
+  war_room_monthly_count: number;        // sessions used in current calendar month
+  war_room_month: string | null;         // "YYYY-MM" — auto-reset when month changes
 }
 ```
 
@@ -282,6 +306,11 @@ The FeedbackScreen renders additional cards below the progression gate, in this 
    - ≥ 3 Interview sessions in the last 14 days
    - No audit booked in the last 30 days (`audit_booked_at`)
 
+4. **DeepDiveCard** — visible when feedback has `pillarScores` with ≥ 1 weak pillar (score < 70).
+   - Shows top 3 recommended micro-lessons matched to the session's weak pillars and path/level context (dual-axis).
+   - Each lesson links to the `LessonModal` (supports optional `audioUrl` player with play/pause).
+   - Data source: `getRecommendedLessons(pillarScores, pathId, levelId)` from `src/services/microLessonsData.ts`.
+
 ### §7.2 Situation Presets (ContextScreen)
 
 Each scenario has 3 presets describing the situation (company, stakes, context) without assuming the user's role. Presets inject `{ situationContext }` into the session prompt via `processGuidedFields()`.
@@ -315,6 +344,51 @@ Intro Screen → Context Selection → Strategy → Conversation → Feedback �
 Pure function in `features/dashboard/model/path-recommendation.ts`.
 Maps `pillarScores + selfIntroContext + profile` → `PathRecommendation`.
 Type `PathRecommendation` lives in `entities/progression`.
+
+### §7.6 Lessons Library (Micro-Lessons)
+
+**Data:** `src/services/microLessonsData.ts`
+**Interface:**
+```typescript
+interface MicroLesson {
+  id: string;
+  title: string;
+  pillar: string;           // maps to feedback pillar key
+  pathIds?: PathId[];       // if set, lesson is axis-2 relevant for these paths
+  levelIds?: string[];      // if set, lesson is axis-2 relevant for these levels
+  audioUrl?: string;        // optional R2/Supabase URL — enables play/pause in LessonModal
+  // ... existing fields (content, vocabulary, phrases, etc.)
+}
+```
+
+**Size:** 50 lessons (expanded from 24).
+
+**Recommendation engine — `getRecommendedLessons(pillarScores, pathId?, levelId?)`:**
+- Axis 1 (weakness): filter lessons whose `pillar` maps to a score < 70, sort ascending by score
+- Axis 2 (context): boost lessons that match `pathIds` / `levelIds` of the current session
+- Returns top N lessons combining both axes (context-matched weak lessons first)
+
+**UI surfaces:**
+- `DeepDiveCard` — shown in FeedbackScreen bottomSlot (post-session, §7.1.1 item 4)
+- `RecommendedLessonsCard` — shown in Dashboard for catch-up between sessions
+- `LessonModal` — existing modal; updated to render audio player (play/pause) when `audioUrl` is present
+
+**Nav label:** "Lessons Library" (renamed from "Library") — applies to nav item and page title.
+
+### §7.7 War Room — Monthly Limit
+
+The "War Room" practice mode is rate-limited to **5 sessions per calendar month** per user.
+
+**Frontend:** Dashboard "War Room" button displays "X/5 this month" counter. Disabled when limit reached with tooltip "Limit reached — resets on the 1st".
+
+**Backend tracking (KV profile fields):**
+```typescript
+war_room_monthly_count: number;   // sessions used this calendar month
+war_room_month: string;           // "YYYY-MM" — resets counter on month change
+```
+
+**`POST /sessions` payload:** `PracticeSessionPage` sends `is_war_room: true` when `startAtContext === true`.
+**`routes/sessions.ts`:** On save, if `is_war_room === true`, increment `war_room_monthly_count` (auto-reset if `war_room_month` !== current month).
 
 ---
 
@@ -428,7 +502,8 @@ narrationCompleted, sessionMode, activeGoal, market_focus,
 whatsapp_number, whatsapp_verified,
 wa_preferred_hour, wa_timezone,
 wa_dismissed_at_session_count, wa_card_permanently_dismissed,
-profession, audit_booked_at
+profession, audit_booked_at,
+war_room_monthly_count, war_room_month
 ```
 
 Non-whitelisted fields (plan, tier, subscription_active, etc.) can only be written by server-side Edge Functions.
@@ -523,7 +598,7 @@ A user sees the `MasteryAuditCard` in FeedbackScreen when ALL of:
 | Database | Supabase PostgreSQL + KV store (`kv_store_4e8a5b39`) |
 | Chat AI | GPT-4o (all sessions, no degradation) |
 | Feedback AI | Gemini 1.5 Flash |
-| TTS | ElevenLabs (practice) + Azure Neural (system) |
+| TTS | OpenAI `gpt-4o-mini-tts` (dynamic: interlocutor, briefing, user lines — PRIMARY) + ElevenLabs (dynamic fallback + pre-generated coach narration on R2) + Azure Neural (system) |
 | STT + Pronunciation | Azure Speech REST API |
 | Payments | Stripe (live mode, subscriptions) |
 | Email | Resend |
@@ -556,3 +631,5 @@ A user sees the `MasteryAuditCard` in FeedbackScreen when ALL of:
 | v2.3 | 2026-04-28 | §9: split en §9.0 Resend (transaccional) + §9.1 Loops.so (marketing automation, planned). §10.1: nuevos endpoints /marketing/*. |
 | v2.4 | 2026-04-29 | §4.1: new KV fields (WA onboarding: wa_preferred_hour, wa_timezone, wa_phrases_mastered, wa_dismissed_at_session_count, wa_card_permanently_dismissed; Mastery Audit: profession, audit_booked_at). §7.1.1: FeedbackScreen post-session cards spec. §9.0: renewal email two-branch behavior. §10.1.1: PUT /profile whitelist documented. §10.4: Mastery Audit feature spec. |
 | v2.5 | 2026-04-30 | §11: Font row added (Poppins global + Montserrat accent). No other spec changes — all 2026-04-30 work is implementation/UX (dashboard layout, font system, auth hardening, ProgressionTree redesign). |
+| v2.6 | 2026-04-30 | §7.1.1: DeepDiveCard added as 4th post-session card. §7.6: Lessons Library spec (50 lessons, dual-axis engine, MicroLesson interface with pathIds/levelIds/audioUrl, UI surfaces). §7.7: War Room monthly limit spec (5/month, KV fields war_room_monthly_count + war_room_month). §4.1: new KV fields war_room_monthly_count + war_room_month. §10.1.1: whitelist updated. §11: TTS updated (OpenAI primary, ElevenLabs fallback). |
+| v2.7 | 2026-04-30 | §3 full revision: Early Bird $9.99/25 slots (was 20), Monthly $19.99 (was $16.99), Quarterly $47.99/3mo (was $39.99); §3.4 pricing rationale + CAC/LTV targets + Talaera benchmark; Annual tier deferred; §3.5 renamed from §3.4. Stripe prices need to be recreated. |

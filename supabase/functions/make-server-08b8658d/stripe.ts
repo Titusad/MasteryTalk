@@ -2,17 +2,23 @@
  * ══════════════════════════════════════════════════════════════
  *  stripe.ts — Stripe SDK + helpers for MasteryTalk payments
  *
- *  Tiers:
- *  - early_bird  → $9.99/mo  (max 20 subscribers, lifetime price)
- *  - monthly     → $16.99/mo
- *  - quarterly   → $39.99 / 3 months
+ *  Tiers (user-selectable):
+ *  - monthly   → $12.99/mo launch price (auto) → $19.99/mo regular
+ *  - quarterly → $29.99/3mo launch price (auto) → $47.99/3mo regular
+ *
+ *  Launch pricing: first 25 subscriptions (shared across tiers) get
+ *  the early bird price automatically. No user action required —
+ *  the backend picks the right Stripe price based on slot count.
+ *
+ *  Backward compat: "early_bird" tier kept for existing subscribers.
  *
  *  Environment variables:
  *  - STRIPE_SECRET_KEY
  *  - STRIPE_WEBHOOK_SECRET
- *  - STRIPE_PRICE_EARLY_BIRD
- *  - STRIPE_PRICE_MONTHLY
- *  - STRIPE_PRICE_QUARTERLY
+ *  - STRIPE_PRICE_MONTHLY_EARLY   ($12.99/mo)
+ *  - STRIPE_PRICE_QUARTERLY_EARLY ($29.99/3mo)
+ *  - STRIPE_PRICE_MONTHLY         ($19.99/mo)
+ *  - STRIPE_PRICE_QUARTERLY       ($47.99/3mo)
  * ══════════════════════════════════════════════════════════════
  */
 import Stripe from "npm:stripe@17";
@@ -32,24 +38,25 @@ export function getStripe(): Stripe {
 
 /* ── Tier definitions ── */
 
+// "early_bird" kept for backward compat with existing KV profiles
 export type SubscriptionTier = "early_bird" | "monthly" | "quarterly";
 
-export const TIER_INFO: Record<SubscriptionTier, { label: string; price: number; maxSlots?: number }> = {
-  early_bird: { label: "Early Bird",  price: 9.99,  maxSlots: 20 },
-  monthly:    { label: "Monthly Pro", price: 16.99 },
-  quarterly:  { label: "Quarterly Pro", price: 39.99 },
+export const TIER_INFO: Record<SubscriptionTier, { label: string; regularPrice: number; earlyPrice?: number; maxSlots?: number }> = {
+  early_bird: { label: "Early Bird",     regularPrice: 9.99 },           // legacy
+  monthly:    { label: "Monthly Pro",    regularPrice: 19.99, earlyPrice: 12.99 },
+  quarterly:  { label: "Quarterly Pro",  regularPrice: 47.99, earlyPrice: 29.99, maxSlots: 25 },
 };
 
 export const PRODUCT_INFO = {
-  subscription: { label: "MasteryTalk PRO", price: 16.99 },
+  subscription: { label: "MasteryTalk PRO", price: 19.99 },
 } as const;
 
 export const UNLOCKED_PATHS = ["interview", "meeting", "presentation", "self-intro"];
 
-/* ── Early Bird counter (global KV) ── */
+/* ── Early Bird counter (global KV, shared across monthly + quarterly) ── */
 
 const EARLY_BIRD_KEY = "global:early_bird_count";
-const EARLY_BIRD_MAX = 20;
+const EARLY_BIRD_MAX = 25;
 
 export async function getEarlyBirdCount(): Promise<number> {
   const val = await kv.get(EARLY_BIRD_KEY);
@@ -75,23 +82,46 @@ export async function isEarlyBirdAvailable(): Promise<boolean> {
   return count < EARLY_BIRD_MAX;
 }
 
-/* ── Price ID → Tier mapping ── */
+/* ── Price ID resolution (auto early bird) ── */
 
-export function getPriceId(tier: SubscriptionTier): string {
-  const map: Record<SubscriptionTier, string> = {
-    early_bird: Deno.env.get("STRIPE_PRICE_EARLY_BIRD") || "",
-    monthly:    Deno.env.get("STRIPE_PRICE_MONTHLY")    || "",
-    quarterly:  Deno.env.get("STRIPE_PRICE_QUARTERLY")  || "",
-  };
-  const id = map[tier];
-  if (!id) throw new Error(`[Stripe] Price ID not configured for tier: ${tier}`);
-  return id;
+/**
+ * Returns the correct Stripe price ID for a tier.
+ * For monthly/quarterly: automatically uses the early bird price if slots remain.
+ */
+export async function getPriceIdForTier(tier: SubscriptionTier): Promise<{ priceId: string; isEarlyBird: boolean }> {
+  const ebAvailable = await isEarlyBirdAvailable();
+
+  if (tier === "monthly") {
+    const earlyId   = Deno.env.get("STRIPE_PRICE_MONTHLY_EARLY") || "";
+    const regularId = Deno.env.get("STRIPE_PRICE_MONTHLY") || "";
+    if (!regularId) throw new Error("[Stripe] STRIPE_PRICE_MONTHLY not configured");
+    const useEarly = ebAvailable && !!earlyId;
+    return { priceId: useEarly ? earlyId : regularId, isEarlyBird: useEarly };
+  }
+
+  if (tier === "quarterly") {
+    const earlyId   = Deno.env.get("STRIPE_PRICE_QUARTERLY_EARLY") || "";
+    const regularId = Deno.env.get("STRIPE_PRICE_QUARTERLY") || "";
+    if (!regularId) throw new Error("[Stripe] STRIPE_PRICE_QUARTERLY not configured");
+    const useEarly = ebAvailable && !!earlyId;
+    return { priceId: useEarly ? earlyId : regularId, isEarlyBird: useEarly };
+  }
+
+  // Legacy early_bird tier
+  const legacyId = Deno.env.get("STRIPE_PRICE_MONTHLY_EARLY") || Deno.env.get("STRIPE_PRICE_MONTHLY") || "";
+  if (!legacyId) throw new Error("[Stripe] No price configured for legacy early_bird tier");
+  return { priceId: legacyId, isEarlyBird: false };
 }
 
+/** Maps any Stripe price ID back to a canonical tier (for webhook processing) */
 export function getTierFromPriceId(priceId: string): SubscriptionTier | null {
-  if (priceId === Deno.env.get("STRIPE_PRICE_EARLY_BIRD")) return "early_bird";
-  if (priceId === Deno.env.get("STRIPE_PRICE_MONTHLY"))    return "monthly";
-  if (priceId === Deno.env.get("STRIPE_PRICE_QUARTERLY"))  return "quarterly";
+  const monthlyEarly   = Deno.env.get("STRIPE_PRICE_MONTHLY_EARLY");
+  const quarterlyEarly = Deno.env.get("STRIPE_PRICE_QUARTERLY_EARLY");
+  const monthly        = Deno.env.get("STRIPE_PRICE_MONTHLY");
+  const quarterly      = Deno.env.get("STRIPE_PRICE_QUARTERLY");
+
+  if (priceId === monthlyEarly || priceId === monthly)        return "monthly";
+  if (priceId === quarterlyEarly || priceId === quarterly)    return "quarterly";
   return null;
 }
 
@@ -109,13 +139,13 @@ export async function createStripeCheckout(params: CreateCheckoutParams) {
   const { userId, userEmail, tier, successUrl, cancelUrl } = params;
   const stripe = getStripe();
 
-  // Guard: Early Bird availability
-  if (tier === "early_bird") {
-    const available = await isEarlyBirdAvailable();
-    if (!available) throw new Error("[Stripe] Early Bird slots are full (20/20)");
-  }
+  const { priceId, isEarlyBird } = await getPriceIdForTier(tier);
 
-  const priceId = getPriceId(tier);
+  // Increment shared counter when using early bird pricing
+  if (isEarlyBird) await incrementEarlyBirdCount();
+
+  const slotsLeft = EARLY_BIRD_MAX - (await getEarlyBirdCount());
+  console.log(`[Checkout] tier=${tier} earlyBird=${isEarlyBird} slotsLeft=${slotsLeft} price=${priceId}`);
 
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",

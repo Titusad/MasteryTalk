@@ -3,18 +3,21 @@
  *  checkout.ts — Stripe Subscription Checkout session creation
  *
  *  POST /create-checkout
- *  Body: { tier: 'early_bird' | 'monthly' | 'quarterly' }
- *  Returns: { checkoutUrl, checkoutId, tier }
+ *  Body: { tier: 'monthly' | 'quarterly' }
+ *  Returns: { checkoutUrl, checkoutId, tier, isEarlyBird, slotsLeft }
+ *
+ *  Early bird pricing is applied automatically when slots remain —
+ *  the user just picks the tier, the backend picks the price.
  * ══════════════════════════════════════════════════════════════
  */
 import { Hono } from "npm:hono";
 import { getAuthUser } from "../_shared.ts";
-import { createStripeCheckout, isEarlyBirdAvailable, getEarlyBirdCount, getStripe, type SubscriptionTier } from "../stripe.ts";
+import { createStripeCheckout, isEarlyBirdAvailable, getEarlyBirdCount, type SubscriptionTier } from "../stripe.ts";
 import * as kv from "../kv_store.ts";
 
 const app = new Hono();
 
-const VALID_TIERS: SubscriptionTier[] = ["early_bird", "monthly", "quarterly"];
+const VALID_TIERS: SubscriptionTier[] = ["monthly", "quarterly"];
 
 app.post("/make-server-08b8658d/create-checkout", async (c) => {
   try {
@@ -26,14 +29,10 @@ app.post("/make-server-08b8658d/create-checkout", async (c) => {
     const body = await c.req.json().catch(() => ({}));
     const tier: SubscriptionTier = VALID_TIERS.includes(body.tier) ? body.tier : "monthly";
 
-    // Validate Early Bird availability
-    if (tier === "early_bird") {
-      const available = await isEarlyBirdAvailable();
-      if (!available) {
-        const count = await getEarlyBirdCount();
-        return c.json({ error: "Early Bird is full", slotsUsed: count, maxSlots: 20 }, 409);
-      }
-    }
+    // Expose slot info so frontend can show "X spots left at launch price"
+    const ebAvailable = await isEarlyBirdAvailable();
+    const slotsUsed   = await getEarlyBirdCount();
+    const slotsLeft   = Math.max(0, 25 - slotsUsed);
 
     const origin =
       c.req.header("Origin") ||
@@ -43,30 +42,25 @@ app.post("/make-server-08b8658d/create-checkout", async (c) => {
     const successUrl = `${origin}/#dashboard?payment=success&tier=${tier}&session_id={CHECKOUT_SESSION_ID}`;
     const cancelUrl  = `${origin}/#dashboard?payment=cancelled`;
 
-    console.log(`[Checkout] Creating ${tier} checkout for user ${user.id}`);
+    console.log(`[Checkout] tier=${tier} earlyBird=${ebAvailable} slotsLeft=${slotsLeft} user=${user.id}`);
 
     const result = await createStripeCheckout({
-      userId:   user.id,
+      userId:    user.id,
       userEmail: user.email || undefined,
       tier,
       successUrl,
       cancelUrl,
     });
 
-    console.log(`[Checkout] ✅ ${tier} session created: ${result.checkoutId}`);
-    return c.json({ ...result, tier });
+    console.log(`[Checkout] ✅ session created: ${result.checkoutId}`);
+    return c.json({ ...result, tier, isEarlyBird: ebAvailable, slotsLeft });
 
   } catch (err) {
     console.error("[Checkout] Error:", err);
     const message = err instanceof Error ? err.message : String(err);
-
-    if (message.includes("Early Bird slots are full")) {
-      return c.json({ error: "Early Bird is full (20/20)" }, 409);
-    }
     if (message.includes("not configured")) {
       return c.json({ error: `Stripe configuration error: ${message}` }, 500);
     }
-
     return c.json({ error: "Failed to create checkout session" }, 500);
   }
 });

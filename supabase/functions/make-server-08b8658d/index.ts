@@ -105,11 +105,29 @@ app.use("/*", async (c: any, next: any) => {
 
 // ── Public: pricing info (no auth required) ──
 app.get("/make-server-08b8658d/pricing", async (c: any) => {
-  const earlyBirdCount = await getEarlyBirdCount();
+  const slotsUsed   = await getEarlyBirdCount();
+  const slotsLeft   = Math.max(0, 25 - slotsUsed);
+  const ebAvailable = slotsLeft > 0;
   return c.json({
-    earlyBird:  { price: 9.99,  slotsUsed: earlyBirdCount, maxSlots: 20, available: earlyBirdCount < 20 },
-    monthly:    { price: 16.99 },
-    quarterly:  { price: 39.99, perMonth: 13.33 },
+    earlyBird: {
+      slotsUsed,
+      slotsLeft,
+      maxSlots: 25,
+      available: ebAvailable,
+    },
+    monthly: {
+      currentPrice:  ebAvailable ? 12.99 : 19.99,
+      regularPrice:  19.99,
+      earlyPrice:    12.99,
+      isEarlyBird:   ebAvailable,
+    },
+    quarterly: {
+      currentPrice:  ebAvailable ? 29.99 : 47.99,
+      regularPrice:  47.99,
+      earlyPrice:    29.99,
+      isEarlyBird:   ebAvailable,
+      perMonth:      ebAvailable ? 9.99 : 15.99,
+    },
   });
 });
 
