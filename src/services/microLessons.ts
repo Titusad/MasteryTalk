@@ -19,19 +19,49 @@ export function getLessonsForPillars(pillars: string[]): MicroLesson[] {
   return MICRO_LESSONS.filter((l) => pillarSet.has(l.pillar.toLowerCase()));
 }
 
-/** Get recommended lessons based on radar data (weakest 2-3 pillars) */
+/**
+ * Dual-axis lesson recommendation:
+ * Axis 1 — weakness: weakest pillars from radarData
+ * Axis 2 — context: path/level from the session just completed
+ * Returns 2-3 lessons max (1 context + up to 2 weakness-based).
+ */
 export function getRecommendedLessons(
-  radarData: Array<{ skill: string; score: number; fullMark: number }>
+  radarData: Array<{ skill: string; score: number; fullMark: number }>,
+  sessionContext?: { pathId?: string; levelId?: string; scenarioType?: string }
 ): MicroLesson[] {
+  const results: MicroLesson[] = [];
+  const seen = new Set<string>();
+
+  // Axis 2 — context: prefer level-specific, then path-general
+  const pathId = sessionContext?.pathId || sessionContext?.scenarioType;
+  if (pathId) {
+    const levelId = sessionContext?.levelId;
+    const contextMatches = MICRO_LESSONS.filter(
+      (l) => l.pathIds?.includes(pathId)
+    );
+    const levelSpecific = levelId
+      ? contextMatches.filter((l) => l.levelIds?.includes(levelId))
+      : [];
+    const pick = (levelSpecific[0] ?? contextMatches[0]);
+    if (pick) { results.push(pick); seen.add(pick.id); }
+  }
+
+  // Axis 1 — weakness: up to 2 lessons from weakest pillars
   const withScores = radarData.filter((d) => d.score > 0);
-  if (withScores.length === 0) return MICRO_LESSONS.slice(0, 4);
+  if (withScores.length > 0) {
+    const weakest = [...withScores]
+      .sort((a, b) => a.score - b.score)
+      .slice(0, 3)
+      .map((d) => d.skill);
+    for (const lesson of getLessonsForPillars(weakest)) {
+      if (results.length >= 3) break;
+      if (!seen.has(lesson.id)) { results.push(lesson); seen.add(lesson.id); }
+    }
+  }
 
-  const weakest = [...withScores]
-    .sort((a, b) => a.score - b.score)
-    .slice(0, 3)
-    .map((d) => d.skill);
-
-  return getLessonsForPillars(weakest);
+  // Fallback
+  if (results.length === 0) return MICRO_LESSONS.slice(0, 2);
+  return results.slice(0, 3);
 }
 
 /* ═══ Completion tracking (localStorage cache + backend sync) ═══ */

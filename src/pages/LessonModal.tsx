@@ -8,9 +8,9 @@
  * ══════════════════════════════════════════════════════════════
  */
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, ChevronLeft, ChevronRight, CheckCircle2, Lightbulb, BookOpen, Target, Sparkles } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, CheckCircle2, Lightbulb, BookOpen, Target, Sparkles, Play, Pause } from "lucide-react";
 import type { MicroLesson } from "@/services/microLessons";
 import { markLessonComplete, isLessonComplete } from "@/services/microLessons";
 
@@ -27,7 +27,16 @@ export function LessonModal({ lessons, currentIndex, onClose, onNavigate, onComp
   const lesson = lessons[currentIndex];
   const [showChallenge, setShowChallenge] = useState(false);
   const [showAnswer, setShowAnswer] = useState(false);
+  const [audioPlaying, setAudioPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const done = isLessonComplete(lesson.id);
+
+  const toggleAudio = () => {
+    const el = audioRef.current;
+    if (!el) return;
+    if (audioPlaying) { el.pause(); setAudioPlaying(false); }
+    else { el.play().then(() => setAudioPlaying(true)).catch(() => {}); }
+  };
 
   if (!lesson) return null;
 
@@ -38,16 +47,14 @@ export function LessonModal({ lessons, currentIndex, onClose, onNavigate, onComp
 
   const handlePrev = () => {
     if (currentIndex > 0) {
-      setShowChallenge(false);
-      setShowAnswer(false);
+      setShowChallenge(false); setShowAnswer(false); setAudioPlaying(false);
       onNavigate(currentIndex - 1);
     }
   };
 
   const handleNext = () => {
     if (currentIndex < lessons.length - 1) {
-      setShowChallenge(false);
-      setShowAnswer(false);
+      setShowChallenge(false); setShowAnswer(false); setAudioPlaying(false);
       onNavigate(currentIndex + 1);
     }
   };
@@ -113,6 +120,26 @@ export function LessonModal({ lessons, currentIndex, onClose, onNavigate, onComp
                   style={{ width: `${((currentIndex + 1) / lessons.length) * 100}%` }}
                 />
               </div>
+              {/* Audio player — only when audioUrl is available */}
+              {lesson.audioUrl && (
+                <>
+                  <audio
+                    ref={audioRef}
+                    src={lesson.audioUrl}
+                    onEnded={() => setAudioPlaying(false)}
+                  />
+                  <button
+                    onClick={toggleAudio}
+                    className="w-7 h-7 rounded-full bg-[#6366f1] flex items-center justify-center hover:bg-[#4f46e5] transition-colors cursor-pointer shrink-0"
+                    title={audioPlaying ? "Pause narration" : "Play narration"}
+                  >
+                    {audioPlaying
+                      ? <Pause className="w-3 h-3 text-white" />
+                      : <Play className="w-3 h-3 text-white" />
+                    }
+                  </button>
+                </>
+              )}
             </div>
           </div>
 

@@ -73,6 +73,10 @@ import type { SelfIntroContext } from "@/entities/session";
 import { recommendPath } from "@/features/dashboard/model/path-recommendation";
 import { PathRecommendationCard } from "@/features/practice-session/ui/PathRecommendationCard";
 import { WhatsAppActivationCard } from "@/features/dashboard/ui/WhatsAppActivationCard";
+import { DeepDiveCard } from "@/features/practice-session/ui/DeepDiveCard";
+import { getRecommendedLessons } from "@/services/microLessons";
+import type { MicroLesson } from "@/services/microLessons";
+import { LessonModal } from "./LessonModal";
 
 /* ═══════════════════════════════════════════════════════════
    TYPES & DATA (MVP-simplified)
@@ -159,6 +163,9 @@ export function PracticeSessionPage({
   /* ── Self-intro warm-up: selected context (networking / team / client) ── */
   const [selfIntroCtx, setSelfIntroCtx] = useState<SelfIntroContext | null>(null);
   const [recommendedPathOverride, setRecommendedPathOverride] = useState<ScenarioType | null>(null);
+  const [deepDiveLessonOpen, setDeepDiveLessonOpen] = useState(false);
+  const [deepDiveLessons, setDeepDiveLessons] = useState<MicroLesson[]>([]);
+  const [deepDiveLessonIndex, setDeepDiveLessonIndex] = useState(0);
   const isSelfIntro = scenarioType === "self-intro";
 
   /* Recover session state from browser history if navigating Back/Forward */
@@ -594,6 +601,7 @@ export function PracticeSessionPage({
       } : null,
       improvedScript: improvedScript || null,
       practiceSessionId: sessionId,
+      is_war_room: startAtContext === true,
       // Include interview briefing data for dashboard cross-reference
       interviewBriefing: scenarioType === "interview" && interviewBriefing ? {
         anticipatedQuestions: interviewBriefing.anticipatedQuestions.map(q => ({
@@ -1407,8 +1415,35 @@ export function PracticeSessionPage({
                 </div>
               ) : null;
 
-              const combinedBottomSlot = (waCardSlot || recommendationSlot)
-                ? <>{waCardSlot}{recommendationSlot}</>
+              /* Deep Dive lesson recommendations (dual-axis: context + weakness) */
+              const pillarScores = realFeedback?.pillarScores ?? {};
+              const radarDataForLessons = Object.entries(pillarScores).map(([skill, score]) => ({
+                skill,
+                score: typeof score === "number" ? score : 0,
+                fullMark: 100,
+              }));
+              const sessionCtxForLessons = {
+                pathId: progressionPathId ?? scenarioType ?? undefined,
+                levelId: progressionLevelId ?? undefined,
+                scenarioType: scenarioType ?? undefined,
+              };
+              const deepDiveLessonsResult = !isSelfIntro
+                ? getRecommendedLessons(radarDataForLessons, sessionCtxForLessons)
+                : [];
+              const deepDiveSlot = deepDiveLessonsResult.length > 0 ? (
+                <DeepDiveCard
+                  lessons={deepDiveLessonsResult}
+                  onOpenLesson={(lesson) => {
+                    const idx = deepDiveLessonsResult.indexOf(lesson);
+                    setDeepDiveLessons(deepDiveLessonsResult);
+                    setDeepDiveLessonIndex(idx >= 0 ? idx : 0);
+                    setDeepDiveLessonOpen(true);
+                  }}
+                />
+              ) : null;
+
+              const combinedBottomSlot = (waCardSlot || recommendationSlot || deepDiveSlot)
+                ? <>{waCardSlot}{recommendationSlot}{deepDiveSlot}</>
                 : null;
 
               return (
@@ -1486,6 +1521,17 @@ export function PracticeSessionPage({
 
       {/* Footer — rendered once at layout level */}
       <MiniFooter />
+
+      {/* ── Deep Dive Lesson Modal ── */}
+      {deepDiveLessonOpen && deepDiveLessons.length > 0 && (
+        <LessonModal
+          lessons={deepDiveLessons}
+          currentIndex={deepDiveLessonIndex}
+          onClose={() => setDeepDiveLessonOpen(false)}
+          onNavigate={(i) => setDeepDiveLessonIndex(i)}
+          onComplete={() => {}}
+        />
+      )}
 
       {/* ── Paywall Modal (v9.0 — Learning Path) ── */}
       <PathPurchaseModal

@@ -24,12 +24,16 @@ import { SRDashboardCard } from "./SRDashboardCard";
 import { PracticePathsModule } from "./PracticePathsModule";
 import { CrossPathCard } from "./CrossPathCard";
 import { ProgressSummaryCard } from "./ProgressSummaryCard";
+import { RecommendedLessonsCard } from "./RecommendedLessonsCard";
+import { LessonModal } from "@/pages/LessonModal";
+import type { MicroLesson } from "@/services/microLessons";
 
 interface DashboardPageProps {
   userName?: string;
   firstPracticeScenario?: string;
   firstPracticeInterlocutor?: string;
   onNavigateToHistory?: () => void;
+  onNavigateToLibrary?: () => void;
   onStartNewPractice?: (scenario: string, scenarioType?: string, levelId?: string, interlocutor?: string, startAtContext?: boolean) => void;
   userProfile?: OnboardingProfile | null;
   onProfileUpdate?: (profile: OnboardingProfile) => void;
@@ -42,6 +46,7 @@ export function DashboardPage({
   firstPracticeScenario,
   firstPracticeInterlocutor,
   onStartNewPractice,
+  onNavigateToLibrary,
   userProfile,
   lang = "en",
   ownedPaths = [],
@@ -55,6 +60,9 @@ export function DashboardPage({
 
   const [upsellOpen, setUpsellOpen] = useState(false);
   const [pendingScenario, setPendingScenario] = useState<string | null>(null);
+  const [dashLessonOpen, setDashLessonOpen] = useState(false);
+  const [dashLessons, setDashLessons] = useState<MicroLesson[]>([]);
+  const [dashLessonIndex, setDashLessonIndex] = useState(0);
   const { state: progressionState, loading: progressionLoading } = useProgressionState();
   const isDashboardReady = !data.loading && !progressionLoading;
 
@@ -86,6 +94,15 @@ export function DashboardPage({
       setPendingScenario(null);
     }
   };
+
+  // War Room monthly limit (5/month)
+  const WAR_ROOM_LIMIT = 5;
+  const warRoomCurrentMonth = new Date().toISOString().slice(0, 7);
+  const warRoomStoredMonth = (userProfile as any)?.war_room_month ?? null;
+  const warRoomCount = warRoomStoredMonth === warRoomCurrentMonth
+    ? ((userProfile as any)?.war_room_monthly_count ?? 0)
+    : 0;
+  const warRoomExhausted = warRoomCount >= WAR_ROOM_LIMIT;
 
   // Derive computed values for Row 2 cards
   const waPhrasesMastered = (userProfile as any)?.wa_phrases_mastered ?? 0;
@@ -167,19 +184,31 @@ export function DashboardPage({
 
           <SRDashboardCard totalSessions={data.totalSessions} />
 
-          {/* Emergency Prep */}
+          {/* Emergency Prep / War Room */}
           <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-5 flex flex-col">
-            <p className="text-xs font-medium uppercase tracking-wider text-[#94a3b8] mb-3">Emergency Prep</p>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-medium uppercase tracking-wider text-[#94a3b8]">War Room</p>
+              <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${warRoomExhausted ? "bg-red-50 text-red-500" : "bg-[#f0f4f8] text-[#62748e]"}`}>
+                {warRoomCount}/{WAR_ROOM_LIMIT} this month
+              </span>
+            </div>
             <p className="text-sm font-semibold text-[#0f172b] mb-1">Meeting in 30 minutes?</p>
             <p className="text-xs text-[#62748e] leading-relaxed mb-4 flex-1">
-              Paste the agenda or invite — I'll build a targeted session right now.
+              {warRoomExhausted
+                ? "You've used all 5 War Room sessions for this month. They reset on the 1st."
+                : "Paste the agenda or invite — I'll build a targeted session right now."}
             </p>
             <button
-              onClick={() => handleStartSession("Emergency practice session", "meeting", undefined, undefined, true)}
-              className="w-full flex items-center justify-center gap-2 bg-[#0f172b] text-white rounded-lg text-sm font-medium py-2.5 hover:bg-[#1d293d] transition-colors"
+              disabled={warRoomExhausted}
+              onClick={() => !warRoomExhausted && handleStartSession("Emergency practice session", "meeting", undefined, undefined, true)}
+              className={`w-full flex items-center justify-center gap-2 rounded-lg text-sm font-medium py-2.5 transition-colors ${
+                warRoomExhausted
+                  ? "bg-[#f1f5f9] text-[#94a3b8] cursor-not-allowed"
+                  : "bg-[#0f172b] text-white hover:bg-[#1d293d] cursor-pointer"
+              }`}
             >
               <Zap className="w-3.5 h-3.5" />
-              Start emergency prep
+              {warRoomExhausted ? "Limit reached" : "Start emergency prep"}
             </button>
           </div>
 
@@ -195,14 +224,31 @@ export function DashboardPage({
           {/* Content row: 1/4 CrossPathCard | 3/4 ProgressionTree — both start at same height */}
           <div className="grid grid-cols-1 md:grid-cols-[1fr_3fr] gap-6 items-start">
             <motion.div
+              className="flex flex-col gap-4"
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.08 }}
             >
               <CrossPathCard
-              perPathStats={data.perPathStats}
-              progressionState={progressionLoading ? null : progressionState}
-            />
+                perPathStats={data.perPathStats}
+                progressionState={progressionLoading ? null : progressionState}
+              />
+              {(() => {
+                const pillarScores = (userProfile as any)?.stats?.pillarScores as Record<string, number> | null;
+                const sessionsCount = (userProfile as any)?.stats?.sessions_count ?? 0;
+                if (!pillarScores || sessionsCount < 1) return null;
+                return (
+                  <RecommendedLessonsCard
+                    pillarScores={pillarScores}
+                    onOpenLesson={(lessons, idx) => {
+                      setDashLessons(lessons);
+                      setDashLessonIndex(idx);
+                      setDashLessonOpen(true);
+                    }}
+                    onNavigateToLibrary={onNavigateToLibrary}
+                  />
+                );
+              })()}
             </motion.div>
 
             <motion.div
@@ -230,6 +276,16 @@ export function DashboardPage({
         ownedPaths={ownedPaths}
         onPurchaseComplete={handlePurchaseComplete}
       />
+
+      {dashLessonOpen && dashLessons.length > 0 && (
+        <LessonModal
+          lessons={dashLessons}
+          currentIndex={dashLessonIndex}
+          onClose={() => setDashLessonOpen(false)}
+          onNavigate={(i) => setDashLessonIndex(i)}
+          onComplete={() => {}}
+        />
+      )}
     </div>
   );
 }

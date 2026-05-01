@@ -95,12 +95,12 @@ export function LibraryPage({}: LibraryPageProps) {
               className="text-2xl md:text-3xl text-[#0f172b]"
               style={{ fontWeight: 700 }}
             >
-              Lesson Library
+              Lessons Library
             </h1>
           </div>
           <p className="text-sm text-[#62748e] max-w-xl">
-            All {MICRO_LESSONS.length} executive communication lessons. Study at
-            your own pace, then practice skills in live sessions.
+            All {MICRO_LESSONS.length} executive communication lessons. Recommended
+            after each practice session — or browse freely any time.
           </p>
         </div>
 

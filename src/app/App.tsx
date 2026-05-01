@@ -792,6 +792,7 @@ export default function App() {
                   firstPracticeScenario={flowState.scenario}
                   firstPracticeInterlocutor={flowState.interlocutor}
                   onNavigateToHistory={handleNavigateToHistory}
+                  onNavigateToLibrary={handleNavigateToLibrary}
                   onStartNewPractice={handleStartNewPractice}
                   userProfile={userProfile}
                   onProfileUpdate={handleProfileUpdate}

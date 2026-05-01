@@ -37,6 +37,18 @@ app.post("/make-server-08b8658d/sessions", async (c: any) => {
       const profile = profileRaw;
       const stats = profile.stats || {};
       stats.sessions_count = (stats.sessions_count || 0) + 1;
+
+      // War Room monthly counter — reset when month changes
+      if (sessionData.is_war_room) {
+        const currentMonth = new Date().toISOString().slice(0, 7); // "YYYY-MM"
+        if (profile.war_room_month !== currentMonth) {
+          profile.war_room_month = currentMonth;
+          profile.war_room_monthly_count = 1;
+        } else {
+          profile.war_room_monthly_count = (profile.war_room_monthly_count || 0) + 1;
+        }
+      }
+
       profile.stats = stats;
       await kv.set(`profile:${userId}`, profile);
     }

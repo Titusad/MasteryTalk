@@ -189,7 +189,7 @@ export function AppHeader({
                 className="text-[#45556c] hover:text-[#0f172b] transition-colors text-sm hidden sm:flex items-center gap-1.5 font-medium"
               >
                 <BookOpen className="w-4 h-4" />
-                Library
+                Lessons Library
               </button>
             )}
 

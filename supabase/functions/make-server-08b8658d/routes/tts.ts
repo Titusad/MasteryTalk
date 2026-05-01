@@ -45,107 +45,104 @@ app.post("/make-server-08b8658d/tts", async (c) => {
     }
 
     const effectiveRole = role === "user_line" ? "user_line" : "coach";
-    const elevenLabsKey = (globalThis as any).Deno.env.get("ELEVENLABS_API_KEY");
+    const openaiKey = (globalThis as any).Deno.env.get("OPENAI_API_KEY");
 
-    // ━━━ PRIMARY: ElevenLabs Streaming ━━━
-    if (elevenLabsKey) {
-      const profile = ELEVENLABS_VOICES[effectiveRole];
-      console.log(`[TTS ElevenLabs] voice=${profile.voiceId}, role=${effectiveRole}, chars=${text.length}`);
+    // ━━━ PRIMARY: OpenAI gpt-4o-mini-tts ━━━
+    // Used for all dynamic practice content (interlocutor responses, briefing questions, user lines).
+    // ElevenLabs is reserved for pre-generated coach narration tracks (stored in R2).
+    if (openaiKey) {
+      const oaiProfile = OPENAI_VOICE_PROFILES[effectiveRole];
+      console.log(`[TTS OpenAI] model=${TTS_MODEL}, voice=${oaiProfile.voice}, role=${effectiveRole}, chars=${text.length}`);
 
       try {
-        const elRes = await fetch(
-          `https://api.elevenlabs.io/v1/text-to-speech/${profile.voiceId}/stream`,
+        const ttsResponse = await fetch(
+          "https://api.openai.com/v1/audio/speech",
           {
             method: "POST",
             headers: {
-              "xi-api-key": elevenLabsKey,
+              "Authorization": `Bearer ${openaiKey}`,
               "Content-Type": "application/json",
-              "Accept": "audio/mpeg",
             },
             body: JSON.stringify({
-              text,
-              model_id: "eleven_turbo_v2_5",
-              voice_settings: {
-                stability: profile.stability,
-                similarity_boost: profile.similarity,
-                style: profile.style,
-                use_speaker_boost: true,
-              },
+              model: TTS_MODEL,
+              voice: oaiProfile.voice,
+              input: text,
+              instructions: oaiProfile.instructions,
+              response_format: "mp3",
             }),
           },
         );
 
-        if (elRes.ok && elRes.body) {
-          console.log(`[TTS ElevenLabs] ✅ Streaming started — role=${effectiveRole}`);
-          // Log ElevenLabs usage (chars as tokens for cost tracking)
-          logApiUsage("elevenlabs", "/tts", {
+        if (ttsResponse.ok) {
+          const audioBuffer = await ttsResponse.arrayBuffer();
+          console.log(`[TTS OpenAI] ✅ Audio generated — voice=${oaiProfile.voice}, size=${audioBuffer.byteLength} bytes`);
+          logApiUsage("openai-tts", "/tts", {
             prompt: text.length, completion: 0, total: text.length,
-          }, "elevenlabs").catch(() => {});
-          // Stream audio directly to client — no buffering for lowest latency
-          return new Response(elRes.body, {
+          }, "tts-1").catch(() => {});
+          return new Response(audioBuffer, {
             status: 200,
             headers: {
               "Content-Type": "audio/mpeg",
-              "Transfer-Encoding": "chunked",
+              "Content-Length": String(audioBuffer.byteLength),
               "Access-Control-Allow-Origin": "*",
               "Cache-Control": "public, max-age=3600",
             },
           });
         }
 
-        // ElevenLabs error — log and fall through to OpenAI
-        const errBody = await elRes.text();
-        console.warn(`[TTS ElevenLabs] ⚠️ Error ${elRes.status}: ${errBody.slice(0, 200)} — falling back to OpenAI`);
-      } catch (elErr) {
-        console.warn(`[TTS ElevenLabs] ⚠️ Fetch error: ${elErr} — falling back to OpenAI`);
+        const errBody = await ttsResponse.text();
+        console.warn(`[TTS OpenAI] ⚠️ Error ${ttsResponse.status}: ${errBody.slice(0, 200)} — falling back to ElevenLabs`);
+      } catch (oaiErr) {
+        console.warn(`[TTS OpenAI] ⚠️ Fetch error: ${oaiErr} — falling back to ElevenLabs`);
       }
     }
 
-    // ━━━ FALLBACK: OpenAI gpt-4o-mini-tts ━━━
-    const openaiKey = (globalThis as any).Deno.env.get("OPENAI_API_KEY");
-    if (!openaiKey) {
-      return c.json({ error: "No TTS provider configured (ELEVENLABS_API_KEY and OPENAI_API_KEY both missing)" }, 500);
+    // ━━━ FALLBACK: ElevenLabs Streaming ━━━
+    const elevenLabsKey = (globalThis as any).Deno.env.get("ELEVENLABS_API_KEY");
+    if (!elevenLabsKey) {
+      return c.json({ error: "No TTS provider configured (OPENAI_API_KEY and ELEVENLABS_API_KEY both missing)" }, 500);
     }
 
-    const oaiProfile = OPENAI_VOICE_PROFILES[effectiveRole];
-    console.log(`[TTS OpenAI Fallback] model=${TTS_MODEL}, voice=${oaiProfile.voice}, role=${effectiveRole}, chars=${text.length}`);
+    const elProfile = ELEVENLABS_VOICES[effectiveRole];
+    console.log(`[TTS ElevenLabs Fallback] voice=${elProfile.voiceId}, role=${effectiveRole}, chars=${text.length}`);
 
-    const ttsResponse = await fetch(
-      "https://api.openai.com/v1/audio/speech",
+    const elRes = await fetch(
+      `https://api.elevenlabs.io/v1/text-to-speech/${elProfile.voiceId}/stream`,
       {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${openaiKey}`,
+          "xi-api-key": elevenLabsKey,
           "Content-Type": "application/json",
+          "Accept": "audio/mpeg",
         },
         body: JSON.stringify({
-          model: TTS_MODEL,
-          voice: oaiProfile.voice,
-          input: text,
-          instructions: oaiProfile.instructions,
-          response_format: "mp3",
+          text,
+          model_id: "eleven_turbo_v2_5",
+          voice_settings: {
+            stability: elProfile.stability,
+            similarity_boost: elProfile.similarity,
+            style: elProfile.style,
+            use_speaker_boost: true,
+          },
         }),
       },
     );
 
-    if (!ttsResponse.ok) {
-      const errBody = await ttsResponse.text();
-      console.log(`[TTS OpenAI Fallback] Error ${ttsResponse.status}: ${errBody}`);
-      return c.json({ error: `OpenAI TTS failed (${ttsResponse.status}): ${errBody}` }, 502);
+    if (!elRes.ok || !elRes.body) {
+      const errBody = await elRes.text();
+      console.log(`[TTS ElevenLabs Fallback] Error ${elRes.status}: ${errBody}`);
+      return c.json({ error: `All TTS providers failed. ElevenLabs: ${elRes.status}` }, 502);
     }
 
-    const audioBuffer = await ttsResponse.arrayBuffer();
-    console.log(`[TTS OpenAI Fallback] ✅ Audio generated — voice=${oaiProfile.voice}, size=${audioBuffer.byteLength} bytes`);
-    // Log OpenAI TTS usage (chars as tokens for cost tracking)
-    logApiUsage("openai-tts", "/tts", {
+    console.log(`[TTS ElevenLabs Fallback] ✅ Streaming — role=${effectiveRole}`);
+    logApiUsage("elevenlabs", "/tts", {
       prompt: text.length, completion: 0, total: text.length,
-    }, "tts-1").catch(() => {});
-
-    return new Response(audioBuffer, {
+    }, "elevenlabs").catch(() => {});
+    return new Response(elRes.body, {
       status: 200,
       headers: {
         "Content-Type": "audio/mpeg",
-        "Content-Length": String(audioBuffer.byteLength),
+        "Transfer-Encoding": "chunked",
         "Access-Control-Allow-Origin": "*",
         "Cache-Control": "public, max-age=3600",
       },
