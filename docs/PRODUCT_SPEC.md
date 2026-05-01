@@ -4,7 +4,7 @@
 > Any code change MUST be consistent with this spec.
 > If the spec needs to change, update THIS FILE FIRST → get approval → then code.
 >
-> Last updated: 2026-04-30 (v2.7 — Pricing revised: Early Bird $9.99/25 slots, Monthly $19.99, Quarterly $47.99/3mo; CAC/LTV rationale added; Annual deferred)
+> Last updated: 2026-05-01 (v2.8 — Launch pricing 2-card modal; i18n pricing section ES/PT/EN; Stripe price IDs updated)
 
 ---
 
@@ -17,7 +17,7 @@
 | Tagline | Professional English Communication Coaching |
 | Target | LATAM professionals (Mexico, Colombia, Brasil) in nearshoring roles |
 | Core Loop | Learn → Practice → Feedback → Improve → Repeat |
-| Business Model | Monthly/Quarterly subscription (3 tiers) |
+| Business Model | Monthly/Quarterly subscription (2 tiers + auto launch pricing) |
 
 ---
 
@@ -58,9 +58,7 @@ type ScenarioType = "interview" | "meeting" | "presentation" | "sales" | "cultur
 | **Monthly Pro** | $19.99/mo | Monthly | Regular price (after 25 slots gone) | `price_1TS7PuQhSs1CWakESriRaNKl` |
 | **Quarterly Pro** | $47.99/3mo | Quarterly | Regular price, ~$15.99/mo | `price_1TS7S4QhSs1CWakE3gKaFvjk` |
 
-> **⚠️ Action required:** All 4 prices must be created in Stripe. Old prices (`price_1TR1YXQhSs1CWakEaoaqW0y7`, `price_1TR1abQhSs1CWakEClg1lG0D`, `price_1TR1b9QhSs1CWakEd0CGOhM4`) must be archived. Update `STRIPE_PRICE_*` env vars in Supabase secrets once done.
->
-> Early Bird slots (25 total, shared between Monthly EB and Quarterly EB) are tracked in KV: `global:early_bird_count`. When exhausted, checkout automatically switches to regular prices — no user action required.
+> Early Bird slots (25 total, shared between Monthly EB and Quarterly EB) are tracked in KV: `global:early_bird_count`. When exhausted, checkout automatically switches to regular prices — no user action required. Old Stripe prices archived.
 
 All tiers unlock the same features — the difference is price only.
 
@@ -76,19 +74,21 @@ All tiers unlock the same features — the difference is price only.
 ### §3.3 Early Bird rules
 
 - Maximum **25 slots** globally (tracked in KV: `global:early_bird_count`)
-- Counter increments on `checkout.session.completed` for `tier=early_bird`
-- Counter decrements on `customer.subscription.deleted` for `tier=early_bird`
-- `/pricing` endpoint returns live slot count
-- Price is **lifetime** — locked forever at $9.99/mo regardless of future price increases
+- Counter increments when checkout uses an early bird price ID (monthly or quarterly EB)
+- Counter decrements on `customer.subscription.deleted` for early bird subscribers
+- `/pricing` endpoint returns live `slotsLeft`, `currentPrice`, `regularPrice` per tier
+- Early bird pricing is **automatic** — user selects "Monthly" or "Quarterly", backend picks the EB price if slots remain
+- No separate "Early Bird" tier selection in the UI
 
 ### §3.4 Pricing rationale
 
-| Metric | Early Bird | Monthly | Quarterly |
-|--------|:----------:|:-------:|:---------:|
-| Cost/user active (15 ses/mo) | $4.03 | $4.03 | $4.03 |
-| Gross margin | 60% | 80% | 75% |
-| LTV estimate (5 mo avg) | ~$50 | ~$100 | ~$120 |
-| Target CAC (3:1 LTV ratio) | <$17 | <$33 | <$40 |
+| Metric | Monthly EB | Monthly | Quarterly EB | Quarterly |
+|--------|:----------:|:-------:|:------------:|:---------:|
+| Price | $12.99/mo | $19.99/mo | $29.99/3mo ($9.99/mo) | $47.99/3mo ($15.99/mo) |
+| Cost/user (15 ses/mo) | $4.03 | $4.03 | $4.03 | $4.03 |
+| Gross margin | 69% | 80% | 60% | 75% |
+| LTV (5 mo avg) | ~$65 | ~$100 | ~$90 | ~$120 |
+| Target CAC (3:1) | <$22 | <$33 | <$30 | <$40 |
 
 Benchmark: Talaera charges $20/mo for live sessions with human coaches. MasteryTalk at $19.99 offers AI practice 24/7 with no scheduling — same price, more accessibility.
 
@@ -202,8 +202,10 @@ Journey C: Account page → Manage Subscription → Stripe Customer Portal
 
 ```typescript
 // POST /create-checkout
-// Body: { tier: "early_bird" | "monthly" | "quarterly" }
-// Returns: { checkoutUrl, checkoutId, tier }
+// Body: { tier: "monthly" | "quarterly" }
+// Returns: { checkoutUrl, checkoutId, tier, isEarlyBird, slotsLeft }
+// Note: "early_bird" is no longer a user-selectable tier.
+// Backend auto-applies EB price if global:early_bird_count < 25.
 ```
 
 | Setting | Value |
@@ -251,14 +253,16 @@ Journey C: Account page → Manage Subscription → Stripe Customer Portal
 | 6 | Before & After | 2-column comparison |
 | 7 | Session Takeaways | 3 metric cards |
 | 8 | Rutas disponibles | 3 path cards |
-| 9 | Pricing | 3 tier cards (Early Bird, Monthly, Quarterly) |
+| 9 | Pricing | 2 tier cards (Monthly, Quarterly) with launch pricing |
 | 10 | FAQ | 5 accordion items |
 | 11 | Final CTA | Headline + single button |
 
 ### §6.2 Pricing Section
 
-3 tier cards shown via `PathPurchaseModal` — Early Bird, Monthly Pro, Quarterly Pro.
-Early Bird shows live slot count from `/pricing` endpoint.
+2 tier cards (Monthly / Quarterly) shown via `PathPurchaseModal`.
+Launch prices ($12.99 / $29.99) applied automatically when slots remain — fetched live from `/pricing` endpoint.
+When 25 slots exhausted, regular prices ($19.99 / $47.99) shown seamlessly.
+All copy via `landing-i18n.ts` (ES / PT / EN).
 
 ### §6.3 Supported Languages
 
@@ -532,9 +536,11 @@ Non-whitelisted fields (plan, tier, subscription_active, etc.) can only be writt
 |----------|---------|
 | `STRIPE_SECRET_KEY` | Stripe live secret key |
 | `STRIPE_WEBHOOK_SECRET` | Webhook signing secret |
-| `STRIPE_PRICE_EARLY_BIRD` | `price_1TR1YXQhSs1CWakEaoaqW0y7` |
-| `STRIPE_PRICE_MONTHLY` | `price_1TR1abQhSs1CWakEClg1lG0D` |
-| `STRIPE_PRICE_QUARTERLY` | `price_1TR1b9QhSs1CWakEd0CGOhM4` |
+| `STRIPE_PRICE_MONTHLY_EARLY` | `price_1TS7LTQhSs1CWakEw52C4aze` — $12.99/mo launch |
+| `STRIPE_PRICE_QUARTERLY_EARLY` | `price_1TS7OKQhSs1CWakEX4XZ3aYD` — $29.99/3mo launch |
+| `STRIPE_PRICE_MONTHLY` | `price_1TS7PuQhSs1CWakESriRaNKl` — $19.99/mo regular |
+| `STRIPE_PRICE_QUARTERLY` | `price_1TS7S4QhSs1CWakE3gKaFvjk` — $47.99/3mo regular |
+| `STRIPE_PRICE_EARLY_BIRD` | `price_1TR1YXQhSs1CWakEaoaqW0y7` — legacy, keep for backward compat |
 | `OPENAI_API_KEY` | GPT-4o access |
 | `GEMINI_API_KEY` | Gemini Flash (feedback) |
 | `AZURE_SPEECH_KEY` | Azure Speech (STT + pronunciation) |
@@ -632,4 +638,5 @@ A user sees the `MasteryAuditCard` in FeedbackScreen when ALL of:
 | v2.4 | 2026-04-29 | §4.1: new KV fields (WA onboarding: wa_preferred_hour, wa_timezone, wa_phrases_mastered, wa_dismissed_at_session_count, wa_card_permanently_dismissed; Mastery Audit: profession, audit_booked_at). §7.1.1: FeedbackScreen post-session cards spec. §9.0: renewal email two-branch behavior. §10.1.1: PUT /profile whitelist documented. §10.4: Mastery Audit feature spec. |
 | v2.5 | 2026-04-30 | §11: Font row added (Poppins global + Montserrat accent). No other spec changes — all 2026-04-30 work is implementation/UX (dashboard layout, font system, auth hardening, ProgressionTree redesign). |
 | v2.6 | 2026-04-30 | §7.1.1: DeepDiveCard added as 4th post-session card. §7.6: Lessons Library spec (50 lessons, dual-axis engine, MicroLesson interface with pathIds/levelIds/audioUrl, UI surfaces). §7.7: War Room monthly limit spec (5/month, KV fields war_room_monthly_count + war_room_month). §4.1: new KV fields war_room_monthly_count + war_room_month. §10.1.1: whitelist updated. §11: TTS updated (OpenAI primary, ElevenLabs fallback). |
-| v2.7 | 2026-04-30 | §3 full revision: Early Bird $9.99/25 slots (was 20), Monthly $19.99 (was $16.99), Quarterly $47.99/3mo (was $39.99); §3.4 pricing rationale + CAC/LTV targets + Talaera benchmark; Annual tier deferred; §3.5 renamed from §3.4. Stripe prices need to be recreated. |
+| v2.7 | 2026-04-30 | §3 full revision: launch pricing model (Monthly EB $12.99, Quarterly EB $29.99, Monthly $19.99, Quarterly $47.99); §3.4 pricing rationale + CAC/LTV targets + Talaera benchmark; Annual tier deferred. |
+| v2.8 | 2026-05-01 | §3.1: ⚠️ warning removed (Stripe prices live, secrets updated). §3.3: early_bird no longer user-selectable — auto-applied by backend. §3.4: pricing rationale table updated with final prices. §5.4: checkout body updated. §6.1–6.2: 2-card pricing modal documented. §10.3: Stripe Price IDs updated (4 new + 1 legacy). §11: TTS voices updated (cedar + marin). §1: business model updated. All copy via i18n (ES/PT/EN). |

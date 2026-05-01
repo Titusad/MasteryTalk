@@ -1,16 +1,16 @@
 # MasteryTalk PRO — Roadmap
 
-> **Last updated:** 2026-04-30 (Beta v14.1)
+> **Last updated:** 2026-05-01 (Beta v14.2)
 > **Spec reference:** [`PRODUCT_SPEC.md`](./PRODUCT_SPEC.md)
 > **Rule:** New items go here FIRST → spec update if needed → then code.
 
 ---
 
-## Current State (Beta v14.1 — 2026-04-30)
+## Current State (Beta v14.2 — 2026-05-01)
 
 ### ✅ What's Live
 - 5 active scenarios: interview, meeting, presentation, sales, culture
-- **Stripe subscriptions live** — Early Bird $9.99, Monthly $16.99, Quarterly $39.99
+- **Stripe subscriptions live** — Monthly EB $12.99 / Quarterly EB $29.99 (auto launch pricing, 25 slots) → Monthly $19.99 / Quarterly $47.99 regular
 - **Webhook fully operational** — checkout.session.completed as primary activation
 - **Payment success flow** — celebration modal with confetti, redirect to dashboard
 - **Subscription unlock** — all paths/levels unlock on any active subscription
@@ -41,6 +41,9 @@
 - **LessonModal audio player** — play/pause support when lesson has `audioUrl`
 - **TTS cost optimization** — OpenAI `gpt-4o-mini-tts` as primary for dynamic TTS (~20× cheaper: $0.09 vs $1.80/session); ElevenLabs as fallback for dynamic + pre-generated coach narration (R2, $0 per-user)
 - **War Room monthly limit** — 5 sessions/month; counter displayed on Dashboard button; disabled at limit with "Limit reached — resets on the 1st"; backend tracks `war_room_monthly_count` + `war_room_month` in KV profile
+- **Launch pricing modal** — 2-card `PathPurchaseModal` (Monthly + Quarterly); auto EB pricing from `/pricing` endpoint; strikethrough regular price + slots counter; all copy via i18n (ES/PT/EN)
+- **TTS voices** — OpenAI `cedar` (interlocutor/coach) + `marin` (user lines) — recommended voices for quality
+- **Security audit** — XSS, prompt injection, dead code removal + design system compliance (commit 722a58a)
 
 ### ⚠️ Known Gaps
 - WhatsApp in sandbox mode (requires Meta Business approval for production)
@@ -121,7 +124,7 @@
 
 ### 1.4 Stripe Subscriptions & Webhook Pivot ✅ (Completed 2026-04-28)
 - [x] Remove `first_path` and `path` checkout modes.
-- [x] 3-tier pricing: Early Bird $9.99, Monthly $16.99, Quarterly $39.99 (live mode)
+- [x] Subscription pricing live: Monthly EB $12.99 / Quarterly EB $29.99 (auto launch, 25 slots) → $19.99 / $47.99 regular
 - [x] Refactor Edge Function `create-checkout` to process `mode: subscription`.
 - [x] Webhook rewrite: `checkout.session.completed` as primary activation event
 - [x] `resolveUserIdFromInvoice()` — resilient userId lookup via Stripe API fallback
@@ -443,3 +446,4 @@
 | 2026-04-28 | 1.6.1 partial: webhook URL configured, sr_daily_challenge_en template created, TWILIO_SKIP_SIG_VALIDATION set, backend EN-only template, WhatsAppActivationCard free-form country code + EN UI. |
 | 2026-04-30 | 1.8 UX Polish & Habit Loop completed: dashboard 3-row layout + skeleton, ProgressionTree redesign (path descriptions + level taglines), self-intro first path, CrossPathCard real data, AccountPage English + full KV saves, auth OAuth flash fix (AuthLoadingScreen + masterytalk_auth_loading flag), ProfileDropdown hooks fix, AppHeader no-landing-logo, font system (Poppins global via CSS, .font-montserrat utility, zero inline fontFamily). Backend: eleven_turbo_v2_5 + GPT-4o SSE streaming endpoint. Current state → Beta v14.0. |
 | 2026-04-30 | Beta v14.1: Lessons Library expanded 24→50 lessons (dual-axis engine, MicroLesson pathIds/levelIds/audioUrl). DeepDiveCard post-session. RecommendedLessonsCard dashboard. LessonModal audio player. TTS cost optimization (OpenAI gpt-4o-mini-tts primary, ElevenLabs fallback, ~20× cheaper). War Room 5/month limit (KV: war_room_monthly_count + war_room_month). Commit e62dad8 deployed → Vercel + Supabase Edge Functions. |
+| 2026-05-01 | Beta v14.2: Launch pricing model — Monthly EB $12.99 / Quarterly EB $29.99 (auto-applied, 25 shared slots) → regular $19.99/$47.99. PathPurchaseModal redesigned to 2 cards with dynamic pricing from /pricing endpoint. TTS voices updated to cedar + marin (OpenAI recommended). Full i18n pricing section (ES/PT/EN). Stripe secrets updated (4 new price IDs). PRODUCT_SPEC v2.8. Commits: dd51943, 00e6513, 722a58a, 77202c1. |
