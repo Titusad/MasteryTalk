@@ -5,8 +5,8 @@
 > Consultar al inicio de cada sesión de trabajo relacionada con UX/retención.
 >
 > **Origen:** Análisis de Journey Map (JOURNEY.md) + Diagnóstico Hooked + Roadmap v4.0
-> **Estado:** Listo para desarrollo — pendiente de baseline pre-Sprint 1
-> **Actualizado:** 2026-04-29 (v1.1 — Mastery Audit, Sprint 5, iniciativas clasificadas)
+> **Estado:** Sprints 1 + 5.1 completados. Sprint 2, 5.2 pendientes. Sprint 3 rediseñado (ProgressSummaryCard absorbida por HeroCard/DashboardPage).
+> **Actualizado:** 2026-05-01 (v1.2 — marcados sprints completados: 1.1 WA card, 1.2 horario, 1.4 cancel anytime, 5.1 War Room)
 
 ---
 

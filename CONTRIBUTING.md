@@ -39,9 +39,15 @@ Esperar confirmación explícita antes de proceder.
 ### Al finalizar una tarea
 
 1. Solicitar prueba manual al usuario (especialmente en UI)
-2. Marcar tarea como `[x]` en `ROADMAP.md` tras confirmación
-3. Verificar que compila sin errores
-4. Commit con Conventional Commits + push a `main`
+2. **Actualizar documentación afectada** según el tipo de cambio:
+   - Feature / precio / flujo de negocio → `docs/PRODUCT_SPEC.md`
+   - Estado, prioridades, bugs conocidos → `docs/ROADMAP.md`
+   - Componentes UI, tokens, reglas de diseño → `docs/DESIGN_SYSTEM.md`
+   - Touchpoints del usuario, emociones, oportunidades → `docs/JOURNEY.md`
+   - Prompts de IA, bloques, personas → `docs/SYSTEM_PROMPTS.md`
+3. Marcar tarea como `[x]` en `ROADMAP.md` tras confirmación
+4. Verificar que compila sin errores
+5. Commit con Conventional Commits + push a `main`
 
 ---
 

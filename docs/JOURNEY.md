@@ -60,7 +60,7 @@ Fase 5 — Riesgo de churn    → Nudge de inactividad → Renovación
 | How It Works Tabs | Texto estático + mockup animado | 3 pasos con preview de radar chart real de la app |
 | Before & After | Texto estático | Contraste antes/después de la habilidad de comunicación |
 | Practice Widget | UI interactiva | Cards de escenario seleccionables; CTA "Probar gratis" |
-| Pricing section | Texto estático + datos en vivo | 3 tiers; Early Bird muestra slots restantes via `/pricing` |
+| Pricing section | Texto estático + datos en vivo | 2 tiers (Monthly / Quarterly); launch pricing auto-aplicado; slots restantes via `/pricing` |
 | FAQ accordion | Texto estático + animación `motion/react` | 5 preguntas con apertura animada |
 | DotPattern backgrounds | Decoración | Textura visual que diferencia secciones |
 
@@ -356,10 +356,10 @@ Fase 5 — Riesgo de churn    → Nudge de inactividad → Renovación
 | Trophy icon animado | Animación `spring stiffness 200` | Aparece primero — establece el tono de logro |
 | Demo Score pill | Texto dinámico (de la sesión) | Muestra el score de la sesión justo terminada — ancla el valor |
 | Headline por escenario | Texto estático por escenario | e.g., "You've got the fundamentals — now let's build mastery" |
-| Value cards (3) | Texto estático | 6 levels · 18 sessions · Permanent access |
-| Conversion hook | Texto estático | "At less than $1/session, it costs less than a coffee" |
+| Value cards (3) | Texto estático | All paths · WhatsApp SR Coach · Unlimited sessions |
+| Conversion hook | Texto estático | "Invest in your professional English." |
 | Fondo `bg-[#0f172b]` | Diseño | Misma atmósfera del InterlocutorIntroScreen — coherencia emocional |
-| CTA "Continue this path" | Botón `rounded-lg bg-white` | Abre PathPurchaseModal con los 3 tiers de precio |
+| CTA "Unlock MasteryTalk PRO" | Botón `rounded-lg bg-white` | Abre PathPurchaseModal (Monthly / Quarterly, launch pricing auto) |
 | Skip option | Texto ghost | "Continue to Dashboard" — existe pero es visualmente menor |
 
 **Oportunidad:** La prop `proficiencyScore` ya está conectada pero su impacto podría ser mayor. Si el score es bajo (< 60), el headline debería cambiar a un mensaje de gap más urgente ("There's a real gap here — and 18 sessions to close it"). Si es alto (≥ 80), reforzar el momentum ("You're already above average — let's lock that in"). El framing condicional por score aumenta la relevancia.
