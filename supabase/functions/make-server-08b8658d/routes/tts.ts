@@ -21,11 +21,11 @@ const ELEVENLABS_VOICES: Record<string, { voiceId: string; stability: number; si
 const TTS_MODEL = "gpt-4o-mini-tts";
 const OPENAI_VOICE_PROFILES: Record<string, { voice: string; instructions: string }> = {
   coach: {
-    voice: "coral",
+    voice: "cedar",
     instructions: "You are an enthusiastic and engaging executive English coach. Speak at a brisk, natural conversational pace — the way a sharp, energetic colleague would talk over coffee. Be warm and encouraging with genuine energy in your voice. Vary your intonation naturally: emphasize key words, use rising tones for questions, and let your voice convey real interest and excitement. Do NOT speak slowly or monotonically. Avoid long pauses. Sound like someone who genuinely loves helping people succeed — lively, articulate, and approachable.",
   },
   user_line: {
-    voice: "coral",
+    voice: "marin",
     instructions: "You are a confident, high-performing business executive delivering lines in a professional setting. Speak at a natural, dynamic pace — not slow or overly deliberate. Project energy and conviction, like someone who is genuinely engaged in the conversation and passionate about their point. Use natural stress patterns and vocal variety. Avoid sounding robotic, flat, or sleepy. Think of a charismatic leader giving a compelling pitch — articulate, direct, and alive with purpose.",
   },
 };

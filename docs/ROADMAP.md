@@ -1,12 +1,12 @@
 # MasteryTalk PRO — Roadmap
 
-> **Last updated:** 2026-04-30
+> **Last updated:** 2026-04-30 (Beta v14.1)
 > **Spec reference:** [`PRODUCT_SPEC.md`](./PRODUCT_SPEC.md)
 > **Rule:** New items go here FIRST → spec update if needed → then code.
 
 ---
 
-## Current State (Beta v14.0 — 2026-04-30)
+## Current State (Beta v14.1 — 2026-04-30)
 
 ### ✅ What's Live
 - 5 active scenarios: interview, meeting, presentation, sales, culture
@@ -35,6 +35,12 @@
 - **AppHeader** — logo no longer navigates to landing from app interior
 - **ElevenLabs turbo** — `eleven_turbo_v2_5` model (lower latency)
 - **GPT-4o streaming** — `POST /process-turn-stream` SSE endpoint
+- **Lessons Library** — 50 micro-lessons (expanded from 24); dual-axis recommendation (weakness + path/level context); `MicroLesson` interface with `pathIds`, `levelIds`, `audioUrl`; nav renamed "Lessons Library"
+- **DeepDiveCard** — post-session card in FeedbackScreen bottomSlot showing top 3 recommended lessons matched to weak pillars + session context
+- **RecommendedLessonsCard** — Dashboard catch-up card between sessions
+- **LessonModal audio player** — play/pause support when lesson has `audioUrl`
+- **TTS cost optimization** — OpenAI `gpt-4o-mini-tts` as primary for dynamic TTS (~20× cheaper: $0.09 vs $1.80/session); ElevenLabs as fallback for dynamic + pre-generated coach narration (R2, $0 per-user)
+- **War Room monthly limit** — 5 sessions/month; counter displayed on Dashboard button; disabled at limit with "Limit reached — resets on the 1st"; backend tracks `war_room_monthly_count` + `war_room_month` in KV profile
 
 ### ⚠️ Known Gaps
 - WhatsApp in sandbox mode (requires Meta Business approval for production)
@@ -436,3 +442,4 @@
 | 2026-04-28 | 3.1.2 retroactive completion: culture.ts (frontend + backend), CULTURE_LEVELS (6 levels), egalitarian_leader persona, 3 presets, path-recommendation default — all verified in codebase. Pending: Vercel env var + PRODUCT_SPEC §2. |
 | 2026-04-28 | 1.6.1 partial: webhook URL configured, sr_daily_challenge_en template created, TWILIO_SKIP_SIG_VALIDATION set, backend EN-only template, WhatsAppActivationCard free-form country code + EN UI. |
 | 2026-04-30 | 1.8 UX Polish & Habit Loop completed: dashboard 3-row layout + skeleton, ProgressionTree redesign (path descriptions + level taglines), self-intro first path, CrossPathCard real data, AccountPage English + full KV saves, auth OAuth flash fix (AuthLoadingScreen + masterytalk_auth_loading flag), ProfileDropdown hooks fix, AppHeader no-landing-logo, font system (Poppins global via CSS, .font-montserrat utility, zero inline fontFamily). Backend: eleven_turbo_v2_5 + GPT-4o SSE streaming endpoint. Current state → Beta v14.0. |
+| 2026-04-30 | Beta v14.1: Lessons Library expanded 24→50 lessons (dual-axis engine, MicroLesson pathIds/levelIds/audioUrl). DeepDiveCard post-session. RecommendedLessonsCard dashboard. LessonModal audio player. TTS cost optimization (OpenAI gpt-4o-mini-tts primary, ElevenLabs fallback, ~20× cheaper). War Room 5/month limit (KV: war_room_monthly_count + war_room_month). Commit e62dad8 deployed → Vercel + Supabase Edge Functions. |

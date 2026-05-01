@@ -88,6 +88,7 @@ const RATE_LIMITED_PREFIXES = [
   "/make-server-08b8658d/create-checkout",
   "/make-server-08b8658d/whatsapp/send-otp",
   "/make-server-08b8658d/whatsapp/verify-otp",
+  "/make-server-08b8658d/pricing",
 ];
 
 app.use("/*", async (c: any, next: any) => {

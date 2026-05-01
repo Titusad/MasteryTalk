@@ -23,7 +23,6 @@ import { PlatformNewsCard } from "./PlatformNewsCard";
 import { SRDashboardCard } from "./SRDashboardCard";
 import { PracticePathsModule } from "./PracticePathsModule";
 import { CrossPathCard } from "./CrossPathCard";
-import { ProgressSummaryCard } from "./ProgressSummaryCard";
 import { RecommendedLessonsCard } from "./RecommendedLessonsCard";
 import { LessonModal } from "@/pages/LessonModal";
 import type { MicroLesson } from "@/services/microLessons";
@@ -104,17 +103,7 @@ export function DashboardPage({
     : 0;
   const warRoomExhausted = warRoomCount >= WAR_ROOM_LIMIT;
 
-  // Derive computed values for Row 2 cards
-  const waPhrasesMastered = userProfile?.wa_phrases_mastered ?? 0;
   const waVerified = !!userProfile?.whatsapp_verified;
-  const scenarioCounts = data.persistedSessions.reduce<Record<string, number>>((acc, s) => {
-    const t = s.scenarioType ?? "interview";
-    acc[t] = (acc[t] ?? 0) + 1;
-    return acc;
-  }, {});
-  const mostPracticed = Object.keys(scenarioCounts).length > 0
-    ? Object.keys(scenarioCounts).reduce((a, b) => scenarioCounts[a] > scenarioCounts[b] ? a : b)
-    : null;
 
   return (
     <div
@@ -165,6 +154,8 @@ export function DashboardPage({
           progressData={data.progressData}
           totalSessions={data.totalSessions}
           focusArea={data.focusArea}
+          cefrProgress={data.cefrProgress}
+          velocitySignal={data.velocitySignal}
           onStartPractice={handleQuickStart}
         />
 
@@ -175,13 +166,6 @@ export function DashboardPage({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.08 }}
         >
-          <ProgressSummaryCard
-            totalSessions={data.totalSessions}
-            waPhrasesMastered={waPhrasesMastered}
-            mostPracticed={mostPracticed}
-            bestPillarDelta={data.biggestImprovement}
-          />
-
           <SRDashboardCard totalSessions={data.totalSessions} />
 
           {/* Emergency Prep / War Room */}

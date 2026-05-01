@@ -57,7 +57,7 @@ export function SessionProgressBar({ currentStep, progressionLevelTitle }: Sessi
       {levelTitle && (
         <div
           className="mb-3 px-3 py-1 rounded-full bg-[#0f172b] text-white text-[11px]"
-          style={{ fontWeight: 600, letterSpacing: "0.02em" }}
+          style={{ letterSpacing: "0.02em" }}
         >
           {levelTitle}
         </div>

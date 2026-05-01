@@ -104,9 +104,9 @@ export function PathPurchaseModal({ open, onClose }: PathPurchaseModalProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35 }}
         >
-          <h2 className="text-2xl text-[#0f172b] mb-1.5" style={{ fontWeight: 300 }}>
+          <h2 className="text-2xl text-[#0f172b] mb-1.5 font-light" >
             {p.modal.headline.split(" ").slice(0, 1).join(" ")}{" "}
-            <span style={{ fontWeight: 700 }}>{p.modal.headline.split(" ").slice(1).join(" ")}</span>
+            <span className="font-bold">{p.modal.headline.split(" ").slice(1).join(" ")}</span>
           </h2>
           <p className="text-sm text-[#62748e]">{p.modal.subtitle}</p>
         </motion.div>

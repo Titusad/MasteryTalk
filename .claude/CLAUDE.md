@@ -788,6 +788,12 @@ GET  /sessions/count        ← total de sesiones del usuario (para Dashboard ad
 | Dashboard layout | ✅ | 3 filas: WA banner → HeroCard → 4 widgets → (1/4 SideNav + 3/4 paths); DashboardSkeleton completo |
 | ProgressionTree | ✅ | Path title + description; level taglines; Lock icon + hint; self-intro como primer path |
 | AccountPage | ✅ | 100% inglés; todos los campos editables y guardados en KV backend |
+| Lessons Library | ✅ | 50 micro-lecciones; dual-axis recommendation (debilidad + path/level); `MicroLesson` con `pathIds`, `levelIds`, `audioUrl`; nav renombrado "Lessons Library" |
+| DeepDiveCard | ✅ | Tarjeta post-sesión en FeedbackScreen `bottomSlot` — lecciones recomendadas por pilares débiles + contexto de sesión |
+| RecommendedLessonsCard | ✅ | Tarjeta en Dashboard (catch-up entre sesiones); link funcional a Lessons Library |
+| LessonModal audio | ✅ | Play/pause player opcional cuando la lección tiene `audioUrl` pre-generado |
+| TTS optimization | ✅ | OpenAI `gpt-4o-mini-tts` PRIMARY para TTS dinámico (~20× más barato: $0.09 vs $1.80/sesión); ElevenLabs = FALLBACK dinámico + narración coach pre-generada (R2, costo $0 por usuario) |
+| War Room limit | ✅ | 5 sesiones/mes; contador en botón Dashboard; backend: `war_room_monthly_count` + `war_room_month` en KV profile |
 
 ### ⚠️ Pendiente — próximas sesiones
 
@@ -872,5 +878,5 @@ Cada escenario activo (`interview`, `sales`, `meeting`, `presentation`) tiene do
 
 ---
 
-*v1.5 — 2026-04-30*
-*Cambios: §15 actualizado a Beta v14.0 · Font system (Poppins global, cero inline) · Dashboard 3-row layout + skeleton · ProgressionTree redesign (taglines, path descriptions, self-intro first) · AccountPage full KV · Auth OAuth fix · ElevenLabs turbo · GPT-4o SSE*
+*v1.6 — 2026-04-30*
+*Cambios: §15 actualizado a Beta v14.1 · Lessons Library 50 lecciones dual-axis · DeepDiveCard + RecommendedLessonsCard · LessonModal audio player · TTS optimization (OpenAI primary, ElevenLabs fallback) · War Room 5/month limit*

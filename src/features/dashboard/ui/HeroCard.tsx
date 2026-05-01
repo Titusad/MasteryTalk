@@ -11,7 +11,7 @@ import {
   LineChart, Line, XAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import { ProficiencyRing } from "./ProficiencyRing";
-import type { UserState, ChurnGapSignal } from "../model/dashboard.computations";
+import type { UserState, ChurnGapSignal, CEFRProgress, VelocitySignal } from "../model/dashboard.computations";
 import type { RadarDataPoint } from "../model/dashboard.constants";
 import { PILLAR_NAMES } from "../model/dashboard.constants";
 
@@ -38,6 +38,8 @@ interface HeroCardProps {
   progressData: Array<Record<string, string | number>>;
   totalSessions: number;
   focusArea: { pillar: string; score: number } | null;
+  cefrProgress: CEFRProgress | null;
+  velocitySignal: VelocitySignal | null;
   onStartPractice: () => void;
 }
 
@@ -62,6 +64,8 @@ export function HeroCard({
   progressData,
   totalSessions,
   focusArea,
+  cefrProgress,
+  velocitySignal,
   onStartPractice,
 }: HeroCardProps) {
   const [expandedMetrics, setExpandedMetrics] = useState(false);
@@ -222,7 +226,7 @@ export function HeroCard({
               </div>
             </div>
 
-            {/* CEFR */}
+            {/* CEFR level label */}
             <div className="text-center">
               <div className="text-2xl font-bold text-[#0f172b]">
                 {totalSessions > 0 ? cefrApprox.level : "--"}
@@ -231,6 +235,47 @@ export function HeroCard({
                 {totalSessions > 0 ? cefrApprox.label : "Not assessed yet"}
               </div>
             </div>
+
+            {/* Certification Arc */}
+            {cefrProgress && totalSessions > 0 && (
+              <div className="w-full px-1">
+                {/* Gate pills */}
+                <div className="flex gap-1 justify-center mb-2">
+                  {cefrProgress.gates.map((gate) => (
+                    <div
+                      key={gate.pillar}
+                      title={`${gate.pillar}: ${gate.score}/${gate.threshold}`}
+                      className={`h-1.5 flex-1 rounded-full transition-colors ${
+                        gate.passed ? "bg-[#00C950]" : "bg-[#e2e8f0]"
+                      }`}
+                    />
+                  ))}
+                </div>
+                {/* Progress label */}
+                <p className="text-xs text-center text-[#62748e]">
+                  <span className="font-medium text-[#0f172b]">
+                    {cefrProgress.gatesPassed}/{cefrProgress.gates.length}
+                  </span>
+                  {" skills towards "}
+                  <span className="font-medium text-[#0f172b]">
+                    {cefrProgress.nextLevel}
+                  </span>
+                </p>
+                {/* Velocity Signal */}
+                {velocitySignal?.trend === "improving" && velocitySignal.estimatedWeeks !== null && (
+                  <p className="text-[10px] text-center text-[#94a3b8] mt-1">
+                    {velocitySignal.estimatedWeeks <= 1
+                      ? "Almost there at your current pace"
+                      : `~${velocitySignal.estimatedWeeks} weeks at your current pace`}
+                  </p>
+                )}
+                {velocitySignal?.trend === "plateau" && (
+                  <p className="text-[10px] text-center text-[#94a3b8] mt-1">
+                    Increase session frequency to accelerate
+                  </p>
+                )}
+              </div>
+            )}
 
             {/* Delta Chip */}
             {proficiencyDelta !== 0 && totalSessions >= 2 && (

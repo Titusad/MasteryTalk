@@ -420,3 +420,142 @@ export function getOpenNextSteps(
   );
   return sorted[0]?.summary?.nextSteps || [];
 }
+
+/* ── CEFR Pillar Thresholds ── */
+// Source: CEFR Companion Volume 2020 (Council of Europe) adapted for professional
+// business English. See docs/CEFR_CALIBRATION.md for full methodology.
+
+const CEFR_THRESHOLDS: Record<string, Record<string, number>> = {
+  Vocabulary:          { B1: 48, B2: 65, C1: 82 },
+  Grammar:             { B1: 50, B2: 67, C1: 83 },
+  Fluency:             { B1: 45, B2: 63, C1: 80 },
+  Pronunciation:       { B1: 48, B2: 65, C1: 82 },
+  "Professional Tone": { B1: 45, B2: 62, C1: 80 },
+  Persuasion:          { B1: 40, B2: 60, C1: 78 },
+};
+
+const CEFR_ORDER = ["A1", "A2", "B1", "B2", "C1", "C2"] as const;
+
+const NEXT_LEVEL: Record<string, { level: string; label: string } | null> = {
+  A1: { level: "B1", label: "Intermediate" },
+  A2: { level: "B1", label: "Intermediate" },
+  B1: { level: "B2", label: "Upper Intermediate" },
+  B2: { level: "C1", label: "Advanced" },
+  C1: null,
+  C2: null,
+};
+
+export interface CEFRGate {
+  pillar: string;
+  score: number;
+  threshold: number;
+  passed: boolean;
+}
+
+export interface CEFRProgress {
+  currentLevel: string;
+  nextLevel: string;
+  nextLevelLabel: string;
+  gates: CEFRGate[];
+  gatesPassed: number;
+  gatesNeeded: number;
+}
+
+export function computeCEFRProgress(
+  radarData: RadarDataPoint[],
+  cefrApprox: { level: string; label: string }
+): CEFRProgress | null {
+  const next = NEXT_LEVEL[cefrApprox.level];
+  if (!next) return null; // already at C1/C2
+
+  const gates: CEFRGate[] = PILLAR_NAMES.map((pillar) => {
+    const dataPoint = radarData.find((r) => r.skill === pillar);
+    const score = dataPoint?.score ?? 0;
+    const threshold = CEFR_THRESHOLDS[pillar]?.[next.level] ?? 0;
+    return { pillar, score, threshold, passed: score >= threshold };
+  });
+
+  return {
+    currentLevel: cefrApprox.level,
+    nextLevel: next.level,
+    nextLevelLabel: next.label,
+    gates,
+    gatesPassed: gates.filter((g) => g.passed).length,
+    gatesNeeded: 4,
+  };
+}
+
+/* ── Velocity Signal ── */
+
+export interface VelocitySignal {
+  trend: "improving" | "plateau" | "declining";
+  estimatedWeeks: number | null;
+  avgGainPerSession: number;
+}
+
+export function computeVelocitySignal(
+  sessions: PersistedSession[],
+  cefrProgress: CEFRProgress | null
+): VelocitySignal | null {
+  if (sessions.length < 3) return null;
+
+  const sorted = [...sessions].sort(
+    (a, b) =>
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+  );
+
+  // Smoothed scores: avg of last 3 sessions vs avg of sessions before that
+  const recent3 = sorted.slice(-3);
+  const older = sorted.slice(0, -3);
+
+  const avgScore = (ss: PersistedSession[]) => {
+    const scores = ss.map((_, i) => {
+      const radar = computeRadarAtSession(sorted, sorted.indexOf(ss[i] ?? ss[0]));
+      const points = PILLAR_NAMES.map((p) => ({ skill: p, score: radar[p] ?? 0, fullMark: 100 }));
+      return computeProfessionalProficiency(points);
+    });
+    return scores.reduce((a, b) => a + b, 0) / scores.length;
+  };
+
+  const recentAvg = avgScore(recent3);
+  const olderAvg = older.length > 0 ? avgScore(older) : recentAvg;
+  const totalGain = recentAvg - olderAvg;
+  const sessionsElapsed = Math.max(sorted.length - 3, 1);
+  const avgGainPerSession = totalGain / sessionsElapsed;
+
+  const trend: VelocitySignal["trend"] =
+    avgGainPerSession > 0.5 ? "improving" :
+    avgGainPerSession < -0.5 ? "declining" : "plateau";
+
+  if (!cefrProgress || avgGainPerSession <= 0) {
+    return { trend, estimatedWeeks: null, avgGainPerSession };
+  }
+
+  // Gates still to pass
+  const failingGates = cefrProgress.gates.filter((g) => !g.passed);
+  const gatesStillNeeded = Math.max(0, cefrProgress.gatesNeeded - cefrProgress.gatesPassed);
+
+  if (gatesStillNeeded === 0) return { trend, estimatedWeeks: 0, avgGainPerSession };
+
+  // Pick the N-th easiest failing gate as the target (conservative estimate)
+  const sortedGaps = failingGates
+    .map((g) => g.threshold - g.score)
+    .sort((a, b) => a - b);
+  const targetGap = sortedGaps[gatesStillNeeded - 1] ?? sortedGaps[0] ?? 0;
+
+  const sessionsToNext = Math.ceil(targetGap / avgGainPerSession);
+
+  // Weekly frequency from session history
+  const firstDate = new Date(sorted[0].created_at).getTime();
+  const lastDate = new Date(sorted[sorted.length - 1].created_at).getTime();
+  const weeksElapsed = Math.max((lastDate - firstDate) / (7 * 86_400_000), 1);
+  const sessionsPerWeek = sorted.length / weeksElapsed;
+
+  const estimatedWeeks = Math.ceil(sessionsToNext / sessionsPerWeek);
+
+  return {
+    trend,
+    estimatedWeeks: estimatedWeeks > 52 ? null : estimatedWeeks,
+    avgGainPerSession,
+  };
+}

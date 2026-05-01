@@ -33,9 +33,13 @@ import {
   computeChurnGap,
   buildDiagnosis,
   getOpenNextSteps,
+  computeCEFRProgress,
+  computeVelocitySignal,
   type EnrichedHistoryItem,
   type UserState,
   type ChurnGapSignal,
+  type CEFRProgress,
+  type VelocitySignal,
 } from "./dashboard.computations";
 import type { LandingLang } from "@/shared/i18n/landing-i18n";
 import { LANDING_COPIES } from "@/shared/i18n/landing-i18n";
@@ -88,6 +92,10 @@ export interface DashboardData {
   diagnosis: { text: string; highlights: string[] };
   openNextSteps: Array<{ title: string; desc: string; pillar: string }>;
   daysSinceLastSession: number;
+
+  /* Certification Arc */
+  cefrProgress: CEFRProgress | null;
+  velocitySignal: VelocitySignal | null;
 
   /* Cross-path overview */
   perPathStats: Record<string, { sessions: number; avgScore: number | null }>;
@@ -307,6 +315,15 @@ export function useDashboardData({
     return Math.floor((Date.now() - new Date(sorted[0].created_at).getTime()) / 86_400_000);
   }, [persistedSessions]);
 
+  const cefrProgress = useMemo(
+    () => computeCEFRProgress(radarData, cefrApprox),
+    [radarData, cefrApprox]
+  );
+  const velocitySignal = useMemo(
+    () => computeVelocitySignal(persistedSessions, cefrProgress),
+    [persistedSessions, cefrProgress]
+  );
+
   /* ─── Per-path stats ─── */
   const perPathStats = useMemo(() => {
     const stats: Record<string, { sessions: number; avgScore: number | null }> = {};
@@ -385,5 +402,7 @@ export function useDashboardData({
     diagnosis,
     openNextSteps,
     daysSinceLastSession,
+    cefrProgress,
+    velocitySignal,
   };
 }
