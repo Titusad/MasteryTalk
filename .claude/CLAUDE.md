@@ -548,32 +548,20 @@ Dashboard (#dashboard)
 
 ## 8. Modelo de negocio
 
-### Sesión gratuita
-- 1 sesión completa con GPT-4o (misma calidad que sesiones pagadas, sin degradar)
-- Incluye hasta 2 repeticiones del mismo escenario (3 intentos totales en Quick Prep)
-- Paywall al intentar una nueva sesión distinta sin créditos
-- Paywall al intentar una 3ra repetición sin créditos
+### Modelo de negocio actual (suscripción — NO pay-per-session)
 
-### Quick Prep — créditos individuales
-- $4.99 / sesión individual
-- Sin suscripción, sin compromiso
-- Acceso a todos los escenarios: interview, sales, negotiation, csuite, networking
+> ⚠️ PRECIOS CANÓNICOS — usar SIEMPRE estos valores. No existe $4.99, $9.99 (standalone), $16.99 ni $39.99.
 
-### Conversational Path — suscripción
-- $19.99 / mes
-- $49.99 / trimestre (~17% de ahorro vs mensual)
-- Acceso al Progression Tree completo (Interview Mastery + Sales Champion)
-- Lesson Modals con coaching IA personalizado
-- Sesiones ilimitadas dentro del path
+- **Self-intro warm-up** — 3 sesiones gratuitas, sin tarjeta
+- **Monthly** — $12.99/mo (launch, primeros 25 suscriptores) → $19.99/mo (regular)
+- **Quarterly** — $29.99/3mo (launch, primeros 25 suscriptores) → $47.99/3mo (regular)
+- El precio de lanzamiento se aplica automáticamente mientras queden slots — sin que el usuario lo elija
+- War Room: máximo 5 sesiones/mes incluidas en la suscripción
+- NO existen créditos individuales, no existe pay-per-session, no existe Early Bird como tier separado
 
-### Paywall triggers
-1. **Extra repetición** — el usuario quiere una 3ra repetición de Quick Prep en sesión gratuita
-2. **Nueva sesión** — el usuario quiere iniciar una sesión distinta sin créditos/suscripción
-
-### Relación entre modos y planes
-- Quick Prep → créditos individuales ($4.99/sesión)
-- Conversational Path → suscripción ($19.99/mes o $49.99/trimestre)
-- Un usuario suscrito puede usar Quick Prep sin cargo adicional (incluido en suscripción)
+### Paywall
+- Usuario sin suscripción que intenta practicar más allá del self-intro → pricing modal (Monthly/Quarterly)
+- No hay "extra sesiones" a $4.99 — el paywall siempre lleva a suscripción
 
 ### GPT-4o en todas las sesiones
 Todas las sesiones, incluida la gratuita, usan GPT-4o completo.

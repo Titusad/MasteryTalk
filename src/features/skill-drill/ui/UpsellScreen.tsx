@@ -1,21 +1,10 @@
 /**
  * ══════════════════════════════════════════════════════════════
- *  UpsellScreen — v9.0 Learning Path Conversion Screen
+ *  UpsellScreen — Subscription conversion screen
  *
- *  Replaces ConversationalPathUnlockScreen (v8.1).
- *  Shown after the demo session ends. This is the highest-intent
- *  conversion point — the user just experienced the full product.
- *
- *  Copy anchors v9.0:
- *  - "$16.99 one-time — 18 sessions, permanent access"
- *  - "$0.94/session — less than a coffee"
- *  - "All 5 paths for $39.99 (save 47%)"
- *
- *  Props:
- *  - scenarioType: interview / sales / networking / etc.
- *  - proficiencyScore: from the demo session feedback
- *  - onPurchasePath: triggers PathPurchaseModal
- *  - onContinue: skip to dashboard
+ *  Shown after the self-intro demo. Highest-intent conversion point.
+ *  CTA opens PathPurchaseModal (Monthly / Quarterly subscription).
+ *  Pricing: $12.99/mo launch → $19.99/mo regular (auto, 25 slots).
  * ══════════════════════════════════════════════════════════════
  */
 
@@ -30,7 +19,6 @@ import {
   TrendingUp,
   RotateCcw,
 } from "lucide-react";
-import { PATH_PRODUCTS } from "@/services/types";
 
 /* ══════════════════════════════════════════════════════════════
    SCENARIO-SPECIFIC COPY (v9.0 — Learning Path model)
@@ -64,7 +52,7 @@ const SCENARIO_COPY: Record<string, ScenarioCopy> = {
         desc: "Come back anytime to practice. Your progress and scores are saved — no subscription, no expiration.",
       },
     ],
-    conversionHook: "At less than $1/session, it costs less than a coffee. 18 sessions to interview mastery.",
+    conversionHook: "Practice daily with AI coaching for less than a gym membership. Cancel anytime.",
   },
   sales: {
     headline: "First pitch done — now let's sharpen the blade",
@@ -73,42 +61,42 @@ const SCENARIO_COPY: Record<string, ScenarioCopy> = {
       {
         icon: "trending",
         title: "6 levels of increasing pressure",
-        desc: "From discovery calls to executive account reviews — the AI escalates objection difficulty based on your actual performance.",
+        desc: "From discovery calls to executive account reviews — the AI escalates difficulty based on your actual performance.",
       },
       {
         icon: "star",
-        title: "18 unique negotiation scenarios",
-        desc: "No two sessions are the same. Each one stress-tests different aspects: framing, persuasion, objection handling.",
+        title: "Unlimited sessions, all 5 paths",
+        desc: "Interview, Sales, Meetings, Presentations, U.S. Business Culture — all included in one subscription.",
       },
       {
         icon: "zap",
-        title: "Practice forever — no subscription",
-        desc: "One-time purchase, permanent access. Revisit any level, any time. Your power phrases stay with you.",
+        title: "Daily WhatsApp coaching included",
+        desc: "Spaced repetition phrases delivered to your phone every day. Score your audio. Track your mastery.",
       },
     ],
-    conversionHook: "One closed deal covers years of practice. 18 sessions for $16.99 — invest in your edge.",
+    conversionHook: "One closed deal more than covers months of practice. Subscribe today.",
   },
   networking: {
     headline: "Great start — now build real confidence",
-    subtitle: "Your demo revealed your natural style. The Networking Path refines it into a strategic advantage.",
+    subtitle: "Your demo revealed your natural style. The subscription unlocks all paths to refine it into a strategic advantage.",
     valueCards: [
       {
         icon: "trending",
-        title: "From small talk to strategic rapport",
-        desc: "4 levels that evolve from cocktail conversations to building genuine professional relationships.",
+        title: "All 5 practice paths included",
+        desc: "Interview, Sales, Meetings, Presentations, U.S. Business Culture — one subscription, full access.",
       },
       {
         icon: "star",
-        title: "12 diverse social scenarios",
-        desc: "Industry events, conferences, follow-ups — each session pushes your social fluency further.",
+        title: "Unlimited sessions",
+        desc: "Practice as much as you need. No session caps, no extra charges. Cancel anytime.",
       },
       {
         icon: "zap",
-        title: "Access whenever you need it",
-        desc: "Got a conference next month? Practice the night before. Permanent access, zero pressure.",
+        title: "Daily WhatsApp SR Coach",
+        desc: "Pronunciation challenges and spaced repetition delivered to your phone every day.",
       },
     ],
-    conversionHook: "One connection can change your career. 12 preparation sessions for $16.99.",
+    conversionHook: "One real conversation that goes well can change your career trajectory.",
   },
 };
 
@@ -143,7 +131,6 @@ export function UpsellScreen({
 }: UpsellScreenProps) {
   const confettiRef = useRef(false);
   const copy = SCENARIO_COPY[scenarioType] ?? FALLBACK_COPY;
-  const product = PATH_PRODUCTS.first_path;
 
   /* ── Celebratory confetti on mount ── */
   useEffect(() => {
@@ -261,15 +248,15 @@ export function UpsellScreen({
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.8 }}
       >
-        {/* Primary: Unlock path at beta price */}
+        {/* Primary: Subscribe */}
         <button
           onClick={onPurchasePath}
           className="w-full flex items-center justify-center gap-2 py-4 rounded-lg bg-white text-[#0f172b] text-sm font-medium hover:bg-[#f8fafc] transition-colors shadow-lg cursor-pointer"
         >
           <Sparkles className="w-4 h-4" />
-          Continue this path — ${product.price}
+          Unlock MasteryTalk PRO
           <span className="text-[10px] bg-[#f59e0b]/15 text-[#d97706] px-1.5 py-0.5 rounded font-medium ml-1">
-            BETA PRICE
+            LAUNCH PRICE
           </span>
           <ArrowRight className="w-4 h-4" />
         </button>

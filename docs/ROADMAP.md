@@ -90,7 +90,7 @@
 - [x] Update copy to reflect current product positioning (MasteryTalk PRO, not inFluentia)
 - [x] Restructure sections for clearer value proposition flow (v4: 11 sections, 3 new, 1 removed)
 - [x] Ensure hero CTA → demo flow is frictionless (single "Probar gratis" CTA)
-- [x] Verify pricing section consistency with PRODUCT_SPEC §6 (2 cards: $4.99 / $16.99)
+- [x] Verify pricing section consistency with PRODUCT_SPEC §6 (2 cards: Monthly / Quarterly, launch pricing auto-applied)
 - [x] Fix SEO: Add OpenGraph metadata, Twitter Cards, and canonical links
 - [x] Internal branding cleanup: `influentia_*` → `masterytalk_*` storage keys (8 keys + migration utility)
 - [x] Bulk rename `inFluentia PRO` → `MasteryTalk PRO` in 25+ file headers and console logs
@@ -275,6 +275,99 @@
 
 ---
 
+## Phase 2.5 — Pedagogical Depth (Priority: Parallel with Phase 2)
+
+> **Goal:** Deepen the learning effectiveness of the core practice loop based on learning science research.
+> Methodology reference: [`LEARNING_METHODOLOGY.md`](./LEARNING_METHODOLOGY.md)
+>
+> Each item maps to a gap identified in `LEARNING_METHODOLOGY.md §5`.
+> Sprints ordered by impact/complexity ratio.
+
+### Sprint A — Quick Wins
+
+> High pedagogical impact, low implementation complexity. Target: 1–2 week sprint.
+
+#### A.1 — Pre-session focus selector (Deliberate Practice — Gap 6)
+**Goal:** User sets an intentional focus before each session → AI prioritizes coaching on that dimension.
+- [ ] Add focus selector to `ExtraContextScreen.tsx` — 6 pillar options, pre-selected to user's weakest pillar from last session
+- [ ] Pass selected focus as `{ sessionFocus: pillarName }` through `session-api.ts` → arena system prompt
+- [ ] Add coaching priority instruction to SCENARIO_ADAPTATION blocks: *"User's focus today: [X] — note it explicitly in feedback"*
+- [ ] **Acceptance:** User selects focus → feedback report highlights that pillar's observations at top
+
+#### A.2 — Pre-session confidence check-in (WTC — Gap 1)
+**Goal:** Measure perceived confidence before session → personalize interlocutor tone.
+- [ ] Add 1-question confidence slider (1–5) to `ExtraContextScreen.tsx` — shown after scenario selection
+- [ ] Pass score to arena context: ≤ 2 → interlocutor stays in `Support` phase longer; ≥ 4 → standard
+- [ ] Store confidence score in session record (alongside pillar scores) for future WTC trend analysis
+- [ ] **Acceptance:** Low confidence → warmer, more patient interlocutor tone; High confidence → standard challenge mode
+
+#### A.3 — Active recall in LessonModal (Retrieval Practice — Gap 2)
+**Goal:** Replace passive reading with active recall at the end of every lesson.
+- [ ] Add `recallQuestions: { question: string; answer: string }[]` field to `MicroLesson` interface
+- [ ] Add 2–3 recall questions to each of the 50 micro-lessons in `lessons-library.ts`
+- [ ] Add recall section to `LessonModal.tsx`: user answers before revealing correct answer
+- [ ] **Acceptance:** Every lesson ends with recall section; reveal mechanism prevents passive scrolling
+
+#### A.4 — Challenge Mode (Productive Failure — Gap 9)
+**Goal:** B2+ users can practice without pre-briefing to develop spontaneous response capability.
+- [ ] Add "Challenge Mode" toggle to session setup — visible only when user's CEFR level is B2 or above
+- [ ] When active: skip `pre-briefing` and `strategy` steps, go directly to conversation
+- [ ] Surface with brief framing: *"No hints, no prep. Exactly like the real thing."*
+- [ ] **Acceptance:** Toggle available for B2+ users; flow skips all briefing steps when activated
+
+---
+
+### Sprint B — Medium Effort
+
+> High impact on retention and motivation. Target: 2–3 week sprint.
+
+#### B.1 — Ideal Self capture + Dashboard anchor (L2MSS — Gap 3)
+**Goal:** Capture the user's specific English goal and surface it consistently to sustain intrinsic motivation.
+- [ ] Add "Your English goal" field to `AccountPage.tsx` onboarding section — free text, max 120 chars
+- [ ] Store in KV profile via `PUT /profile` as `english_goal`
+- [ ] Add `GoalAnchorCard.tsx` to Dashboard left column — shows goal + days active + encouraging framing
+- [ ] **Acceptance:** Goal set in Account → visible in Dashboard; empty state shows CTA to set it
+
+#### B.2 — Score trajectory chart in Dashboard (WTC + L2MSS — Gap 4)
+**Goal:** Show users their score evolution over time — seeing improvement is the strongest WTC motivator.
+- [ ] Create `ProgressChartCard.tsx` — line chart of average pillar scores across last 10 sessions
+- [ ] Source data from existing `GET /sessions` — aggregate client-side (no new endpoint needed)
+- [ ] Show CEFR level transitions (B1→B2, B2→C1) as milestone markers on the chart
+- [ ] Visible only when user has 3+ sessions
+- [ ] **Acceptance:** Chart renders with real session data; level transitions visible as milestones
+
+#### B.3 — Pushed output in conversation (Output Hypothesis — Gap 5)
+**Goal:** AI interlocutor prompts user to reformulate or be more precise at key moments.
+- [ ] Add pushed output instruction block to each `SCENARIO_ADAPTATION_*` in `src/services/prompts/scenarios/*.ts`
+- [ ] Instruction: in Guidance phase, if user uses vague or informal language, interlocutor requests reformulation
+- [ ] Examples: *"Could you be more specific?"* / *"How would you phrase that to a VP?"*
+- [ ] **Acceptance:** ≥2 pushed output moments per session in Guidance phase; interlocutor requests reformulation or precision
+
+---
+
+### Sprint C — Foundational
+
+> Architectural impact. Requires design decisions before implementation. Evaluate after Sprint B.
+
+#### C.1 — Progressive difficulty curve per level (Deliberate Practice — Gap 7)
+**Goal:** Each level within a path should be measurably harder than the previous — interlocutor style, topic complexity, and stakes all scale.
+- [ ] Define difficulty parameters per level (1–6): interlocutor assertiveness, topic specificity, stakes framing, formality required
+- [ ] Update `progression-paths.ts` level definitions to include difficulty metadata
+- [ ] Map each difficulty tier to a specific interlocutor profile in `personas.ts`
+- [ ] Update SCENARIO_ADAPTATION blocks with level-aware instructions
+- [ ] **Acceptance:** Level 1 = patient interlocutor + predictable topics; Level 6 = high-pressure + C-suite register + no tolerance for hedging
+
+#### C.2 — Interaction Management dimension in feedback (Interactional Competence — Gap 8)
+**Goal:** Evaluate how users manage the conversation itself — turn-taking, repair, backchanneling — not just what they say.
+- [ ] Add Interaction Management evaluation block to Gemini analyst prompt in `supabase/functions/.../analyst-prompt.ts`
+- [ ] Dimensions: turn initiation, turn yielding, self-repair, backchanneling signals, topic management
+- [ ] Add `interactionManagementScore` and `interactionObservations` to feedback output schema
+- [ ] Add Interaction Management section to `ConversationFeedback.tsx`
+- [ ] Document IC as implicit 7th dimension in `CEFR_CALIBRATION.md`
+- [ ] **Acceptance:** Feedback includes IC score + 2–3 specific observations per session
+
+---
+
 ## Phase 3 — Content Expansion (Priority: After retention data)
 
 > **Goal:** More paths to buy, more reasons to stay.
@@ -447,3 +540,4 @@
 | 2026-04-30 | 1.8 UX Polish & Habit Loop completed: dashboard 3-row layout + skeleton, ProgressionTree redesign (path descriptions + level taglines), self-intro first path, CrossPathCard real data, AccountPage English + full KV saves, auth OAuth flash fix (AuthLoadingScreen + masterytalk_auth_loading flag), ProfileDropdown hooks fix, AppHeader no-landing-logo, font system (Poppins global via CSS, .font-montserrat utility, zero inline fontFamily). Backend: eleven_turbo_v2_5 + GPT-4o SSE streaming endpoint. Current state → Beta v14.0. |
 | 2026-04-30 | Beta v14.1: Lessons Library expanded 24→50 lessons (dual-axis engine, MicroLesson pathIds/levelIds/audioUrl). DeepDiveCard post-session. RecommendedLessonsCard dashboard. LessonModal audio player. TTS cost optimization (OpenAI gpt-4o-mini-tts primary, ElevenLabs fallback, ~20× cheaper). War Room 5/month limit (KV: war_room_monthly_count + war_room_month). Commit e62dad8 deployed → Vercel + Supabase Edge Functions. |
 | 2026-05-01 | Beta v14.2: Launch pricing model — Monthly EB $12.99 / Quarterly EB $29.99 (auto-applied, 25 shared slots) → regular $19.99/$47.99. PathPurchaseModal redesigned to 2 cards with dynamic pricing from /pricing endpoint. TTS voices updated to cedar + marin (OpenAI recommended). Full i18n pricing section (ES/PT/EN). Stripe secrets updated (4 new price IDs). PRODUCT_SPEC v2.8. Commits: dd51943, 00e6513, 722a58a, 77202c1. |
+| 2026-05-01 | Added Phase 2.5 — Pedagogical Depth: 9 gaps from LEARNING_METHODOLOGY.md organized into Sprint A (Quick Wins), Sprint B (Medium Effort), Sprint C (Foundational). New docs: LEARNING_METHODOLOGY.md, CEFR_CALIBRATION.md. |

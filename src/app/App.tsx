@@ -876,7 +876,7 @@ export default function App() {
             />
           )}
 
-          {/* v11.0: PathPurchaseModal — Mode A ($4.99 first) / Mode B ($16.99 additional) */}
+          {/* PathPurchaseModal — Monthly/Quarterly subscription with auto launch pricing */}
           <PathPurchaseModal
             open={showNewSessionPaywall}
             scenarioType={flowState.scenarioType || "interview"}

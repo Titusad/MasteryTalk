@@ -493,7 +493,7 @@ sesiones mas largas (8 turnos) y variaciones en longitud de respuesta.
 | Gemini Flash (3x) | ~$0.0015 |
 | **Total/sesión** | **~$0.10** |
 
-El modelo de suscripción ($9.99–$39.99/mo) cubre el costo de IA con amplio margen.
+El modelo de suscripción ($12.99–$19.99/mo) cubre el costo de IA (~$4.03/usuario activo) con amplio margen (69–80%).
 
 ---
 

@@ -1138,7 +1138,7 @@ function ConversationFeedback({
                   <ArrowRight className="w-5 h-5" />
                 </button>
                 <p className="text-[10px] text-[#92400e]/50 mt-3">
-                  $16.99 one-time · Permanent access
+                  From $12.99/mo · All paths included · Cancel anytime
                 </p>
               </div>
             ) : (
