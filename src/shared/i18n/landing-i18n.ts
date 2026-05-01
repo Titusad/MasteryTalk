@@ -109,16 +109,31 @@ export interface LandingCopy {
   };
   /* ── Pricing ── */
   pricing: {
+    sectionTitle: string;
     headline: string;
-    headlineSub: string;
     subtitle: string;
-    cards: {
-      price: string;
+    launchBadge: string;       // shown on both cards when EB active
+    slotsLeft: string;         // "{{count}} spots left at this price"
+    slotsGone: string;         // shown when EB exhausted
+    saveBadge: string;         // quarterly badge, e.g. "Save 20%"
+    monthly: {
       label: string;
-      sublabel: string;
-      note: string;
+      period: string;
+      features: string[];
+    };
+    quarterly: {
+      label: string;
+      period: string;
+      perMonth: string;        // "{{price}}/mo equivalent"
+      features: string[];
+    };
+    modal: {
+      headline: string;
+      subtitle: string;
       cta: string;
-    }[];
+      ctaProcessing: string;
+      legal: string;
+    };
     demoLine: string;
   };
   /* ── FAQ ── */
@@ -388,14 +403,42 @@ export const ES: LandingCopy = {
     ],
   },
   pricing: {
-    headline: "Sin suscripciones. Sin cobros sorpresa.",
-    headlineSub: "Compras una ruta, es tuya para siempre.",
-    subtitle: "Prueba gratis primero. Si lo que vives en la primera sesión no vale $4.99, no compres nada.",
-    cards: [
-      { price: "$4.99", label: "Primera ruta", sublabel: "Acceso permanente", note: "Precio especial de lanzamiento. Sube cuando salgamos de beta.", cta: "Obtener acceso" },
-      { price: "$16.99", label: "Rutas adicionales", sublabel: "Acceso permanente", note: "Compra la que necesitas, cuando la necesitas.", cta: "Agregar ruta" },
-    ],
-    demoLine: "Primera sesión completamente gratis — sin tarjeta, sin compromiso. Vívela antes de decidir.",
+    sectionTitle: "Precios",
+    headline: "Invierte en tu inglés profesional.",
+    subtitle: "Los primeros 25 suscriptores obtienen el precio de lanzamiento automáticamente. Sin código, sin trampa.",
+    launchBadge: "🔥 Precio de lanzamiento",
+    slotsLeft: "{{count}} cupos restantes a este precio",
+    slotsGone: "El precio de lanzamiento ha terminado",
+    saveBadge: "Ahorra 20%",
+    monthly: {
+      label: "Monthly",
+      period: "/mes",
+      features: [
+        "Todos los paths incluidos",
+        "WhatsApp SR Coach diario",
+        "Cancela cuando quieras",
+        "Lessons Library completa",
+      ],
+    },
+    quarterly: {
+      label: "Quarterly",
+      period: "/ 3 meses",
+      perMonth: "{{price}}/mes equivalente",
+      features: [
+        "Todo lo del plan mensual",
+        "20% de ahorro vs mensual",
+        "Compromiso trimestral",
+        "Ideal para hábito real",
+      ],
+    },
+    modal: {
+      headline: "Unlock MasteryTalk PRO",
+      subtitle: "All paths, WhatsApp SR Coach, Lessons Library — unlimited sessions.",
+      cta: "Subscribe",
+      ctaProcessing: "Redirecting to Stripe...",
+      legal: "Secure payment with Stripe · Cancel anytime from your account · No hidden fees",
+    },
+    demoLine: "Tu primera sesión de auto-presentación es completamente gratis — sin tarjeta, sin compromiso.",
   },
   faq: {
     sectionTitle: "Preguntas Frecuentes",
@@ -668,14 +711,42 @@ export const PT: LandingCopy = {
     ],
   },
   pricing: {
-    headline: "Sem assinaturas. Sem cobranças surpresa.",
-    headlineSub: "Compra uma rota, é sua para sempre.",
-    subtitle: "Experimente grátis primeiro. Se o que viver na primeira sessão não vale $4.99, não compre nada.",
-    cards: [
-      { price: "$4.99", label: "Primeira rota", sublabel: "Acesso permanente", note: "Preço especial de lançamento. Sobe quando sairmos do beta.", cta: "Obter acesso" },
-      { price: "$16.99", label: "Rotas adicionais", sublabel: "Acesso permanente", note: "Compre a que precisa, quando precisa.", cta: "Adicionar rota" },
-    ],
-    demoLine: "Primeira sessão completamente grátis — sem cartão, sem compromisso. Viva antes de decidir.",
+    sectionTitle: "Preços",
+    headline: "Invista no seu inglês profissional.",
+    subtitle: "Os primeiros 25 assinantes recebem o preço de lançamento automaticamente. Sem código, sem truque.",
+    launchBadge: "🔥 Preço de lançamento",
+    slotsLeft: "{{count}} vagas restantes neste preço",
+    slotsGone: "O preço de lançamento encerrou",
+    saveBadge: "Economize 20%",
+    monthly: {
+      label: "Monthly",
+      period: "/mês",
+      features: [
+        "Todos os paths incluídos",
+        "WhatsApp SR Coach diário",
+        "Cancele quando quiser",
+        "Lessons Library completa",
+      ],
+    },
+    quarterly: {
+      label: "Quarterly",
+      period: "/ 3 meses",
+      perMonth: "{{price}}/mês equivalente",
+      features: [
+        "Tudo do plano mensal",
+        "20% de economia vs mensal",
+        "Compromisso trimestral",
+        "Ideal para hábito real",
+      ],
+    },
+    modal: {
+      headline: "Unlock MasteryTalk PRO",
+      subtitle: "All paths, WhatsApp SR Coach, Lessons Library — unlimited sessions.",
+      cta: "Subscribe",
+      ctaProcessing: "Redirecting to Stripe...",
+      legal: "Secure payment with Stripe · Cancel anytime from your account · No hidden fees",
+    },
+    demoLine: "Sua primeira sessão de auto-apresentação é completamente grátis — sem cartão, sem compromisso.",
   },
   faq: {
     sectionTitle: "Perguntas Frequentes",
@@ -948,14 +1019,42 @@ export const EN: LandingCopy = {
     ],
   },
   pricing: {
-    headline: "No subscriptions. No surprise charges.",
-    headlineSub: "Buy a path, it's yours forever.",
-    subtitle: "Try free first. If what you experience in the first session isn't worth $4.99, don't buy anything.",
-    cards: [
-      { price: "$4.99", label: "First path", sublabel: "Permanent access", note: "Special launch price. Goes up when we leave beta.", cta: "Get access" },
-      { price: "$16.99", label: "Additional paths", sublabel: "Permanent access", note: "Buy the one you need, when you need it.", cta: "Add path" },
-    ],
-    demoLine: "First session completely free — no credit card, no commitment. Experience it before you decide.",
+    sectionTitle: "Pricing",
+    headline: "Invest in your professional English.",
+    subtitle: "The first 25 subscribers get launch pricing automatically. No code, no catch.",
+    launchBadge: "🔥 Launch price",
+    slotsLeft: "{{count}} spots left at this price",
+    slotsGone: "Launch pricing has ended",
+    saveBadge: "Save 20%",
+    monthly: {
+      label: "Monthly",
+      period: "/month",
+      features: [
+        "All practice paths included",
+        "Daily WhatsApp SR Coach",
+        "Cancel anytime",
+        "Full Lessons Library",
+      ],
+    },
+    quarterly: {
+      label: "Quarterly",
+      period: "/ 3 months",
+      perMonth: "{{price}}/mo equivalent",
+      features: [
+        "Everything in Monthly",
+        "20% savings vs monthly",
+        "Quarterly commitment",
+        "Best for building real habit",
+      ],
+    },
+    modal: {
+      headline: "Unlock MasteryTalk PRO",
+      subtitle: "All paths, WhatsApp SR Coach, Lessons Library — unlimited sessions.",
+      cta: "Subscribe",
+      ctaProcessing: "Redirecting to Stripe...",
+      legal: "Secure payment with Stripe · Cancel anytime from your account · No hidden fees",
+    },
+    demoLine: "Your first self-introduction session is completely free — no credit card, no commitment.",
   },
   faq: {
     sectionTitle: "Frequently Asked Questions",

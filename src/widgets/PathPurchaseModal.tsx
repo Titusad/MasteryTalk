@@ -1,69 +1,36 @@
 /**
  * PathPurchaseModal — Subscription tier selection + Stripe Checkout
  *
- * Shows 3 tiers: Early Bird ($9.99), Monthly ($16.99), Quarterly ($39.99)
- * Fetches live Early Bird availability from backend on open.
+ * Shows 2 tiers (Monthly / Quarterly) with automatic launch pricing.
+ * The backend picks early bird price if slots remain — no user action needed.
+ * All copy via i18n (ES / PT / EN).
  */
 
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { Check, Zap, ArrowRight, Star } from "lucide-react";
+import { Check, ArrowRight, Star, Flame } from "lucide-react";
 import { AppModal } from "@/shared/ui/AppModal";
 import type { SubscriptionTier } from "@/entities/payment";
 import type { PaywallReason } from "@/shared/hooks/useUsageGating";
 import { paymentService } from "@/services";
+import { useLandingCopy } from "@/shared/i18n/LandingLangContext";
 
-/* ── Tier card data ── */
+/* ── Pricing data from backend ── */
 
-interface TierInfo {
-  id: SubscriptionTier;
-  label: string;
-  price: string;
-  period: string;
-  badge?: string;
-  highlight?: boolean;
-  features: string[];
+interface PricingData {
+  earlyBird:  { slotsLeft: number; available: boolean };
+  monthly:    { currentPrice: number; regularPrice: number; isEarlyBird: boolean };
+  quarterly:  { currentPrice: number; regularPrice: number; isEarlyBird: boolean; perMonth: number };
 }
 
-const TIERS: TierInfo[] = [
-  {
-    id: "early_bird",
-    label: "Early Bird",
-    price: "$9.99",
-    period: "/mes · para siempre",
-    badge: "Precio vitalicio",
-    features: [
-      "Todos los paths incluidos",
-      "WhatsApp SR Coach diario",
-      "Precio nunca sube",
-      "Máximo 20 suscriptores",
-    ],
-  },
-  {
-    id: "monthly",
-    label: "Monthly Pro",
-    price: "$16.99",
-    period: "/mes",
-    highlight: true,
-    features: [
-      "Todos los paths incluidos",
-      "WhatsApp SR Coach diario",
-      "Cancela cuando quieras",
-    ],
-  },
-  {
-    id: "quarterly",
-    label: "Quarterly Pro",
-    price: "$39.99",
-    period: "/ 3 meses",
-    badge: "Ahorra 21%",
-    features: [
-      "Todos los paths incluidos",
-      "WhatsApp SR Coach diario",
-      "$13.33/mes equivalente",
-    ],
-  },
-];
+const PRICING_URL =
+  "https://zkuryztcwmazspscomiu.supabase.co/functions/v1/make-server-08b8658d/pricing";
+
+const FALLBACK: PricingData = {
+  earlyBird: { slotsLeft: 25, available: true },
+  monthly:   { currentPrice: 12.99, regularPrice: 19.99, isEarlyBird: true },
+  quarterly: { currentPrice: 29.99, regularPrice: 47.99, isEarlyBird: true, perMonth: 9.99 },
+};
 
 /* ── Props ── */
 
@@ -76,35 +43,32 @@ export interface PathPurchaseModalProps {
   ownedPaths?: string[];
 }
 
-/* ── Main component ── */
+/* ── Component ── */
 
-export function PathPurchaseModal({
-  open,
-  onClose,
-}: PathPurchaseModalProps) {
+export function PathPurchaseModal({ open, onClose }: PathPurchaseModalProps) {
+  const { copy } = useLandingCopy();
+  const p        = copy.pricing;
+
+  const [pricing, setPricing]           = useState<PricingData | null>(null);
   const [selectedTier, setSelectedTier] = useState<SubscriptionTier>("monthly");
-  const [earlyBirdSlots, setEarlyBirdSlots] = useState<{ used: number; max: number; available: boolean } | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError]               = useState<string | null>(null);
 
-  // Fetch Early Bird availability when modal opens
   useEffect(() => {
     if (!open) return;
-    fetch(`https://zkuryztcwmazspscomiu.supabase.co/functions/v1/make-server-08b8658d/pricing`)
+    fetch(PRICING_URL)
       .then(r => r.json())
-      .then(data => {
-        setEarlyBirdSlots({
-          used: data.earlyBird.slotsUsed,
-          max: data.earlyBird.maxSlots,
-          available: data.earlyBird.available,
-        });
-        // Auto-switch to monthly if Early Bird is full
-        if (!data.earlyBird.available && selectedTier === "early_bird") {
-          setSelectedTier("monthly");
-        }
-      })
-      .catch(() => setEarlyBirdSlots({ used: 0, max: 20, available: true }));
+      .then(data => setPricing({
+        earlyBird: { slotsLeft: data.earlyBird.slotsLeft, available: data.earlyBird.available },
+        monthly:   { currentPrice: data.monthly.currentPrice, regularPrice: data.monthly.regularPrice, isEarlyBird: data.monthly.isEarlyBird },
+        quarterly: { currentPrice: data.quarterly.currentPrice, regularPrice: data.quarterly.regularPrice, isEarlyBird: data.quarterly.isEarlyBird, perMonth: data.quarterly.perMonth },
+      }))
+      .catch(() => setPricing(FALLBACK));
   }, [open]);
+
+  const pr         = pricing ?? FALLBACK;
+  const ebActive   = pr.earlyBird.available;
+  const slotsLeft  = pr.earlyBird.slotsLeft;
 
   const handleCheckout = async () => {
     setIsProcessing(true);
@@ -116,19 +80,18 @@ export function PathPurchaseModal({
       });
       if (result.checkoutUrl) window.location.href = result.checkoutUrl;
     } catch (err: any) {
-      const msg = err?.cause?.message || err?.message || "";
-      if (msg.includes("full") || msg.includes("20/20")) {
-        setError("Early Bird is sold out. Please select another plan.");
-        setSelectedTier("monthly");
-      } else {
-        setError("Payment failed. Please try again.");
-      }
+      setError(p.modal.cta + " failed. Please try again.");
       setIsProcessing(false);
     }
   };
 
-  const earlyBirdAvailable = earlyBirdSlots?.available !== false;
-  const slotsLeft = earlyBirdSlots ? earlyBirdSlots.max - earlyBirdSlots.used : null;
+  const selectedPrice = selectedTier === "quarterly"
+    ? pr.quarterly.currentPrice
+    : pr.monthly.currentPrice;
+
+  const selectedPeriod = selectedTier === "quarterly"
+    ? p.quarterly.period
+    : p.monthly.period;
 
   return (
     <AppModal open={open} onClose={onClose} size="lg">
@@ -136,103 +99,65 @@ export function PathPurchaseModal({
 
         {/* Header */}
         <motion.div
-          className="text-center mb-8"
-          initial={{ opacity: 0, y: 12 }}
+          className="text-center mb-6"
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
+          transition={{ duration: 0.35 }}
         >
-          <h2 className="text-2xl text-[#0f172b] mb-2" style={{ fontWeight: 300 }}>
-            Accede a todo <span style={{ fontWeight: 700 }}>MasteryTalk PRO</span>
+          <h2 className="text-2xl text-[#0f172b] mb-1.5" style={{ fontWeight: 300 }}>
+            {p.modal.headline.split(" ").slice(0, 1).join(" ")}{" "}
+            <span style={{ fontWeight: 700 }}>{p.modal.headline.split(" ").slice(1).join(" ")}</span>
           </h2>
-          <p className="text-sm text-[#62748e]">
-            Todos los paths, WhatsApp SR Coach, sin límite de sesiones.
-          </p>
+          <p className="text-sm text-[#62748e]">{p.modal.subtitle}</p>
         </motion.div>
 
+        {/* Slots counter */}
+        {ebActive && (
+          <motion.div
+            className="flex items-center justify-center gap-2 mb-5"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.15 }}
+          >
+            <span className="inline-flex items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold px-3 py-1.5 rounded-full">
+              <Flame className="w-3 h-3" />
+              {p.slotsLeft.replace("{{count}}", String(slotsLeft))}
+            </span>
+          </motion.div>
+        )}
+
         {/* Tier cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          {TIERS.map((tier, i) => {
-            const isSelected = selectedTier === tier.id;
-            const isEarlyBird = tier.id === "early_bird";
-            const isDisabled = isEarlyBird && !earlyBirdAvailable;
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          {/* Monthly */}
+          {renderCard({
+            id: "monthly",
+            label: p.monthly.label,
+            period: p.monthly.period,
+            currentPrice: pr.monthly.currentPrice,
+            regularPrice: pr.monthly.regularPrice,
+            isEarlyBird: ebActive,
+            badge: ebActive ? p.launchBadge : undefined,
+            perMonthLine: undefined,
+            features: p.monthly.features,
+            selected: selectedTier === "monthly",
+            highlight: true,
+            onSelect: () => setSelectedTier("monthly"),
+          })}
 
-            return (
-              <motion.button
-                key={tier.id}
-                onClick={() => !isDisabled && setSelectedTier(tier.id)}
-                disabled={isDisabled}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.08 }}
-                className={`relative text-left p-4 rounded-2xl border-2 transition-all ${
-                  isDisabled
-                    ? "border-[#e2e8f0] opacity-40 cursor-not-allowed"
-                    : isSelected
-                    ? tier.highlight
-                      ? "border-[#0f172b] bg-[#0f172b] text-white"
-                      : "border-[#0f172b] bg-[#f8fafc]"
-                    : "border-[#e2e8f0] bg-white hover:border-[#94a3b8] cursor-pointer"
-                }`}
-              >
-                {/* Badge */}
-                {tier.badge && !isDisabled && (
-                  <span className={`absolute -top-3 left-4 text-[10px] font-semibold px-2.5 py-1 rounded-full ${
-                    isEarlyBird ? "bg-amber-400 text-amber-900" : "bg-[#DBEDDF] text-[#0f172b]"
-                  }`}>
-                    {tier.badge}
-                  </span>
-                )}
-
-                {/* Selected indicator */}
-                {isSelected && (
-                  <div className={`absolute top-3 right-3 w-5 h-5 rounded-full flex items-center justify-center ${
-                    tier.highlight ? "bg-white" : "bg-[#0f172b]"
-                  }`}>
-                    <Check className={`w-3 h-3 ${tier.highlight ? "text-[#0f172b]" : "text-white"}`} strokeWidth={3} />
-                  </div>
-                )}
-
-                {/* Tier name */}
-                <div className="flex items-center gap-1.5 mb-3">
-                  {isEarlyBird && <Zap className={`w-4 h-4 ${isSelected && tier.highlight ? "text-amber-300" : "text-amber-500"}`} />}
-                  {tier.id === "quarterly" && <Star className={`w-4 h-4 ${isSelected && tier.highlight ? "text-emerald-300" : "text-emerald-500"}`} />}
-                  <span className={`text-sm font-semibold ${isSelected && tier.highlight ? "text-white" : "text-[#0f172b]"}`}>
-                    {tier.label}
-                  </span>
-                </div>
-
-                {/* Price */}
-                <div className="mb-4">
-                  <span className={`text-3xl font-bold ${isSelected && tier.highlight ? "text-white" : "text-[#0f172b]"}`}>
-                    {tier.price}
-                  </span>
-                  <span className={`text-xs ml-1 ${isSelected && tier.highlight ? "text-white/60" : "text-[#94a3b8]"}`}>
-                    {tier.period}
-                  </span>
-                </div>
-
-                {/* Features */}
-                <ul className="space-y-1.5">
-                  {tier.features.map(f => (
-                    <li key={f} className="flex items-center gap-2">
-                      <Check className={`w-3 h-3 shrink-0 ${isSelected && tier.highlight ? "text-emerald-300" : "text-emerald-500"}`} strokeWidth={3} />
-                      <span className={`text-xs ${isSelected && tier.highlight ? "text-white/80" : "text-[#45556c]"}`}>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                {/* Early Bird slots */}
-                {isEarlyBird && slotsLeft !== null && (
-                  <div className={`mt-3 pt-3 border-t ${isSelected ? "border-white/20" : "border-[#e2e8f0]"}`}>
-                    <p className={`text-[10px] font-medium ${isSelected && tier.highlight ? "text-amber-300" : "text-amber-600"}`}>
-                      {earlyBirdAvailable
-                        ? `${slotsLeft} de 20 slots disponibles`
-                        : "Sold out — elige otro plan"}
-                    </p>
-                  </div>
-                )}
-              </motion.button>
-            );
+          {/* Quarterly */}
+          {renderCard({
+            id: "quarterly",
+            label: p.quarterly.label,
+            period: p.quarterly.period,
+            currentPrice: pr.quarterly.currentPrice,
+            regularPrice: pr.quarterly.regularPrice,
+            isEarlyBird: ebActive,
+            badge: ebActive ? p.launchBadge : p.saveBadge,
+            perMonthLine: p.quarterly.perMonth.replace("{{price}}", `$${pr.quarterly.perMonth}`),
+            features: p.quarterly.features,
+            selected: selectedTier === "quarterly",
+            highlight: false,
+            onSelect: () => setSelectedTier("quarterly"),
           })}
         </div>
 
@@ -245,21 +170,121 @@ export function PathPurchaseModal({
         <button
           onClick={handleCheckout}
           disabled={isProcessing}
-          className="w-full flex items-center justify-center gap-2 bg-[#0f172b] text-white py-3.5 rounded-full text-sm font-medium hover:bg-[#1d293d] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-center gap-2 bg-[#0f172b] text-white py-3.5 rounded-full text-sm font-semibold hover:bg-[#1d293d] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isProcessing ? "Redirigiendo a Stripe..." : (
+          {isProcessing ? p.modal.ctaProcessing : (
             <>
-              Suscribirse — {TIERS.find(t => t.id === selectedTier)?.price}
-              {selectedTier === "quarterly" ? " / 3 meses" : "/mes"}
+              {p.modal.cta} — ${selectedPrice}{selectedPeriod}
               <ArrowRight className="w-4 h-4" />
             </>
           )}
         </button>
 
         <p className="text-[10px] text-[#94a3b8] text-center mt-3">
-          Pago seguro con Stripe · Cancela cuando quieras desde tu cuenta · Sin cargos ocultos
+          {p.modal.legal}
         </p>
       </div>
     </AppModal>
+  );
+}
+
+/* ── Card renderer ── */
+
+interface CardProps {
+  id: SubscriptionTier;
+  label: string;
+  period: string;
+  currentPrice: number;
+  regularPrice: number;
+  isEarlyBird: boolean;
+  badge?: string;
+  perMonthLine?: string;
+  features: readonly string[];
+  selected: boolean;
+  highlight: boolean;
+  onSelect: () => void;
+}
+
+function renderCard(c: CardProps) {
+  const isDark = c.selected && c.highlight;
+
+  return (
+    <motion.button
+      key={c.id}
+      onClick={c.onSelect}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: c.id === "monthly" ? 0.1 : 0.18 }}
+      className={`relative text-left p-5 rounded-2xl border-2 transition-all cursor-pointer w-full ${
+        c.selected
+          ? c.highlight
+            ? "border-[#0f172b] bg-[#0f172b]"
+            : "border-[#0f172b] bg-[#f8fafc]"
+          : "border-[#e2e8f0] bg-white hover:border-[#94a3b8]"
+      }`}
+    >
+      {/* Badge */}
+      {c.badge && (
+        <span className={`absolute -top-3 left-4 text-[10px] font-semibold px-2.5 py-1 rounded-full ${
+          c.isEarlyBird
+            ? "bg-amber-400 text-amber-900"
+            : "bg-[#DBEDDF] text-[#0f172b]"
+        }`}>
+          {c.badge}
+        </span>
+      )}
+
+      {/* Selected indicator */}
+      {c.selected && (
+        <div className={`absolute top-3 right-3 w-5 h-5 rounded-full flex items-center justify-center ${
+          isDark ? "bg-white" : "bg-[#0f172b]"
+        }`}>
+          <Check className={`w-3 h-3 ${isDark ? "text-[#0f172b]" : "text-white"}`} strokeWidth={3} />
+        </div>
+      )}
+
+      {/* Label */}
+      <div className="flex items-center gap-1.5 mb-3">
+        {c.id === "quarterly" && (
+          <Star className={`w-3.5 h-3.5 ${isDark ? "text-emerald-300" : "text-emerald-500"}`} />
+        )}
+        <span className={`text-sm font-semibold ${isDark ? "text-white" : "text-[#0f172b]"}`}>
+          {c.label}
+        </span>
+      </div>
+
+      {/* Price */}
+      <div className="mb-1">
+        <span className={`text-3xl font-bold ${isDark ? "text-white" : "text-[#0f172b]"}`}>
+          ${c.currentPrice}
+        </span>
+        <span className={`text-xs ml-1 ${isDark ? "text-white/60" : "text-[#94a3b8]"}`}>
+          {c.period}
+        </span>
+        {/* Strikethrough regular price when EB active */}
+        {c.isEarlyBird && c.currentPrice < c.regularPrice && (
+          <span className={`ml-2 text-xs line-through ${isDark ? "text-white/30" : "text-[#94a3b8]"}`}>
+            ${c.regularPrice}
+          </span>
+        )}
+      </div>
+
+      {/* Per month line (quarterly only) */}
+      {c.perMonthLine && (
+        <p className={`text-[10px] mb-3 font-medium ${isDark ? "text-white/50" : "text-[#62748e]"}`}>
+          {c.perMonthLine}
+        </p>
+      )}
+
+      {/* Features */}
+      <ul className="space-y-1.5 mt-3">
+        {c.features.map(f => (
+          <li key={f} className="flex items-center gap-2">
+            <Check className={`w-3 h-3 shrink-0 ${isDark ? "text-emerald-300" : "text-emerald-500"}`} strokeWidth={3} />
+            <span className={`text-xs ${isDark ? "text-white/80" : "text-[#45556c]"}`}>{f}</span>
+          </li>
+        ))}
+      </ul>
+    </motion.button>
   );
 }

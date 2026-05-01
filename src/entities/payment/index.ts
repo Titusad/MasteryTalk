@@ -10,12 +10,31 @@ import type { UserPlan } from "@/entities/user";
 /* ── Purchase types ── */
 
 export type PurchaseType = "first_path" | "path";
+// "early_bird" kept for backward compat with existing KV profiles
 export type SubscriptionTier = "early_bird" | "monthly" | "quarterly";
 
 export const SUBSCRIPTION_TIERS = {
-  early_bird: { tier: "early_bird" as SubscriptionTier, price: 9.99,  label: "Early Bird",    maxSlots: 20 },
-  monthly:    { tier: "monthly"    as SubscriptionTier, price: 16.99, label: "Monthly Pro"             },
-  quarterly:  { tier: "quarterly"  as SubscriptionTier, price: 39.99, label: "Quarterly Pro", perMonth: 13.33 },
+  monthly: {
+    tier: "monthly" as SubscriptionTier,
+    label: "Monthly",
+    regularPrice: 19.99,
+    earlyPrice:   12.99,
+  },
+  quarterly: {
+    tier: "quarterly" as SubscriptionTier,
+    label: "Quarterly",
+    regularPrice:        47.99,
+    earlyPrice:          29.99,
+    regularPerMonth:     15.99,
+    earlyPerMonth:        9.99,
+  },
+  // Legacy — existing subscribers only
+  early_bird: {
+    tier: "early_bird" as SubscriptionTier,
+    label: "Early Bird",
+    regularPrice: 9.99,
+    earlyPrice:   9.99,
+  },
 } as const;
 
 export const PATH_PRODUCTS = {

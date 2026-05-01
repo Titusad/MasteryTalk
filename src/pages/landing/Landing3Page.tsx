@@ -485,7 +485,7 @@ export function Landing3Page({
                   <h2 className="text-3xl md:text-4xl text-gray-900 mb-3" style={{ fontWeight: 700 }}>
                     {copy.pricing.headline}
                   </h2>
-                  <p className="text-xl text-gray-900 mb-2" style={{ fontWeight: 400 }}>{copy.pricing.headlineSub}</p>
+                  <span className="inline-block text-xs font-semibold bg-amber-100 text-amber-700 px-3 py-1 rounded-full mb-3">{copy.pricing.launchBadge}</span>
                   <p className="text-[#4B505B] max-w-lg mx-auto">{copy.pricing.subtitle}</p>
                 </div>
 
@@ -497,32 +497,30 @@ export function Landing3Page({
                 </div>
 
                 {/* Pricing cards */}
-                <div className="grid md:grid-cols-2 gap-5">
-                  {copy.pricing.cards.map((card, i) => {
-                    const isFeatured = i === 0;
-                    return (
-                      <div key={card.price} className={`relative rounded-3xl p-8 flex flex-col ${isFeatured ? "bg-[#2d2d2d] shadow-xl" : "bg-white border border-gray-200"}`}>
-                        {isFeatured && (
-                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#50C878] text-white text-[10px] px-3 py-1 rounded-full" style={{ fontWeight: 600 }}>
-                            MÁS POPULAR
-                          </div>
-                        )}
-                        <div className="mb-2">
-                          <span className={`text-5xl ${isFeatured ? "text-white" : "text-[#2d2d2d]"}`} style={{ fontWeight: 800 }}>{card.price}</span>
-                        </div>
-                        <p className={`text-sm mb-1 ${isFeatured ? "text-white" : "text-gray-900"}`} style={{ fontWeight: 600 }}>{card.label}</p>
-                        <p className={`text-xs mb-3 ${isFeatured ? "text-gray-400" : "text-[#4B505B]"}`}>{card.sublabel}</p>
-                        <p className={`text-xs mb-8 ${isFeatured ? "text-[#50C878]" : "text-[#4B505B]"}`} style={{ fontWeight: 500 }}>{card.note}</p>
-                        <button
-                          onClick={handlePricingClick}
-                          className={`w-full py-3 rounded-full text-sm mt-auto transition-colors ${isFeatured ? "bg-white text-[#2d2d2d] hover:bg-gray-100 shadow-md" : "border-2 border-[#2d2d2d] text-gray-900 hover:bg-gray-50"}`}
-                          style={{ fontWeight: 500 }}
-                        >
-                          {card.cta}
-                        </button>
-                      </div>
-                    );
-                  })}
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="relative rounded-3xl p-8 flex flex-col bg-[#2d2d2d] shadow-xl">
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#50C878] text-white text-[10px] px-3 py-1 rounded-full whitespace-nowrap" style={{ fontWeight: 600 }}>{copy.pricing.launchBadge}</div>
+                    <p className="text-sm text-white mb-3" style={{ fontWeight: 600 }}>{copy.pricing.monthly.label}</p>
+                    <div className="mb-1">
+                      <span className="text-5xl text-white" style={{ fontWeight: 800 }}>$12.99</span>
+                      <span className="text-sm text-white/60 ml-1">{copy.pricing.monthly.period}</span>
+                      <span className="ml-2 text-sm line-through text-white/30">$19.99</span>
+                    </div>
+                    <ul className="space-y-1.5 mb-8 mt-4">{copy.pricing.monthly.features.map(f => <li key={f} className="flex items-center gap-2 text-xs text-white/80"><span className="text-emerald-400">✓</span>{f}</li>)}</ul>
+                    <button onClick={handlePricingClick} className="w-full py-3 rounded-full text-sm mt-auto bg-white text-[#2d2d2d] hover:bg-gray-100 shadow-md transition-colors" style={{ fontWeight: 500 }}>{copy.pricing.modal.cta}</button>
+                  </div>
+                  <div className="relative rounded-3xl p-8 flex flex-col bg-white border border-gray-200">
+                    <span className="absolute -top-3 left-6 text-[10px] font-semibold bg-[#DBEDDF] text-[#0f172b] px-2.5 py-1 rounded-full">{copy.pricing.saveBadge}</span>
+                    <p className="text-sm text-gray-900 mb-3" style={{ fontWeight: 600 }}>{copy.pricing.quarterly.label}</p>
+                    <div className="mb-1">
+                      <span className="text-5xl text-[#2d2d2d]" style={{ fontWeight: 800 }}>$29.99</span>
+                      <span className="text-sm text-[#94a3b8] ml-1">{copy.pricing.quarterly.period}</span>
+                      <span className="ml-2 text-sm line-through text-[#94a3b8]">$47.99</span>
+                    </div>
+                    <p className="text-xs text-[#62748e] mb-4">{copy.pricing.quarterly.perMonth.replace("{{price}}", "$9.99")}</p>
+                    <ul className="space-y-1.5 mb-8">{copy.pricing.quarterly.features.map(f => <li key={f} className="flex items-center gap-2 text-xs text-[#45556c]"><span className="text-emerald-500">✓</span>{f}</li>)}</ul>
+                    <button onClick={handlePricingClick} className="w-full py-3 rounded-full text-sm mt-auto border-2 border-[#2d2d2d] text-gray-900 hover:bg-gray-50 transition-colors" style={{ fontWeight: 500 }}>{copy.pricing.modal.cta}</button>
+                  </div>
                 </div>
               </div>
             </section>

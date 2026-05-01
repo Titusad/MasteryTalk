@@ -221,13 +221,13 @@ describe("Tier pricing rules", () => {
     tiers.forEach(t => expect(SUBSCRIPTION_TIERS[t]).toBeDefined());
   });
 
-  it("Early Bird is cheapest", () => {
-    expect(SUBSCRIPTION_TIERS.early_bird.price)
-      .toBeLessThan(SUBSCRIPTION_TIERS.monthly.price);
+  it("Early Bird early price is cheaper than Monthly early price", () => {
+    expect(SUBSCRIPTION_TIERS.early_bird.earlyPrice)
+      .toBeLessThan(SUBSCRIPTION_TIERS.monthly.earlyPrice);
   });
 
-  it("Quarterly per-month is cheaper than Monthly", () => {
-    expect(SUBSCRIPTION_TIERS.quarterly.perMonth)
-      .toBeLessThan(SUBSCRIPTION_TIERS.monthly.price);
+  it("Quarterly early per-month is cheaper than Monthly early price", () => {
+    expect(SUBSCRIPTION_TIERS.quarterly.earlyPerMonth)
+      .toBeLessThan(SUBSCRIPTION_TIERS.monthly.earlyPrice);
   });
 });
