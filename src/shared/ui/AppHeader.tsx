@@ -55,8 +55,7 @@ function ProfileDropdown({
           {onNavigateToAccount && (
             <button
               onClick={() => { setOpen(false); onNavigateToAccount(); }}
-              className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-[#0f172b] hover:bg-[#f8fafc] transition-colors text-left"
-              style={{ fontWeight: 500 }}
+              className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-[#0f172b] hover:bg-[#f8fafc] transition-colors text-left font-medium"
             >
               <User className="w-4 h-4 text-[#62748e]" />
               My Profile
@@ -65,8 +64,7 @@ function ProfileDropdown({
           {onLogout && (
             <button
               onClick={() => { setOpen(false); onLogout(); }}
-              className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors text-left border-t border-[#f1f5f9]"
-              style={{ fontWeight: 500 }}
+              className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors text-left border-t border-[#f1f5f9] font-medium"
             >
               <LogOut className="w-4 h-4" />
               Sign out

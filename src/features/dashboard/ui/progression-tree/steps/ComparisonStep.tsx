@@ -20,7 +20,7 @@ export function ComparisonStep({ data, footer }: Props) {
         <span className="w-9 h-9 rounded-xl bg-[#6366f1] flex items-center justify-center shrink-0 mt-0.5">
           <ArrowLeftRight className="w-4 h-4 text-white" />
         </span>
-        <p className="text-[#0f172b] text-base md:text-lg leading-snug" style={{ fontWeight: 600 }}>
+        <p className="text-[#0f172b] text-base md:text-lg leading-snug font-semibold" >
           {data.title}
         </p>
       </div>
@@ -32,7 +32,7 @@ export function ComparisonStep({ data, footer }: Props) {
           {/* Weak side */}
           <div className="rounded-2xl border border-[#e2e8f0] overflow-hidden">
             <div className="px-4 py-3 bg-red-50 border-b border-red-100">
-              <p className="text-[11px] text-red-600 uppercase tracking-wider" style={{ fontWeight: 700 }}>
+              <p className="text-[11px] text-red-600 uppercase tracking-wider font-bold" >
                 ✗ {data.weak.label}
               </p>
             </div>
@@ -46,12 +46,12 @@ export function ComparisonStep({ data, footer }: Props) {
           {/* Strong side */}
           <div className="rounded-2xl border border-[#e2e8f0] overflow-hidden">
             <div className="px-4 py-3 bg-emerald-50 border-b border-emerald-100">
-              <p className="text-[11px] text-emerald-700 uppercase tracking-wider" style={{ fontWeight: 700 }}>
+              <p className="text-[11px] text-emerald-700 uppercase tracking-wider font-bold" >
                 ✓ {data.strong.label}
               </p>
             </div>
             <div className="px-4 py-4">
-              <p className="text-[14px] text-[#14532d] leading-relaxed" style={{ fontWeight: 500 }}>
+              <p className="text-[14px] text-[#14532d] leading-relaxed font-medium" >
                 &ldquo;{data.strong.script}&rdquo;
               </p>
             </div>
@@ -60,7 +60,7 @@ export function ComparisonStep({ data, footer }: Props) {
 
         {/* Analysis callout — indigo left border */}
         <div className="rounded-2xl border border-[#e2e8f0] bg-[#f8fafc] px-5 py-4" style={{ borderLeft: "3px solid #6366f1" }}>
-          <p className="text-[11px] text-[#6366f1] uppercase tracking-wider mb-2" style={{ fontWeight: 700 }}>
+          <p className="text-[11px] text-[#6366f1] uppercase tracking-wider mb-2 font-bold" >
             Why this works
           </p>
           <p className="text-[14px] text-[#475569] leading-relaxed">

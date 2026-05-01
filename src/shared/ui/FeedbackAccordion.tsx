@@ -55,7 +55,6 @@ export function FeedbackAccordion({
         <div className="flex-1 min-w-0">
           <h3
             className="text-[#0f172b] text-base"
-            style={{ fontWeight: 600 }}
           >
             {title}
           </h3>

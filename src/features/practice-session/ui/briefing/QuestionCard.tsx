@@ -50,13 +50,13 @@ export function QuestionCard({
                     <MessageCircleQuestion className="w-6 h-6 text-white" />
                 </div>
 
-                <p className="text-xs text-[#94a3b8] mb-3 uppercase tracking-wider" style={{ fontWeight: 600 }}>
+                <p className="text-xs text-[#94a3b8] mb-3 uppercase tracking-wider font-semibold" >
                     {questionLabel}
                 </p>
 
                 <h2
                     className="text-lg md:text-xl text-[#0f172b] leading-relaxed max-w-lg mx-auto"
-                    style={{ fontWeight: 600, lineHeight: 1.5 }}
+                    style={{ lineHeight: 1.5 }}
                 >
                     {scenarioType === "sales" ? question : `"${question}"`}
                 </h2>
@@ -66,8 +66,7 @@ export function QuestionCard({
             <div className="px-6 py-6 border-t border-[#f1f5f9] flex justify-center">
                 <button
                     onClick={onNext}
-                    className="flex items-center gap-3 px-10 py-5 rounded-full text-xl bg-[#0f172b] text-white hover:bg-[#1d293d] transition-colors shadow-[0px_10px_15px_rgba(0,0,0,0.1)]"
-                    style={{ fontWeight: 500 }}
+                    className="flex items-center gap-3 px-10 py-5 rounded-full text-xl bg-[#0f172b] text-white hover:bg-[#1d293d] transition-colors shadow-[0px_10px_15px_rgba(0,0,0,0.1)] font-medium"
                 >
                     See the Strategy
                     <ArrowRight className="w-6 h-6" />

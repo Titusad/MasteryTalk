@@ -52,7 +52,6 @@ export function TermsCheckbox({ checked, onChange, lang = "es" }: TermsCheckboxP
           target="_blank"
           rel="noopener noreferrer"
           className="text-[#0f172b] underline underline-offset-2 hover:text-[#6366f1] transition-colors"
-          style={{ fontWeight: 600 }}
           onClick={(e) => e.stopPropagation()}
         >
           {c.terms}
@@ -63,7 +62,6 @@ export function TermsCheckbox({ checked, onChange, lang = "es" }: TermsCheckboxP
           target="_blank"
           rel="noopener noreferrer"
           className="text-[#0f172b] underline underline-offset-2 hover:text-[#6366f1] transition-colors"
-          style={{ fontWeight: 600 }}
           onClick={(e) => e.stopPropagation()}
         >
           {c.privacy}

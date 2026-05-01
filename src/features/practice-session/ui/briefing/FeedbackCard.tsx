@@ -205,7 +205,7 @@ export function FeedbackCard({
             >
                 <div className="flex flex-col items-center justify-center py-14 px-6">
                     <Loader2 className="w-10 h-10 text-[#6366f1] animate-spin mb-4" />
-                    <p className="text-sm text-[#45556c]" style={{ fontWeight: 500 }}>
+                    <p className="text-sm text-[#45556c] font-medium" >
                         Analyzing your answer...
                     </p>
                     <p className="text-xs text-[#94a3b8] mt-1">
@@ -229,8 +229,7 @@ export function FeedbackCard({
                     <p className="text-xs text-[#94a3b8] mb-4">{error}</p>
                     <button
                         onClick={onComplete}
-                        className="px-5 py-2 rounded-full text-sm bg-[#0f172b] text-white hover:bg-[#1d293d] transition-colors"
-                        style={{ fontWeight: 500 }}
+                        className="px-5 py-2 rounded-full text-sm bg-[#0f172b] text-white hover:bg-[#1d293d] transition-colors font-medium"
                     >
                         Skip to Next Question
                     </button>
@@ -289,7 +288,7 @@ export function FeedbackCard({
                         {/* Score overview */}
                         <div className={`flex items-center justify-between px-4 py-3 rounded-xl border ${scoreBg}`}>
                             <div>
-                                <p className="text-xs text-[#94a3b8] uppercase tracking-wider mb-0.5" style={{ fontWeight: 600 }}>
+                                <p className="text-xs text-[#94a3b8] uppercase tracking-wider mb-0.5 font-semibold" >
                                     Pronunciation Score
                                 </p>
                                 <p className={`text-3xl ${scoreColor}`} style={{ fontWeight: 700 }}>
@@ -307,15 +306,15 @@ export function FeedbackCard({
                             <div>
                                 <div className="flex items-center gap-2 mb-3">
                                     <AlertCircle className="w-4 h-4 text-amber-500" />
-                                    <h3 className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
+                                    <h3 className="text-sm text-[#0f172b] font-semibold" >
                                         Words to work on
                                     </h3>
                                 </div>
                                 <div className="flex flex-wrap gap-2">
                                     {weakWords.map((w, i) => (
                                         <div key={i} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#fff7ed] border border-[#fed7aa]">
-                                            <span className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>{w.word}</span>
-                                            <span className={`text-xs ${w.accuracyScore < 50 ? "text-red-500" : "text-amber-500"}`} style={{ fontWeight: 500 }}>
+                                            <span className="text-sm text-[#0f172b] font-semibold" >{w.word}</span>
+                                            <span className={`text-xs font-medium ${w.accuracyScore < 50 ? "text-red-500" : "text-amber-500"}`}>
                                                 {Math.round(w.accuracyScore)}%
                                             </span>
                                         </div>
@@ -325,7 +324,7 @@ export function FeedbackCard({
                         ) : (
                             <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200">
                                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                                <p className="text-sm text-emerald-700" style={{ fontWeight: 500 }}>
+                                <p className="text-sm text-emerald-700 font-medium" >
                                     Clean pronunciation — no problem words detected.
                                 </p>
                             </div>
@@ -335,7 +334,7 @@ export function FeedbackCard({
                         <div>
                             <div className="flex items-center gap-2 mb-2">
                                 <Headphones className="w-4 h-4 text-[#6366f1]" />
-                                <h3 className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
+                                <h3 className="text-sm text-[#0f172b] font-semibold" >
                                     Practice saying it again
                                 </h3>
                             </div>
@@ -345,11 +344,10 @@ export function FeedbackCard({
                             <button
                                 onClick={() => setShowShadowingModal(true)}
                                 className="flex items-center gap-2 px-5 py-3 rounded-xl bg-[#6366f1] text-white text-sm hover:bg-[#4f46e5] transition-colors"
-                                style={{ fontWeight: 600 }}
                             >
                                 <Mic className="w-4 h-4" />
                                 Open Shadowing Practice
-                                <span className="text-[11px] bg-white/20 px-1.5 py-0.5 rounded" style={{ fontWeight: 500 }}>
+                                <span className="text-[11px] bg-white/20 px-1.5 py-0.5 rounded font-medium" >
                                     {pronShadowingPhrases.length} phrases
                                 </span>
                             </button>
@@ -358,14 +356,13 @@ export function FeedbackCard({
 
                     {/* Navigation */}
                     <div className="px-6 py-5 border-t border-[#f1f5f9] flex items-center justify-between">
-                        <button onClick={onBack} className="flex items-center gap-1.5 text-sm text-[#62748e] hover:text-[#0f172b] transition-colors" style={{ fontWeight: 500 }}>
+                        <button onClick={onBack} className="flex items-center gap-1.5 text-sm text-[#62748e] hover:text-[#0f172b] transition-colors font-medium" >
                             <ArrowLeft className="w-3.5 h-3.5" />
                             Try again
                         </button>
                         <button
                             onClick={onComplete}
-                            className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#0f172b] text-white text-sm hover:bg-[#1d293d] transition-colors"
-                            style={{ fontWeight: 500 }}
+                            className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#0f172b] text-white text-sm hover:bg-[#1d293d] transition-colors font-medium"
                         >
                             {isLastQuestion ? "Start Practice" : "Next moment"}
                             <ArrowRight className="w-4 h-4" />
@@ -406,7 +403,7 @@ export function FeedbackCard({
                                 : feedback.communicationScore >= 40
                                     ? "bg-amber-50 text-amber-700"
                                     : "bg-red-50 text-red-700"
-                        }`} style={{ fontWeight: 600 }}>
+                        } font-semibold`}>
                             Draft Score: {feedback.communicationScore}/100
                         </div>
                         <span className="text-xs text-[#94a3b8]">
@@ -418,14 +415,13 @@ export function FeedbackCard({
                     <div>
                         <div className="flex items-center gap-2 mb-2">
                             <Sparkles className="w-4 h-4 text-[#6366f1]" />
-                            <h3 className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
+                            <h3 className="text-sm text-[#0f172b] font-semibold" >
                                 Improved Response
                             </h3>
                         </div>
                         <div className="bg-gradient-to-br from-[#eef2ff] to-[#f0f9ff] rounded-xl border border-[#c7d2fe]/30 p-4">
                             <p
-                                className="text-sm text-[#0f172b] leading-relaxed"
-                                style={{ fontWeight: 500 }}
+                                className="text-sm text-[#0f172b] leading-relaxed font-medium"
                             >
                                 "{feedback.improvedResponse}"
                             </p>
@@ -438,7 +434,7 @@ export function FeedbackCard({
                     {/* ── Key Changes ── */}
                     {feedback.keyChanges.length > 0 && (
                         <div>
-                            <h3 className="text-xs text-[#94a3b8] mb-2 uppercase tracking-wider" style={{ fontWeight: 600 }}>
+                            <h3 className="text-xs text-[#94a3b8] mb-2 uppercase tracking-wider font-semibold" >
                                 What Changed & Why
                             </h3>
                             <div className="space-y-2">
@@ -450,7 +446,7 @@ export function FeedbackCard({
                                         <div className="flex items-start gap-2">
                                             <span className="text-xs text-[#94a3b8] mt-0.5 shrink-0">→</span>
                                             <div>
-                                                <p className="text-xs text-[#0f172b]" style={{ fontWeight: 500 }}>
+                                                <p className="text-xs text-[#0f172b] font-medium" >
                                                     {change.improved}
                                                 </p>
                                                 <p className="text-xs text-[#62748e] mt-0.5">
@@ -466,7 +462,7 @@ export function FeedbackCard({
 
                     {/* ── Practice Saying It — opens ShadowingModal ── */}
                     <div className="border-t border-[#f1f5f9] pt-5">
-                        <h3 className="text-sm text-[#0f172b] mb-2" style={{ fontWeight: 600 }}>
+                        <h3 className="text-sm text-[#0f172b] mb-2 font-semibold" >
                             🎧 Practice Saying It
                         </h3>
                         <p className="text-xs text-[#62748e] mb-4">
@@ -475,7 +471,6 @@ export function FeedbackCard({
                         <button
                             onClick={() => setShowShadowingModal(true)}
                             className="flex items-center gap-2.5 px-5 py-3 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#4f46e5] text-white text-sm hover:from-[#4f46e5] hover:to-[#4338ca] transition-all shadow-md shadow-[#6366f1]/20 active:scale-[0.97]"
-                            style={{ fontWeight: 600 }}
                         >
                             <Headphones className="w-4 h-4" />
                             Open Practice Modal
@@ -490,16 +485,14 @@ export function FeedbackCard({
                 <div className="px-6 py-6 border-t border-[#f1f5f9] flex flex-col items-center">
                     <button
                         onClick={onComplete}
-                        className="flex items-center gap-3 px-10 py-5 rounded-full text-xl bg-[#0f172b] text-white hover:bg-[#1d293d] transition-colors shadow-[0px_10px_15px_rgba(0,0,0,0.1)]"
-                        style={{ fontWeight: 500 }}
+                        className="flex items-center gap-3 px-10 py-5 rounded-full text-xl bg-[#0f172b] text-white hover:bg-[#1d293d] transition-colors shadow-[0px_10px_15px_rgba(0,0,0,0.1)] font-medium"
                     >
                         {isLastQuestion ? "See Results" : "Next Question"}
                         <ArrowRight className="w-6 h-6" />
                     </button>
                     <button
                         onClick={onBack}
-                        className="mt-4 flex items-center gap-1.5 text-sm text-[#62748e] hover:text-[#0f172b] transition-colors"
-                        style={{ fontWeight: 500 }}
+                        className="mt-4 flex items-center gap-1.5 text-sm text-[#62748e] hover:text-[#0f172b] transition-colors font-medium"
                     >
                         <ArrowLeft className="w-3.5 h-3.5" />
                         Back

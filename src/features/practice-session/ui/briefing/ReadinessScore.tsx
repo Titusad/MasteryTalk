@@ -59,7 +59,7 @@ export function ReadinessScore({
         >
             {/* Title */}
             <div className="text-center">
-                <h3 className="text-xl md:text-2xl text-[#0f172b] mb-1" style={{ fontWeight: 300 }}>
+                <h3 className="text-xl md:text-2xl text-[#0f172b] mb-1 font-light" >
                     Preparation Complete!
                 </h3>
                 <p className="text-sm text-[#45556c]">
@@ -82,15 +82,14 @@ export function ReadinessScore({
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <motion.span
-                        className="text-3xl text-[#0f172b]"
-                        style={{ fontWeight: 700 }}
+                        className="text-3xl text-[#0f172b] font-bold"
                         initial={{ opacity: 0, scale: 0.5 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.4, delay: 0.8 }}
                     >
                         {score}%
                     </motion.span>
-                    <span className="text-[10px] text-[#45556c] uppercase tracking-wider" style={{ fontWeight: 600 }}>
+                    <span className="text-[10px] text-[#45556c] uppercase tracking-wider font-semibold" >
                         Readiness
                     </span>
                 </div>
@@ -109,8 +108,7 @@ export function ReadinessScore({
                     </p>
                     <button
                         onClick={onStartPractice}
-                        className="bg-[#0f172b] text-white px-6 py-3.5 rounded-full flex items-center gap-2.5 shadow-lg hover:bg-[#1d293d] transition-colors mx-auto"
-                        style={{ fontWeight: 500 }}
+                        className="bg-[#0f172b] text-white px-6 py-3.5 rounded-full flex items-center gap-2.5 shadow-lg hover:bg-[#1d293d] transition-colors mx-auto font-medium"
                     >
                         <Play className="w-4 h-4" />
                         <span className="text-sm">Start Practice</span>

@@ -43,7 +43,7 @@ export function RecommendedLessonsCard({ pillarScores, onOpenLesson, onNavigateT
 
   return (
     <motion.div
-      className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-5"
+      className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-6"
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
@@ -53,7 +53,7 @@ export function RecommendedLessonsCard({ pillarScores, onOpenLesson, onNavigateT
         <div className="w-7 h-7 rounded-lg bg-[#6366f1]/10 flex items-center justify-center">
           <Sparkles className="w-3.5 h-3.5 text-[#6366f1]" />
         </div>
-        <p className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
+        <p className="text-sm text-[#0f172b] font-semibold">
           Recommended for you
         </p>
       </div>
@@ -72,19 +72,19 @@ export function RecommendedLessonsCard({ pillarScores, onOpenLesson, onNavigateT
               className="w-full flex items-center gap-3 p-3 rounded-xl border border-[#e2e8f0] hover:border-[#c7d2fe] hover:bg-[#f8faff] transition-all text-left cursor-pointer group"
             >
               <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs shrink-0"
-                style={{ backgroundColor: color, fontWeight: 700 }}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs shrink-0 font-bold"
+                style={{ backgroundColor: color }}
               >
                 {lesson.pillar.charAt(0)}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs text-[#0f172b] group-hover:text-[#6366f1] transition-colors" style={{ fontWeight: 600 }}>
+                <p className="text-xs text-[#0f172b] group-hover:text-[#6366f1] transition-colors font-semibold">
                   {lesson.title}
                 </p>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <span
-                    className="text-[10px] px-1.5 py-0.5 rounded"
-                    style={{ backgroundColor: `${color}18`, color, fontWeight: 600 }}
+                    className="text-[10px] px-1.5 py-0.5 rounded font-semibold"
+                    style={{ backgroundColor: `${color}18`, color }}
                   >
                     {lesson.pillar}
                   </span>
@@ -102,7 +102,7 @@ export function RecommendedLessonsCard({ pillarScores, onOpenLesson, onNavigateT
 
       {/* Link to full library */}
       <div className="mt-3 pt-3 border-t border-[#f1f5f9] flex items-center justify-between">
-        <span className="text-[10px] text-[#94a3b8]" style={{ fontWeight: 500 }}>
+        <span className="text-[10px] text-[#94a3b8] font-medium">
           {pending.length} lesson{pending.length !== 1 ? "s" : ""} suggested
         </span>
         {onNavigateToLibrary && (
@@ -111,7 +111,7 @@ export function RecommendedLessonsCard({ pillarScores, onOpenLesson, onNavigateT
             className="flex items-center gap-1 text-[11px] text-[#6366f1] hover:text-[#4f46e5] transition-colors cursor-pointer"
           >
             <BookOpen className="w-3 h-3" />
-            <span style={{ fontWeight: 600 }}>Lessons Library</span>
+            <span className="font-semibold">Lessons Library</span>
           </button>
         )}
       </div>

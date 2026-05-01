@@ -98,15 +98,15 @@ export function DashboardPage({
   // War Room monthly limit (5/month)
   const WAR_ROOM_LIMIT = 5;
   const warRoomCurrentMonth = new Date().toISOString().slice(0, 7);
-  const warRoomStoredMonth = (userProfile as any)?.war_room_month ?? null;
+  const warRoomStoredMonth = userProfile?.war_room_month ?? null;
   const warRoomCount = warRoomStoredMonth === warRoomCurrentMonth
-    ? ((userProfile as any)?.war_room_monthly_count ?? 0)
+    ? (userProfile?.war_room_monthly_count ?? 0)
     : 0;
   const warRoomExhausted = warRoomCount >= WAR_ROOM_LIMIT;
 
   // Derive computed values for Row 2 cards
-  const waPhrasesMastered = (userProfile as any)?.wa_phrases_mastered ?? 0;
-  const waVerified = !!(userProfile as any)?.whatsapp_verified;
+  const waPhrasesMastered = userProfile?.wa_phrases_mastered ?? 0;
+  const waVerified = !!userProfile?.whatsapp_verified;
   const scenarioCounts = data.persistedSessions.reduce<Record<string, number>>((acc, s) => {
     const t = s.scenarioType ?? "interview";
     acc[t] = (acc[t] ?? 0) + 1;
@@ -185,7 +185,7 @@ export function DashboardPage({
           <SRDashboardCard totalSessions={data.totalSessions} />
 
           {/* Emergency Prep / War Room */}
-          <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-5 flex flex-col">
+          <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-6 flex flex-col">
             <div className="flex items-center justify-between mb-3">
               <p className="text-xs font-medium uppercase tracking-wider text-[#94a3b8]">War Room</p>
               <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${warRoomExhausted ? "bg-red-50 text-red-500" : "bg-[#f0f4f8] text-[#62748e]"}`}>
@@ -234,8 +234,8 @@ export function DashboardPage({
                 progressionState={progressionLoading ? null : progressionState}
               />
               {(() => {
-                const pillarScores = (userProfile as any)?.stats?.pillarScores as Record<string, number> | null;
-                const sessionsCount = (userProfile as any)?.stats?.sessions_count ?? 0;
+                const pillarScores = userProfile?.stats?.pillarScores as Record<string, number> | null;
+                const sessionsCount = userProfile?.stats?.sessions_count ?? 0;
                 if (!pillarScores || sessionsCount < 1) return null;
                 return (
                   <RecommendedLessonsCard

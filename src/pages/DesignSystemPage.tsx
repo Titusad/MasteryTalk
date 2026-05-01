@@ -590,13 +590,13 @@ export function DesignSystemPage() {
         <p className="text-sm text-[#4B505B] mb-4" style={{ fontWeight: 500 }}>
           Informativas — Fondo pastel, sin interacción principal
         </p>
-        <div className="grid md:grid-cols-3 gap-5 mb-8">
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
           {[
             { bg: "bg-[#FFE9C7]", title: "Card Peach", icon: <Target className="w-6 h-6 text-white" /> },
             { bg: "bg-[#D9ECF0]", title: "Card Blue", icon: <MessageSquare className="w-6 h-6 text-white" /> },
             { bg: "bg-[#DBEDDF]", title: "Card Green", icon: <TrendingUp className="w-6 h-6 text-white" /> },
           ].map((c) => (
-            <div key={c.title} className={`${c.bg} rounded-3xl p-7`}>
+            <div key={c.title} className={`${c.bg} rounded-3xl p-8`}>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-11 h-11 rounded-xl bg-[#2d2d2d] flex items-center justify-center shrink-0">
                   {c.icon}

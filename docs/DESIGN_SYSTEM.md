@@ -73,11 +73,20 @@ As Tailwind classes: `font-light` · `font-normal` · `font-medium` · `font-sem
 > `font-semibold` (600) and `font-light` (300) are allowed **only as Tailwind classes**.
 > They are **prohibited** as inline `style={{ fontWeight: 600 }}`.
 
+### §2.4 Justified Font Exception — Noto Sans (IPA only)
+
+**File:** `src/features/shadowing/ui/PhraseCard.tsx`
+
+Noto Sans is loaded inline via `style={{ fontFamily: "'Noto Sans', sans-serif" }}` **only** for rendering IPA phonetic transcription characters. System fonts (Poppins, Inter) lack consistent coverage of the IPA Unicode range, which causes garbled or missing characters for phoneme symbols like /ʃ/, /ɪ/, /θ/.
+
+**Rule:** `fontFamily: Noto Sans` is allowed **exclusively** in elements that display IPA transcription (`phraseIpa` content). It is prohibited in any other context.
+
 ### §2.3 Prohibited
 
 - ❌ `text-[13px]`, `text-[15px]` or any arbitrary pixel values
 - ❌ `style={{ fontWeight: ... }}` inline — always use Tailwind (`font-medium`, `font-semibold`, etc.)
 - ❌ `style={{ fontSize: '...' }}` inline — use Tailwind scale only
+- ❌ `style={{ fontFamily: ... }}` inline — exception: Noto Sans for IPA (§2.4 only)
 
 ---
 
@@ -363,6 +372,7 @@ HEADER:     AppHeader from shared/ui
 
 | Version | Date | Changes |
 |---------|------|---------|
+| v1.5 | 2026-04-30 | §2.3 add fontFamily to prohibited inline styles. §2.4 document Noto Sans exception for IPA transcription in PhraseCard. |
 | v1.4 | 2026-04-28 | §2.2 typography: clarify font-semibold/font-light allowed as Tailwind classes, only inline style prohibited. §6.9 add NarrationToggle. §6.10 NarrationToggle spec. |
 | v1.3 | 2026-04-21 | §6.7 SelfIntroContextScreen, §6.8 PathRecommendationCard — new components with visual rules |
 | v1.2 | 2026-04-21 | §6.5 Pills/Badges — canonical dark pill style, one variant only |

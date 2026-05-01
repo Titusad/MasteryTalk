@@ -48,4 +48,18 @@ export interface OnboardingProfile {
   lastJobDescription?: string;
   /** True after the user completes their first practice session end-to-end */
   narrationCompleted?: boolean;
+  /** WhatsApp verification status */
+  whatsapp_verified?: boolean;
+  /** WhatsApp phrases mastered via spaced-repetition */
+  wa_phrases_mastered?: number;
+  /** War Room session month tracker (ISO month string, e.g. "2026-04") */
+  war_room_month?: string | null;
+  /** War Room sessions used in current month */
+  war_room_monthly_count?: number;
+  /** Aggregated stats persisted from sessions */
+  stats?: {
+    pillarScores?: Record<string, number>;
+    sessions_count?: number;
+    [key: string]: unknown;
+  };
 }

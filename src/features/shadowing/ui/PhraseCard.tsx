@@ -77,7 +77,7 @@ export function PhraseCard({
             linkAfterMap.get(clean) === nextClean;
 
           const linkMark = showLink ? (
-            <span className="text-[#22c55e] text-base mx-[-2px] select-none" style={{ fontWeight: 700 }} aria-hidden>‿</span>
+            <span className="text-[#22c55e] text-base mx-[-2px] select-none font-bold"  aria-hidden>‿</span>
           ) : null;
 
           // Stressed multi-syllable words: bold only the stressed syllable
@@ -87,7 +87,7 @@ export function PhraseCard({
               <span key={i}>
                 {i > 0 ? " " : ""}
                 {before}
-                <span style={{ fontWeight: 700 }}>{stressed}</span>
+                <span className="font-bold">{stressed}</span>
                 {after}
                 {linkMark}
               </span>

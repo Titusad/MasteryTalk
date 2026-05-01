@@ -129,7 +129,7 @@ export function BriefingStepperCarousel({
             {/* Progress row — counter + step dots + mastered, all in one line */}
             <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                    <span className="text-xs text-[#62748e] shrink-0" style={{ fontWeight: 500 }}>
+                    <span className="text-xs text-[#62748e] shrink-0 font-medium" >
                         {cardLabel} {activeQuestionIdx + 1} of {totalQuestions}
                     </span>
 
@@ -157,7 +157,7 @@ export function BriefingStepperCarousel({
                         ))}
                     </div>
 
-                    <span className="text-xs text-[#62748e] shrink-0" style={{ fontWeight: 500 }}>
+                    <span className="text-xs text-[#62748e] shrink-0 font-medium" >
                         {completedQuestions.size}/{totalQuestions} {completedLabel}
                     </span>
                 </div>
@@ -193,7 +193,7 @@ export function BriefingStepperCarousel({
                                 <div className="w-16 h-16 rounded-full bg-emerald-50 border-2 border-emerald-200 flex items-center justify-center">
                                     <PartyPopper className="w-8 h-8 text-emerald-500" />
                                 </div>
-                                <p className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
+                                <p className="text-sm text-[#0f172b] font-semibold" >
                                     {cardLabel} {completedLabel}!
                                 </p>
                             </motion.div>
@@ -296,8 +296,7 @@ export function BriefingStepperCarousel({
                 {canSkip && (
                     <motion.button
                         onClick={handleSkip}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] text-[#62748e] bg-[#f1f5f9] border border-[#e2e8f0] hover:bg-[#e2e8f0] hover:text-[#0f172b] transition-colors"
-                        style={{ fontWeight: 500 }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] text-[#62748e] bg-[#f1f5f9] border border-[#e2e8f0] hover:bg-[#e2e8f0] hover:text-[#0f172b] transition-colors font-medium"
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.3 }}

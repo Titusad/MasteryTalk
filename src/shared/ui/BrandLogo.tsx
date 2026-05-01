@@ -4,12 +4,8 @@ export function BrandLogo({ light = false }: { light?: boolean }) {
     return (
         <div className="flex items-center gap-0">
             <span
-                className="text-xl tracking-tight"
-                style={{
-                    fontFamily: "'Poppins', sans-serif",
-                    fontWeight: 700,
-                    color: light ? "#fff" : "#1C0B1E",
-                }}
+                className="text-xl tracking-tight font-bold"
+                style={{ color: light ? "#fff" : "#1C0B1E" }}
             >
                 MasteryTalk
             </span>
@@ -18,10 +14,8 @@ export function BrandLogo({ light = false }: { light?: boolean }) {
                 style={{ background: COLORS.brandGradient }}
             />
             <span
-                className="text-base"
+                className="text-base font-montserrat font-bold"
                 style={{
-                    fontFamily: "'Montserrat', sans-serif",
-                    fontWeight: 700,
                     background: COLORS.brandGradient,
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",
@@ -32,4 +26,3 @@ export function BrandLogo({ light = false }: { light?: boolean }) {
         </div>
     );
 }
-

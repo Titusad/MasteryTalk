@@ -390,7 +390,7 @@ export function ShadowingModal({
                         <PartyPopper className="w-8 h-8 text-white" />
                     </motion.div>
 
-                    <h2 className="text-2xl text-[#0f172b] mb-2" style={{ fontWeight: 700 }}>
+                    <h2 className="text-2xl text-[#0f172b] mb-2 font-bold" >
                         {mode === "review" ? "Review Complete" : "Practice Complete"}
                     </h2>
                     <p className="text-sm text-[#64748b] mb-6">
@@ -407,7 +407,7 @@ export function ShadowingModal({
                         >
                             <BookmarkCheck className="w-5 h-5 text-[#6366f1] shrink-0 mt-0.5" />
                             <div className="text-left">
-                                <p className="text-sm text-[#4338ca]" style={{ fontWeight: 600 }}>
+                                <p className="text-sm text-[#4338ca] font-semibold" >
                                     {flaggedForSR.size} phrase{flaggedForSR.size !== 1 ? "s" : ""} saved for review
                                 </p>
                                 <p className="text-[11px] text-[#6366f1]/70 mt-0.5 leading-relaxed">
@@ -420,21 +420,21 @@ export function ShadowingModal({
                     {/* Stats */}
                     <div className="flex items-center justify-center gap-0 mb-8">
                         <div className="flex-1 text-center">
-                            <p className="text-3xl text-[#0f172b]" style={{ fontWeight: 700 }}>
+                            <p className="text-3xl text-[#0f172b] font-bold" >
                                 {Math.round(summaryStats.avgScore)}%
                             </p>
                             <p className="text-xs text-[#94a3b8] mt-1">Avg Score</p>
                         </div>
                         <div className="w-px h-10 bg-[#e2e8f0]" />
                         <div className="flex-1 text-center">
-                            <p className="text-3xl text-[#22c55e]" style={{ fontWeight: 700 }}>
+                            <p className="text-3xl text-[#22c55e] font-bold" >
                                 {summaryStats.passed}
                             </p>
                             <p className="text-xs text-[#94a3b8] mt-1">Passed</p>
                         </div>
                         <div className="w-px h-10 bg-[#e2e8f0]" />
                         <div className="flex-1 text-center">
-                            <p className="text-3xl text-[#6366f1]" style={{ fontWeight: 700 }}>
+                            <p className="text-3xl text-[#6366f1] font-bold" >
                                 {summaryStats.practiced}
                             </p>
                             <p className="text-xs text-[#94a3b8] mt-1">Practiced</p>
@@ -445,7 +445,6 @@ export function ShadowingModal({
                     <button
                         onClick={onClose}
                         className="w-full py-3.5 rounded-xl bg-[#0f172b] text-white text-sm hover:bg-[#1e293b] transition-colors cursor-pointer"
-                        style={{ fontWeight: 600 }}
                     >
                         Back to Feedback
                     </button>
@@ -478,7 +477,7 @@ export function ShadowingModal({
                             <div className="w-9 h-9 rounded-xl bg-[#f1f5f9] flex items-center justify-center">
                                 <Volume2 className="w-4.5 h-4.5 text-[#0f172b]" />
                             </div>
-                            <span className="text-sm text-[#6366f1]" style={{ fontWeight: 600 }}>
+                            <span className="text-sm text-[#6366f1] font-semibold" >
                                 Phrase {currentIndex + 1} of {total}
                             </span>
                         </div>
@@ -536,7 +535,7 @@ export function ShadowingModal({
                                 >
                                     <Play className="w-7 h-7 text-white ml-1" />
                                 </button>
-                                <p className="text-xs text-[#6366f1] mt-3" style={{ fontWeight: 500 }}>
+                                <p className="text-xs text-[#6366f1] mt-3 font-medium" >
                                     Press play to start
                                 </p>
                             </motion.div>
@@ -558,7 +557,7 @@ export function ShadowingModal({
                                     <Volume2 className="w-6 h-6 text-[#6366f1]" />
                                 </button>
                                 <WaveformBars color="#6366f1" count={7} />
-                                <p className="text-sm text-[#6366f1] mt-3" style={{ fontWeight: 500 }}>
+                                <p className="text-sm text-[#6366f1] mt-3 font-medium" >
                                     Listening to AI...
                                 </p>
                             </motion.div>
@@ -582,13 +581,12 @@ export function ShadowingModal({
                                 >
                                     <Mic className="w-7 h-7 text-white" />
                                 </button>
-                                <p className="text-xs text-[#0f172b] mt-3" style={{ fontWeight: 500 }}>
+                                <p className="text-xs text-[#0f172b] mt-3 font-medium" >
                                     Tap to record
                                 </p>
                                 <button
                                     onClick={playAudio}
-                                    className="mt-4 flex items-center gap-1.5 text-xs text-[#94a3b8] hover:text-[#6366f1] transition-colors cursor-pointer"
-                                    style={{ fontWeight: 500 }}
+                                    className="mt-4 flex items-center gap-1.5 text-xs text-[#94a3b8] hover:text-[#6366f1] transition-colors cursor-pointer font-medium"
                                 >
                                     <Volume2 className="w-3.5 h-3.5" />
                                     Listen again
@@ -605,7 +603,7 @@ export function ShadowingModal({
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
                             >
-                                <p className="text-sm text-[#ef4444] mb-3" style={{ fontWeight: 600 }}>
+                                <p className="text-sm text-[#ef4444] mb-3 font-semibold" >
                                     Recording...
                                 </p>
                                 <WaveformBars color="#ef4444" count={7} />
@@ -615,7 +613,7 @@ export function ShadowingModal({
                                 >
                                     <Square className="w-5 h-5 text-white" fill="white" />
                                 </button>
-                                <p className="text-xs text-[#94a3b8] mt-3" style={{ fontWeight: 500 }}>
+                                <p className="text-xs text-[#94a3b8] mt-3 font-medium" >
                                     Press to stop
                                 </p>
                             </motion.div>
@@ -631,7 +629,7 @@ export function ShadowingModal({
                                 exit={{ opacity: 0 }}
                             >
                                 <Loader2 className="w-8 h-8 text-[#6366f1] animate-spin mb-3" />
-                                <p className="text-sm text-[#64748b]" style={{ fontWeight: 500 }}>
+                                <p className="text-sm text-[#64748b] font-medium" >
                                     Analyzing pronunciation...
                                 </p>
                             </motion.div>
@@ -661,7 +659,7 @@ export function ShadowingModal({
                                         {Math.round(result.accuracy)}%
                                     </span>
                                     <div className="min-w-0">
-                                        <p className="text-sm truncate" style={{ fontWeight: 700, color: scoreColor(result.accuracy) }}>
+                                        <p className="text-sm truncate" style={{ color: scoreColor(result.accuracy) }}>
                                             {scoreLabel(result.accuracy)}
                                         </p>
                                         {result.accuracy < 60 && (
@@ -675,7 +673,7 @@ export function ShadowingModal({
                                 {/* ── Word-level analysis (HERO) ── */}
                                 {result.wordResults && result.wordResults.length > 0 && (
                                     <div className="w-full mt-4">
-                                        <p className="text-sm text-[#334155] mb-2" style={{ fontWeight: 600 }}>
+                                        <p className="text-sm text-[#334155] mb-2 font-semibold" >
                                             Word-by-word breakdown
                                         </p>
                                         <div className="flex flex-wrap gap-2 p-4 bg-[#f8fafc] rounded-xl border border-[#e2e8f0]">
@@ -755,15 +753,13 @@ export function ShadowingModal({
                                     <button
                                         onClick={goNext}
                                         className="w-full py-3.5 rounded-xl bg-[#6366f1] text-white text-sm hover:bg-[#4f46e5] transition-colors cursor-pointer flex items-center justify-center gap-2"
-                                        style={{ fontWeight: 600 }}
                                     >
                                         {currentIndex + 1 >= total ? "Finish" : "Next phrase"}
                                         <ChevronRight className="w-4 h-4" />
                                     </button>
                                     <button
                                         onClick={retry}
-                                        className="w-full py-3 rounded-xl bg-[#f1f5f9] text-[#64748b] text-sm hover:bg-[#e2e8f0] transition-colors cursor-pointer flex items-center justify-center gap-2"
-                                        style={{ fontWeight: 500 }}
+                                        className="w-full py-3 rounded-xl bg-[#f1f5f9] text-[#64748b] text-sm hover:bg-[#e2e8f0] transition-colors cursor-pointer flex items-center justify-center gap-2 font-medium"
                                     >
                                         <RotateCcw className="w-3.5 h-3.5" />
                                         Try again
@@ -784,13 +780,12 @@ export function ShadowingModal({
                                 <div className="w-12 h-12 rounded-full bg-[#fef2f2] flex items-center justify-center mb-3">
                                     <AlertTriangle className="w-6 h-6 text-[#ef4444]" />
                                 </div>
-                                <p className="text-sm text-[#dc2626] text-center mb-4" style={{ fontWeight: 500 }}>
+                                <p className="text-sm text-[#dc2626] text-center mb-4 font-medium" >
                                     {errorMsg}
                                 </p>
                                 <button
                                     onClick={retry}
-                                    className="px-5 py-2.5 rounded-xl bg-[#6366f1] text-white text-sm hover:bg-[#4f46e5] transition-colors cursor-pointer flex items-center gap-2"
-                                    style={{ fontWeight: 500 }}
+                                    className="px-5 py-2.5 rounded-xl bg-[#6366f1] text-white text-sm hover:bg-[#4f46e5] transition-colors cursor-pointer flex items-center gap-2 font-medium"
                                 >
                                     <RotateCcw className="w-3.5 h-3.5" />
                                     Try Again

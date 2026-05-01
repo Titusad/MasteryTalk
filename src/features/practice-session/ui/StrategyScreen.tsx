@@ -13,10 +13,8 @@
 
 import { motion, AnimatePresence } from "motion/react";
 import {
-  BookOpen,
   Lightbulb,
   ArrowRight,
-  ArrowLeft,
   SkipForward,
   Copy,
   Check,
@@ -25,6 +23,7 @@ import {
   Globe,
 } from "lucide-react";
 import { useState, useCallback, useMemo } from "react";
+import DOMPurify from "dompurify";
 import type {
   LevelMethodology,
   BriefLocale,
@@ -109,10 +108,7 @@ export function StrategyScreen({
     : methodology.anchorPhrases;
 
   return (
-    <div
-      className="w-full min-h-full flex flex-col bg-[#f0f4f8] relative overflow-hidden"
-     
-    >
+    <div className="w-full min-h-full flex flex-col bg-[#f0f4f8] relative overflow-hidden">
       <main className="relative w-full max-w-[768px] mx-auto px-6 pt-6 pb-20">
 
         {/* Header badge + locale toggle */}
@@ -129,8 +125,7 @@ export function StrategyScreen({
               <div className="relative">
                 <button
                   onClick={() => setShowLocalePicker((v) => !v)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#e2e8f0] bg-white text-xs text-[#62748e] hover:border-[#6366f1] hover:text-[#4f46e5] transition-all"
-                  style={{ fontWeight: 500 }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#e2e8f0] bg-white text-xs text-[#62748e] hover:border-[#6366f1] hover:text-[#4f46e5] transition-all font-medium"
                   aria-label="Change strategy language"
                 >
                   <Globe className="w-3.5 h-3.5" />
@@ -153,11 +148,11 @@ export function StrategyScreen({
                             setBriefLocale(loc);
                             setShowLocalePicker(false);
                           }}
-                          className={`w-full flex items-center gap-2.5 px-4 py-2.5 text-xs transition-colors text-left ${activeLocale === loc
-                            ? "bg-indigo-50 text-[#4f46e5]"
-                            : "text-[#334155] hover:bg-[#f8fafc]"
-                            }`}
-                          style={{ fontWeight: activeLocale === loc ? 600 : 500 }}
+                          className={`w-full flex items-center gap-2.5 px-4 py-2.5 text-xs transition-colors text-left ${
+                            activeLocale === loc
+                              ? "bg-indigo-50 text-[#4f46e5] font-semibold"
+                              : "text-[#334155] hover:bg-[#f8fafc] font-medium"
+                          }`}
                         >
                           <span className="text-base">
                             {LOCALE_META[loc].flag}
@@ -177,7 +172,7 @@ export function StrategyScreen({
 
           <h1
             className="text-2xl md:text-[28px] text-[#0f172b] mb-2"
-            style={{ fontWeight: 300, lineHeight: 1.2 }}
+            style={{ lineHeight: 1.2 }}
           >
             {methodology.name}
           </h1>
@@ -195,10 +190,7 @@ export function StrategyScreen({
         >
           <div className="px-6 py-3 bg-[#f8fafc] border-b border-[#f1f5f9] flex items-center gap-2">
             <Lightbulb className="w-4 h-4 text-amber-500" />
-            <span
-              className="text-xs text-[#62748e]"
-              style={{ fontWeight: 600 }}
-            >
+            <span className="text-xs text-[#62748e] font-semibold">
               The Framework
             </span>
           </div>
@@ -208,13 +200,13 @@ export function StrategyScreen({
                 key={i}
                 className="text-sm text-[#334155] leading-relaxed mb-3 last:mb-0"
                 dangerouslySetInnerHTML={{
-                  __html: paragraph
-                    .replace(/\n(\*\*)/g, "<br/><br/>$1")
-                    .replace(
-                      /\*\*(.*?)\*\*/g,
-                      '<strong class="text-[#0f172b]">$1</strong>'
-                    )
-                    .replace(/\\n/g, ""),
+                  __html: DOMPurify.sanitize(
+                    paragraph
+                      .replace(/\n(\*\*)/g, "<br/><br/>$1")
+                      .replace(/\*\*(.*?)\*\*/g, '<strong class="text-[#0f172b]">$1</strong>')
+                      .replace(/\\n/g, ""),
+                    { ALLOWED_TAGS: ["br", "strong"], ALLOWED_ATTR: ["class"] }
+                  ),
                 }}
               />
             ))}
@@ -232,10 +224,7 @@ export function StrategyScreen({
           <div className="bg-white rounded-2xl border border-red-100 shadow-sm overflow-hidden">
             <div className="px-6 py-2.5 bg-red-50/60 border-b border-red-100 flex items-center gap-2">
               <X className="w-3.5 h-3.5 text-red-400" />
-              <span
-                className="text-xs text-red-600"
-                style={{ fontWeight: 600 }}
-              >
+              <span className="text-xs text-red-600 font-semibold">
                 {personalizedPattern?.bad?.label || displayBadLabel}
               </span>
             </div>
@@ -260,15 +249,12 @@ export function StrategyScreen({
             <div className="px-6 py-2.5 bg-emerald-50/60 border-b border-emerald-100 flex items-center gap-2 justify-between">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                <span
-                  className="text-xs text-emerald-700"
-                  style={{ fontWeight: 600 }}
-                >
+                <span className="text-xs text-emerald-700 font-semibold">
                   {personalizedPattern?.good?.label || displayGoodLabel}
                 </span>
               </div>
               {personalizedPattern && (
-                <span className="text-[10px] text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full" style={{ fontWeight: 600 }}>
+                <span className="text-[10px] text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full font-semibold">
                   Personalized for you
                 </span>
               )}
@@ -299,10 +285,7 @@ export function StrategyScreen({
           transition={{ delay: 0.3, duration: 0.35 }}
         >
           <div className="px-6 py-3 bg-[#f8fafc] border-b border-[#f1f5f9] flex items-center gap-2">
-            <span
-              className="text-xs text-[#62748e]"
-              style={{ fontWeight: 600 }}
-            >
+            <span className="text-xs text-[#62748e] font-semibold">
               Power Phrases — use these during your session
             </span>
           </div>
@@ -313,10 +296,7 @@ export function StrategyScreen({
                 onClick={() => handleCopy(phrase, i)}
                 className="w-full flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-[#f8fafc] border border-[#e2e8f0] hover:border-[#6366f1] hover:bg-indigo-50/30 transition-all group text-left"
               >
-                <span
-                  className="text-sm text-[#334155] group-hover:text-[#0f172b] transition-colors"
-                  style={{ fontWeight: 500 }}
-                >
+                <span className="text-sm text-[#334155] group-hover:text-[#0f172b] transition-colors font-medium">
                   {phrase}
                 </span>
                 {copiedIdx === i ? (
@@ -337,10 +317,7 @@ export function StrategyScreen({
           transition={{ delay: 0.35, duration: 0.35 }}
         >
           <Lightbulb className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
-          <p
-            className="text-sm text-amber-900 leading-relaxed"
-            style={{ fontWeight: 500 }}
-          >
+          <p className="text-sm text-amber-900 leading-relaxed font-medium">
             {displayCoachTip}
           </p>
         </motion.div>
@@ -354,16 +331,14 @@ export function StrategyScreen({
         >
           <button
             onClick={onReady}
-            className="flex items-center gap-3 px-10 py-5 rounded-full text-xl bg-[#0f172b] text-white hover:bg-[#1d293d] transition-colors shadow-[0px_10px_15px_rgba(0,0,0,0.1)]"
-            style={{ fontWeight: 500 }}
+            className="flex items-center gap-3 px-10 py-5 rounded-full text-xl bg-[#0f172b] text-white hover:bg-[#1d293d] transition-colors shadow-[0px_10px_15px_rgba(0,0,0,0.1)] font-medium"
           >
             I'm Ready — Continue
             <ArrowRight className="w-6 h-6" />
           </button>
           <button
             onClick={onSkip}
-            className="flex items-center gap-1.5 text-sm text-[#62748e] hover:text-[#0f172b] transition-colors"
-            style={{ fontWeight: 500 }}
+            className="flex items-center gap-1.5 text-sm text-[#62748e] hover:text-[#0f172b] transition-colors font-medium"
           >
             <SkipForward className="w-3.5 h-3.5" />
             I already know this — Skip

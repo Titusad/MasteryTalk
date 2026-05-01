@@ -21,7 +21,7 @@ export function ConceptStep({ data, footer }: Props) {
           <BookOpen className="w-4 h-4 text-white" />
         </span>
         <div>
-          <p className="text-[#0f172b] text-base md:text-lg leading-snug" style={{ fontWeight: 600 }}>
+          <p className="text-[#0f172b] text-base md:text-lg leading-snug font-semibold" >
             {data.title}
           </p>
           {data.subtitle && (
@@ -41,10 +41,10 @@ export function ConceptStep({ data, footer }: Props) {
           <div className="mt-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 flex items-start gap-3">
             <Lightbulb className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
             <div>
-              <p className="text-[11px] text-amber-700 uppercase tracking-wider mb-1" style={{ fontWeight: 700 }}>
+              <p className="text-[11px] text-amber-700 uppercase tracking-wider mb-1 font-bold" >
                 Mental Model
               </p>
-              <p className="text-sm text-amber-800 leading-relaxed" style={{ fontWeight: 500 }}>
+              <p className="text-sm text-amber-800 leading-relaxed font-medium" >
                 {data.mentalModel}
               </p>
             </div>

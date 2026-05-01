@@ -771,8 +771,7 @@ function VoicePractice({
           <div className="flex items-center gap-2">
             {isTtsPlaying && (
               <span
-                className="flex items-center gap-1.5 text-xs text-[#50C878] bg-[#f0fdf4] px-2.5 py-1 rounded-full"
-                style={{ fontWeight: 500 }}
+                className="flex items-center gap-1.5 text-xs text-[#50C878] bg-[#f0fdf4] px-2.5 py-1 rounded-full font-medium"
               >
                 <div className="flex items-end gap-[2px] h-3">
                   {[0, 1, 2, 3].map((i) => (
@@ -787,8 +786,7 @@ function VoicePractice({
               </span>
             )}
             <span
-              className="text-xs text-[#62748e] bg-[#f1f5f9] px-3 py-1 rounded-full"
-              style={{ fontWeight: 500 }}
+              className="text-xs text-[#62748e] bg-[#f1f5f9] px-3 py-1 rounded-full font-medium"
             >
               Live Conversation
             </span>
@@ -833,8 +831,7 @@ function VoicePractice({
           >
             <AudioLines className="w-3.5 h-3.5 text-[#50C878]" />
             <span
-              className="text-xs text-[#4B505B]"
-              style={{ fontWeight: 500 }}
+              className="text-xs text-[#4B505B] font-medium"
             >
               We're live — listen, think, respond naturally
             </span>
@@ -1090,13 +1087,11 @@ function VoicePractice({
                           }}
                         >
                           <p
-                            className="text-xs text-[#15803d]"
-                            style={{ fontWeight: 500 }}
+                            className="text-xs text-[#15803d] font-medium"
                           >
                              Try opening with:{" "}
                             <span
                               className="text-[#0f172b] italic"
-                              style={{ fontWeight: 600 }}
                             >
                               "{trySaying.starter}"
                             </span>
@@ -1104,8 +1099,7 @@ function VoicePractice({
                           {trySaying.keywords &&
                             trySaying.keywords.length > 0 && (
                               <p
-                                className="text-[11px] text-[#0f172b] mt-1.5"
-                                style={{ fontWeight: 500 }}
+                                className="text-[11px] text-[#0f172b] mt-1.5 font-medium"
                               >
                                 Key{" "}
                                 <span
@@ -1330,8 +1324,7 @@ function VoicePractice({
           <div className="h-5 flex items-center justify-center">
             {isProcessing && !recorder.isRecording && (
               <p
-                className="text-sm text-[#45556c] animate-fade-in"
-                style={{ fontWeight: 500 }}
+                className="text-sm text-[#45556c] animate-fade-in font-medium"
               >
                  Processing what you said...
               </p>
@@ -1368,8 +1361,7 @@ function VoicePractice({
                     ...pronunciationDataRef.current,
                   ]);
                 }}
-                className="w-full py-3.5 rounded-full flex items-center justify-center gap-2.5 transition-all shadow-lg bg-[#2d2d2d] text-white hover:bg-[#1a1a1a]"
-                style={{ fontWeight: 500 }}
+                className="w-full py-3.5 rounded-full flex items-center justify-center gap-2.5 transition-all shadow-lg bg-[#2d2d2d] text-white hover:bg-[#1a1a1a] font-medium"
               >
                  Show me my results
                  <ArrowRight className="w-4 h-4" />

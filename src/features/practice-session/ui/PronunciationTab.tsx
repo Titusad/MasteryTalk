@@ -114,15 +114,14 @@ function ScoreGauge({
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <span
                         className="text-xl text-white"
-                        style={{ fontWeight: 700, color }}
+                        style={{ color }}
                     >
                         {Math.round(score)}
                     </span>
                 </div>
             </div>
             <p
-                className="text-xs text-white/60 mt-2 text-center"
-                style={{ fontWeight: 500 }}
+                className="text-xs text-white/60 mt-2 text-center font-medium"
             >
                 {label}
             </p>
@@ -373,17 +372,17 @@ function ShadowingDrill({ phrase, onScoreUpdate }: { phrase: string; onScoreUpda
                         <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${hasListened ? 'bg-[#22c55e] text-white' : 'bg-[#6366f1] text-white'}`} style={{ fontWeight: 700 }}>
                             {hasListened ? '✓' : '1'}
                         </div>
-                        <span className="text-[10px] text-[#45556c]" style={{ fontWeight: 600 }}>Listen</span>
+                        <span className="text-[10px] text-[#45556c] font-semibold" >Listen</span>
                     </div>
                     <div className="h-px flex-1 bg-[#e2e8f0]" />
                     <div className="flex items-center gap-1.5">
-                        <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] bg-[#e2e8f0] text-[#94a3b8]" style={{ fontWeight: 700 }}>2</div>
-                        <span className="text-[10px] text-[#94a3b8]" style={{ fontWeight: 500 }}>Record</span>
+                        <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] bg-[#e2e8f0] text-[#94a3b8] font-bold" >2</div>
+                        <span className="text-[10px] text-[#94a3b8] font-medium" >Record</span>
                     </div>
                     <div className="h-px flex-1 bg-[#e2e8f0]" />
                     <div className="flex items-center gap-1.5">
-                        <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] bg-[#e2e8f0] text-[#94a3b8]" style={{ fontWeight: 700 }}>3</div>
-                        <span className="text-[10px] text-[#94a3b8]" style={{ fontWeight: 500 }}>Compare</span>
+                        <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] bg-[#e2e8f0] text-[#94a3b8] font-bold" >3</div>
+                        <span className="text-[10px] text-[#94a3b8] font-medium" >Compare</span>
                     </div>
                 </div>
 
@@ -394,7 +393,6 @@ function ShadowingDrill({ phrase, onScoreUpdate }: { phrase: string; onScoreUpda
                             ? "bg-[#0f172b] text-white"
                             : "bg-gradient-to-r from-[#6366f1] to-[#14b8a6] text-white hover:from-[#4f46e5] hover:to-[#0f172b]"
                         }`}
-                    style={{ fontWeight: 500 }}
                 >
                     {isPlaying ? (
                         <>
@@ -418,7 +416,6 @@ function ShadowingDrill({ phrase, onScoreUpdate }: { phrase: string; onScoreUpda
                             ? "bg-[#0f172b] text-white hover:bg-[#1e293b] shadow-sm"
                             : "bg-[#f1f5f9] text-[#94a3b8] hover:bg-[#e2e8f0] hover:text-[#64748b]"
                         }`}
-                    style={{ fontWeight: 500 }}
                 >
                     <Mic className="w-4 h-4" />
                     <span className="text-sm">
@@ -437,7 +434,7 @@ function ShadowingDrill({ phrase, onScoreUpdate }: { phrase: string; onScoreUpda
                 <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                         <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
-                        <p className="text-sm text-red-600" style={{ fontWeight: 600 }}>
+                        <p className="text-sm text-red-600 font-semibold" >
                             Recording... Repeat the phrase
                         </p>
                     </div>
@@ -446,7 +443,7 @@ function ShadowingDrill({ phrase, onScoreUpdate }: { phrase: string; onScoreUpda
                         className="bg-red-500 text-white px-3 py-1.5 rounded-lg flex items-center gap-1.5 hover:bg-red-600 transition-colors cursor-pointer"
                     >
                         <Square className="w-3 h-3" />
-                        <span className="text-xs" style={{ fontWeight: 500 }}>
+                        <span className="text-xs font-medium" >
                             Stop
                         </span>
                     </button>
@@ -463,7 +460,7 @@ function ShadowingDrill({ phrase, onScoreUpdate }: { phrase: string; onScoreUpda
         return (
             <div className="mt-3 bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-4 flex items-center justify-center gap-2">
                 <Loader2 className="w-4 h-4 text-[#6366f1] animate-spin" />
-                <p className="text-sm text-[#45556c]" style={{ fontWeight: 500 }}>
+                <p className="text-sm text-[#45556c] font-medium" >
                     Analyzing your pronunciation...
                 </p>
             </div>
@@ -476,14 +473,13 @@ function ShadowingDrill({ phrase, onScoreUpdate }: { phrase: string; onScoreUpda
             <div className="mt-3 bg-[#fef2f2] border border-[#fecaca] rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-2">
                     <AlertTriangle className="w-4 h-4 text-[#ef4444]" />
-                    <p className="text-sm text-[#dc2626]" style={{ fontWeight: 500 }}>
+                    <p className="text-sm text-[#dc2626] font-medium" >
                         {errorMsg}
                     </p>
                 </div>
                 <button
                     onClick={() => { setStep("listen"); setErrorMsg(""); }}
-                    className="flex items-center gap-1.5 text-xs text-[#6366f1] hover:text-[#4f46e5] transition-colors cursor-pointer mt-1"
-                    style={{ fontWeight: 500 }}
+                    className="flex items-center gap-1.5 text-xs text-[#6366f1] hover:text-[#4f46e5] transition-colors cursor-pointer mt-1 font-medium"
                 >
                     <RotateCcw className="w-3 h-3" />
                     Try Again
@@ -504,32 +500,31 @@ function ShadowingDrill({ phrase, onScoreUpdate }: { phrase: string; onScoreUpda
             {/* Step indicator showing completion */}
             <div className="flex items-center gap-4 mb-3">
                 <div className="flex items-center gap-1.5">
-                    <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] bg-[#22c55e] text-white" style={{ fontWeight: 700 }}>✓</div>
-                    <span className="text-[10px] text-[#45556c]" style={{ fontWeight: 500 }}>Listen</span>
+                    <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] bg-[#22c55e] text-white font-bold" >✓</div>
+                    <span className="text-[10px] text-[#45556c] font-medium" >Listen</span>
                 </div>
                 <div className="h-px flex-1 bg-[#22c55e]" />
                 <div className="flex items-center gap-1.5">
-                    <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] bg-[#22c55e] text-white" style={{ fontWeight: 700 }}>✓</div>
-                    <span className="text-[10px] text-[#45556c]" style={{ fontWeight: 500 }}>Record</span>
+                    <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] bg-[#22c55e] text-white font-bold" >✓</div>
+                    <span className="text-[10px] text-[#45556c] font-medium" >Record</span>
                 </div>
                 <div className="h-px flex-1 bg-[#22c55e]" />
                 <div className="flex items-center gap-1.5">
-                    <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] bg-[#22c55e] text-white" style={{ fontWeight: 700 }}>3</div>
-                    <span className="text-[10px] text-[#45556c]" style={{ fontWeight: 600 }}>Compare</span>
+                    <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] bg-[#22c55e] text-white font-bold" >3</div>
+                    <span className="text-[10px] text-[#45556c] font-semibold" >Compare</span>
                 </div>
             </div>
 
             <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-[#22c55e]" />
-                    <p className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
+                    <p className="text-sm text-[#0f172b] font-semibold" >
                         Your Result
                     </p>
                 </div>
                 <button
                     onClick={resetDrill}
-                    className="flex items-center gap-1 text-xs text-[#6366f1] hover:text-[#4f46e5] transition-colors cursor-pointer"
-                    style={{ fontWeight: 500 }}
+                    className="flex items-center gap-1 text-xs text-[#6366f1] hover:text-[#4f46e5] transition-colors cursor-pointer font-medium"
                 >
                     <RotateCcw className="w-3 h-3" />
                     Try Again
@@ -550,7 +545,7 @@ function ShadowingDrill({ phrase, onScoreUpdate }: { phrase: string; onScoreUpda
                     >
                         <p
                             className="text-lg"
-                            style={{ fontWeight: 700, color: scoreColor(s.value) }}
+                            style={{ color: scoreColor(s.value) }}
                         >
                             {Math.round(s.value)}
                         </p>
@@ -598,8 +593,7 @@ function PlayableWordPill({ word, delay }: { word: string; delay: number }) {
                     setIsPlaying(false);
                 }
             }}
-            className="flex items-center gap-1.5 bg-[#f59e0b]/15 border border-[#f59e0b]/30 text-[#fbbf24] text-sm px-3 py-1.5 rounded-lg hover:bg-[#f59e0b]/25 transition-colors cursor-pointer"
-            style={{ fontWeight: 500 }}
+            className="flex items-center gap-1.5 bg-[#f59e0b]/15 border border-[#f59e0b]/30 text-[#fbbf24] text-sm px-3 py-1.5 rounded-lg hover:bg-[#f59e0b]/25 transition-colors cursor-pointer font-medium"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay }}
@@ -662,7 +656,7 @@ export function PronunciationTab({
                 animate={{ opacity: 1, y: 0 }}
             >
                 <Mic className="w-12 h-12 text-white/20 mx-auto mb-4" />
-                <h3 className="text-white text-lg mb-2" style={{ fontWeight: 500 }}>
+                <h3 className="text-white text-lg mb-2 font-medium" >
                     No Pronunciation Data
                 </h3>
                 <p className="text-white/50 text-sm max-w-md mx-auto">
@@ -691,7 +685,7 @@ export function PronunciationTab({
                         <BarChart3 className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                        <h2 className="text-xl text-white" style={{ fontWeight: 500 }}>
+                        <h2 className="text-xl text-white font-medium" >
                             Pronunciation Overview
                         </h2>
                         <p className="text-xs text-white/40 mt-0.5">
@@ -723,7 +717,7 @@ export function PronunciationTab({
                         <Award className="w-4 h-4" style={{ color: scoreColor(scores.overall) }} />
                         <span
                             className="text-sm"
-                            style={{ fontWeight: 600, color: scoreColor(scores.overall) }}
+                            style={{ color: scoreColor(scores.overall) }}
                         >
                             Overall: {Math.round(scores.overall)}% &mdash; {scoreLabel(scores.overall)}
                         </span>
@@ -740,7 +734,6 @@ export function PronunciationTab({
                         <div>
                             <p
                                 className="text-[10px] uppercase tracking-wider text-[#2dd4bf] mb-1"
-                                style={{ fontWeight: 600 }}
                             >
                                 Coach's Tip
                             </p>
@@ -756,8 +749,7 @@ export function PronunciationTab({
                             <div className="flex items-center gap-2 mb-3">
                                 <AlertTriangle className="w-4 h-4 text-[#f59e0b]" />
                                 <p
-                                    className="text-sm text-white/70"
-                                    style={{ fontWeight: 500 }}
+                                    className="text-sm text-white/70 font-medium"
                                 >
                                     Words that caused hesitation:
                                 </p>
@@ -788,8 +780,7 @@ export function PronunciationTab({
                     </div>
                     <div>
                         <h2
-                            className="text-xl text-[#0f172b]"
-                            style={{ fontWeight: 500 }}
+                            className="text-xl text-[#0f172b] font-medium"
                         >
                             Shadowing Tool
                         </h2>
@@ -802,7 +793,7 @@ export function PronunciationTab({
                 {/* How it works callout */}
                 <div className="bg-[#f0f4ff] border border-[#c7d2fe] rounded-xl p-3 mb-5 flex items-start gap-2.5">
                     <p className="text-[11px] text-[#45556c] leading-relaxed">
-                        <span style={{ fontWeight: 600 }}>Why this works:</span>{" "}
+                        <span className="font-semibold">Why this works:</span>{" "}
                         Our AI compares your audio against the <em>exact target phrase</em> &mdash; giving you precise, word-by-word pronunciation scores. Practice complete sentences from your conversation for maximum impact.
                     </p>
                 </div>
@@ -810,7 +801,7 @@ export function PronunciationTab({
                 {shadowingPhrases.length === 0 ? (
                     <div className="bg-[#f0fdf4] border border-[#bbf7d0] rounded-xl p-4 text-center">
                         <Award className="w-8 h-8 text-[#22c55e] mx-auto mb-2" />
-                        <p className="text-sm text-[#0f172b]" style={{ fontWeight: 500 }}>
+                        <p className="text-sm text-[#0f172b] font-medium" >
                             Great job! No significant pronunciation issues detected.
                         </p>
                         <p className="text-xs text-[#45556c] mt-1">
@@ -844,7 +835,7 @@ export function PronunciationTab({
                                         <Play className="w-3 h-3 ml-0.5" />
                                     </span>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-sm text-[#1e293b] truncate" style={{ fontWeight: 500 }}>
+                                        <p className="text-sm text-[#1e293b] truncate font-medium" >
                                             {sp.sentence}
                                         </p>
                                     </div>
@@ -869,7 +860,6 @@ export function PronunciationTab({
                                 setShowShadowingModal(true);
                             }}
                             className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#14b8a6] text-white text-sm hover:from-[#4f46e5] hover:to-[#0f172b] transition-all shadow-md shadow-[#6366f1]/20 cursor-pointer flex items-center justify-center gap-2"
-                            style={{ fontWeight: 600 }}
                             whileHover={{ scale: 1.01 }}
                             whileTap={{ scale: 0.99 }}
                         >

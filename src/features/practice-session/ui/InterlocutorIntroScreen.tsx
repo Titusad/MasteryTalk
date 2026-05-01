@@ -168,8 +168,7 @@ export function InterlocutorIntroScreen({
       >
         {/* Label */}
         <motion.p
-          className="text-white/35 text-xs uppercase tracking-widest mb-8"
-          style={{ fontWeight: 500 }}
+          className="text-white/35 text-xs uppercase tracking-widest mb-8 font-medium"
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
@@ -200,7 +199,7 @@ export function InterlocutorIntroScreen({
             className="w-24 h-24 rounded-full flex items-center justify-center border-2 border-white/20"
             style={{ backgroundColor: `${meta.color}22`, boxShadow: `0 0 0 1px ${meta.color}44` }}
           >
-            <span className="text-xl" style={{ fontWeight: 700, color: meta.color }}>
+            <span className="text-xl" style={{ color: meta.color }}>
               {meta.initials}
             </span>
           </div>
@@ -209,7 +208,6 @@ export function InterlocutorIntroScreen({
         {/* Name */}
         <motion.h1
           className="text-white text-2xl mb-1"
-          style={{ fontWeight: 600 }}
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.5 }}
@@ -230,7 +228,7 @@ export function InterlocutorIntroScreen({
         {/* Tagline — coaching style in one line */}
         <motion.p
           className="text-xs mb-8"
-          style={{ color: meta.color, fontWeight: 500 }}
+          style={{ color: meta.color }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.75 }}
@@ -248,7 +246,7 @@ export function InterlocutorIntroScreen({
           {isPlaying ? (
             <Waveform active={isPlaying} />
           ) : (
-            <p className="text-white/60 text-base leading-relaxed max-w-sm mx-auto italic" style={{ fontWeight: 300 }}>
+            <p className="text-white/60 text-base leading-relaxed max-w-sm mx-auto italic font-light" >
               "{meta.hook}"
             </p>
           )}
@@ -263,7 +261,6 @@ export function InterlocutorIntroScreen({
               ? "bg-white text-[#0f172b] hover:bg-gray-100 shadow-lg cursor-pointer"
               : "bg-white/10 text-white/25 cursor-not-allowed"
           }`}
-          style={{ fontWeight: 600 }}
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 1 }}

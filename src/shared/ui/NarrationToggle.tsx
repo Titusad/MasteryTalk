@@ -88,7 +88,7 @@ export function NarrationToggle() {
       </AnimatePresence>
 
       {/* Label */}
-      <span className="text-[11px]" style={{ fontWeight: 600, letterSpacing: "0.02em" }}>
+      <span className="text-[11px]" style={{ letterSpacing: "0.02em" }}>
         {muted ? "Unmute" : playing ? "Coach" : "Coach"}
       </span>
     </motion.button>

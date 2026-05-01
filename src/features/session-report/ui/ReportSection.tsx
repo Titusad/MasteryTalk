@@ -33,7 +33,7 @@ export function ReportSection({
         >
           {icon}
         </div>
-        <h2 className="text-xl text-[#0f172b]" style={{ fontWeight: 500 }}>
+        <h2 className="text-xl text-[#0f172b] font-medium" >
           {title}
         </h2>
       </div>

@@ -4,6 +4,7 @@
  * Follows DESIGN_SYSTEM.md strictly: no arbitrary px, no inline CSS, no emojis.
  */
 import { useState, useMemo } from "react";
+import DOMPurify from "dompurify";
 import { motion } from "motion/react";
 import { ChevronDown, Zap, ArrowRight, Check } from "lucide-react";
 import {
@@ -127,7 +128,7 @@ export function HeroCard({
         `<strong class="font-bold ${userState === 'inactive' ? 'text-[#c45e00]' : 'text-[#0f172b]'}">${h}</strong>`
       );
     }
-    return text;
+    return DOMPurify.sanitize(text, { ALLOWED_TAGS: ["strong"], ALLOWED_ATTR: ["class"] });
   }, [diagnosis, userState]);
 
   return (
@@ -144,7 +145,7 @@ export function HeroCard({
             {/* Greeting */}
             <h1 
               className="text-2xl md:text-[28px] text-[#0f172b]"
-              style={{ fontWeight: 300, lineHeight: 1.2 }}
+              style={{ lineHeight: 1.2 }}
             >
               {getGreeting()}, {firstName}
             </h1>

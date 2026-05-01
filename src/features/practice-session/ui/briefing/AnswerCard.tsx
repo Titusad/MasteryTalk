@@ -143,21 +143,21 @@ export function AnswerCard({ question, scenarioType, preparedResponse, onNext, o
                 {/* Prepared response — shown when user filled in the template */}
                 {preparedResponse ? (
                     <div className="mb-5">
-                        <p className="text-xs text-[#94a3b8] uppercase tracking-wider mb-2" style={{ fontWeight: 600 }}>
+                        <p className="text-xs text-[#94a3b8] uppercase tracking-wider mb-2 font-semibold" >
                             Your prepared response — say this out loud:
                         </p>
                         <div className="px-4 py-4 bg-[#f0fdf4] rounded-xl border border-[#bbf7d0]">
-                            <p className="text-sm text-[#0f172b] leading-relaxed" style={{ fontWeight: 500 }}>
+                            <p className="text-sm text-[#0f172b] leading-relaxed font-medium" >
                                 {preparedResponse}
                             </p>
                         </div>
                     </div>
                 ) : (
                     <>
-                        <p className="text-sm text-[#45556c] mb-1" style={{ fontWeight: 500 }}>
+                        <p className="text-sm text-[#45556c] mb-1 font-medium" >
                             {promptLabel}
                         </p>
-                        <p className="text-base text-[#0f172b] mb-6" style={{ fontWeight: 600 }}>
+                        <p className="text-base text-[#0f172b] mb-6 font-semibold" >
                             "{question}"
                         </p>
                     </>
@@ -172,7 +172,6 @@ export function AnswerCard({ question, scenarioType, preparedResponse, onNext, o
                                 ? "bg-[#6366f1] text-white"
                                 : "bg-[#f1f5f9] text-[#45556c] hover:bg-[#e2e8f0]"
                         }`}
-                        style={{ fontWeight: 500 }}
                     >
                         <Mic className="w-3 h-3" />
                         Voice
@@ -184,7 +183,6 @@ export function AnswerCard({ question, scenarioType, preparedResponse, onNext, o
                                 ? "bg-[#6366f1] text-white"
                                 : "bg-[#f1f5f9] text-[#45556c] hover:bg-[#e2e8f0]"
                         }`}
-                        style={{ fontWeight: 500 }}
                     >
                         <Type className="w-3 h-3" />
                         Text
@@ -229,7 +227,7 @@ export function AnswerCard({ question, scenarioType, preparedResponse, onNext, o
                         {status === "processing" && (
                             <div className="py-6">
                                 <Loader2 className="w-10 h-10 text-[#6366f1] animate-spin mx-auto mb-3" />
-                                <p className="text-sm text-[#45556c]" style={{ fontWeight: 500 }}>
+                                <p className="text-sm text-[#45556c] font-medium" >
                                     Transcribing your answer...
                                 </p>
                             </div>
@@ -238,7 +236,7 @@ export function AnswerCard({ question, scenarioType, preparedResponse, onNext, o
                         {status === "done" && transcript && (
                             <div className="text-left">
                                 <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-4 mb-3">
-                                    <p className="text-xs text-[#94a3b8] mb-1" style={{ fontWeight: 500 }}>
+                                    <p className="text-xs text-[#94a3b8] mb-1 font-medium" >
                                         What you said:
                                     </p>
                                     <p className="text-sm text-[#0f172b] leading-relaxed">
@@ -247,8 +245,7 @@ export function AnswerCard({ question, scenarioType, preparedResponse, onNext, o
                                 </div>
                                 <button
                                     onClick={handleRetry}
-                                    className="flex items-center gap-1.5 text-xs text-[#62748e] hover:text-[#0f172b] transition-colors"
-                                    style={{ fontWeight: 500 }}
+                                    className="flex items-center gap-1.5 text-xs text-[#62748e] hover:text-[#0f172b] transition-colors font-medium"
                                 >
                                     <RotateCcw className="w-3 h-3" />
                                     Record again
@@ -293,7 +290,6 @@ export function AnswerCard({ question, scenarioType, preparedResponse, onNext, o
                             ? "bg-[#0f172b] text-white hover:bg-[#1d293d]"
                             : "bg-[#e2e8f0] text-[#94a3b8] cursor-not-allowed"
                     }`}
-                    style={{ fontWeight: 500 }}
                 >
                     Get Feedback
                     <ArrowRight className="w-6 h-6" />

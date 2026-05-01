@@ -117,16 +117,16 @@ export function LanguageTransitionModal({
 
         {/* Title */}
         <h2
-          className="text-2xl text-[#0f172b] mb-3"
-          style={{ fontWeight: 600, lineHeight: 1.3 }}
+          className="text-2xl text-[#0f172b] mb-3 font-semibold"
+          style={{ lineHeight: 1.3 }}
         >
           {c.title}
         </h2>
 
         {/* Explanation */}
-        <p className="text-[#45556c] text-[15px] leading-relaxed mb-2">
+        <p className="text-[#45556c] text-sm leading-relaxed mb-2">
           {c.body}{" "}
-          <span style={{ fontWeight: 600 }} className="text-[#0f172b]">{c.bodyHighlight}</span>{" "}
+          <span className="font-semibold text-[#0f172b]">{c.bodyHighlight}</span>{" "}
           {c.bodySuffix}
         </p>
         <p className="text-[#62748e] text-sm leading-relaxed mb-6">
@@ -135,11 +135,11 @@ export function LanguageTransitionModal({
 
         {/* Language pills */}
         <div className="flex items-center justify-center gap-3 mb-8">
-          <span className="bg-[#f1f5f9] text-[#62748e] text-sm px-4 py-2 rounded-full" style={{ fontWeight: 500 }}>
+          <span className="bg-[#f1f5f9] text-[#62748e] text-sm px-4 py-2 rounded-full font-medium">
             {c.flag} {c.langLabel}
           </span>
           <ArrowRight className="w-4 h-4 text-[#94a3b8]" />
-          <span className="bg-[#0f172b] text-white text-sm px-4 py-2 rounded-full" style={{ fontWeight: 500 }}>
+          <span className="bg-[#0f172b] text-white text-sm px-4 py-2 rounded-full font-medium">
             🇺🇸 English
           </span>
         </div>
@@ -176,14 +176,11 @@ export function LanguageTransitionModal({
                 className="transition-none"
               />
             </svg>
-            <span
-              className="absolute inset-0 flex items-center justify-center text-sm text-[#0f172b]"
-              style={{ fontWeight: 600 }}
-            >
+            <span className="absolute inset-0 flex items-center justify-center text-sm text-[#0f172b] font-semibold">
               {remainingSeconds}
             </span>
           </div>
-          <p className="text-sm text-[#45556c]" style={{ fontWeight: 500 }}>
+          <p className="text-sm text-[#45556c] font-medium">
             {c.preparing}
           </p>
         </div>

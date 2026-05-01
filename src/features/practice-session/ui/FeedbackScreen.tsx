@@ -223,7 +223,6 @@ export function FeedbackScreen({
                 >
                     <span
                         className="inline-flex items-center gap-1.5 text-[10px] bg-[#50C878]/15 text-[#16a34a] px-3 py-1 rounded-full"
-                        style={{ fontWeight: 600 }}
                     >
                         <Sparkles className="w-3 h-3" /> AI-powered analysis
                     </span>
@@ -241,7 +240,6 @@ export function FeedbackScreen({
                         <div className="flex flex-col items-center justify-center shrink-0">
                             <p
                                 className="text-[10px] uppercase tracking-wider text-white/50 mb-4"
-                                style={{ fontWeight: 600 }}
                             >
                                 Communication Score
                             </p>
@@ -260,7 +258,7 @@ export function FeedbackScreen({
 
                         {/* Coach Verdict */}
                         <div className="flex-1 text-left border-t md:border-t-0 md:border-l border-white/10 pt-6 md:pt-0 md:pl-8 flex flex-col justify-center">
-                            <h3 className="text-white text-lg mb-2" style={{ fontWeight: 500 }}>
+                            <h3 className="text-white text-lg mb-2 font-medium" >
                                 {passed ? "Great job!" : "Let's keep working"}
                             </h3>
                             <p className="text-white/80 text-sm leading-relaxed">
@@ -279,7 +277,7 @@ export function FeedbackScreen({
                                 const color = score >= 80 ? "#22c55e" : score >= 60 ? "#f59e0b" : "#ef4444";
                                 return (
                                     <div key={skill} className="text-center min-w-[60px]">
-                                        <p className="text-lg" style={{ fontWeight: 600, color }}>{Math.round(score)}%</p>
+                                        <p className="text-lg" style={{ color }}>{Math.round(score)}%</p>
                                         <p className="text-white/40 text-[10px]">{skill}</p>
                                     </div>
                                 );
@@ -326,7 +324,7 @@ export function FeedbackScreen({
                     >
                         <div className="flex items-center gap-2 mb-4">
                             <Lightbulb className="w-4 h-4 text-amber-500" />
-                            <p className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
+                            <p className="text-sm text-[#0f172b] font-semibold" >
                                 Detailed Insights
                             </p>
                         </div>
@@ -334,13 +332,13 @@ export function FeedbackScreen({
                         <div className="space-y-3">
                             {allInsights.map((insight, i) => (
                                 <div key={i} className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-3.5">
-                                    <p className="text-xs text-[#0f172b] mb-1" style={{ fontWeight: 600 }}>
+                                    <p className="text-xs text-[#0f172b] mb-1 font-semibold" >
                                         {insight.dimension}
                                     </p>
                                     <p className="text-xs text-[#45556c] leading-relaxed mb-1.5">
                                         {insight.observation}
                                     </p>
-                                    <p className="text-xs text-[#314158] flex items-center gap-1" style={{ fontWeight: 500 }}>
+                                    <p className="text-xs text-[#314158] flex items-center gap-1 font-medium" >
                                         <Lightbulb className="w-3 h-3 text-[#f59e0b] shrink-0" />
                                         {insight.tip}
                                     </p>
@@ -364,7 +362,7 @@ export function FeedbackScreen({
                     {passed ? (
                         <>
                             <Trophy className="w-10 h-10 text-emerald-500 mx-auto mb-3" />
-                            <h3 className="text-lg text-[#0f172b] mb-2" style={{ fontWeight: 600 }}>
+                            <h3 className="text-lg text-[#0f172b] mb-2 font-semibold" >
                                 Level Complete!
                             </h3>
                             <p className="text-sm text-[#45556c] mb-6 max-w-md mx-auto">
@@ -372,8 +370,7 @@ export function FeedbackScreen({
                             </p>
                             <button
                                 onClick={onFinish}
-                                className="px-6 py-3 rounded-full text-sm bg-[#0f172b] text-white hover:bg-[#1d293d] transition-colors shadow-sm flex items-center gap-2 mx-auto"
-                                style={{ fontWeight: 500 }}
+                                className="px-6 py-3 rounded-full text-sm bg-[#0f172b] text-white hover:bg-[#1d293d] transition-colors shadow-sm flex items-center gap-2 mx-auto font-medium"
                             >
                                 Go to Dashboard
                                 <ArrowRight className="w-4 h-4" />
@@ -384,7 +381,7 @@ export function FeedbackScreen({
                             <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-3">
                                 <Retry className="w-5 h-5 text-amber-600" />
                             </div>
-                            <h3 className="text-lg text-[#0f172b] mb-2" style={{ fontWeight: 600 }}>
+                            <h3 className="text-lg text-[#0f172b] mb-2 font-semibold" >
                                 Almost there
                             </h3>
                             <p className="text-sm text-[#45556c] mb-6 max-w-md mx-auto">
@@ -398,8 +395,7 @@ export function FeedbackScreen({
                                 {canRetryFree && onPracticeAgain && (
                                     <button
                                         onClick={onPracticeAgain}
-                                        className="px-6 py-3 rounded-full text-sm bg-[#0f172b] text-white hover:bg-[#1d293d] transition-colors shadow-sm flex items-center gap-2"
-                                        style={{ fontWeight: 500 }}
+                                        className="px-6 py-3 rounded-full text-sm bg-[#0f172b] text-white hover:bg-[#1d293d] transition-colors shadow-sm flex items-center gap-2 font-medium"
                                     >
                                         <RotateCcw className="w-4 h-4" />
                                         Practice Again (Free)
@@ -407,8 +403,7 @@ export function FeedbackScreen({
                                 )}
                                 <button
                                     onClick={onFinish}
-                                    className="px-6 py-3 rounded-full text-sm bg-white text-[#45556c] border border-[#e2e8f0] hover:border-[#c7d2e0] transition-colors flex items-center gap-2"
-                                    style={{ fontWeight: 500 }}
+                                    className="px-6 py-3 rounded-full text-sm bg-white text-[#45556c] border border-[#e2e8f0] hover:border-[#c7d2e0] transition-colors flex items-center gap-2 font-medium"
                                 >
                                     Go to Dashboard
                                     <ArrowRight className="w-4 h-4" />
@@ -431,8 +426,7 @@ export function FeedbackScreen({
                     {onDownloadPdf && (
                         <button
                             onClick={onDownloadPdf}
-                            className="flex items-center gap-1.5 text-sm text-[#45556c] hover:text-[#0f172b] transition-colors"
-                            style={{ fontWeight: 500 }}
+                            className="flex items-center gap-1.5 text-sm text-[#45556c] hover:text-[#0f172b] transition-colors font-medium"
                         >
                             <Download className="w-4 h-4" />
                             Download PDF Report
@@ -492,22 +486,22 @@ function FocusBubbleCarousel({ focusLabel, focusScore, items, shadowStates, onPr
             <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-2">
                     <Target className="w-4 h-4 text-[#f59e0b]" />
-                    <p className="text-xs text-[#f59e0b] uppercase tracking-wider" style={{ fontWeight: 600 }}>
+                    <p className="text-xs text-[#f59e0b] uppercase tracking-wider font-semibold" >
                         #1 Focus Area
                     </p>
                 </div>
                 {total > 1 && (
-                    <span className="text-[10px] text-[#94a3b8]" style={{ fontWeight: 500 }}>
+                    <span className="text-[10px] text-[#94a3b8] font-medium" >
                         {idx + 1} of {total}
                     </span>
                 )}
             </div>
 
-            <p className="text-[10px] text-[#94a3b8] uppercase tracking-wider mb-3" style={{ fontWeight: 500 }}>
+            <p className="text-[10px] text-[#94a3b8] uppercase tracking-wider mb-3 font-medium" >
                 Extracted from your session — exactly what you said.
             </p>
 
-            <h3 className="text-lg text-[#0f172b] mb-5" style={{ fontWeight: 700 }}>
+            <h3 className="text-lg text-[#0f172b] mb-5 font-bold" >
                 {focusLabel} — {Math.round(focusScore)}%
             </h3>
 
@@ -553,8 +547,7 @@ function FocusBubbleCarousel({ focusLabel, focusScore, items, shadowStates, onPr
                         >
                             <button
                                 onClick={() => setRevealed(prev => ({ ...prev, [idx]: true }))}
-                                className="flex items-center gap-1.5 text-xs text-[#0f172b] border border-[#e2e8f0] rounded-lg px-3 py-1.5 hover:bg-[#f8fafc] transition-colors"
-                                style={{ fontWeight: 500 }}
+                                className="flex items-center gap-1.5 text-xs text-[#0f172b] border border-[#e2e8f0] rounded-lg px-3 py-1.5 hover:bg-[#f8fafc] transition-colors font-medium"
                             >
                                 <Sparkles className="w-3 h-3 text-[#f59e0b]" />
                                 Reveal correction
@@ -565,8 +558,7 @@ function FocusBubbleCarousel({ focusLabel, focusScore, items, shadowStates, onPr
                     {/* Technique label */}
                     {isRevealed && item.technique && (
                         <motion.p
-                            className="text-[11px] text-[#92400e] flex items-center gap-1.5 ml-10"
-                            style={{ fontWeight: 500 }}
+                            className="text-[11px] text-[#92400e] flex items-center gap-1.5 ml-10 font-medium"
                             initial={{ opacity: 0, y: -4 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.2 }}
@@ -589,7 +581,7 @@ function FocusBubbleCarousel({ focusLabel, focusScore, items, shadowStates, onPr
                                     <Check className="w-3.5 h-3.5 text-[#22c55e]" />
                                 </div>
                                 <div className="max-w-[80%] bg-[#f0fdf4] border border-[#bbf7d0] rounded-2xl rounded-tl-sm px-4 py-3">
-                                    <p className="text-sm text-[#166534] leading-relaxed" style={{ fontWeight: 500 }}>
+                                    <p className="text-sm text-[#166534] leading-relaxed font-medium" >
                                         {item.professionalVersion}
                                     </p>
                                 </div>
@@ -601,7 +593,7 @@ function FocusBubbleCarousel({ focusLabel, focusScore, items, shadowStates, onPr
                     <div className="pt-3 border-t border-[#f1f5f9] mt-3">
                         {ss === "done" ? (
                             <div className="flex items-center justify-between">
-                                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#f0fdf4] border border-[#bbf7d0] text-xs text-emerald-600" style={{ fontWeight: 600 }}>
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#f0fdf4] border border-[#bbf7d0] text-xs text-emerald-600 font-semibold" >
                                     <Check className="w-3.5 h-3.5" /> Pronunciation drilled
                                 </span>
                                 <button
@@ -609,8 +601,7 @@ function FocusBubbleCarousel({ focusLabel, focusScore, items, shadowStates, onPr
                                         onShadowingStarted?.();
                                         onPractice(idx);
                                     }}
-                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs border border-[#e2e8f0] text-[#45556c] hover:bg-[#f8fafc] hover:border-[#c7d2e0] transition-all"
-                                    style={{ fontWeight: 500 }}
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs border border-[#e2e8f0] text-[#45556c] hover:bg-[#f8fafc] hover:border-[#c7d2e0] transition-all font-medium"
                                 >
                                     <RotateCcw className="w-3 h-3" />
                                     Repeat
@@ -623,7 +614,6 @@ function FocusBubbleCarousel({ focusLabel, focusScore, items, shadowStates, onPr
                                     onPractice(idx);
                                 }}
                                 className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-lg bg-[#0f172b] text-white text-sm hover:bg-[#1d293d] transition-colors"
-                                style={{ fontWeight: 600 }}
                             >
                                 <Headphones className="w-4 h-4" />
                                 Drill this phrase now

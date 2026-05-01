@@ -32,7 +32,7 @@ export function PageTitleBlock({
                 )}
                 <h1
                     className="text-2xl md:text-[32px] text-[#0f172b] text-left"
-                    style={{ fontWeight: 300, lineHeight: 1.25 }}
+                    style={{ lineHeight: 1.25 }}
                 >
                     {title}
                 </h1>

@@ -152,7 +152,7 @@ export function RecordButton({
             {label && (
                 <p className="text-sm text-[#45556c]">
                     {isRecording ? (
-                        <span className="text-red-500" style={{ fontWeight: 500 }}>
+                        <span className="text-red-500 font-medium" >
                             {label}
                         </span>
                     ) : (
@@ -219,7 +219,6 @@ export function RecordingTimer({ timeMs }: { timeMs: number }) {
             />
             <span
                 className="text-sm text-red-500 tabular-nums"
-                style={{ fontWeight: 600 }}
             >
                 {formatted}
             </span>

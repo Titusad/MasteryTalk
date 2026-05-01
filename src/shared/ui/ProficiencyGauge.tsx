@@ -67,7 +67,6 @@ export function ProficiencyGauge({
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <motion.span
           className={`${size >= 140 ? "text-4xl" : size >= 80 ? "text-2xl" : "text-lg"} ${darkBg ? "text-white" : "text-[#0f172b]"}`}
-          style={{ fontWeight: 700 }}
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.5 }}
@@ -75,7 +74,7 @@ export function ProficiencyGauge({
           {score}%
         </motion.span>
         {!hideLabel && (
-          <span className="text-xs mt-0.5" style={{ fontWeight: 600, color }}>
+          <span className="text-xs mt-0.5" style={{ color }}>
             {proficiencyLabel(score)}
           </span>
         )}

@@ -138,7 +138,7 @@ export function WhatsAppActivationCard({
           <Check className="w-5 h-5 text-[#10b981]" />
         </span>
         <div className="flex-1 min-w-0">
-          <p className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
+          <p className="text-sm text-[#0f172b] font-semibold" >
             WhatsApp Coach active
           </p>
           <p className="text-xs text-[#62748e] truncate">
@@ -156,7 +156,7 @@ export function WhatsAppActivationCard({
     if (variant === "feedback") {
       return (
         <motion.div
-          className="bg-white border border-[#e2e8f0] rounded-2xl p-5 flex items-start gap-4"
+          className="bg-white border border-[#e2e8f0] rounded-2xl p-4 flex items-start gap-4"
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35 }}
@@ -165,7 +165,7 @@ export function WhatsAppActivationCard({
             <MessageCircle className="w-5 h-5 text-[#25d366]" />
           </span>
           <div className="flex-1 min-w-0">
-            <p className="text-sm text-[#0f172b] mb-1" style={{ fontWeight: 600 }}>
+            <p className="text-sm text-[#0f172b] mb-1 font-semibold" >
               Practice this phrase tomorrow on WhatsApp
             </p>
             <p className="text-xs text-[#62748e] leading-relaxed mb-3">
@@ -174,8 +174,8 @@ export function WhatsAppActivationCard({
             <div className="flex items-center gap-3 flex-wrap">
               <button
                 onClick={() => setStep("input")}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs bg-[#0f172b] text-white hover:bg-[#1d293d] transition-colors cursor-pointer"
-                style={{ fontWeight: 600 }}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs bg-[#0f172b] text-white hover:bg-[#1d293d] transition-colors cursor-pointer font-semibold"
+                
               >
                 <MessageCircle className="w-3.5 h-3.5" />
                 Activate coach
@@ -183,8 +183,8 @@ export function WhatsAppActivationCard({
               {onDismiss && (
                 <button
                   onClick={onDismiss}
-                  className="text-xs text-[#94a3b8] hover:text-[#62748e] transition-colors cursor-pointer"
-                  style={{ fontWeight: 500 }}
+                  className="text-xs text-[#94a3b8] hover:text-[#62748e] transition-colors cursor-pointer font-medium"
+                  
                 >
                   {dismissCount >= 1 ? "Don't show again" : "Maybe later"}
                 </button>
@@ -210,7 +210,7 @@ export function WhatsAppActivationCard({
             <MessageCircle className="w-5 h-5 text-[#25d366]" />
           </span>
           <div className="flex-1 min-w-0">
-            <p className="text-white text-sm mb-1" style={{ fontWeight: 600 }}>
+            <p className="text-white text-sm mb-1 font-semibold" >
               Activate your WhatsApp Pronunciation Coach
             </p>
             <p className="text-white/60 text-xs leading-relaxed mb-4">
@@ -218,8 +218,8 @@ export function WhatsAppActivationCard({
             </p>
             <button
               onClick={() => setStep("input")}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-full text-xs bg-[#25d366] text-white hover:bg-[#22c55e] transition-colors cursor-pointer"
-              style={{ fontWeight: 600 }}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full text-xs bg-[#25d366] text-white hover:bg-[#22c55e] transition-colors cursor-pointer font-semibold"
+              
             >
               <MessageCircle className="w-3.5 h-3.5" />
               Link WhatsApp
@@ -243,7 +243,7 @@ export function WhatsAppActivationCard({
             <Clock className="w-4 h-4 text-[#6366f1]" />
           </span>
           <div>
-            <p className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
+            <p className="text-sm text-[#0f172b] font-semibold" >
               When should your coach reach you?
             </p>
             <p className="text-xs text-[#62748e]">We'll send your daily challenge at this time.</p>
@@ -258,10 +258,9 @@ export function WhatsAppActivationCard({
               disabled={savingPref}
               className={`flex flex-col items-center gap-1 py-3 rounded-xl border text-xs transition-all cursor-pointer disabled:opacity-50 ${
                 selectedHour === opt.hour
-                  ? "border-[#6366f1] bg-[#6366f1]/5 text-[#6366f1]"
-                  : "border-[#e2e8f0] text-[#45556c] hover:border-[#94a3b8]"
+                  ? "border-[#6366f1] bg-[#6366f1]/5 text-[#6366f1] font-semibold"
+                  : "border-[#e2e8f0] text-[#45556c] hover:border-[#94a3b8] font-medium"
               }`}
-              style={{ fontWeight: selectedHour === opt.hour ? 600 : 500 }}
             >
               {savingPref && selectedHour === opt.hour ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -290,7 +289,7 @@ export function WhatsAppActivationCard({
         <span className="flex items-center justify-center w-9 h-9 rounded-full bg-[#25d366]/10">
           <MessageCircle className="w-4 h-4 text-[#25d366]" />
         </span>
-        <p className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
+        <p className="text-sm text-[#0f172b] font-semibold" >
           {step === "verify" || step === "verifying"
             ? "Enter your verification code"
             : "Enter your WhatsApp number"}
@@ -329,8 +328,8 @@ export function WhatsAppActivationCard({
             <button
               onClick={handleSendOTP}
               disabled={countryCode.length < 2 || phone.replace(/\D/g, "").length < 6 || step === "sending"}
-              className="w-full flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm bg-[#0f172b] text-white hover:bg-[#1e293b] transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-              style={{ fontWeight: 500 }}
+              className="w-full flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm bg-[#0f172b] text-white hover:bg-[#1e293b] transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer font-medium"
+              
             >
               {step === "sending" ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -350,23 +349,23 @@ export function WhatsAppActivationCard({
             exit={{ opacity: 0 }}
           >
             <p className="text-xs text-[#62748e] mb-3">
-              We sent a 6-digit code to <span style={{ fontWeight: 600 }}>{fullNumber}</span>
+              We sent a 6-digit code to <span className="font-semibold">{fullNumber}</span>
             </p>
             <input
               type="text"
               placeholder="000000"
               value={otp}
               onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-              className="w-full px-4 py-2.5 rounded-xl border border-[#e2e8f0] text-sm text-[#0f172b] placeholder-[#94a3b8] text-center tracking-[0.3em] focus:outline-none focus:border-[#6366f1] mb-3"
-              style={{ fontWeight: 600, fontSize: "1.1rem" }}
+              className="w-full px-4 py-2.5 rounded-xl border border-[#e2e8f0] text-sm text-[#0f172b] placeholder-[#94a3b8] text-center tracking-[0.3em] focus:outline-none focus:border-[#6366f1] mb-3 font-semibold"
+              style={{ fontSize: "1.1rem" }}
               maxLength={6}
               autoFocus
             />
             <button
               onClick={handleVerifyOTP}
               disabled={otp.length < 6 || step === "verifying"}
-              className="w-full flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm bg-[#0f172b] text-white hover:bg-[#1e293b] transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-              style={{ fontWeight: 500 }}
+              className="w-full flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm bg-[#0f172b] text-white hover:bg-[#1e293b] transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer font-medium"
+              
             >
               {step === "verifying" ? (
                 <Loader2 className="w-4 h-4 animate-spin" />

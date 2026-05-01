@@ -63,7 +63,6 @@ export function ProficiencyGauge({
                 ? "text-2xl"
                 : "text-lg"
           } ${darkBg ? "text-white" : "text-[#0f172b]"}`}
-          style={{ fontWeight: 700 }}
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.5 }}
@@ -73,7 +72,7 @@ export function ProficiencyGauge({
         {!hideLabel && (
           <span
             className="text-xs mt-0.5"
-            style={{ fontWeight: 600, color }}
+            style={{ color }}
           >
             {feedbackProficiencyLabel(score)}
           </span>

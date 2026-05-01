@@ -232,8 +232,7 @@ export function AnalyzingScreen({
 
                 {/* Title */}
                 <motion.h2
-                    className="text-white text-xl mb-2"
-                    style={{ fontWeight: 500 }}
+                    className="text-white text-xl mb-2 font-medium"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.2 }}
@@ -323,8 +322,7 @@ export function AnalyzingScreen({
                     <AnimatePresence mode="wait">
                         <motion.p
                             key={affirmationIdx}
-                            className="text-white/70 text-base md:text-lg leading-relaxed max-w-sm mx-auto italic"
-                            style={{ fontWeight: 300 }}
+                            className="text-white/70 text-base md:text-lg leading-relaxed max-w-sm mx-auto italic font-light"
                             initial={{ opacity: 0, y: 12 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -12 }}

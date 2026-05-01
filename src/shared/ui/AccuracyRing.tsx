@@ -35,7 +35,6 @@ export function AccuracyRing({ score }: { score: number }) {
             <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <motion.span
                     className="text-2xl text-[#0f172b]"
-                    style={{ fontWeight: 600 }}
                     initial={{ opacity: 0, scale: 0.5 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.4, delay: 0.5 }}

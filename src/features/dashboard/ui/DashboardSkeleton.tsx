@@ -38,7 +38,7 @@ export function DashboardSkeleton() {
       {/* Row 2: 4 action cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-5 space-y-3">
+          <div key={i} className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-6 space-y-3">
             <div className={`h-2.5 w-24 ${shimmer}`} />
             <div className={`h-4 w-32 ${shimmer}`} />
             <div className={`h-3.5 w-full ${shimmer}`} />

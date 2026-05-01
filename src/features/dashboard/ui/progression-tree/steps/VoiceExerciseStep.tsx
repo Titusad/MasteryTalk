@@ -47,7 +47,7 @@ export function VoiceExerciseStep({ data, onComplete, footer }: Props) {
             <Mic className="w-4 h-4 text-white" />
           )}
         </span>
-        <p className="text-[#0f172b] text-base md:text-lg leading-snug" style={{ fontWeight: 600 }}>
+        <p className="text-[#0f172b] text-base md:text-lg leading-snug font-semibold" >
           {data.title}
         </p>
       </div>
@@ -56,7 +56,7 @@ export function VoiceExerciseStep({ data, onComplete, footer }: Props) {
       <div className="px-6 py-6 md:px-8 flex flex-col gap-4">
         {/* Coach instruction */}
         <div className="rounded-2xl bg-[#f8fafc] border border-[#e2e8f0] px-5 py-4">
-          <p className="text-[11px] text-[#64748b] uppercase tracking-wider mb-2" style={{ fontWeight: 700 }}>
+          <p className="text-[11px] text-[#64748b] uppercase tracking-wider mb-2 font-bold">
             Coach Says
           </p>
           <p className="text-[15px] text-[#334155] leading-relaxed">
@@ -66,10 +66,10 @@ export function VoiceExerciseStep({ data, onComplete, footer }: Props) {
 
         {/* Template */}
         <div className="rounded-2xl bg-[#eff6ff] border border-[#bfdbfe] px-5 py-4">
-          <p className="text-[11px] text-[#1d4ed8] uppercase tracking-wider mb-2" style={{ fontWeight: 700 }}>
+          <p className="text-[11px] text-[#1d4ed8] uppercase tracking-wider mb-2 font-bold">
             Template to Follow
           </p>
-          <p className="text-[15px] text-[#1e3a5f] leading-relaxed italic" style={{ fontWeight: 500 }}>
+          <p className="text-[15px] text-[#1e3a5f] leading-relaxed italic font-medium" >
             &ldquo;{data.template}&rdquo;
           </p>
         </div>
@@ -81,8 +81,8 @@ export function VoiceExerciseStep({ data, onComplete, footer }: Props) {
               onClick={() => setRecording(true)}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
-              className="flex items-center justify-center gap-2.5 w-full py-4 px-6 rounded-2xl bg-[#0f172b] text-white text-[15px] border-none cursor-pointer"
-              style={{ fontWeight: 600 }}
+              className="flex items-center justify-center gap-2.5 w-full py-4 px-6 rounded-2xl bg-[#0f172b] text-white text-[15px] border-none cursor-pointer font-semibold"
+              
             >
               <Mic className="w-5 h-5" /> Start Recording
             </motion.button>
@@ -90,7 +90,7 @@ export function VoiceExerciseStep({ data, onComplete, footer }: Props) {
 
           {recording && (
             <div className="flex flex-col items-center gap-3 w-full">
-              <div className="flex items-center gap-2 text-red-500 text-sm" style={{ fontWeight: 500 }}>
+              <div className="flex items-center gap-2 text-red-500 text-sm font-medium" >
                 <motion.div
                   animate={{ opacity: [1, 0.3] }}
                   transition={{ repeat: Infinity, duration: 0.8, repeatType: "reverse" }}
@@ -100,8 +100,8 @@ export function VoiceExerciseStep({ data, onComplete, footer }: Props) {
               </div>
               <button
                 onClick={handleRecordSubmit}
-                className="flex items-center justify-center gap-2 w-full py-4 px-6 rounded-2xl bg-red-500 text-white text-sm border-none cursor-pointer hover:bg-red-600 transition-colors"
-                style={{ fontWeight: 600 }}
+                className="flex items-center justify-center gap-2 w-full py-4 px-6 rounded-2xl bg-red-500 text-white text-sm border-none cursor-pointer hover:bg-red-600 transition-colors font-semibold"
+                
               >
                 <Square className="w-4 h-4" fill="currentColor" /> Stop Recording
               </button>
@@ -110,7 +110,7 @@ export function VoiceExerciseStep({ data, onComplete, footer }: Props) {
 
           {analyzing && (
             <div className="flex flex-col items-center gap-3 w-full">
-              <div className="flex items-center gap-2 text-blue-500 text-sm" style={{ fontWeight: 500 }}>
+              <div className="flex items-center gap-2 text-blue-500 text-sm font-medium" >
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
@@ -125,7 +125,7 @@ export function VoiceExerciseStep({ data, onComplete, footer }: Props) {
             <div className="flex flex-col items-center gap-4 w-full">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-6 h-6 text-emerald-500" />
-                <p className="text-[15px] text-emerald-600" style={{ fontWeight: 600 }}>Great job!</p>
+                <p className="text-[15px] text-emerald-600 font-semibold" >Great job!</p>
               </div>
               <motion.button
                 onClick={onComplete}

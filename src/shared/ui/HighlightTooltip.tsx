@@ -128,7 +128,7 @@ export function HighlightWithTooltip({
                                     className="w-2.5 h-2.5 rounded-sm inline-block shrink-0"
                                     style={{ backgroundColor: color }}
                                 />
-                                <span style={{ fontWeight: 600, fontSize: 12 }}>
+                                <span style={{ fontSize: 12 }}>
                                     {meta.category}
                                 </span>
                             </span>

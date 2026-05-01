@@ -271,14 +271,12 @@ function ConversationFeedback({
           {isRealData ? (
             <span
               className="inline-flex items-center gap-1.5 text-[10px] bg-[#50C878]/15 text-[#16a34a] px-3 py-1 rounded-full"
-              style={{ fontWeight: 600 }}
             >
               <Sparkles className="w-3 h-3" /> AI-powered analysis
             </span>
           ) : (
             <span
               className="inline-flex items-center gap-1.5 text-[10px] bg-[#fef3c7] text-[#92400e] px-3 py-1 rounded-full"
-              style={{ fontWeight: 600 }}
             >
               AI analysis unavailable — showing sample feedback
             </span>
@@ -297,7 +295,6 @@ function ConversationFeedback({
             <div className="flex flex-col items-center justify-center shrink-0">
               <p
                 className="text-[10px] uppercase tracking-wider text-white/50 mb-4 md:mb-5"
-                style={{ fontWeight: 600 }}
               >
                 Readiness Score
               </p>
@@ -307,8 +304,7 @@ function ConversationFeedback({
                 darkBg
               />
               <p
-                className="mt-4 text-[10px] text-white/40 tracking-wider text-center"
-                style={{ fontWeight: 500 }}
+                className="mt-4 text-[10px] text-white/40 tracking-wider text-center font-medium"
               >
                 CONTENT 60% <span className="mx-2 opacity-30">|</span> LANGUAGE 40%
               </p>
@@ -316,7 +312,7 @@ function ConversationFeedback({
 
             {/* Right side: Coach Verdict */}
             <div className="flex-1 text-left border-t md:border-t-0 md:border-l border-white/10 pt-6 md:pt-0 md:pl-8 flex flex-col justify-center">
-              <h3 className="text-white text-lg mb-2" style={{ fontWeight: 500 }}>
+              <h3 className="text-white text-lg mb-2 font-medium" >
                 The Verdict
               </h3>
               <p className="text-white/80 text-sm mb-5 leading-relaxed">
@@ -357,7 +353,7 @@ function ConversationFeedback({
           >
             <Lightbulb className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
             <div>
-              <p className="text-sm text-[#92400e]" style={{ fontWeight: 600 }}>
+              <p className="text-sm text-[#92400e] font-semibold" >
                 AI analysis took too long
               </p>
               <p className="text-xs text-[#a16207] mt-0.5">
@@ -385,7 +381,6 @@ function ConversationFeedback({
                     </div>
                     <p
                       className="text-sm text-[#0f172b]"
-                      style={{ fontWeight: 600 }}
                     >
                       Language Proficiency
                     </p>
@@ -542,7 +537,6 @@ function ConversationFeedback({
                     </div>
                     <p
                       className="text-sm text-[#0f172b]"
-                      style={{ fontWeight: 600 }}
                     >
                       Content Quality
                     </p>
@@ -683,7 +677,6 @@ function ConversationFeedback({
               <div className="flex flex-col items-center text-center">
                 <p
                   className="text-[10px] uppercase tracking-wider text-[#94a3b8] mb-4"
-                  style={{ fontWeight: 600 }}
                 >
                   Your English Level
                 </p>
@@ -751,7 +744,6 @@ function ConversationFeedback({
                 <div className="bg-white rounded-3xl border border-[#e2e8f0] p-4 md:p-6">
                   <p
                     className="text-sm text-[#0f172b] mb-4"
-                    style={{ fontWeight: 600 }}
                   >
                     Skill by Skill
                   </p>
@@ -777,13 +769,12 @@ function ConversationFeedback({
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
                               <span className="text-base">{colors.icon}</span>
-                              <span className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
+                              <span className="text-sm text-[#0f172b] font-semibold" >
                                 {d.skill}
                               </span>
                               {isWorst && (
                                 <span
                                   className="text-[9px] bg-[#f59e0b]/15 text-[#b45309] px-1.5 py-0.5 rounded"
-                                  style={{ fontWeight: 600 }}
                                 >
                                   FOCUS AREA
                                 </span>
@@ -791,7 +782,7 @@ function ConversationFeedback({
                             </div>
                             <span
                               className="text-sm"
-                              style={{ fontWeight: 700, color: barColor }}
+                              style={{ color: barColor }}
                             >
                               {score}%
                             </span>
@@ -811,20 +802,20 @@ function ConversationFeedback({
                           {/* Tip: GPT insight or fallback with example */}
                           {insight ? (
                             <p className="text-xs text-[#62748e] leading-relaxed">
-                              <span className="text-[#6366f1]" style={{ fontWeight: 600 }}>Tip: </span>
+                              <span className="text-[#6366f1] font-semibold" >Tip: </span>
                               {insight.tip}
                             </p>
                           ) : fallback ? (
                             <div>
                               <p className="text-xs text-[#62748e] leading-relaxed mb-1.5">
-                                <span className="text-[#6366f1]" style={{ fontWeight: 600 }}>Tip: </span>
+                                <span className="text-[#6366f1] font-semibold" >Tip: </span>
                                 {fallback.tip}
                               </p>
                               {fallback.before && fallback.after && (
                                 <div className="text-[11px] leading-relaxed bg-white/80 rounded-lg px-3 py-2 border border-[#e2e8f0]/60">
                                   <span className="text-[#94a3b8] line-through">{fallback.before}</span>
                                   <span className="text-[#94a3b8] mx-1.5">→</span>
-                                  <span className="text-[#0f172b]" style={{ fontWeight: 500 }}>{fallback.after}</span>
+                                  <span className="text-[#0f172b] font-medium" >{fallback.after}</span>
                                 </div>
                               )}
                             </div>
@@ -850,7 +841,6 @@ function ConversationFeedback({
               isInterview ? (
                 <span
                   className="text-[10px] bg-[#fef3c7] text-[#92400e] px-2.5 py-0.5 rounded-full"
-                  style={{ fontWeight: 600 }}
                 >
                   Language & Content
                 </span>
@@ -894,7 +884,6 @@ function ConversationFeedback({
                     <p className="text-xs text-[#45556c] bg-[#f8fafc] rounded-lg px-3 py-2 border border-[#e2e8f0]">
                       <span
                         className="text-[#6366f1]"
-                        style={{ fontWeight: 600 }}
                       >
                         Tip:
                       </span>{" "}
@@ -916,7 +905,6 @@ function ConversationFeedback({
           badge={
             <span
               className="text-[10px] bg-[#f1f5f9] text-[#62748e] px-2.5 py-0.5 rounded-full"
-              style={{ fontWeight: 600 }}
             >
               {strengths.length + beforeAfter.length} insights
             </span>
@@ -930,7 +918,6 @@ function ConversationFeedback({
                 <CheckCircle2 className="w-4 h-4 text-[#22c55e]" />
                 <p
                   className="text-sm text-[#0f172b]"
-                  style={{ fontWeight: 600 }}
                 >
                   Where you nailed it
                 </p>
@@ -946,14 +933,12 @@ function ConversationFeedback({
                   >
                     <span
                       className="w-5 h-5 rounded-full bg-[#22c55e]/15 text-[#22c55e] flex items-center justify-center shrink-0 text-[10px]"
-                      style={{ fontWeight: 600 }}
                     >
                       ✓
                     </span>
                     <div>
                       <p
-                        className="text-sm text-[#0f172b]"
-                        style={{ fontWeight: 500 }}
+                        className="text-sm text-[#0f172b] font-medium"
                       >
                         {s.title}
                       </p>
@@ -974,7 +959,6 @@ function ConversationFeedback({
                 <Zap className="w-4 h-4 text-[#f59e0b]" />
                 <p
                   className="text-sm text-[#0f172b]"
-                  style={{ fontWeight: 600 }}
                 >
                   Level-up moves
                 </p>
@@ -990,8 +974,7 @@ function ConversationFeedback({
                   >
                     <div className="flex items-start gap-2 mb-1.5">
                       <span
-                        className="text-[10px] bg-red-500/15 text-red-500 px-2 py-0.5 rounded-md shrink-0"
-                        style={{ fontWeight: 500 }}
+                        className="text-[10px] bg-red-500/15 text-red-500 px-2 py-0.5 rounded-md shrink-0 font-medium"
                       >
                         Before
                       </span>
@@ -1001,14 +984,12 @@ function ConversationFeedback({
                     </div>
                     <div className="flex items-start gap-2 mb-1.5">
                       <span
-                        className="text-[10px] bg-[#22c55e]/15 text-[#22c55e] px-2 py-0.5 rounded-md shrink-0"
-                        style={{ fontWeight: 500 }}
+                        className="text-[10px] bg-[#22c55e]/15 text-[#22c55e] px-2 py-0.5 rounded-md shrink-0 font-medium"
                       >
                         After
                       </span>
                       <p
-                        className="text-sm text-[#0f172b]"
-                        style={{ fontWeight: 500 }}
+                        className="text-sm text-[#0f172b] font-medium"
                       >
                         {ba.professionalVersion}
                       </p>
@@ -1017,8 +998,7 @@ function ConversationFeedback({
                       <div className="flex items-center gap-1.5 ml-1">
                         <Sparkles className="w-3 h-3 text-[#f59e0b]" />
                         <span
-                          className="text-[10px] text-[#f59e0b]"
-                          style={{ fontWeight: 500 }}
+                          className="text-[10px] text-[#f59e0b] font-medium"
                         >
                           {ba.technique}
                         </span>
@@ -1042,14 +1022,12 @@ function ConversationFeedback({
             hasPronData ? (
               <span
                 className="text-[10px] bg-[#6366f1]/10 text-[#6366f1] px-2.5 py-0.5 rounded-full"
-                style={{ fontWeight: 600 }}
               >
                 {pronunciationData.length} turns &middot; AI analysis
               </span>
             ) : (
               <span
-                className="text-[10px] bg-[#f1f5f9] text-[#94a3b8] px-2.5 py-0.5 rounded-full"
-                style={{ fontWeight: 500 }}
+                className="text-[10px] bg-[#f1f5f9] text-[#94a3b8] px-2.5 py-0.5 rounded-full font-medium"
               >
                 No data
               </span>
@@ -1072,8 +1050,7 @@ function ConversationFeedback({
                 <Mic className="w-6 h-6 text-[#94a3b8]" />
               </div>
               <p
-                className="text-sm text-[#62748e] mb-1"
-                style={{ fontWeight: 500 }}
+                className="text-sm text-[#62748e] mb-1 font-medium"
               >
                 No pronunciation data available
               </p>
@@ -1099,8 +1076,7 @@ function ConversationFeedback({
                   <RotateCcw className="w-7 h-7 text-[#6366f1]" />
                 </div>
                 <h3
-                  className="text-xl text-[#0f172b] mb-2"
-                  style={{ fontWeight: 500 }}
+                  className="text-xl text-[#0f172b] mb-2 font-medium"
                 >
                   Wanna go again?
                 </h3>
@@ -1109,7 +1085,6 @@ function ConversationFeedback({
                 </p>
                 <p
                   className="text-xs text-[#6366f1] mb-6"
-                  style={{ fontWeight: 600 }}
                 >
                   Attempt {repeatInfo.attempt} of{" "}
                   {repeatInfo.maxAttempts} —{" "}
@@ -1123,8 +1098,7 @@ function ConversationFeedback({
                 </p>
                 <button
                   onClick={onPracticeAgain}
-                  className="bg-[#6366f1] text-white px-8 py-4 rounded-full flex items-center gap-3 shadow-lg hover:bg-[#4f46e5] transition-colors mx-auto text-lg"
-                  style={{ fontWeight: 500 }}
+                  className="bg-[#6366f1] text-white px-8 py-4 rounded-full flex items-center gap-3 shadow-lg hover:bg-[#4f46e5] transition-colors mx-auto text-lg font-medium"
                 >
                   <RotateCcw className="w-5 h-5" />
                   Run it back
@@ -1136,8 +1110,7 @@ function ConversationFeedback({
                   <Zap className="w-7 h-7 text-[#f59e0b]" />
                 </div>
                 <h3
-                  className="text-xl text-[#0f172b] mb-2"
-                  style={{ fontWeight: 500 }}
+                  className="text-xl text-[#0f172b] mb-2 font-medium"
                 >
                   Want to keep going?
                 </h3>
@@ -1158,8 +1131,7 @@ function ConversationFeedback({
                   onClick={() =>
                     onPaywallTriggered?.("attempts-exhausted")
                   }
-                  className="bg-[#0f172b] text-white px-8 py-4 rounded-full flex items-center gap-3 shadow-lg hover:bg-[#1d293d] transition-colors mx-auto text-lg"
-                  style={{ fontWeight: 500 }}
+                  className="bg-[#0f172b] text-white px-8 py-4 rounded-full flex items-center gap-3 shadow-lg hover:bg-[#1d293d] transition-colors mx-auto text-lg font-medium"
                 >
                   <Sparkles className="w-5 h-5" />
                   Unlock This Path →
@@ -1175,8 +1147,7 @@ function ConversationFeedback({
                   <Trophy className="w-7 h-7 text-[#16a34a]" />
                 </div>
                 <h3
-                  className="text-xl text-[#0f172b] mb-2"
-                  style={{ fontWeight: 500 }}
+                  className="text-xl text-[#0f172b] mb-2 font-medium"
                 >
                   This scenario? Crushed.
                 </h3>
@@ -1214,8 +1185,7 @@ function ConversationFeedback({
                       <button
                         key={s.key}
                         onClick={onGenerateReport}
-                        className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-[#e2e8f0] text-sm text-[#0f172b] hover:bg-[#f8fafc] transition-colors shadow-sm"
-                        style={{ fontWeight: 500 }}
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-[#e2e8f0] text-sm text-[#0f172b] hover:bg-[#f8fafc] transition-colors shadow-sm font-medium"
                       >
                         {s.icon}
                         {s.label}
@@ -1236,8 +1206,7 @@ function ConversationFeedback({
         >
           <button
             onClick={onGenerateReport}
-            className="bg-[#0f172b] text-white px-10 py-4 rounded-full flex items-center gap-3 shadow-lg hover:bg-[#1d293d] transition-colors text-lg"
-            style={{ fontWeight: 500 }}
+            className="bg-[#0f172b] text-white px-10 py-4 rounded-full flex items-center gap-3 shadow-lg hover:bg-[#1d293d] transition-colors text-lg font-medium"
           >
             <FileText className="w-5 h-5" />
             Get My Full Report →

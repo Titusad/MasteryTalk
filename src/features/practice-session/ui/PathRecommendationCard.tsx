@@ -42,7 +42,7 @@ export function PathRecommendationCard({
       {/* Separator */}
       <div className="flex items-center gap-3 mb-6">
         <div className="flex-1 h-px bg-[#e2e8f0]" />
-        <span className="flex items-center gap-1.5 text-xs text-[#94a3b8]" style={{ fontWeight: 500 }}>
+        <span className="flex items-center gap-1.5 text-xs text-[#94a3b8] font-medium" >
           <Sparkles className="w-3 h-3" />
           Based on your session
         </span>
@@ -63,10 +63,10 @@ export function PathRecommendationCard({
             </div>
 
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-[#94a3b8] mb-1" style={{ fontWeight: 500 }}>
+              <p className="text-xs text-[#94a3b8] mb-1 font-medium" >
                 Your Recommended Next Step
               </p>
-              <h3 className="text-xl text-white" style={{ fontWeight: 700 }}>
+              <h3 className="text-xl text-white font-bold" >
                 {recommendation.pathTitle}
               </h3>
             </div>
@@ -87,7 +87,6 @@ export function PathRecommendationCard({
             <button
               onClick={onStartPath}
               className="flex items-center gap-2 px-6 py-3 rounded-lg bg-white text-[#0f172b] text-sm hover:bg-[#f8fafc] transition-colors cursor-pointer"
-              style={{ fontWeight: 600 }}
             >
               Start This Path
               <ArrowRight className="w-4 h-4" />
@@ -95,8 +94,7 @@ export function PathRecommendationCard({
 
             <button
               onClick={onExploreAll}
-              className="text-sm text-white/60 hover:text-white transition-colors cursor-pointer"
-              style={{ fontWeight: 500 }}
+              className="text-sm text-white/60 hover:text-white transition-colors cursor-pointer font-medium"
             >
               Or explore all paths
             </button>

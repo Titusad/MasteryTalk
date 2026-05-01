@@ -19,7 +19,7 @@ import {
   VISIBLE_PATHS,
   getLevelState,
 } from "@/features/dashboard/model/progression-paths";
-import type { PathId } from "@/features/dashboard/model/progression-paths";
+import type { PathId, ProgressionLevel } from "@/features/dashboard/model/progression-paths";
 import { useProgressionState } from "@/features/dashboard/model/useProgressionState";
 import type { LevelStatus, ScenarioType } from "@/services/types";
 import { projectId } from "@/../utils/supabase/info";
@@ -29,7 +29,7 @@ import { LevelNode } from "./LevelNode";
 
 export const STATUS_CONFIG: Record<
   LevelStatus,
-  { icon: any; label: string; color: string; bg: string; border: string }
+  { icon: LucideIcon; label: string; color: string; bg: string; border: string }
 > = {
   locked: {
     icon: Lock,
@@ -85,7 +85,7 @@ export function ProgressionTree({ onStartLevel, onDrillComplete, onLockedClick }
 
   const activePath = PROGRESSION_PATHS.find((p) => p.id === activeTab)!;
 
-  const handleNodeClick = (levelId: string, status: LevelStatus, level: any) => {
+  const handleNodeClick = (levelId: string, status: LevelStatus, level: ProgressionLevel) => {
     if (status === "locked") {
       onLockedClick?.();
       return;
@@ -191,7 +191,7 @@ export function ProgressionTree({ onStartLevel, onDrillComplete, onLockedClick }
                   const isLast = i === activePath.levels.length - 1;
 
                   // Short description: introValue for self-intro, methodology.tagline for others
-                  const tagline = (level as any).introValue || (level as any).methodology?.tagline;
+                  const tagline = level.introValue || level.methodology?.tagline;
 
                   return (
                     <LevelNode

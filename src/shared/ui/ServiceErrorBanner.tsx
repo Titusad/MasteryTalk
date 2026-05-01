@@ -146,7 +146,7 @@ export function ServiceErrorBanner({
                         <button
                           onClick={onRetry}
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/80 border border-current/10 text-sm hover:bg-white transition-colors"
-                          style={{ fontWeight: 500, color: SEVERITY_STYLES[error.severity].icon.replace("text-[", "").replace("]", "") }}
+                          style={{ color: SEVERITY_STYLES[error.severity].icon.replace("text-[", "").replace("]", "") }}
                         >
                           <RefreshCw className="w-3.5 h-3.5" />
                           {cta.label}
@@ -155,8 +155,7 @@ export function ServiceErrorBanner({
                       {error.recovery === "user-action" && onDismiss && (
                         <button
                           onClick={onDismiss}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/80 border border-current/10 text-sm hover:bg-white transition-colors"
-                          style={{ fontWeight: 500 }}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/80 border border-current/10 text-sm hover:bg-white transition-colors font-medium"
                         >
                           {cta.label}
                         </button>
@@ -164,8 +163,7 @@ export function ServiceErrorBanner({
                       {error.recovery === "navigate" && onNavigate && (
                         <button
                           onClick={onNavigate}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/80 border border-current/10 text-sm hover:bg-white transition-colors"
-                          style={{ fontWeight: 500 }}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/80 border border-current/10 text-sm hover:bg-white transition-colors font-medium"
                         >
                           {cta.label}
                         </button>
@@ -173,8 +171,7 @@ export function ServiceErrorBanner({
                       {error.recovery === "degrade" && onDismiss && (
                         <button
                           onClick={onDismiss}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/80 border border-current/10 text-sm hover:bg-white transition-colors"
-                          style={{ fontWeight: 500 }}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/80 border border-current/10 text-sm hover:bg-white transition-colors font-medium"
                         >
                           {cta.label}
                         </button>
@@ -226,7 +223,7 @@ export function PaymentPendingBanner({
             <CreditCard className="w-5 h-5" />
           </div>
           <div className="flex-1">
-            <p className="text-sm text-[#5D4037]" style={{ fontWeight: 500 }}>
+            <p className="text-sm text-[#5D4037] font-medium" >
               Pago pendiente de confirmación
             </p>
             <p className="text-sm text-[#8D6E63] mt-1">

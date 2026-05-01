@@ -1,5 +1,5 @@
 import { BarChart2 } from "lucide-react";
-import type { ProgressionState } from "@/services/types";
+import type { ProgressionState, LevelState } from "@/services/types";
 
 interface CrossPathCardProps {
   perPathStats: Record<string, { sessions: number; avgScore: number | null }>;
@@ -26,10 +26,12 @@ export function CrossPathCard({ perPathStats, progressionState }: CrossPathCardP
 
   // Real completion from progression state: count levels with status "completed"
   const getCompletion = (pathKey: string): { completed: number; pct: number } => {
-    const pathLevels = progressionState ? (progressionState as any)[pathKey] : null;
+    const pathLevels = progressionState
+      ? (progressionState[pathKey as keyof ProgressionState] as Record<string, LevelState> | undefined)
+      : null;
     if (pathLevels && typeof pathLevels === "object") {
       const completed = Object.values(pathLevels).filter(
-        (l: any) => l?.status === "completed"
+        (l: LevelState) => l?.status === "completed"
       ).length;
       return { completed, pct: Math.round((completed / TOTAL_LEVELS) * 100) };
     }

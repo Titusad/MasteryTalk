@@ -37,7 +37,7 @@ export function DeepDiveCard({ lessons, onOpenLesson }: DeepDiveCardProps) {
       {/* Separator */}
       <div className="flex items-center gap-3 mb-6">
         <div className="flex-1 h-px bg-[#e2e8f0]" />
-        <span className="flex items-center gap-1.5 text-xs text-[#94a3b8]" style={{ fontWeight: 500 }}>
+        <span className="flex items-center gap-1.5 text-xs text-[#94a3b8] font-medium" >
           <Sparkles className="w-3 h-3" />
           Recommended for you
         </span>
@@ -47,7 +47,7 @@ export function DeepDiveCard({ lessons, onOpenLesson }: DeepDiveCardProps) {
       {/* Header */}
       <div className="flex items-center gap-2 mb-3">
         <BookOpen className="w-4 h-4 text-[#0f172b]" />
-        <p className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
+        <p className="text-sm text-[#0f172b] font-semibold" >
           Go deeper — Lessons Library
         </p>
       </div>
@@ -71,21 +71,21 @@ export function DeepDiveCard({ lessons, onOpenLesson }: DeepDiveCardProps) {
               {/* Pillar badge */}
               <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm shrink-0"
-                style={{ backgroundColor: color, fontWeight: 700 }}
+                style={{ backgroundColor: color }}
               >
                 {lesson.pillar.charAt(0)}
               </div>
 
               {/* Content */}
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-[#0f172b] mb-0.5 group-hover:text-[#6366f1] transition-colors" style={{ fontWeight: 600 }}>
+                <p className="text-sm text-[#0f172b] mb-0.5 group-hover:text-[#6366f1] transition-colors font-semibold" >
                   {lesson.title}
                 </p>
                 <p className="text-xs text-[#62748e] line-clamp-1">{lesson.subtitle}</p>
                 <div className="flex items-center gap-2 mt-1">
                   <span
                     className="text-[10px] px-1.5 py-0.5 rounded"
-                    style={{ backgroundColor: `${color}18`, color, fontWeight: 600 }}
+                    style={{ backgroundColor: `${color}18`, color }}
                   >
                     {lesson.pillar}
                   </span>

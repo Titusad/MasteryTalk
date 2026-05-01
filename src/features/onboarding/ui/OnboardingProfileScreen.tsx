@@ -134,7 +134,7 @@ function CustomSelect({
     <div ref={ref} className="relative">
       <label className="flex items-center gap-1.5 text-xs text-[#45556c] mb-1.5">
         <Icon className="w-3 h-3" />
-        <span style={{ fontWeight: 500 }}>{label}</span>
+        <span className="font-medium">{label}</span>
       </label>
 
       {/* Trigger */}
@@ -390,7 +390,7 @@ export function OnboardingProfileScreen({
             </div>
             <h1
               className="text-xl md:text-2xl text-[#0f172b] mb-1.5"
-              style={{ fontWeight: 600, lineHeight: 1.2 }}
+              style={{ lineHeight: 1.2 }}
             >
               Your Professional Profile
             </h1>
@@ -449,7 +449,7 @@ export function OnboardingProfileScreen({
             <div>
               <label className="flex items-center gap-1.5 text-xs text-[#45556c] mb-1.5">
                 <Award className="w-3 h-3" />
-                <span style={{ fontWeight: 500 }}>
+                <span className="font-medium">
                   Key Achievements{" "}
                   <span className="text-[#94a3b8]">(optional)</span>
                 </span>
@@ -475,8 +475,7 @@ export function OnboardingProfileScreen({
                 <FileText className="w-4 h-4 text-[#45556c]" />
                 <div className="text-left">
                   <span
-                    className="text-sm text-[#0f172b] block"
-                    style={{ fontWeight: 600 }}
+                    className="text-sm text-[#0f172b] block font-semibold"
                   >
                     Upload your CV / Resume
                   </span>
@@ -529,8 +528,7 @@ export function OnboardingProfileScreen({
                           }`}
                         />
                         <p
-                          className="text-sm text-[#0f172b]"
-                          style={{ fontWeight: 500 }}
+                          className="text-sm text-[#0f172b] font-medium"
                         >
                           {isDragging
                             ? "Drop it here"
@@ -549,8 +547,7 @@ export function OnboardingProfileScreen({
                       <div className="w-full border border-[#e2e8f0] rounded-xl p-6 text-center bg-[#f8fafc]">
                         <Loader2 className="w-6 h-6 mx-auto mb-2 text-[#6366f1] animate-spin" />
                         <p
-                          className="text-sm text-[#0f172b]"
-                          style={{ fontWeight: 500 }}
+                          className="text-sm text-[#0f172b] font-medium"
                         >
                           Reading your document...
                         </p>
@@ -564,8 +561,7 @@ export function OnboardingProfileScreen({
                             <CheckCircle2 className="w-4 h-4 text-[#16a34a]" />
                             <div>
                               <span
-                                className="text-sm text-[#15803d] block"
-                                style={{ fontWeight: 600 }}
+                                className="text-sm text-[#15803d] block font-semibold"
                               >
                                 CV uploaded successfully
                               </span>
@@ -605,8 +601,7 @@ export function OnboardingProfileScreen({
                           <div className="flex items-center gap-2">
                             <X className="w-3.5 h-3.5 text-[#dc2626]" />
                             <span
-                              className="text-xs text-[#dc2626]"
-                              style={{ fontWeight: 600 }}
+                              className="text-xs text-[#dc2626] font-semibold"
                             >
                               Processing failed
                             </span>
@@ -642,7 +637,6 @@ export function OnboardingProfileScreen({
                 ? "bg-[#0f172b] text-white hover:bg-[#1d293d] cursor-pointer"
                 : "bg-[#e2e8f0] text-[#94a3b8] cursor-not-allowed"
             }`}
-            style={{ fontWeight: 500 }}
           >
             {uploadStatus === "uploading" ? (
               <>

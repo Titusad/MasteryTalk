@@ -75,7 +75,7 @@ export function ToolkitStep({ data, footer }: Props) {
           )}
         </span>
         <div className="flex-1">
-          <p className="text-[#0f172b] text-base md:text-lg leading-snug" style={{ fontWeight: 600 }}>
+          <p className="text-[#0f172b] text-base md:text-lg leading-snug font-semibold" >
             {data.title}
           </p>
           <p className="text-sm text-[#64748b] mt-1">
@@ -129,13 +129,13 @@ export function ToolkitStep({ data, footer }: Props) {
                   ) : isRecording ? (
                     <Mic className="w-3.5 h-3.5" />
                   ) : (
-                    <span className="text-xs" style={{ fontWeight: 700 }}>{i + 1}</span>
+                    <span className="text-xs font-bold" >{i + 1}</span>
                   )}
                 </div>
 
                 {/* Phrase text */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-[#0f172b] leading-snug" style={{ fontWeight: 600 }}>
+                  <p className="text-sm text-[#0f172b] leading-snug font-semibold" >
                     &ldquo;{phrase.pattern}&rdquo;
                   </p>
                   {phrase.usage && (
@@ -149,8 +149,7 @@ export function ToolkitStep({ data, footer }: Props) {
                 <div className="flex items-center gap-2 px-4 pb-3">
                   {/* Listen pill — static for Toolkit (no TTS wired yet, kept for UI parity) */}
                   <button
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs bg-[#f1f5f9] text-[#45556c] hover:bg-[#e2e8f0] transition-all"
-                    style={{ fontWeight: 500 }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs bg-[#f1f5f9] text-[#45556c] hover:bg-[#e2e8f0] transition-all font-medium"
                     aria-label={`Listen to phrase ${i + 1}`}
                     disabled
                   >
@@ -161,8 +160,7 @@ export function ToolkitStep({ data, footer }: Props) {
                   {/* Practice It pill */}
                   <button
                     onClick={() => startRecording(i)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs bg-[#0f172b] text-white hover:bg-[#1d293d] transition-all"
-                    style={{ fontWeight: 500 }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs bg-[#0f172b] text-white hover:bg-[#1d293d] transition-all font-medium"
                     aria-label={`Practice phrase ${i + 1}`}
                   >
                     <Mic className="w-3 h-3" />
@@ -181,7 +179,7 @@ export function ToolkitStep({ data, footer }: Props) {
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <div className="flex items-center gap-1.5 text-xs text-red-500" style={{ fontWeight: 500 }}>
+                    <div className="flex items-center gap-1.5 text-xs text-red-500 font-medium" >
                       <motion.div
                         animate={{ opacity: [1, 0.3] }}
                         transition={{ repeat: Infinity, duration: 0.8, repeatType: "reverse" }}
@@ -191,8 +189,7 @@ export function ToolkitStep({ data, footer }: Props) {
                     </div>
                     <button
                       onClick={stopRecording}
-                      className="flex items-center gap-1.5 bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600 transition-colors text-xs"
-                      style={{ fontWeight: 500 }}
+                      className="flex items-center gap-1.5 bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600 transition-colors text-xs font-medium"
                     >
                       <Square className="w-3 h-3" fill="currentColor" />
                       Done
@@ -204,13 +201,12 @@ export function ToolkitStep({ data, footer }: Props) {
               {/* Done state */}
               {isDone && (
                 <div className="flex items-center justify-between px-4 pb-3">
-                  <span className="text-xs text-emerald-700 flex items-center gap-1.5" style={{ fontWeight: 500 }}>
+                  <span className="text-xs text-emerald-700 flex items-center gap-1.5 font-medium" >
                     <CheckCircle2 className="w-3.5 h-3.5" /> Practiced!
                   </span>
                   <button
                     onClick={() => resetPhrase(i)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#e2e8f0] text-xs text-[#45556c] hover:bg-[#f8fafc] transition-colors"
-                    style={{ fontWeight: 500 }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#e2e8f0] text-xs text-[#45556c] hover:bg-[#f8fafc] transition-colors font-medium"
                   >
                     <RotateCcw className="w-3 h-3" /> Retry
                   </button>

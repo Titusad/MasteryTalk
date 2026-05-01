@@ -45,7 +45,7 @@ export function ScoreRing({ score, size = 100 }: ScoreRingProps) {
       <div className="absolute inset-0 flex items-center justify-center">
         <span
           className="text-2xl"
-          style={{ fontWeight: 700, color }}
+          style={{ color }}
         >
           {Math.round(score)}%
         </span>

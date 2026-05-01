@@ -59,8 +59,7 @@ export function LoadingScreen({ scenario }: { scenario: string }) {
             transition={{ delay: 0.3 }}
           >
             <p
-              className="text-white/40 text-xs mb-1"
-              style={{ fontWeight: 500 }}
+              className="text-white/40 text-xs mb-1 font-medium"
             >
               Your scenario
             </p>

@@ -263,7 +263,7 @@ function ExperienceScreen({
                 >
                     <h1
                         className="text-2xl md:text-[28px] text-[#0f172b] mb-2"
-                        style={{ fontWeight: 300, lineHeight: 1.2 }}
+                        style={{ lineHeight: 1.2 }}
                     >
                         {copy.heading}
                     </h1>
@@ -283,7 +283,7 @@ function ExperienceScreen({
                         {/* Header */}
                         <div className="flex items-start justify-between mb-3">
                             <label className="flex items-center gap-1.5">
-                                <span className="text-sm text-[#0f172b]" style={{ fontWeight: 600 }}>
+                                <span className="text-sm text-[#0f172b] font-semibold" >
                                     {copy.uploadLabel}
                                 </span>
                                 <span className="relative group cursor-help">
@@ -318,7 +318,7 @@ function ExperienceScreen({
                                     }`}
                             >
                                 <Upload className={`w-8 h-8 mx-auto mb-3 ${isDragging ? "text-[#6366f1]" : "text-[#94a3b8]"}`} />
-                                <p className="text-sm text-[#0f172b]" style={{ fontWeight: 500 }}>
+                                <p className="text-sm text-[#0f172b] font-medium" >
                                     {isDragging ? "Drop it right here" : copy.uploadDrag}
                                 </p>
                                 <p className="text-xs text-[#62748e] mt-1">
@@ -330,7 +330,7 @@ function ExperienceScreen({
                         {cvStatus === "uploading" && (
                             <div className="w-full border border-[#e2e8f0] rounded-xl p-8 text-center bg-[#f8fafc]">
                                 <Loader2 className="w-8 h-8 mx-auto mb-3 text-[#6366f1] animate-spin" />
-                                <p className="text-sm text-[#0f172b]" style={{ fontWeight: 500 }}>
+                                <p className="text-sm text-[#0f172b] font-medium" >
                                     {copy.uploadReading}
                                 </p>
                                 <p className="text-xs text-[#62748e] mt-1">
@@ -344,7 +344,7 @@ function ExperienceScreen({
                                 <div className="flex items-center justify-between mb-3">
                                     <div className="flex items-center gap-2">
                                         <CheckCircle2 className="w-4 h-4 text-[#16a34a]" />
-                                        <span className="text-sm text-[#15803d]" style={{ fontWeight: 600 }}>{copy.uploadDone}</span>
+                                        <span className="text-sm text-[#15803d] font-semibold" >{copy.uploadDone}</span>
                                     </div>
                                     <button
                                         onClick={clearCv}
@@ -356,7 +356,7 @@ function ExperienceScreen({
                                 </div>
                                 <div className="flex items-center gap-2 mb-3">
                                     <FileText className="w-3.5 h-3.5 text-[#45556c]" />
-                                    <span className="text-xs text-[#45556c]" style={{ fontWeight: 500 }}>{cvFileName}</span>
+                                    <span className="text-xs text-[#45556c] font-medium" >{cvFileName}</span>
                                 </div>
                                 <div className="bg-white border border-[#e2e8f0] rounded-lg p-3 max-h-[160px] overflow-y-auto">
                                     <p className="text-xs text-[#314158] leading-relaxed whitespace-pre-wrap">{cvSummary}</p>
@@ -390,7 +390,7 @@ function ExperienceScreen({
                                 <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center gap-2">
                                         <X className="w-4 h-4 text-[#dc2626]" />
-                                        <span className="text-sm text-[#dc2626]" style={{ fontWeight: 600 }}>Processing failed</span>
+                                        <span className="text-sm text-[#dc2626] font-semibold" >Processing failed</span>
                                     </div>
                                     <button
                                         onClick={clearCv}
@@ -408,8 +408,7 @@ function ExperienceScreen({
                             <div className="mt-4">
                                 <button
                                     onClick={() => setShowManualFallback(!showManualFallback)}
-                                    className="flex items-center gap-1.5 text-xs text-[#62748e] hover:text-[#0f172b] transition-colors"
-                                    style={{ fontWeight: 500 }}
+                                    className="flex items-center gap-1.5 text-xs text-[#62748e] hover:text-[#0f172b] transition-colors font-medium"
                                 >
                                     <ChevronDown
                                         className={`w-3.5 h-3.5 transition-transform ${showManualFallback ? "rotate-180" : ""}`}
@@ -462,7 +461,6 @@ function ExperienceScreen({
                             ? "bg-[#0f172b] text-white hover:bg-[#1d293d] cursor-pointer"
                             : "bg-[#e2e8f0] text-[#94a3b8] cursor-not-allowed"
                             }`}
-                        style={{ fontWeight: 500 }}
                     >
                         {cvStatus === "uploading" ? (
                             <>
@@ -480,8 +478,7 @@ function ExperienceScreen({
                     {onBack && (
                         <button
                             onClick={onBack}
-                            className="mt-4 flex items-center justify-center gap-1.5 py-2.5 text-sm text-[#62748e] hover:text-[#0f172b] transition-colors"
-                            style={{ fontWeight: 500 }}
+                            className="mt-4 flex items-center justify-center gap-1.5 py-2.5 text-sm text-[#62748e] hover:text-[#0f172b] transition-colors font-medium"
                         >
                             <ArrowLeft className="w-3.5 h-3.5" />
                             Back

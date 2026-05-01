@@ -83,7 +83,7 @@ export function IntroductionScreen({
       {/* Scenario pill */}
       <span
         className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0f172b] text-white text-[11px] mb-5"
-        style={{ fontWeight: 600, letterSpacing: "0.02em" }}
+        style={{ letterSpacing: "0.02em" }}
       >
         {SCENARIO_LABELS[scenarioType]} · {levelTitle}
       </span>
@@ -99,7 +99,7 @@ export function IntroductionScreen({
       </h1>
 
       {/* Transition text */}
-      <p className="text-sm text-[#62748e] text-center mb-8 mt-2" style={{ fontWeight: 500 }}>
+      <p className="text-sm text-[#62748e] text-center mb-8 mt-2 font-medium" >
         To get there, we'll go through 3 steps:
       </p>
 
@@ -131,13 +131,13 @@ export function IntroductionScreen({
       </div>
 
       {/* Time estimate */}
-      <div className="flex items-center gap-1.5 text-xs text-[#94a3b8] mb-6" style={{ fontWeight: 500 }}>
+      <div className="flex items-center gap-1.5 text-xs text-[#94a3b8] mb-6 font-medium" >
         <Clock className="w-3.5 h-3.5" />
         <span> Time in practice: ~15-20 min</span>
       </div>
 
       {/* Motivational */}
-      <p className="text-sm text-[#62748e] text-center mb-8 mt-2" style={{ fontWeight: 500 }}>
+      <p className="text-sm text-[#62748e] text-center mb-8 mt-2 font-medium" >
         Are you ready?
       </p>
 

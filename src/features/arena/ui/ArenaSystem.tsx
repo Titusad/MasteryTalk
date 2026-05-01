@@ -175,7 +175,7 @@ export function PhaseIndicator({ phase }: { phase: ArenaPhase }) {
       <Icon className="w-3.5 h-3.5" style={{ color: config.color }} />
       <span
         className="text-xs"
-        style={{ fontWeight: 600, color: config.color }}
+        style={{ color: config.color }}
       >
         {config.label}
       </span>
@@ -253,8 +253,7 @@ export function PhaseTransitionToast({
             </div>
             <div className="flex-1 min-w-0">
               <h4
-                className="text-sm text-[#0f172b] mb-0.5"
-                style={{ fontWeight: 600 }}
+                className="text-sm text-[#0f172b] mb-0.5 font-semibold"
               >
                 {msg.title}
               </h4>
@@ -352,7 +351,6 @@ export function InlineHint({ phrase, phase, isUsed, onUse }: InlineHintProps) {
             className={`text-xs leading-relaxed ${
               isUsed ? "text-[#166534]" : isGuidance ? "text-[#78350f]" : "text-[#1e3a5f]"
             }`}
-            style={{ fontWeight: 500 }}
           >
             "{phrase.phrase}"
           </p>
@@ -458,7 +456,7 @@ export function TrySayingHint({ starter, why, phase }: TrySayingHintProps) {
             className={`text-xs leading-relaxed ${
               isGuidance ? "text-[#854d0e]" : "text-[#0c4a6e]"
             }`}
-            style={{ fontWeight: 500, fontStyle: "italic" }}
+            style={{ fontStyle: "italic" }}
           >
             "{starter}"
           </p>

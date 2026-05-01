@@ -39,7 +39,6 @@ export function PricingCard({
                             ? "bg-white text-[#2d2d2d] border-gray-200"
                             : "bg-[#2d2d2d] text-white border-[#2d2d2d]"
                         }`}
-                    style={{ fontWeight: 600 }}
                 >
                     {badge}
                 </div>
@@ -47,7 +46,6 @@ export function PricingCard({
 
             <h3
                 className={`text-xl mb-1 ${dark ? "text-white" : "text-gray-900"}`}
-                style={{ fontWeight: 600 }}
             >
                 {name}
             </h3>
@@ -70,7 +68,7 @@ export function PricingCard({
                         }`}
                 >
                     <Zap className="w-3 h-3" />
-                    <span style={{ fontWeight: 500 }}>{equivalent}</span>
+                    <span className="font-medium">{equivalent}</span>
                 </div>
             )}
             {!equivalent && <div className="mb-6" />}
@@ -80,7 +78,6 @@ export function PricingCard({
                         ? "bg-white text-[#2d2d2d] hover:bg-gray-100 shadow-lg"
                         : "border-2 border-[#2d2d2d] text-gray-900 hover:bg-gray-50"
                     }`}
-                style={{ fontWeight: 500 }}
                 onClick={onSubscribe}
             >
                 {buttonText}

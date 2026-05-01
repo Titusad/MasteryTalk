@@ -177,13 +177,12 @@ export function SessionReport({
           >
             {isRealData && (
               <span
-                className="inline-flex items-center gap-1.5 text-[10px] bg-[#50C878]/15 text-[#16a34a] px-3 py-1 rounded-full"
-                style={{ fontWeight: 600 }}
+                className="inline-flex items-center gap-1.5 text-[10px] bg-[#50C878]/15 text-[#16a34a] px-3 py-1 rounded-full font-semibold"
               >
                 <Sparkles className="w-3 h-3" /> AI-generated
               </span>
             )}
-            <span className="text-[10px] bg-[#f1f5f9] text-[#62748e] px-3 py-1 rounded-full" style={{ fontWeight: 500 }}>
+            <span className="text-[10px] bg-[#f1f5f9] text-[#62748e] px-3 py-1 rounded-full font-medium" >
               {totalTime}
             </span>
           </PageTitleBlock>
@@ -201,7 +200,7 @@ export function SessionReport({
           >
             {/* Left side: Score Gauge */}
             <div className="flex flex-col items-center justify-center shrink-0">
-              <p className="text-[10px] uppercase tracking-wider text-white/50 mb-4 md:mb-5" style={{ fontWeight: 600 }}>
+              <p className="text-[10px] uppercase tracking-wider text-white/50 mb-4 md:mb-5 font-semibold" >
                 Readiness Score
               </p>
               <ProficiencyGauge score={interviewReadiness} size={120} darkBg />
@@ -209,7 +208,7 @@ export function SessionReport({
 
             {/* Right side: Coach Verdict & High-level Strengths */}
             <div className="flex-1 text-left border-t md:border-t-0 md:border-l border-white/10 pt-6 md:pt-0 md:pl-8 flex flex-col justify-center">
-              <h3 className="text-white text-lg mb-2" style={{ fontWeight: 500 }}>
+              <h3 className="text-white text-lg mb-2 font-medium" >
                 Coach's Verdict
               </h3>
               <p className="text-white/80 text-sm mb-5 leading-relaxed">
@@ -222,7 +221,7 @@ export function SessionReport({
               
               {topStrengths.length > 0 && (
                 <div className="space-y-3">
-                  <h4 className="text-[11px] uppercase tracking-wider text-white/50" style={{ fontWeight: 600 }}>Top Strengths</h4>
+                  <h4 className="text-[11px] uppercase tracking-wider text-white/50 font-semibold" >Top Strengths</h4>
                   {topStrengths.map((str, i) => (
                     <div key={i} className="flex items-start gap-3">
                       <Sparkles className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
@@ -249,7 +248,7 @@ export function SessionReport({
               <Sparkles className="w-4 h-4 text-[#16a34a]" />
             </div>
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-[#16a34a] mb-1" style={{ fontWeight: 600 }}>Session highlight</p>
+              <p className="text-[10px] uppercase tracking-wider text-[#16a34a] mb-1 font-semibold" >Session highlight</p>
               <p className="text-sm text-[#0f172b] leading-relaxed">{sessionHighlight}</p>
             </div>
           </motion.div>
@@ -274,7 +273,7 @@ export function SessionReport({
                     <p className="text-[11px] text-[#62748e] mb-1.5 font-medium bg-[#e2e8f0]/60 inline-flex items-center px-2 py-0.5 rounded-md">
                         Based on: {bullet.experienceContext}
                     </p>
-                    <p className="text-[#0f172b] text-[15px] mb-4 mt-1 pr-10" style={{ fontWeight: 500, lineHeight: 1.6 }}>
+                    <p className="text-[#0f172b] text-[15px] mb-4 mt-1 pr-10" style={{ lineHeight: 1.6 }}>
                         {bullet.rewrittenBullet}
                     </p>
                     
@@ -320,12 +319,11 @@ export function SessionReport({
                 <div key={section.num} className="bg-[#f8fafc] rounded-xl border border-[#e2e8f0] p-4">
                   <div className="flex items-center gap-2 mb-3">
                     <span
-                      className="w-6 h-6 rounded-lg bg-[#3b82f6]/10 flex items-center justify-center text-[10px] text-[#3b82f6]"
-                      style={{ fontWeight: 700 }}
+                      className="w-6 h-6 rounded-lg bg-[#3b82f6]/10 flex items-center justify-center text-[10px] text-[#3b82f6] font-bold"
                     >
                       {section.num}
                     </span>
-                    <p className="text-sm text-[#0f172b]" style={{ fontWeight: 500 }}>
+                    <p className="text-sm text-[#0f172b] font-medium" >
                       {section.title}
                     </p>
                   </div>
@@ -334,7 +332,7 @@ export function SessionReport({
                       <p key={pi} className="text-sm text-[#45556c] leading-relaxed">
                         {p.text}
                         {p.highlights?.map((h, hi) => (
-                          <span key={hi} className="text-[#0f172b]" style={{ fontWeight: 500 }}>
+                          <span key={hi} className="text-[#0f172b] font-medium" >
                             {h.phrase}
                           </span>
                         ))}
@@ -370,10 +368,10 @@ export function SessionReport({
                     transition={{ duration: 0.4, delay: 0.24 + i * 0.08 }}
                   >
                     <div className="flex items-start justify-between mb-2">
-                      <h3 className="text-[#0f172b] text-sm" style={{ fontWeight: 600 }}>{step.title}</h3>
+                      <h3 className="text-[#0f172b] text-sm font-semibold" >{step.title}</h3>
                       <span
                         className="text-[10px] px-2.5 py-0.5 rounded-full shrink-0 ml-3"
-                        style={{ fontWeight: 600, backgroundColor: pillarColor.bg, color: pillarColor.text }}
+                        style={{ backgroundColor: pillarColor.bg, color: pillarColor.text }}
                       >
                         {step.pillar}
                       </span>
@@ -397,7 +395,7 @@ export function SessionReport({
             delay={0.24}
           >
             {/* Score + Verdict */}
-            <div className="flex items-center gap-5 mb-5">
+            <div className="flex items-center gap-4 mb-4">
               <div className="relative w-[80px] h-[80px] shrink-0">
                 <svg width={80} height={80} className="-rotate-90">
                   <circle cx={40} cy={40} r={34} fill="none" stroke="#e2e8f0" strokeWidth={8} />
@@ -412,13 +410,13 @@ export function SessionReport({
                   />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-xl text-[#0f172b]" style={{ fontWeight: 700 }}>
+                  <span className="text-xl text-[#0f172b] font-bold" >
                     {realFeedback.preparationUtilization.score}%
                   </span>
                 </div>
               </div>
               <div>
-                <p className="text-sm text-[#0f172b] mb-1" style={{ fontWeight: 600 }}>
+                <p className="text-sm text-[#0f172b] mb-1 font-semibold" >
                   {realFeedback.preparationUtilization.verdict}
                 </p>
                 <p className="text-xs text-[#62748e]">
@@ -446,10 +444,10 @@ export function SessionReport({
                   >
                     <div className="flex items-center gap-2 mb-1">
                       <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: cfg.dot }} />
-                      <span className="text-[10px] text-[#62748e] uppercase tracking-wider" style={{ fontWeight: 600 }}>
+                      <span className="text-[10px] text-[#62748e] uppercase tracking-wider font-semibold" >
                         {ins.aspect}
                       </span>
-                      <span className="text-[10px] ml-auto px-2 py-0.5 rounded-full bg-white/70" style={{ fontWeight: 600, color: cfg.dot }}>
+                      <span className="text-[10px] ml-auto px-2 py-0.5 rounded-full bg-white/70" style={{ color: cfg.dot }}>
                         {cfg.label}
                       </span>
                     </div>
@@ -511,10 +509,10 @@ export function SessionReport({
                         />
                       </svg>
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-base" style={{ fontWeight: 700, color }}>{Math.round(s.value)}</span>
+                        <span className="text-base" style={{ color }}>{Math.round(s.value)}</span>
                       </div>
                     </div>
-                    <span className="text-[10px] text-[#62748e]" style={{ fontWeight: 500 }}>{s.label}</span>
+                    <span className="text-[10px] text-[#62748e] font-medium" >{s.label}</span>
                   </motion.div>
                 );
               })}
@@ -536,7 +534,7 @@ export function SessionReport({
                     transition={{ delay: 0.5 }}
                   >
                     <Award className="w-4 h-4" style={{ color }} />
-                    <span className="text-sm" style={{ fontWeight: 600, color }}>
+                    <span className="text-sm" style={{ color }}>
                       Overall: {Math.round(ov)}% — {label}
                     </span>
                   </motion.div>
@@ -547,7 +545,7 @@ export function SessionReport({
             {/* Problem words */}
             {problemWords.length > 0 && (
               <div className="mb-5">
-                <h3 className="text-sm text-[#0f172b] mb-3" style={{ fontWeight: 600 }}>
+                <h3 className="text-sm text-[#0f172b] mb-3 font-semibold" >
                   Focus Words
                 </h3>
                 <div className="flex flex-wrap gap-2">
@@ -563,7 +561,7 @@ export function SessionReport({
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3 }}
                       >
-                        <span style={{ fontWeight: 600 }}>{pw.word}</span>
+                        <span className="font-semibold">{pw.word}</span>
                         {pw.count > 1 && (
                           <span className="text-[10px] opacity-70">×{pw.count}</span>
                         )}
@@ -579,7 +577,7 @@ export function SessionReport({
               <div className="bg-[#f0f4ff] border border-[#c7d2fe] rounded-xl p-4 flex items-start gap-3">
                 <Lightbulb className="w-4 h-4 text-[#6366f1] shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider text-[#6366f1] mb-1" style={{ fontWeight: 600 }}>Tip</p>
+                  <p className="text-[10px] uppercase tracking-wider text-[#6366f1] mb-1 font-semibold" >Tip</p>
                   <p className="text-sm text-[#314158] leading-relaxed">{pronTip}</p>
                 </div>
               </div>
@@ -597,7 +595,7 @@ export function SessionReport({
           transition={{ duration: 0.6, delay: 0.28 }}
         >
           <Trophy className="w-10 h-10 text-white/80 mx-auto mb-4" />
-          <h2 className="text-white text-2xl mb-3" style={{ fontWeight: 500 }}>
+          <h2 className="text-white text-2xl mb-3 font-medium" >
             Good luck with your {scenarioLabel}!
           </h2>
           <p className="text-white/70 max-w-md mx-auto">
@@ -621,7 +619,6 @@ export function SessionReport({
                   ? "bg-gradient-to-r from-[#10b981] to-[#059669] text-white hover:from-[#059669] hover:to-[#047857]"
                   : "bg-white border border-[#e2e8f0] text-[#0f172b] hover:bg-[#f8fafc]"
                 }`}
-              style={{ fontWeight: 500 }}
             >
               {userPlan === "free" ? (
                 <>
@@ -641,8 +638,7 @@ export function SessionReport({
           {onFinish && (
             <button
               onClick={onFinish}
-              className="bg-[#0f172b] text-white px-10 py-4 rounded-full flex items-center gap-3 shadow-lg hover:bg-[#1d293d] transition-colors text-lg"
-              style={{ fontWeight: 500 }}
+              className="bg-[#0f172b] text-white px-10 py-4 rounded-full flex items-center gap-3 shadow-lg hover:bg-[#1d293d] transition-colors text-lg font-medium"
             >
               <Check className="w-5 h-5" />
               {finishLabel}

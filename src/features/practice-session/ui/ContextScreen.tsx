@@ -276,7 +276,7 @@ function ContextScreen({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
                 >
-                    <h1 className="text-2xl md:text-[28px] text-[#0f172b] mb-2" style={{ fontWeight: 300, lineHeight: 1.2 }}>
+                    <h1 className="text-2xl md:text-[28px] text-[#0f172b] mb-2" style={{ lineHeight: 1.2 }}>
                         {title}
                     </h1>
                     <p className="text-[#45556c] text-sm md:text-base max-w-lg mx-auto">{subtitle}</p>
@@ -398,7 +398,6 @@ function ContextScreen({
                                 ? "bg-[#0f172b] text-white hover:bg-[#1d293d] cursor-pointer"
                                 : "bg-[#e2e8f0] text-[#94a3b8] cursor-not-allowed"
                         }`}
-                        style={{ fontWeight: 500 }}
                     >
                         Let's build your strategy
                         <ArrowRight className="w-5 h-5" />
@@ -414,8 +413,7 @@ function ContextScreen({
                     {onBack && (
                         <button
                             onClick={onBack}
-                            className="flex items-center justify-center gap-1.5 py-2 text-sm text-[#62748e] hover:text-[#0f172b] transition-colors"
-                            style={{ fontWeight: 500 }}
+                            className="flex items-center justify-center gap-1.5 py-2 text-sm text-[#62748e] hover:text-[#0f172b] transition-colors font-medium"
                         >
                             <ArrowLeft className="w-3.5 h-3.5" />
                             Back

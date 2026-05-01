@@ -35,7 +35,7 @@ export function SelfIntroContextScreen({ onSelect }: SelfIntroContextScreenProps
       {/* Pill */}
       <span
         className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0f172b] text-white text-[11px] mb-5"
-        style={{ fontWeight: 600, letterSpacing: "0.02em" }}
+        style={{ letterSpacing: "0.02em" }}
       >
         Self-Introduction · Choose Your Setting
       </span>
@@ -47,7 +47,7 @@ export function SelfIntroContextScreen({ onSelect }: SelfIntroContextScreenProps
       >
         Where are you introducing yourself?
       </h1>
-      <p className="text-sm text-[#62748e] text-center mb-8" style={{ fontWeight: 500 }}>
+      <p className="text-sm text-[#62748e] text-center mb-8 font-medium" >
         Pick the setting — I'll adapt the conversation and feedback to match.
       </p>
 
@@ -92,7 +92,6 @@ export function SelfIntroContextScreen({ onSelect }: SelfIntroContextScreenProps
               {/* Label */}
               <h3
                 className="text-sm text-[#0f172b] mb-1"
-                style={{ fontWeight: 600 }}
               >
                 {ctx.label}
               </h3>
@@ -115,7 +114,6 @@ export function SelfIntroContextScreen({ onSelect }: SelfIntroContextScreenProps
             ? "bg-[#0f172b] text-white hover:opacity-90 active:scale-[0.98] cursor-pointer"
             : "bg-[#e2e8f0] text-[#94a3b8] cursor-not-allowed"
         }`}
-        style={{ fontWeight: 600 }}
         whileTap={selected ? { scale: 0.97 } : undefined}
       >
         Continue
