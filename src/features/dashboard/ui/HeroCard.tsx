@@ -7,9 +7,6 @@ import { useState, useMemo } from "react";
 import DOMPurify from "dompurify";
 import { motion } from "motion/react";
 import { ChevronDown, Zap, ArrowRight, Check } from "lucide-react";
-import {
-  LineChart, Line, XAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-} from "recharts";
 import { ProficiencyRing } from "./ProficiencyRing";
 import type { UserState, ChurnGapSignal, CEFRProgress, VelocitySignal } from "../model/dashboard.computations";
 import type { RadarDataPoint } from "../model/dashboard.constants";
@@ -35,7 +32,6 @@ interface HeroCardProps {
   streak: number;
   allPracticeDates?: Set<string>;
   radarData: RadarDataPoint[];
-  progressData: Array<Record<string, string | number>>;
   totalSessions: number;
   focusArea: { pillar: string; score: number } | null;
   cefrProgress: CEFRProgress | null;
@@ -61,7 +57,6 @@ export function HeroCard({
   streak,
   allPracticeDates,
   radarData,
-  progressData,
   totalSessions,
   focusArea,
   cefrProgress,
@@ -123,6 +118,15 @@ export function HeroCard({
       };
     });
   }, [allPracticeDates]);
+
+  const closestGate = useMemo(() => {
+    if (!cefrProgress) return null;
+    const failing = cefrProgress.gates.filter((g) => !g.passed);
+    if (failing.length === 0) return null;
+    return failing.reduce((best, g) =>
+      (g.threshold - g.score) < (best.threshold - best.score) ? g : best
+    );
+  }, [cefrProgress]);
 
   const diagnosisHTML = useMemo(() => {
     let text = diagnosis.text;
@@ -261,31 +265,19 @@ export function HeroCard({
                     {cefrProgress.nextLevel}
                   </span>
                 </p>
-                {/* Velocity Signal */}
-                {velocitySignal?.trend === "improving" && velocitySignal.estimatedWeeks !== null && (
+                {/* Velocity / Focus hint */}
+                {velocitySignal?.trend === "improving" && velocitySignal.estimatedWeeks !== null ? (
                   <p className="text-[10px] text-center text-[#94a3b8] mt-1">
                     {velocitySignal.estimatedWeeks <= 1
                       ? "Almost there at your current pace"
                       : `~${velocitySignal.estimatedWeeks} weeks at your current pace`}
                   </p>
-                )}
-                {velocitySignal?.trend === "plateau" && (
+                ) : closestGate ? (
                   <p className="text-[10px] text-center text-[#94a3b8] mt-1">
-                    Increase session frequency to accelerate
+                    {`Focus on ${closestGate.pillar} — ${closestGate.threshold - closestGate.score} pt${closestGate.threshold - closestGate.score === 1 ? "" : "s"} from ${cefrProgress?.nextLevel}`}
                   </p>
-                )}
+                ) : null}
               </div>
-            )}
-
-            {/* Delta Chip */}
-            {proficiencyDelta !== 0 && totalSessions >= 2 && (
-              <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${
-                proficiencyDelta > 0
-                  ? "bg-[#f0f4f8] text-[#0f172b] border border-[#e2e8f0]"
-                  : "bg-[#fdecea] text-[#c0392b]"
-              }`}>
-                {proficiencyDelta > 0 ? `↑ +${proficiencyDelta}` : `↓ ${proficiencyDelta}`}
-              </span>
             )}
 
             {/* Expand Button */}
@@ -308,63 +300,56 @@ export function HeroCard({
           expandedMetrics ? "max-h-[320px] border border-[#e2e8f0] border-t-0 rounded-b-2xl bg-white" : "max-h-0"
         }`}
       >
-        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Left: Pillar Breakdown */}
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wider text-[#94a3b8] mb-4">Pillar Breakdown</p>
-            {PILLAR_NAMES.map((pillar, idx) => {
-              const d = radarData.find((r) => r.skill === pillar);
-              const score = d?.score || 0;
-              const color = PILLAR_COLOR_MAP[pillar] || "#94a3b8";
-              return (
-                <div key={pillar} className="flex items-center gap-3 mb-2">
-                  <span className="text-xs text-[#45556c] w-24 flex-shrink-0">{pillar}</span>
-                  <div className="flex-1 h-1.5 bg-[#f0f4f8] rounded-full overflow-hidden">
-                    <motion.div
-                      className="h-full rounded-full"
-                      style={{ backgroundColor: color }}
-                      initial={{ width: "0%" }}
-                      animate={{ width: `${score}%` }}
-                      transition={{ duration: 0.6, ease: "easeOut", delay: 0.05 * idx }}
-                    />
-                  </div>
-                  <span className="text-xs font-medium w-8 text-right" style={{ color }}>
-                    {score}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Right: Overtime Chart */}
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wider text-[#94a3b8] mb-4">Overtime</p>
-            {progressData.length >= 2 ? (
-              <ResponsiveContainer width="100%" height={150}>
-                <LineChart data={progressData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                  <XAxis dataKey="session" hide />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "#fff",
-                      border: "1px solid #e2e8f0",
-                      borderRadius: "8px",
-                      fontSize: "12px",
-                    }}
-                  />
-                  {["Vocabulary", "Fluency", "Professional Tone", "Persuasion"].map((key) => (
-                    <Line key={key} type="monotone" dataKey={key} stroke={PILLAR_COLOR_MAP[key]} strokeWidth={1.5} dot={false} />
-                  ))}
-                </LineChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-36">
-                <p className="text-sm text-[#94a3b8] italic text-center">
-                  Complete 2 sessions to see your progress over time
-                </p>
-              </div>
+        <div className="p-6">
+          {/* Pillar Breakdown — full width with next-level threshold markers */}
+          <p className="text-xs font-medium uppercase tracking-wider text-[#94a3b8] mb-4">
+            Skill breakdown
+            {cefrProgress && (
+              <span className="ml-2 normal-case font-normal text-[#94a3b8]">
+                — target: {cefrProgress.nextLevel}
+              </span>
             )}
-          </div>
+          </p>
+          {PILLAR_NAMES.map((pillar, idx) => {
+            const d = radarData.find((r) => r.skill === pillar);
+            const score = d?.score || 0;
+            const color = PILLAR_COLOR_MAP[pillar] || "#94a3b8";
+            const gate = cefrProgress?.gates.find((g) => g.pillar === pillar);
+            const threshold = gate?.threshold ?? null;
+            const passed = gate?.passed ?? false;
+            return (
+              <div key={pillar} className="flex items-center gap-3 mb-3">
+                <span className="text-xs text-[#45556c] w-28 flex-shrink-0">{pillar}</span>
+                <div className="flex-1 h-2 bg-[#f0f4f8] rounded-full overflow-visible relative">
+                  <motion.div
+                    className="h-full rounded-full"
+                    style={{ backgroundColor: color }}
+                    initial={{ width: "0%" }}
+                    animate={{ width: `${score}%` }}
+                    transition={{ duration: 0.6, ease: "easeOut", delay: 0.05 * idx }}
+                  />
+                  {threshold !== null && (
+                    <div
+                      className="absolute top-1/2 -translate-y-1/2 w-0.5 h-3.5 rounded-full"
+                      style={{
+                        left: `${threshold}%`,
+                        backgroundColor: passed ? "#00C950" : "#94a3b8",
+                      }}
+                      title={`${cefrProgress?.nextLevel} target: ${threshold}`}
+                    />
+                  )}
+                </div>
+                <span className="text-xs font-medium w-6 text-right" style={{ color }}>
+                  {score}
+                </span>
+                {threshold !== null && (
+                  <span className={`text-[10px] w-10 text-right ${passed ? "text-[#00C950]" : "text-[#94a3b8]"}`}>
+                    {passed ? "✓" : `/${threshold}`}
+                  </span>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </motion.div>

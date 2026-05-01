@@ -151,7 +151,6 @@ export function DashboardPage({
           streak={data.streak}
           allPracticeDates={data.allPracticeDates}
           radarData={data.radarData}
-          progressData={data.progressData}
           totalSessions={data.totalSessions}
           focusArea={data.focusArea}
           cefrProgress={data.cefrProgress}
