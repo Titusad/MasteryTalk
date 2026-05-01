@@ -1,84 +1,61 @@
 # MasteryTalk PRO — Cómo Trabajamos
 
-> Hub central de reglas de trabajo. Lee este documento al inicio de cada sesión.
->
-> Last updated: 2026-04-17
+> Protocolo de sesión y convenciones de trabajo.
+> Last updated: 2026-05-01
 
 ---
 
-## Flujo de Trabajo (Spec-Driven Development)
+## Flujo de trabajo (SDD)
 
 ```
 ROADMAP.md → PRODUCT_SPEC.md → DESIGN_SYSTEM.md → Código → Git
 ```
 
-**Regla fundamental:** Nunca se escribe código sin antes verificar que el cambio es consistente con la spec del producto y el design system.
-
-### Antes de cualquier tarea
-
-| Paso | Documento | Pregunta |
-|------|-----------|----------|
-| 1 | `docs/ROADMAP.md` | ¿En qué fase estamos? ¿Esta tarea está priorizada? |
-| 2 | `docs/PRODUCT_SPEC.md` | ¿Es consistente con la spec? ¿Necesita actualización? |
-| 3 | `docs/DESIGN_SYSTEM.md` | ¿Cumple con las reglas de diseño? |
-| 4 | `docs/SYSTEM_PROMPTS.md` | (Solo si se tocan prompts) ¿Sigue la arquitectura de 7 bloques? |
-
-### Si la spec necesita cambiar
-
-1. Actualizar `PRODUCT_SPEC.md` PRIMERO
-2. Obtener aprobación del usuario
-3. ENTONCES escribir código
+Nunca se escribe código sin verificar consistencia con el spec y el design system.
+Si el spec necesita cambiar → actualizar `PRODUCT_SPEC.md` PRIMERO → aprobación → código.
 
 ---
 
-## Arquitectura FSD (Feature-Sliced Design)
+## Protocolo de sesión
+
+### Antes de cualquier tarea
+1. Leer `docs/PRODUCT_SPEC.md` — source of truth del producto
+2. Leer `docs/ROADMAP.md` — qué está live, qué es prioridad
+3. Leer el doc específico según el tipo de tarea (ver tabla en `CLAUDE.md`)
+
+### Antes de cualquier cambio de código
 
 ```
-app → pages → widgets → features → entities → shared
+📋 PLAN DE CAMBIOS
+Archivos a modificar: [lista con descripción]
+Archivos a crear:     [lista con descripción]
+Archivos a eliminar:  [lista o "ninguno"]
+Impacto:              [otros archivos afectados]
+¿Procedo?
 ```
 
-### Reglas de importación
+Esperar confirmación explícita antes de proceder.
 
-- Las capas superiores importan de las inferiores. **Nunca al revés.**
-- `features/` nunca importa de otros `features/`.
-- `shared/` tiene **cero** dependencias de capas superiores.
-- **Rendimiento SPA:** Todas las Páginas (capa `pages/` de nivel superior expuestas en `App.tsx`) deben importarse **estrictamente** usando `React.lazy()` (o el helper `lazyRetry` actual) para mantener el Code Splitting. Nunca usar imports estáticos para rutas enteras.
+### Al finalizar una tarea
 
-### Regla de oro para migraciones
-
-> **Nunca mover un archivo Y cambiar su contenido en el mismo paso.**
-> Mover primero → verificar que compila → luego refactorizar.
-
-### Estructura actual del proyecto
-
-```
-src/
-├── app/           ← Coordinación global (App.tsx, routing, hooks)
-├── pages/         ← Páginas completas
-├── widgets/       ← Componentes compuestos (SessionReport, etc.)
-├── features/      ← Lógica de negocio (practice-session, arena, etc.)
-├── entities/      ← Tipos y modelos de dominio
-├── shared/        ← UI compartida, utilidades puras
-├── services/      ← Adaptadores de servicios (Supabase, mocks)
-└── imports/       ← Barrel exports
-```
+1. Solicitar prueba manual al usuario (especialmente en UI)
+2. Marcar tarea como `[x]` en `ROADMAP.md` tras confirmación
+3. Verificar que compila sin errores
+4. Commit con Conventional Commits + push a `main`
 
 ---
 
 ## Convenciones de Git
-
-### Commits
 
 Formato: **Conventional Commits** en inglés.
 
 ```
 <type>(<scope>): <description>
 
-feat(landing): add pricing section
-fix(arena): correct phase transition logic
-docs(spec): update pricing model to one-time purchases
+feat(dashboard): add War Room session counter
+fix(tts): swap ElevenLabs to OpenAI as primary
+docs(spec): update pricing model v2.8
 refactor(shared): extract AppModal to separate file
-chore(deps): update motion/react to 12.x
 ```
 
 | Prefix | Uso |
@@ -86,110 +63,42 @@ chore(deps): update motion/react to 12.x
 | `feat` | Nueva funcionalidad |
 | `fix` | Corrección de bug |
 | `docs` | Solo documentación |
-| `refactor` | Cambio de código sin cambiar comportamiento |
-| `chore` | Tareas de mantenimiento |
+| `refactor` | Cambio sin cambiar comportamiento |
+| `chore` | Mantenimiento, deps |
 | `style` | Formato, espacios (no afecta lógica) |
 | `perf` | Mejora de rendimiento |
 
-### Branching
-
-- **Actualmente:** Todo en `main` (single developer workflow).
-- Push directo a `main` tras verificar que compila.
-
-### Flujo de push
-
-```bash
-pnpm run dev          # Verificar que compila
-git add .
-git commit -m "feat(scope): description"
-git push
-```
+**Branching:** Todo en `main` (single developer). Push directo tras verificar que compila.
 
 ---
 
-## Convenciones de Código
+## Mapa de documentación
 
-### Stack
-
-| Capa | Tecnología | Notas |
-|------|-----------|-------|
-| Frontend | React 18 + TypeScript + Tailwind CSS v4 + Vite 6 | Hash-based routing (NO React Router) |
-| Animaciones | `motion/react` | Import como `motion`. NUNCA `framer-motion` |
-| Iconos | `lucide-react` | Única librería permitida |
-| Backend | Supabase Edge Functions (Deno + Hono) | |
-| Package manager | pnpm | NUNCA modificar `pnpm-lock.yaml` |
-
-### Archivos protegidos (NUNCA modificar)
-
-```
-src/app/components/figma/ImageWithFallback.tsx
-supabase/functions/server/kv_store.tsx
-utils/supabase/info.tsx
-pnpm-lock.yaml
-```
-
-### Componentes canónicos (usar ANTES de crear nuevos)
-
-Antes de crear cualquier componente estructural, verificar si ya existe en el [Design System](docs/DESIGN_SYSTEM.md) §6.
+| Documento | Propósito |
+|-----------|-----------|
+| `docs/PRODUCT_SPEC.md` | Source of truth: producto, precios, KV model, API |
+| `docs/ROADMAP.md` | Estado actual, prioridades, backlog |
+| `docs/DESIGN_SYSTEM.md` | Colores, tipografía, componentes canónicos |
+| `docs/BRAND_VOICE.md` | Voz de marca, copy guidelines |
+| `docs/SYSTEM_PROMPTS.md` | Arquitectura de prompts de IA (GPT-4o + Gemini) |
+| `docs/LEARNING_METHODOLOGY.md` | Metodología pedagógica, gaps identificados |
+| `docs/CEFR_CALIBRATION.md` | Calibración de niveles CEFR |
+| `docs/UX_POLISH.md` | Guía de polish UX, sprints completados |
+| `docs/JOURNEY.md` | Flujos de usuario detallados |
+| `.claude/CLAUDE.md` | Guía operacional para Claude Code |
 
 ---
 
-## Mapa de Documentación
+## Regla de oro FSD
 
-| Documento | Propósito | Cuándo consultarlo |
-|-----------|-----------|-------------------|
-| [ROADMAP.md](docs/ROADMAP.md) | Qué hacer y en qué orden | Al inicio de cada sesión |
-| [PRODUCT_SPEC.md](docs/PRODUCT_SPEC.md) | Qué es el producto, reglas de negocio | Antes de cualquier feature |
-| [DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md) | Cómo se ve: colores, tipografía, componentes | Antes de cualquier cambio UI |
-| [SYSTEM_PROMPTS.md](docs/SYSTEM_PROMPTS.md) | Cómo piensa la AI del producto | Antes de tocar prompts o Edge Functions |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Cómo trabajamos (este documento) | Referencia permanente |
+> Nunca mover un archivo Y cambiar su contenido en el mismo paso.
+> Mover primero → verificar que compila → luego refactorizar.
 
----
-
-## Protocolo de Sesión AI-Developer
-
-### Al inicio de cada sesión
-
-1. Leer `CONTRIBUTING.md` (este doc)
-2. Revisar `ROADMAP.md` → identificar la próxima tarea
-3. Presentar plan de cambios antes de escribir código
-
-### Antes de CUALQUIER cambio de código
-
-```
-📋 PLAN DE CAMBIOS
-
-Archivos a modificar:
-  - src/path/archivo.tsx — [descripción del cambio]
-
-Archivos a crear:
-  - src/path/nuevo.tsx — [descripción]
-
-Archivos a eliminar:
-  - (ninguno) o [lista]
-
-Impacto en otros componentes:
-  - [qué otros archivos podrían verse afectados]
-
-¿Procedo con estos cambios?
-```
-
-Esperar confirmación explícita antes de proceder.
-
-### Al finalizar una tarea (PROTOCOLO ESTRICTO)
-
-> **⚠️ REGLA CRÍTICA:** NUNCA asumas que una tarea está terminada sin actualizar los documentos y pedir permiso. La infracción de este protocolo es una falla severa.
-
-1. **Test y Comprobación Manual (REGLA CRÍTICA):** Cuando consideres que la tarea terminó (especialmente en UI o Front), solicita PRIMERO al usuario que haga una prueba manual en su entorno (`localhost`). No des la tarea por completada hasta que el usuario confirme que funciona correctamente.
-2. **Actualizar el ROADMAP:** Tras recibir confirmación de que la prueba es exitosa, abre `ROADMAP.md` y marca la tarea con `[x]`.
-3. **Verificar Compilación:** Asegúrate de que no existen errores y los tests corren (`pnpm run dev`).
-4. **Solicitar Autorización:** Muestra un resumen de los cambios y pregunta si tienes permiso para hacer commit en Git.
-5. **Pausa Obligatoria:** NO EJECUTES comandos Git (`git add`, `git commit`, `git push`) hasta recibir el *Sí* explícito del usuario.
-6. **Ejecutar Git:** Haz commit usando Conventional Commits y push a `main`.
 ---
 
 ## Changelog
 
-| Date | Change |
-|------|--------|
+| Fecha | Cambio |
+|-------|--------|
 | 2026-04-17 | Initial — working rules established |
+| 2026-05-01 | Limpieza: eliminada duplicación con CLAUDE.md, mapa de docs actualizado con todos los docs activos, protocolo simplificado |
