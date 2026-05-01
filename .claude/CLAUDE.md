@@ -30,6 +30,14 @@ Antes de cualquier tarea, leer en este orden según el tipo de trabajo:
 
 > Sin leer PRODUCT_SPEC + ROADMAP primero, se repiten errores ya resueltos y se trabaja fuera de prioridad.
 
+### Principios de desarrollo
+
+**SDD — Spec-Driven Development:**
+Toda feature, cambio de precio o decisión de producto debe actualizarse en `docs/PRODUCT_SPEC.md` PRIMERO → aprobación explícita → luego código. El spec es la fuente de verdad; el código es la consecuencia.
+
+**FSD — Feature-Sliced Design:**
+Toda la arquitectura frontend sigue FSD. Ver §6 y referencia canónica: https://feature-sliced.design/
+
 ---
 
 ## 1. Producto
@@ -131,7 +139,10 @@ Ver lista canónica en `docs/PRODUCT_SPEC.md §2`.
 
 ---
 
-## 6. Arquitectura FSD
+## 6. Arquitectura FSD (Feature-Sliced Design)
+
+> Referencia canónica: **https://feature-sliced.design/**
+> Skill de arquitectura: `.agent/skills/architecture/SKILL.md`
 
 Regla fundamental: **capas superiores importan de inferiores, nunca al revés.**
 
