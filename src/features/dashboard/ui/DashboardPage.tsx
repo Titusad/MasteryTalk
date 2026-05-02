@@ -24,6 +24,8 @@ import { SRDashboardCard } from "./SRDashboardCard";
 import { PracticePathsModule } from "./PracticePathsModule";
 import { CrossPathCard } from "./CrossPathCard";
 import { RecommendedLessonsCard } from "./RecommendedLessonsCard";
+import { GoalAnchorCard } from "./GoalAnchorCard";
+import { ProgressChartCard } from "./ProgressChartCard";
 import { LessonModal } from "@/pages/LessonModal";
 import type { MicroLesson } from "@/services/microLessons";
 
@@ -36,6 +38,7 @@ interface DashboardPageProps {
   onStartNewPractice?: (scenario: string, scenarioType?: string, levelId?: string, interlocutor?: string, startAtContext?: boolean) => void;
   userProfile?: OnboardingProfile | null;
   onProfileUpdate?: (profile: OnboardingProfile) => void;
+  onNavigateToAccount?: () => void;
   lang?: LandingLang;
   ownedPaths?: string[];
 }
@@ -46,6 +49,7 @@ export function DashboardPage({
   firstPracticeInterlocutor,
   onStartNewPractice,
   onNavigateToLibrary,
+  onNavigateToAccount,
   userProfile,
   lang = "en",
   ownedPaths = [],
@@ -212,6 +216,12 @@ export function DashboardPage({
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.08 }}
             >
+              <GoalAnchorCard
+                englishGoal={userProfile?.englishGoal}
+                daysActive={data.streak ?? 0}
+                onEditGoal={() => onNavigateToAccount?.()}
+              />
+              <ProgressChartCard />
               <CrossPathCard
                 perPathStats={data.perPathStats}
                 progressionState={progressionLoading ? null : progressionState}

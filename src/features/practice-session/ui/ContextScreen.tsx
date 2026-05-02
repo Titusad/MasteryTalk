@@ -198,6 +198,7 @@ function PresetCard({
 export interface ContextScreenMeta {
     sessionFocus?: string;
     confidenceScore?: number;
+    challengeMode?: boolean;
 }
 
 function ContextScreen({
@@ -225,6 +226,7 @@ function ContextScreen({
 
     const [sessionFocus, setSessionFocus] = useState<string | null>(null);
     const [confidenceScore, setConfidenceScore] = useState<number | null>(null);
+    const [challengeMode, setChallengeMode] = useState(false);
     const [selectedPreset, setSelectedPreset] = useState<SituationPreset | null>(null);
     const [presetsOpen, setPresetsOpen] = useState(true);
     const [values, setValues] = useState<Record<string, string>>(() => {
@@ -274,6 +276,7 @@ function ContextScreen({
         const meta: ContextScreenMeta = {};
         if (sessionFocus) meta.sessionFocus = sessionFocus;
         if (confidenceScore !== null) meta.confidenceScore = confidenceScore;
+        if (challengeMode) meta.challengeMode = true;
         return Object.keys(meta).length > 0 ? meta : undefined;
     };
 
@@ -437,7 +440,7 @@ function ContextScreen({
                     </div>
 
                     {/* Confidence check */}
-                    <div>
+                    <div className="mb-5">
                         <p className="text-sm font-medium text-[#0f172b] mb-2.5">
                             How are you feeling about this session?{" "}
                             <span className="text-[#94a3b8] font-normal">(optional)</span>
@@ -461,6 +464,26 @@ function ContextScreen({
                             <span className="text-xs text-[#94a3b8]">Nervous</span>
                             <span className="text-xs text-[#94a3b8]">Confident</span>
                         </div>
+                    </div>
+
+                    {/* Challenge Mode toggle */}
+                    <div className={`flex items-center justify-between rounded-xl px-3 py-3 transition-colors ${challengeMode ? "bg-[#0f172b]" : "bg-[#f8fafc] border border-[#e2e8f0]"}`}>
+                        <div>
+                            <p className={`text-sm font-medium ${challengeMode ? "text-white" : "text-[#0f172b]"}`}>
+                                Challenge Mode
+                            </p>
+                            <p className={`text-xs mt-0.5 ${challengeMode ? "text-white/60" : "text-[#94a3b8]"}`}>
+                                No hints, no prep. Exactly like the real thing.
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => setChallengeMode((v) => !v)}
+                            className={`relative w-11 h-6 rounded-full transition-colors cursor-pointer shrink-0 ${challengeMode ? "bg-white/20" : "bg-[#e2e8f0]"}`}
+                            role="switch"
+                            aria-checked={challengeMode}
+                        >
+                            <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full transition-transform ${challengeMode ? "translate-x-5 bg-white" : "translate-x-0 bg-white"}`} />
+                        </button>
                     </div>
                 </motion.div>
 

@@ -225,6 +225,7 @@ export function PracticeSessionPage({
      the correct values without needing them as deps. */
   const sessionFocusRef = useRef<string | undefined>(undefined);
   const confidenceScoreRef = useRef<number | undefined>(undefined);
+  const challengeModeRef = useRef<boolean>(false);
 
   /* Merge setup guidedFields with ContextScreen data
      IMPORTANT: useMemo with serialized deps prevents infinite re-render loop.
@@ -511,9 +512,14 @@ export function PracticeSessionPage({
   useEffect(() => {
     const contentReady = generatedScript || interviewBriefing;
     if (step === "generating" && scriptGenStatus === "ready" && contentReady) {
-      setStep("practice-prep");
+      if (challengeModeRef.current) {
+        // Challenge Mode: skip all briefing UI → go directly to interlocutor intro or practice
+        setStep(scenarioType === "interview" ? "interlocutor-intro" : "practice");
+      } else {
+        setStep("practice-prep");
+      }
     }
-  }, [step, scriptGenStatus, generatedScript, interviewBriefing]);
+  }, [step, scriptGenStatus, generatedScript, interviewBriefing, scenarioType]);
 
   /* ── Feedback analysis: call /analyze-feedback when entering "analyzing" step ──
    * Can be called early (when conversation ends) to pre-warm while the user is
@@ -763,8 +769,9 @@ export function PracticeSessionPage({
 
     // For interview scenarios, defer until briefingForSession is ready (Gap A+B)
     // This ensures anticipated questions + user drafts are injected into the prompt.
+    // Exception: Challenge Mode bypasses the briefing entirely.
     // On repeat (sessionVersion > 0), briefingForSession is already set so it fires immediately.
-    if (scenarioType === "interview" && !briefingForSession) return;
+    if (scenarioType === "interview" && !briefingForSession && !challengeModeRef.current) return;
     let cancelled = false;
     realConversationService
       .prepareSession({
@@ -1016,6 +1023,7 @@ export function PracticeSessionPage({
                   // Capture coaching parameters synchronously before state updates fire
                   sessionFocusRef.current = meta?.sessionFocus;
                   confidenceScoreRef.current = meta?.confidenceScore;
+                  challengeModeRef.current = meta?.challengeMode ?? false;
                   // Inject profile data into guided fields for AI generation
                   const enriched = { ...extraData };
                   if (scenarioType === "interview") {
@@ -1045,6 +1053,13 @@ export function PracticeSessionPage({
                       }).catch(() => {});
                     }).catch(() => {});
                     onProfileUpdate?.({ ...(userProfile as any), lastJobDescription: jd.trim() });
+                  }
+
+                  /* ── Challenge Mode: skip all briefing steps → go directly to generating ── */
+                  if (challengeModeRef.current) {
+                    fireScriptGeneration(enriched);
+                    setStep("generating");
+                    return;
                   }
 
                   /* ── Cache-hit fast path: skip GPT call if content is already cached ── */

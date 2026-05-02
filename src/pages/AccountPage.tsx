@@ -61,6 +61,7 @@ export function AccountPage({ userProfile, authUser, onLogout, onProfileUpdate }
   const [editIndustry, setEditIndustry] = useState(userProfile?.industry ?? "");
   const [editSeniority, setEditSeniority] = useState(userProfile?.seniority ?? "");
   const [editAchievements, setEditAchievements] = useState(userProfile?.keyExperience ?? "");
+  const [editEnglishGoal, setEditEnglishGoal] = useState(userProfile?.englishGoal ?? "");
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileSaved, setProfileSaved] = useState(false);
 
@@ -78,6 +79,7 @@ export function AccountPage({ userProfile, authUser, onLogout, onProfileUpdate }
       setEditIndustry(userProfile?.industry ?? "");
       setEditSeniority(userProfile?.seniority ?? "");
       setEditAchievements(userProfile?.keyExperience ?? "");
+      setEditEnglishGoal(userProfile?.englishGoal ?? "");
       setCvFileName(userProfile?.cvFileName ?? "");
       setCvSummary(userProfile?.cvSummary ?? "");
     }
@@ -92,6 +94,7 @@ export function AccountPage({ userProfile, authUser, onLogout, onProfileUpdate }
       industry: editIndustry,
       seniority: editSeniority,
       keyExperience: editAchievements,
+      englishGoal: editEnglishGoal || undefined,
       cvFileName: cvFileName || undefined,
       cvSummary: cvSummary || undefined,
       cvConsentGiven: !!cvSummary,
@@ -528,6 +531,27 @@ export function AccountPage({ userProfile, authUser, onLogout, onProfileUpdate }
               ) : (
                 <div className="w-full bg-[#f8fafc] border border-[#e2e8f0] text-[#45556c] rounded-lg px-3 py-2.5 text-sm min-h-[72px]">
                   {userProfile?.keyExperience || <span className="text-[#94a3b8]">No achievements added yet</span>}
+                </div>
+              )}
+            </div>
+
+            {/* English Goal */}
+            <div className="mb-5">
+              <label className="block text-xs font-medium text-[#62748e] mb-1.5">
+                Your English Goal <span className="text-[#94a3b8]">(optional · max 120 chars)</span>
+              </label>
+              {editingProfile ? (
+                <input
+                  type="text"
+                  maxLength={120}
+                  value={editEnglishGoal}
+                  onChange={e => setEditEnglishGoal(e.target.value)}
+                  placeholder="e.g. Lead client meetings without hesitation by Q3..."
+                  className="w-full border border-[#e2e8f0] rounded-lg px-3 py-2.5 text-sm text-[#0f172b] bg-white focus:outline-none focus:border-[#0f172b] transition-colors placeholder-[#94a3b8]"
+                />
+              ) : (
+                <div className="w-full bg-[#f8fafc] border border-[#e2e8f0] text-[#45556c] rounded-lg px-3 py-2.5 text-sm">
+                  {userProfile?.englishGoal || <span className="text-[#94a3b8]">No goal set yet</span>}
                 </div>
               )}
             </div>

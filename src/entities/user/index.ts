@@ -46,6 +46,8 @@ export interface OnboardingProfile {
   cvConsentGiven?: boolean;
   /** Last job description pasted — pre-filled on the next session */
   lastJobDescription?: string;
+  /** User's Ideal L2 Self goal — shown on dashboard as motivational anchor */
+  englishGoal?: string;
   /** True after the user completes their first practice session end-to-end */
   narrationCompleted?: boolean;
   /** WhatsApp verification status */
