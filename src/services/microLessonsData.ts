@@ -36,6 +36,7 @@ export interface MicroLesson {
     weakSentence: string;
     modelAnswer: string;
   };
+  recallQuestions?: Array<{ question: string; answer: string }>;
 }
 
 export const MICRO_LESSONS: MicroLesson[] = [
@@ -71,6 +72,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "We should invest in the Asian market because it will give us more revenue.",
       modelAnswer: "If we were to invest in the Asian market, we could potentially increase revenue by 30% within the first two years. Would that be an avenue worth exploring?",
     },
+    recallQuestions: [
+      { question: "What two structures frame proposals as explorations rather than demands?", answer: "'If we were to...' and 'Had we considered...' — both shift the dynamic from confrontation to collaborative exploration." },
+      { question: "How do you combine conditional types for strategic sophistication?", answer: "Mix Type 1 (likely future), Type 2 (present/future hypothetical), and Type 3 (past hypothetical) in a single sentence to signal strategic depth." },
+    ],
   },
 
   {
@@ -100,6 +105,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "Your team missed the deadline and caused the client to complain.",
       modelAnswer: "The deadline was missed, which led to some client concerns. A revised timeline has been proposed to ensure alignment going forward.",
     },
+    recallQuestions: [
+      { question: "What is the main strategic use of passive voice in executive communication?", answer: "It focuses on outcomes and solutions rather than who caused the problem — it removes blame while keeping the message constructive." },
+      { question: "What is the recommended two-part structure when addressing a problem with passive voice?", answer: "Passive for the problem ('The deadline was missed'), then active for the solution ('A revised timeline has been proposed'). This shows leadership without assigning blame." },
+    ],
   },
 
   {
@@ -129,6 +138,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "The CEO said: 'We will cut 10% of the budget.' The CFO said: 'I don't agree with this decision.'",
       modelAnswer: "The CEO announced that they would reduce the budget by 10%. The CFO expressed reservations about the decision, suggesting that alternative cost-saving measures be explored first.",
     },
+    recallQuestions: [
+      { question: "What is the tense shift rule in reported speech?", answer: "Shift back one tense: 'will' → 'would', 'is' → 'was', 'have done' → 'had done'. The present moves into the past." },
+      { question: "Name three reporting verbs with different force levels and what each signals.", answer: "'Mentioned' (minimal weight), 'confirmed' (neutral authority), 'insisted' (strong emphasis). The reporting verb does the persuasion work — choose it deliberately." },
+    ],
   },
 
   {
@@ -158,6 +171,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "We hired a new director. She has 15 years of experience. She will lead the expansion. The expansion targets Southeast Asia.",
       modelAnswer: "We hired a new director who has 15 years of experience and who will lead the expansion that targets Southeast Asia.",
     },
+    recallQuestions: [
+      { question: "What is the key difference between a defining and a non-defining relative clause?", answer: "Defining (no commas) gives essential info: 'The team that led the migration.' Non-defining (with commas) adds extra context: 'Our CTO, who joined last year...' The comma changes the meaning entirely." },
+      { question: "How do you signal a non-defining relative clause in spoken English?", answer: "Pause briefly where the commas would appear in writing. This rhythm helps listeners process the additional information without losing the main point." },
+    ],
   },
 
   {
@@ -187,6 +204,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "Can you send me the report? Can you schedule a meeting? We need to talk about this.",
       modelAnswer: "Could you send me the report when you get a chance? Would it be possible to schedule a meeting this week? I'd like to discuss this — would you have 20 minutes tomorrow?",
     },
+    recallQuestions: [
+      { question: "Put these in order from softest to firmest: 'Would you be able to...', 'We need to...', 'Could you possibly...', 'Might we consider...'", answer: "'Might we consider...' → 'Could you possibly...' → 'Would you be able to...' → 'We need to...' Match the modal to the stakes and the relationship." },
+      { question: "What is the most common modal error Spanish speakers make, and what should you use instead?", answer: "Over-using 'Can you...?' which sounds abrupt. Replace with 'Could you...?' or 'Would you mind...?' — same meaning, significantly more professional tone." },
+    ],
   },
 
   {
@@ -216,6 +237,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "We had ___ meeting yesterday with ___ CEO of ___ startup. ___ startup is developing ___ AI platform for ___ healthcare industry. ___ platform could transform how ___ hospitals manage ___ patient data.",
       modelAnswer: "We had a meeting yesterday with the CEO of a startup. The startup is developing an AI platform for the healthcare industry. The platform could transform how hospitals manage patient data.",
     },
+    recallQuestions: [
+      { question: "What are the three core rules for using a/an, the, or no article?", answer: "First mention = 'a/an'. Second mention of the same thing = 'the'. Unique or specific things = 'the'. General concepts (no specific referent) = no article." },
+      { question: "How do you decide in real time between 'the' and 'a'?", answer: "Ask: 'Does my listener know which specific one I mean?' Yes → 'the'. No (any one of many) → 'a'. It's a general concept → no article." },
+    ],
   },
 
   {
@@ -245,6 +270,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "What is your budget? Why did you choose this approach? How many people are in your team?",
       modelAnswer: "Could you give me a sense of the budget range? I was wondering if you could walk me through why you chose this approach. Would you mind telling me how many people are on your team?",
     },
+    recallQuestions: [
+      { question: "What word order error must you avoid after indirect question openers like 'Could you tell me...'?", answer: "After those openers, use statement order (subject + verb), NOT question order. ✅ 'Could you tell me what the timeline is?' ❌ 'Could you tell me what is the timeline?'" },
+      { question: "Name three indirect question openers you can use instead of starting directly with 'What is...?'", answer: "'Could you tell me...', 'Would you mind clarifying...', 'I was wondering if you could...' — any opener that softens the question into a collaborative request." },
+    ],
   },
 
   {
@@ -274,6 +303,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "I was managing the project when the client changes the requirements. I have to reorganize the team and we work through the weekend. In the end, we deliver the project on time.",
       modelAnswer: "I was managing the project when the client changed the requirements. I had to reorganize the team, and we worked through the weekend. In the end, we delivered the project on time.",
     },
+    recallQuestions: [
+      { question: "What is the most common tense error in STAR-format interview stories?", answer: "Switching from past to present mid-story: 'I was leading the project when the client changes the requirements.' Every verb in a past narrative must stay in simple past throughout." },
+      { question: "What is the 'mental sticky note' technique for tense consistency?", answer: "Before any story, decide your time frame ('This is a PAST story') and commit every verb to it. Every verb must match that frame before it comes out." },
+    ],
   },
 
   {
@@ -303,6 +336,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "I'm responsible of the strategy. We depend of the client's approval. I agree to your proposal. The change resulted on a 20% improvement.",
       modelAnswer: "I'm responsible for the strategy. We depend on the client's approval. I agree with your proposal. The change resulted in a 20% improvement.",
     },
+    recallQuestions: [
+      { question: "Fix these four preposition errors: 'responsible OF', 'depend OF', 'agree TO', 'result ON'", answer: "'Responsible FOR', 'depend ON', 'agree WITH', 'result IN' — these are fixed phrases. The preposition is part of the phrase, not a separate word choice." },
+      { question: "What strategy helps you remember prepositions instead of guessing each time?", answer: "Learn the whole fixed phrase as a unit, not the preposition alone. Don't think 'what preposition?' — think 'what is the complete phrase?' 'Interested IN something' is one chunk. Learn it as a unit." },
+    ],
   },
 
   /* ═══════════════════════════════════════════
@@ -336,6 +373,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "I helped my team do the project on time and we started a new process that made things better.",
       modelAnswer: "I empowered my team to deliver the project ahead of schedule and spearheaded a new process that transformed our operational efficiency.",
     },
+    recallQuestions: [
+      { question: "Replace these weak verbs with power verbs: 'started a project', 'helped the team', 'made things better'", answer: "'Spearheaded a project', 'empowered the team', 'transformed performance' — power verbs signal authority and specificity without adding words." },
+      { question: "Name the six verbs from the power verb palette in this lesson.", answer: "Spearhead, Orchestrate, Drive, Champion, Cultivate, Architect. Pick one you haven't used and deliberately work it into your next conversation." },
+    ],
   },
 
   {
@@ -365,6 +406,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "No, you're wrong. We need to focus on retention, not acquisition.",
       modelAnswer: "That's an interesting perspective. From my standpoint, we might want to consider prioritizing retention, as it seems our churn rate could be impacting growth more than acquisition gaps.",
     },
+    recallQuestions: [
+      { question: "When should you hedge, and when should you be direct?", answer: "Hedge for opinions and suggestions. Be direct for facts and data. 'Revenue dropped 12%' (direct) + 'I'd suggest this indicates we need to reconsider' (hedged) is the executive pattern." },
+      { question: "Why is 'and' more powerful than 'but' when introducing a counterpoint diplomatically?", answer: "'But' negates everything before it. 'And' keeps both ideas alive and signals you're adding to the conversation rather than rejecting the other view." },
+    ],
   },
 
   {
@@ -394,6 +439,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "We need to do a decision about the budget. The team should make research on this topic and arrive to an agreement before the meeting.",
       modelAnswer: "We need to make a decision about the budget. The team should conduct research on this topic and reach an agreement before the meeting.",
     },
+    recallQuestions: [
+      { question: "Fix these collocations: 'do a decision', 'make research', 'arrive to an agreement'", answer: "'Make a decision', 'conduct research', 'reach an agreement' — these are fixed word partnerships that native speakers use automatically." },
+      { question: "What is the most effective strategy for learning collocations?", answer: "Learn the whole phrase as a unit, not just the noun. Don't just learn 'deadline' — learn 'meet a deadline', 'miss a deadline', 'extend a deadline', 'set a deadline.'" },
+    ],
   },
 
   {
@@ -423,6 +472,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "Revenue grew 15%. Costs increased 20%. We need to act. I suggest reducing vendor expenses.",
       modelAnswer: "Revenue grew 15% last quarter. However, costs increased by 20% in the same period. Consequently, we need to act decisively. To that end, I'd suggest we begin by reducing vendor expenses.",
     },
+    recallQuestions: [
+      { question: "Give one transition phrase for each function: adding information, showing contrast, expressing consequence.", answer: "Adding: 'Furthermore' or 'Moreover'. Contrasting: 'However' or 'That said'. Consequence: 'As a result' or 'Consequently'." },
+      { question: "Why should you avoid using the same transition phrase twice in a row?", answer: "It sounds repetitive and signals limited vocabulary range. Vary between synonyms — 'However', 'That said', 'On the other hand', 'Nevertheless' — for a polished, professional flow." },
+    ],
   },
 
   {
@@ -452,6 +505,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "We got 500 new users. Last quarter we had 300.",
       modelAnswer: "We acquired roughly 500 new users this quarter — nearly double our Q3 figures. That growth translates to a significantly stronger pipeline heading into the new year.",
     },
+    recallQuestions: [
+      { question: "Name the five data framing patterns from this lesson.", answer: "(1) Approximation: 'roughly', 'nearly'. (2) Comparison: 'double', 'triple'. (3) Trend: 'surged', 'plummeted'. (4) Context: 'beating the industry average by...'. (5) Implication: 'which means...', 'which translates to...'" },
+      { question: "Why does 'roughly 30%' said confidently outperform '27.3%' said hesitantly?", answer: "The framing and delivery communicate authority — the precision of the number is secondary. Approximate with confidence rather than hedge with false precision." },
+    ],
   },
 
   {
@@ -481,6 +538,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "We did a market analysis and had good results. We also made a new partnership and worked on improving our retention rate.",
       modelAnswer: "We executed a market analysis and delivered strong results. We also secured a new strategic partnership and drove a significant improvement in our retention rate.",
     },
+    recallQuestions: [
+      { question: "Replace these invisible verbs: 'we had results', 'we worked on it', 'we tried to improve'", answer: "'We delivered results', 'we drove/led/managed it', 'we pursued improvement' — specific action verbs signal ownership and are memorable to listeners." },
+      { question: "What is a 'verb upgrade list' and why should you build a role-specific one?", answer: "A personalized list of strong verbs for your field. Generic upgrades don't stick — role-specific ones do. In product: 'shipped', 'launched', 'deployed'. In sales: 'engaged', 'qualified', 'closed'." },
+    ],
   },
 
   /* ═══════════════════════════════════════════
@@ -514,6 +575,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "So basically, um, my management style is like, you know, I try to help people and, uh, give them space to do their thing.",
       modelAnswer: "My management style centers on empowerment. [pause] I set clear expectations upfront, then give my team the autonomy to execute. The results speak for themselves.",
     },
+    recallQuestions: [
+      { question: "What is the correct replacement for 'um', 'uh', and 'like' in professional speech?", answer: "A deliberate 1–2 second pause. Silence signals confidence and thoughtfulness; filler words signal hesitation and undermine authority." },
+      { question: "What is the fastest way to become aware of your filler word frequency?", answer: "Record yourself for 30 seconds answering any question and count them. Most people average 5–8 per minute. The awareness alone typically reduces fillers by 50%." },
+    ],
   },
 
   {
@@ -543,6 +608,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "Our revenue increased by twenty percent in the last quarter driven by expansion into three new markets and improved customer retention.",
       modelAnswer: "Our revenue increased | by twenty percent | in the last quarter | driven by expansion | into three new markets | and improved customer retention.",
     },
+    recallQuestions: [
+      { question: "What is a thought group, and how many words should it typically contain?", answer: "A meaningful chunk of speech separated by micro-pauses — typically 3–5 words per group. Each group should carry one idea unit." },
+      { question: "What is a 'landmark pause' and when do you use it?", answer: "A deliberate pause before a key number or after an important claim: 'We achieved... [pause] a forty percent improvement.' It creates anticipation and emphasis." },
+    ],
   },
 
   {
@@ -572,6 +641,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "We need to enter the European market. Our research shows demand is growing. Germany, France, and Spain all show potential. The window of opportunity is closing.",
       modelAnswer: "[Normal] We need to enter the European market. [Normal] Our research shows demand is growing. [Fast] Germany, France, and Spain all show strong potential. [Slow] But the window of opportunity... is closing.",
     },
+    recallQuestions: [
+      { question: "Name the three speaking speeds and when you should use each.", answer: "Normal pace for context and background, slow pace for key points (signals importance), fast pace for lists and supporting details (builds energy)." },
+      { question: "What two things should you do just before delivering a key phrase for maximum impact?", answer: "Drop your speed AND lower your pitch slightly before the phrase, then deliver it slowly. The combination of reduced speed and lower pitch commands attention more effectively than volume alone." },
+    ],
   },
 
   {
@@ -601,6 +674,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "Our revenue was — oh wait, sorry, I said that wrong. I'm sorry. Let me start over. So, um, revenue was actually $3M, not $2M. Sorry about that confusion.",
       modelAnswer: "Our revenue came in at — let me be precise — $3M this quarter, exceeding our initial projection of $2M. What this means for us is a significantly stronger position going into Q4.",
     },
+    recallQuestions: [
+      { question: "Name the three repair strategies from this lesson for correcting yourself mid-speech.", answer: "(1) Quick replace: 'We saw a 20 — sorry — 30% increase.' (2) Reframe: 'Let me rephrase that...' (3) Clarify forward: 'What I mean is...'" },
+      { question: "What is the 'magic phrase' from this lesson, and why is it better than apologizing?", answer: "'Let me put that differently.' It buys thinking time, sounds intentional rather than reactive, and resets the listener's attention — without drawing attention to a mistake." },
+    ],
   },
 
   {
@@ -630,6 +707,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "Uh, well, I'm not sure, um... I mean, I guess... let me think... I don't really know how to answer that.",
       modelAnswer: "That's a question I want to answer carefully. [pause] Let me make sure I give you the most relevant example. [pause] I'd say the most significant challenge I've faced was...",
     },
+    recallQuestions: [
+      { question: "Name the three levels of buying thinking time in professional speech.", answer: "(1) Quick bridge (1–2 sec): 'Let me think about that.' (2) Strategic redirect (3–5 sec): ask a clarifying question to buy time. (3) Honest bridge: 'I don't have that number off the top of my head — what I can tell you now is...'" },
+      { question: "Why does a 3-second pause before a hard answer look like confidence rather than confusion?", answer: "It signals that you're considering your answer carefully — that it deserves thought. Filling the silence immediately signals anxiety. Listeners interpret deliberate pauses as depth." },
+    ],
   },
 
   {
@@ -659,6 +740,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "So we were talking about the process and then we had the budget issue and... um... I forgot where I was going with this... anyway, we also had some other things...",
       modelAnswer: "Let me step back — my main point is that the project had two key challenges: the budget constraint and the timeline. Let me take those one at a time.",
     },
+    recallQuestions: [
+      { question: "Name the four recovery moves for when you lose your train of thought.", answer: "(1) Anchor back: 'Let me step back — my main point was...' (2) Summarize: 'In short, what I'm getting at is...' (3) Bridge forward: 'The important thing here is...' (4) Ask for direction: 'What's most important to you about this?'" },
+      { question: "What is the 'fastest recovery' phrase from this lesson, and why does it work?", answer: "'I want to make sure I'm being clear — let me put it more directly.' It sounds intentional rather than lost, and frames the restart as precision rather than confusion." },
+    ],
   },
 
   /* ═══════════════════════════════════════════
@@ -692,6 +777,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "presentation, opportunity, development, significant, demonstrate, investment",
       modelAnswer: "preSENtation, opporTUNity, develOPment, sigNIFicant, deMONstrate, inVESTment",
     },
+    recallQuestions: [
+      { question: "What stress pattern do words ending in '-tion', '-ity', and '-ic' follow?", answer: "The syllable immediately before the suffix gets the stress: preSENtation, opporTUNity, straTEgic. This is consistent and predictable once you know the rule." },
+      { question: "How does stress sometimes shift between the verb and noun forms of the same word?", answer: "The verb often stresses a later syllable; the noun stresses an earlier one. Example: to preSENT (verb) → a PREsent (noun). The grammatical category changes the stress." },
+    ],
   },
 
   {
@@ -721,6 +810,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "I would like to walk you through our analysis of the current market opportunity.",
       modelAnswer: "I would like_to walk_you through_our analysis_of the current market_opportunity.",
     },
+    recallQuestions: [
+      { question: "Name the three key linking rules in connected speech.", answer: "(1) Consonant-to-vowel: 'look_at_it' → 'loo-ka-tit'. (2) Same-consonant linking: 'first_time' → 'firs-time'. (3) Vowel-to-vowel: insert a soft 'w' or 'y': 'go_on' → 'go-won', 'see_it' → 'see-yit'." },
+      { question: "Which common short words have the biggest impact when you practice linking first?", answer: "'At', 'it', 'and', 'of' — they appear constantly in business speech and their linking has the biggest immediate effect on natural flow." },
+    ],
   },
 
   {
@@ -750,6 +843,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "I think we should expand to Brazil? Our data supports this? The market is ready?",
       modelAnswer: "I think we should expand to Brazil ↘. Our data supports this ↘. The market is ready ↘.",
     },
+    recallQuestions: [
+      { question: "What is 'upspeak' and why does it undermine authority?", answer: "Rising intonation ↗ at the end of statements — it makes declarations sound like questions, signaling uncertainty or seeking permission rather than presenting a position with confidence." },
+      { question: "What is the correct intonation pattern for confident statements vs. genuine questions?", answer: "Statements end with falling intonation ↘ (signals certainty). Questions rise ↗ (signals you want a response). Using falling intonation for recommendations is the single most impactful fix." },
+    ],
   },
 
   {
@@ -779,6 +876,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "(1) We need to reduce [costs/coasts]. (2) The team will [leave/live] the office at 6. (3) Please check the balance [sheet/seat]. (4) Let me [walk/work] you through the report.",
       modelAnswer: "(1) costs (2) leave (3) sheet (4) walk",
     },
+    recallQuestions: [
+      { question: "Why are minimal pair errors especially risky in business settings?", answer: "A single-sound difference can change the message entirely — 'cost' vs 'coast', 'leave' vs 'live', or far more embarrassing pairs. Confusion in high-stakes conversations undermines credibility." },
+      { question: "What is the most effective strategy for improving your minimal pair pronunciation?", answer: "Identify YOUR specific trouble pairs based on your native language — don't practice all pairs equally. Spanish speakers often mix 'ship/sheep' and 'leave/live'. Focus on your personal weak spots first." },
+    ],
   },
 
   /* ═══════════════════════════════════════════
@@ -812,6 +913,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "That won't work. We need to hire more people instead of cutting costs.",
       modelAnswer: "I can see the logic behind cost reduction — it's a pragmatic first step. One thing I'd want us to consider is whether investing in two key hires could actually drive the revenue growth that solves the budget gap organically.",
     },
+    recallQuestions: [
+      { question: "What is the 'Acknowledge → Bridge → Redirect' pattern?", answer: "(1) Validate what was said ('I can see why...'). (2) Bridge to your concern ('One thing I'd want us to consider...'). (3) Redirect to your alternative. Never open with 'No' or 'But' — both trigger defensiveness." },
+      { question: "Why is 'and' more strategic than 'but' when introducing a counterpoint?", answer: "'But' negates everything before it. 'And' keeps both ideas alive and signals you're building on the conversation, not rejecting it — maintaining collaborative tone while introducing your position." },
+    ],
   },
 
   {
@@ -841,6 +946,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "We finished the website redesign last week. The team worked hard on it. We also fixed some bugs.",
       modelAnswer: "We delivered the website redesign ahead of schedule, which positions us to capture 15% more conversions during the Q2 campaign. All critical issues have been resolved, ensuring a seamless launch.",
     },
+    recallQuestions: [
+      { question: "What is the fundamental difference between operational and strategic language?", answer: "Operational: describes what you did ('We finished the project'). Strategic: describes outcomes + 'so what' ('We delivered ahead of schedule, positioning us to capture the Q2 window'). Executives care about impact, not tasks." },
+      { question: "What is the 'so what' test, and how do you apply it?", answer: "After any statement about an action, add 'which means...' or 'this positions us to...' If you can't complete that sentence with a business impact, your statement isn't at executive register yet." },
+    ],
   },
 
   {
@@ -870,6 +979,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "No, we're not going to do that. Your request is unreasonable and I won't budge on this.",
       modelAnswer: "I understand where you're coming from, and I appreciate you raising this. That said, adjusting the timeline at this stage would compromise the quality we've committed to. What I can do is explore whether we can accelerate one specific deliverable to address your most urgent need.",
     },
+    recallQuestions: [
+      { question: "What is the assertive softening pattern?", answer: "State your position clearly + acknowledge the other side + stay firm. 'I understand the urgency, and I appreciate the pressure. That said, [firm position].' The key is acknowledging without yielding." },
+      { question: "How do you transform 'I can't do that' into assertive softening?", answer: "Replace with 'What I can do is...' — this shifts from refusal to solution. It maintains your boundary while offering a constructive path forward, which preserves the relationship." },
+    ],
   },
 
   {
@@ -899,6 +1012,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "Hey, we're getting off topic. Can we stop talking about this? I want to talk about the budget. Does everyone agree with me?",
       modelAnswer: "These are all important points. Let's table this discussion for now and circle back next week. What I'd like us to focus on today is the budget allocation. So what I'm hearing from the team is general alignment on the revenue targets — shall we confirm that and move forward?",
     },
+    recallQuestions: [
+      { question: "Name the five meeting power moves from this lesson.", answer: "(1) Open: 'To set the stage...' (2) Redirect: 'Let's table that and circle back...' (3) Summarize: 'So what I'm hearing is...' (4) Challenge: 'I'd like to stress-test that assumption...' (5) Close: 'What I'd like us to walk away with is...'" },
+      { question: "Why is 'So what I'm hearing is...' the most powerful phrase in a meeting?", answer: "It lets you reframe the discussion, check alignment, and subtly steer toward your preferred outcome — all while appearing collaborative and making others feel heard." },
+    ],
   },
 
   {
@@ -928,6 +1045,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "Hello. I am ready for the meeting. Let us begin the agenda.",
       modelAnswer: "Hey Sarah! Good to see you — how's the week going? [pause] Glad to hear it. We've been in sprint mode here too, but things are looking good. Alright, I think we're all here — should we jump in?",
     },
+    recallQuestions: [
+      { question: "Name the three layers of American small talk in order from lightest to most connective.", answer: "(1) Universal openers: weather, weekend, sports, news. (2) Work-related: project updates, busy-week questions. (3) Connection builders: remembering personal details from previous conversations." },
+      { question: "Which topics are safe in American professional small talk, and which should you avoid?", answer: "Safe: work, travel, food, weekend plans, sports. Avoid: politics, salary, religion, personal problems. When in doubt, keep it positive and work-adjacent." },
+    ],
   },
 
   {
@@ -957,6 +1078,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "I am writing to inform you that we have completed the analysis and we would like to present our findings at your earliest convenience.",
       modelAnswer: "Hey — we've finished the analysis and I'd love to walk you through the findings. When works best for you this week?",
     },
+    recallQuestions: [
+      { question: "Give two examples of written-register phrases and their natural spoken equivalents.", answer: "'I would like to' → 'I'd like to'. 'In accordance with' → 'Based on'. Written English is formal and complete; spoken English uses contractions, shorter sentences, conversational connectors." },
+      { question: "What is the 'hallway test' for checking if your spoken register is too formal?", answer: "Ask: 'How would I say this to a colleague in the hallway?' If it sounds like an email, simplify it. That casual, direct version IS the correct spoken register." },
+    ],
   },
 
   /* ═══════════════════════════════════════════
@@ -990,6 +1115,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "Well, I've been thinking and, you know, there are benefits to flexible hours. Some companies do it. I think maybe we should consider it because people seem to like it.",
       modelAnswer: "We should implement flexible working hours. (Point) Research shows flexible schedules increase productivity by 20% and reduce turnover by 25%. (Reason) For instance, Salesforce reported a 30% boost in employee satisfaction after introducing flex-time last year. (Example) Flexible hours aren't just a perk — they're a proven driver of performance and retention. (Point)",
     },
+    recallQuestions: [
+      { question: "What does PREP stand for, and in what order do you use it?", answer: "Point (your conclusion upfront), Reason (why), Example (evidence or story), Point (restate the conclusion). Always lead with the answer — executives don't want to wait for your reasoning." },
+      { question: "What does it mean when your PREP argument takes more than 30 seconds?", answer: "Your Point isn't sharp enough. It should be one clear sentence. If you can't state your conclusion in one sentence, sharpen it before adding the reasoning." },
+    ],
   },
 
   {
@@ -1019,6 +1148,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "I think we should use employee referrals more because they're better and a lot of companies do it.",
       modelAnswer: "I'd recommend shifting roughly 40% of our recruiting budget to employee referrals. Industry data suggests referred candidates are hired approximately 55% faster and stay nearly 45% longer. For our 8 open roles, that could mean filling positions a full quarter earlier.",
     },
+    recallQuestions: [
+      { question: "What is the 'Claim + Number + Source + Implication' pattern?", answer: "State a claim, back it with a specific number, cite the source informally, then state the business implication: 'which means...' or 'which translates to...'" },
+      { question: "What should you do when you don't have an exact number handy?", answer: "Approximate confidently: 'roughly 30%', 'nearly double', 'a 3x improvement.' The structure of the argument communicates authority; decimal precision is less important than confident framing." },
+    ],
   },
 
   {
@@ -1048,6 +1181,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "Employee training reduces turnover by 40%.",
       modelAnswer: "When I joined my previous company, our onboarding was a single-day orientation. (Situation) Within six months, we'd lost 30% of new hires — they felt unsupported and disconnected. (Complication) We introduced a 90-day structured training program, and turnover dropped by 40% within a year. (Resolution)",
     },
+    recallQuestions: [
+      { question: "What is the Mini-Story format and how long should it run?", answer: "Situation (set the scene, 1 sentence) → Complication (the problem) → Resolution (what happened or what you learned). Keep it under 30 seconds. Always end with a business lesson." },
+      { question: "What makes a story opening credible, even in a hypothetical scenario?", answer: "A specific detail at the start: 'Last Tuesday...', 'A customer in São Paulo...', 'During our Q2 launch...' Specificity creates credibility and makes the story feel real rather than generic." },
+    ],
   },
 
   {
@@ -1077,6 +1214,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "No, you're wrong about the timeline. It's actually very realistic if you look at the data properly.",
       modelAnswer: "I understand the timeline feels ambitious — that's a fair concern. Several teams I've worked with felt the same hesitation initially. What they found was that by front-loading the critical milestones and running two workstreams in parallel, it was not only achievable but actually reduced overall risk.",
     },
+    recallQuestions: [
+      { question: "What does the 'Feel, Felt, Found' framework mean?", answer: "'I understand how you feel' (validate). 'Others have felt the same way' (normalize). 'What they found was...' (redirect to positive outcome). This handles objections without confrontation." },
+      { question: "Why should you never start an objection response with 'You're wrong' or 'Actually...'?", answer: "Both phrases trigger defensiveness immediately. Starting with validation ('I appreciate you raising that') disarms resistance before you redirect — the person feels heard, not attacked." },
+    ],
   },
 
   {
@@ -1107,6 +1248,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "Hi, I'm Carlos. I work in marketing and I have 5 years of experience. I've worked for several companies and I know a lot about digital marketing. I'm very passionate about this field.",
       modelAnswer: "I'm Carlos, a digital marketing strategist with 5 years scaling B2B SaaS brands in LATAM. My specialty is demand generation — in my last role, I built a content engine that grew organic leads by 120% in 18 months. I'm excited about this opportunity because you're expanding into markets where I've built campaigns from scratch. What are your biggest acquisition challenges right now?",
     },
+    recallQuestions: [
+      { question: "Name the four parts of a professional elevator pitch.", answer: "(1) WHO you are: title + context (1 sentence). (2) WHAT you do best: core strength + one proof point. (3) WHY it matters: the business impact. (4) HOOK: a question or statement that invites conversation forward." },
+      { question: "What is the purpose of the HOOK at the end, and why is it optional but powerful?", answer: "It flips the dynamic from 'candidate being evaluated' to 'professional having a conversation.' Ending with a question signals confidence and curiosity simultaneously — it puts you in control." },
+    ],
   },
 
   {
@@ -1137,6 +1282,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "Good morning everyone. Today I'm going to present our Q3 results and talk about our plans for Q4. I hope you find this information useful.",
       modelAnswer: "Thirty-two percent. That's how much our conversion rate grew in Q3 — and not because we spent more. Because we fixed one thing. Let me show you what we changed and why it worked.",
     },
+    recallQuestions: [
+      { question: "Name the five hook structures for opening presentations and pitches.", answer: "(1) Provocative question. (2) Striking statistic. (3) Mini-story. (4) Bold statement. (5) Relevant scenario. Each creates a 'knowledge gap' — a feeling that the audience is missing something important." },
+      { question: "What is a 'knowledge gap' in a hook, and which two hook types create it most effectively?", answer: "A feeling that the audience is missing something important — it makes them lean in. Questions and striking statistics create this gap most effectively because they imply an answer the audience doesn't yet have." },
+    ],
   },
 
   {
@@ -1167,6 +1316,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "I was wondering if maybe, I don't know, if it's not too much trouble, perhaps we could possibly schedule a follow-up meeting sometime next week if you're available?",
       modelAnswer: "I'd like to schedule a follow-up to walk through the proposal in detail. Are you available Thursday or Friday this week?",
     },
+    recallQuestions: [
+      { question: "What are the three components of a confident ask?", answer: "(1) Context: 'Based on what we've discussed...' (2) Clear request: state exactly what you want in one sentence. (3) Specific next step with a timeline. Never start with 'I was wondering if maybe...'" },
+      { question: "What is the most common mistake people make immediately after asking?", answer: "Filling the silence with qualifications: 'Of course if you're not ready, no pressure...' Silence after an ask is the other person thinking. Stop talking and let them think." },
+    ],
   },
 
   /* ═══════════════════════════════════════════
@@ -1204,6 +1357,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "We had a difficult project with a tight deadline. It was stressful but we worked as a team and finished on time. Everyone contributed and the client was happy.",
       modelAnswer: "We had a critical product launch with a deadline moved up by three weeks. (S) I was the lead engineer responsible for delivery. (T) I restructured the sprint plan, ran daily syncs to unblock the team, and personally took on the two highest-risk components. I also negotiated a scope reduction with the PM on features that could ship post-launch. (A) We delivered on the new deadline with zero major bugs. The client rated the launch 9/10 and extended our contract. (R)",
     },
+    recallQuestions: [
+      { question: "What is the correct proportion of time to spend on each STAR component?", answer: "Situation (10%), Task (10%), Action (60%), Result (20%). Most people spend 80% on S and T, leaving almost no time for A and R — which are the parts that actually matter." },
+      { question: "What is the most common STAR execution error regarding pronouns?", answer: "Using 'we' instead of 'I' in the Action section. The interviewer is evaluating YOUR specific contribution, not the team's. Use 'I led', 'I decided', 'I resolved.'" },
+    ],
   },
 
   {
@@ -1234,6 +1391,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "I don't know, maybe something around what you usually pay? I'm flexible. I just want something fair.",
       modelAnswer: "Based on market research and my background, I'm targeting a total compensation in the range of $85K to $100K base. I'd also love to understand the full package — equity, bonus structure, and benefits. Is there flexibility in that range?",
     },
+    recallQuestions: [
+      { question: "Name three key compensation terms you should know before any salary negotiation.", answer: "Any three from: base salary, total compensation, OTE (On-Target Earnings), equity/RSUs, signing bonus, performance bonus, benefits package, PTO. Knowing the vocabulary gives you credibility." },
+      { question: "Why should you always give a salary range rather than a single number?", answer: "The bottom of your range is your minimum acceptable offer. A range anchors the conversation, shows market research, and gives room for negotiation while protecting your floor." },
+    ],
   },
 
   {
@@ -1264,6 +1425,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "Um, I think I'm good. Do you know when you'll make a decision? Also, what's the salary range?",
       modelAnswer: "[Question] What does success look like for this role in the first 90 days? [Reaffirm] I want to be direct — I'm very interested in this position. The combination of the product challenge and the team dynamic really resonates with me. [Next Steps] What does the process look like from here? And is there anything else I can share to help the decision?",
     },
+    recallQuestions: [
+      { question: "Name the three parts of a strong interview close.", answer: "(1) Ask a high-quality question that demonstrates strategic thinking. (2) Reaffirm your genuine interest clearly and specifically. (3) Clarify next steps proactively — don't wait to be told." },
+      { question: "Which closing questions should you avoid, and why?", answer: "'What's the salary?', 'How many vacation days?', 'When will you decide?' — these signal that the job is a commodity you're evaluating, not a mission you're committed to. Save compensation for after an offer." },
+    ],
   },
 
   /* — Sales — */
@@ -1295,6 +1460,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "Our platform automates your reporting. It saves time and is very easy to use. You should definitely try it.",
       modelAnswer: "How does your team currently handle reporting — is it mostly manual? [pause] When that takes longer than expected, how does it affect your ability to meet deadlines? [pause] If reporting took half the time, what would your team do with those hours?",
     },
+    recallQuestions: [
+      { question: "Name the four tiers of discovery questions in order.", answer: "(1) Situation: 'How do you currently handle X?' (2) Problem: 'What's the biggest friction?' (3) Implication: 'How does that impact your Q4 targets?' (4) Need-payoff: 'If that were solved, what would change?' This sequence builds urgency." },
+      { question: "What should you do after asking a discovery question, and why?", answer: "Stop talking. Silence is your best tool — the prospect fills it, and what they say is your most valuable selling information. Asking a follow-up immediately cuts off their answer." },
+    ],
   },
 
   {
@@ -1325,6 +1494,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "Well, actually our product is worth the price because we have more features than anyone else and our support is excellent.",
       modelAnswer: "I hear you — the investment is significant. Can I ask what you're comparing it against? [pause] Got it. And based on the volume you mentioned, if this saves your team 8 hours a week, what does that translate to in cost savings per month? Because I think the math might look different when you run it that way.",
     },
+    recallQuestions: [
+      { question: "What does 'It's too expensive' almost always really mean?", answer: "'I don't see the value yet.' A price objection is almost always a value objection in disguise — your response should reveal more value, not defend the price." },
+      { question: "When a prospect says 'Let me think about it,' what should you ask?", answer: "'To help me think through this with you — what's the main thing you want to think through?' This surfaces the real objection without pressure and opens the door to addressing the actual concern." },
+    ],
   },
 
   {
@@ -1355,6 +1528,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "So, I don't know, maybe if you want we could do something? Let me know if you're interested.",
       modelAnswer: "Based on what you've shared, it sounds like we've got a strong fit — particularly around the reporting and the compliance piece. Is there anything that would prevent you from moving forward this quarter? [pause] Great. Should we start with the pilot or go straight to the full rollout?",
     },
+    recallQuestions: [
+      { question: "Name the four close types from this lesson.", answer: "(1) Assumptive: offer two ways forward. (2) Summary: recap priorities, ask if it makes sense to proceed. (3) Trial: 'If pricing worked, is there anything else preventing us?' (4) Urgency: reference a real constraint." },
+      { question: "What must you do immediately after asking a closing question?", answer: "Stop talking. Never fill the space after a close with qualifications or softening. The silence is the other person deciding — interrupting it with reassurances undermines the close." },
+    ],
   },
 
   /* — Meeting — */
@@ -1386,6 +1563,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "OK, so, everyone is here I think. So, we need to talk about some stuff. Does anyone have anything to say first?",
       modelAnswer: "Thanks everyone for joining. We have 40 minutes today — our goal is to leave with a decision on the vendor selection and clear owners for the next steps. I'd like to start by quickly hearing where each team stands, then we'll align on the decision. [Name], can you kick us off?",
     },
+    recallQuestions: [
+      { question: "Name the five facilitation moves from this lesson.", answer: "(1) Open with clarity: goal + time. (2) Parking lot: table tangents gracefully. (3) Time-check. (4) Synthesis: 'What I'm hearing from the group is...' (5) Action close: decision + owner + deadline." },
+      { question: "Why is 'Let's put that in the parking lot' a sign of leadership rather than dismissal?", answer: "It validates the point (person feels heard), prevents derailment (protects the agenda), and signals that YOU are managing the meeting's flow. Used confidently, it positions you as the person in charge." },
+    ],
   },
 
   {
@@ -1416,6 +1597,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "Well, I'm not sure, it's just my opinion, but maybe the timeline could perhaps be a little bit... I don't know, maybe a bit more realistic? I don't want to cause any problems.",
       modelAnswer: "I want to flag a concern on the timeline — based on the current scope, I don't think it's realistic for a Q2 delivery. I'd recommend we either reduce scope or push to Q3. Happy to walk through the specifics.",
     },
+    recallQuestions: [
+      { question: "Name three key differences between American and LATAM communication norms in meetings.", answer: "(1) Directness: Americans say exactly what they mean — negative feedback is not an attack. (2) Silence: may signal agreement or thinking; don't rush to fill it. (3) Initiative: waiting for seniors to speak is read as disengagement, not respect." },
+      { question: "When an American colleague gives you direct feedback, what is the strongest type of response?", answer: "'Fair point — I'll fix that.' Brief acknowledgment + immediate action. Long justifications or excessive apologies signal insecurity. Speed of response communicates confidence and professionalism." },
+    ],
   },
 
   /* — Presentation — */
@@ -1447,6 +1632,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "Um, OK so, hi everyone. So today I'm going to talk about our Q3 results. Sorry, let me just get my slides. OK, so here we go.",
       modelAnswer: "[Pause. Eye contact.] 'Q3 was a turning point for this business.' [pause] 'Here's what changed — and what it means for where we go next.' [advance to slide]",
     },
+    recallQuestions: [
+      { question: "Name the three executive presence signals from this lesson.", answer: "(1) Pause 3 seconds before you start — stand still, make eye contact. (2) Claim physical space — fill the frame, plant your feet. (3) Deliver the first and last sentences from memory — these are the two most critical moments." },
+      { question: "What is the most revealing self-assessment for executive presence, and why watch without sound first?", answer: "Record yourself presenting for 60 seconds. Watch without sound first — what you see (posture, stillness, eye contact) IS what your audience experiences. Sound fills gaps; visuals create first impressions." },
+    ],
   },
 
   {
@@ -1477,6 +1666,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "So here you can see the sales numbers. As you can see they went up and then down. These are our results for the year.",
       modelAnswer: "This chart shows our annual sales by quarter. [headline] The key story is Q3: sales dropped 22% — our steepest quarterly decline in two years. [explanation] That drop coincides with the product issues we experienced in July. Q4 shows recovery, but we haven't fully closed the gap. [implication] This means we're entering the new year with a deficit we need to address in H1. [decision] The question is: do we accelerate sales hiring, or do we focus on improving the conversion rate from our existing pipeline?",
     },
+    recallQuestions: [
+      { question: "Name the five steps of the data narrative framework.", answer: "(1) Context: what the data shows. (2) Headline: the key insight. (3) Explanation: why/how it happened. (4) Implication: what it means for the business. (5) Decision point: what action this calls for." },
+      { question: "What one change makes a slide headline dramatically more powerful?", answer: "Make it state the conclusion, not just the topic. Not 'Q3 Churn Rate' — but 'Churn Peaked in September, Then Recovered.' The headline tells the story; the chart proves it." },
+    ],
   },
 
   /* — Culture — */
@@ -1508,6 +1701,10 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "Oh, I'm so sorry. I didn't know it wasn't clear. I tried to make it good but maybe I didn't understand what you wanted. I apologize for any confusion.",
       modelAnswer: "Fair point — the narrative structure isn't landing the way it should. I'll restructure it with clearer headlines for each section and send you a revised version this afternoon. Does that work?",
     },
+    recallQuestions: [
+      { question: "Name the three American communication norms explained in this lesson.", answer: "(1) Low-context communication: say exactly what you mean. (2) Positive framing of criticism: feedback is not an attack; take it, fix it, move on. (3) Initiative over deference: taking action without being asked is respected; waiting is not." },
+      { question: "When receiving direct feedback from an American colleague, what is the strongest type of response?", answer: "'Good point — I'll fix that.' Brief acknowledgment + immediate action. Long justifications or apologies signal insecurity. Speed and directness of response communicate confidence." },
+    ],
   },
 
   {
@@ -1538,5 +1735,9 @@ export const MICRO_LESSONS: MicroLesson[] = [
       weakSentence: "Hello. My name is Ana. I work in marketing. Do you work in marketing too? What is your job?",
       modelAnswer: "Hey — I'm Ana. First time at this event, or have you been before? [pause] Nice. I work in marketing at a SaaS company — we're in the middle of a product launch, so this conference came at the perfect time. What about you — what's keeping you busy lately?",
     },
+    recallQuestions: [
+      { question: "Name the five steps of the networking conversation formula.", answer: "(1) Open: situational comment or simple question. (2) Bridge: share something about yourself briefly. (3) Hook: a curious, open-ended question about them. (4) Active listen + follow-up. (5) Graceful exit." },
+      { question: "What is the most powerful networking question from this lesson, and why?", answer: "'What are you working on right now?' — it's open-ended, non-threatening, gives full control to the other person, and makes them want to talk. You learn more in one minute than from ten resume-style questions." },
+    ],
   },
 ];

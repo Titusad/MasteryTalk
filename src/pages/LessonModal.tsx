@@ -10,7 +10,7 @@
 
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, ChevronLeft, ChevronRight, CheckCircle2, Lightbulb, BookOpen, Target, Sparkles, Play, Pause } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, CheckCircle2, Lightbulb, BookOpen, Target, Sparkles, Play, Pause, Brain, Eye } from "lucide-react";
 import type { MicroLesson } from "@/services/microLessons";
 import { markLessonComplete, isLessonComplete } from "@/services/microLessons";
 
@@ -27,6 +27,7 @@ export function LessonModal({ lessons, currentIndex, onClose, onNavigate, onComp
   const lesson = lessons[currentIndex];
   const [showChallenge, setShowChallenge] = useState(false);
   const [showAnswer, setShowAnswer] = useState(false);
+  const [revealedRecall, setRevealedRecall] = useState<Set<number>>(new Set());
   const [audioPlaying, setAudioPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const done = isLessonComplete(lesson.id);
@@ -47,14 +48,14 @@ export function LessonModal({ lessons, currentIndex, onClose, onNavigate, onComp
 
   const handlePrev = () => {
     if (currentIndex > 0) {
-      setShowChallenge(false); setShowAnswer(false); setAudioPlaying(false);
+      setShowChallenge(false); setShowAnswer(false); setRevealedRecall(new Set()); setAudioPlaying(false);
       onNavigate(currentIndex - 1);
     }
   };
 
   const handleNext = () => {
     if (currentIndex < lessons.length - 1) {
-      setShowChallenge(false); setShowAnswer(false); setAudioPlaying(false);
+      setShowChallenge(false); setShowAnswer(false); setRevealedRecall(new Set()); setAudioPlaying(false);
       onNavigate(currentIndex + 1);
     }
   };
@@ -208,6 +209,54 @@ export function LessonModal({ lessons, currentIndex, onClose, onNavigate, onComp
                     {lesson.content.practicePrompt}
                   </p>
                 </section>
+
+                {/* Quick Recall */}
+                {lesson.recallQuestions && lesson.recallQuestions.length > 0 && (
+                  <section className="border border-[#e2e8f0] rounded-2xl overflow-hidden">
+                    <div className="flex items-center gap-2 px-4 py-3 bg-[#f8fafc] border-b border-[#e2e8f0]">
+                      <Brain className="w-4 h-4 text-[#6366f1]" />
+                      <p className="text-xs text-[#6366f1] uppercase tracking-wider" style={{ fontWeight: 600 }}>
+                        Quick Recall
+                      </p>
+                      <span className="ml-auto text-[11px] text-[#94a3b8]" style={{ fontWeight: 500 }}>
+                        {revealedRecall.size}/{lesson.recallQuestions.length} revealed
+                      </span>
+                    </div>
+                    <div className="divide-y divide-[#f1f5f9]">
+                      {lesson.recallQuestions.map((item, i) => (
+                        <div key={i} className="p-4">
+                          <p className="text-sm text-[#0f172b] leading-relaxed mb-3" style={{ fontWeight: 500 }}>
+                            {i + 1}. {item.question}
+                          </p>
+                          <AnimatePresence>
+                            {revealedRecall.has(i) ? (
+                              <motion.div
+                                key="answer"
+                                initial={{ opacity: 0, y: -6 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="bg-[#f0fdf4] border border-[#bbf7d0] rounded-xl px-3 py-2.5"
+                              >
+                                <p className="text-sm text-[#14532d] leading-relaxed">
+                                  {item.answer}
+                                </p>
+                              </motion.div>
+                            ) : (
+                              <button
+                                key="reveal"
+                                onClick={() => setRevealedRecall(prev => new Set([...prev, i]))}
+                                className="flex items-center gap-1.5 text-sm text-[#6366f1] hover:text-[#4f46e5] transition-colors cursor-pointer"
+                                style={{ fontWeight: 500 }}
+                              >
+                                <Eye className="w-3.5 h-3.5" />
+                                Reveal answer
+                              </button>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
               </>
             ) : (
               /* ─── Challenge View ─── */
