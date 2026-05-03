@@ -18,7 +18,6 @@ import {
   RecordingTimer,
   ServiceErrorBanner,
 } from "@/shared/ui";
-import { SessionProgressBar } from "@/widgets/SessionProgressBar";
 import {
   realConversationService,
   realSpeechService,
@@ -814,9 +813,6 @@ function VoicePractice({
           className="relative max-w-[700px] mx-auto px-6 py-8 space-y-6"
           style={{ overflowAnchor: "none" }}
         >
-          <div className="w-full mb-6 relative z-10">
-            <SessionProgressBar currentStep="practice" />
-          </div>
           {/* Voice conversation banner */}
           <motion.div
             className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-full mx-auto w-fit"
