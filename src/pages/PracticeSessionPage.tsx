@@ -932,8 +932,8 @@ export function PracticeSessionPage({
             exit={{ opacity: 0, filter: "blur(4px)" }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
           >
-            {/* Stepper — rendered once here, not inside each sub-screen (hidden on intro, context selector, and full-screen loaders) */}
-            {step !== "intro" && step !== "self-intro-context" && step !== "generating" && step !== "analyzing" && (
+            {/* Stepper — rendered once here, not inside each sub-screen (hidden on intro, context selector, full-screen loaders, and interlocutor intro) */}
+            {step !== "intro" && step !== "self-intro-context" && step !== "generating" && step !== "analyzing" && step !== "interlocutor-intro" && (
               <div className="w-full max-w-md mx-auto px-6 pt-4">
                 <SessionProgressBar currentStep={step} />
               </div>
