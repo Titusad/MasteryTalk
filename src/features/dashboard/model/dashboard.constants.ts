@@ -1,20 +1,11 @@
 /**
  * ══════════════════════════════════════════════════════════════
- *  Dashboard — Constants & Mappings (Shared Layer)
- *  Platform-independent. Safe to use in React Native.
+ *  Dashboard — Constants & Mappings
  * ══════════════════════════════════════════════════════════════
  */
 
-export const PILLAR_NAMES = [
-  "Vocabulary",
-  "Grammar",
-  "Fluency",
-  "Pronunciation",
-  "Professional Tone",
-  "Persuasion",
-] as const;
-
-export type PillarName = (typeof PILLAR_NAMES)[number];
+export { PILLAR_NAMES, PILLAR_COLORS, type PillarName } from "@/shared/lib/pillars";
+import { PILLAR_NAMES, type PillarName } from "@/shared/lib/pillars";
 
 export const TAG_TO_PILLAR: Record<string, PillarName> = {
   vocabulary: "Vocabulary",
@@ -40,14 +31,6 @@ export const TAG_TO_PILLAR: Record<string, PillarName> = {
   structure: "Persuasion",
 };
 
-export const PILLAR_COLORS: Record<string, string> = {
-  Vocabulary: "#6366f1",
-  Grammar: "#0ea5e9",
-  Fluency: "#22c55e",
-  Pronunciation: "#f59e0b",
-  "Professional Tone": "#ec4899",
-  Persuasion: "#8b5cf6",
-};
 
 export const PILLAR_TIPS: Record<string, string> = {
   Vocabulary:

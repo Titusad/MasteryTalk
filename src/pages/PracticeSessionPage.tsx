@@ -79,7 +79,7 @@ import { LevelMilestoneModal } from "@/features/practice-session/ui/LevelMilesto
 import { getRecommendedLessons, getPreSessionLesson } from "@/services/microLessons";
 import type { MicroLesson } from "@/services/microLessons";
 import { PreSessionLessonScreen } from "@/features/practice-session/ui/PreSessionLessonScreen";
-import { LessonModal } from "./LessonModal";
+import { LessonModal } from "@/widgets/LessonModal";
 
 /* ═══════════════════════════════════════════════════════════
    TYPES & DATA (MVP-simplified)

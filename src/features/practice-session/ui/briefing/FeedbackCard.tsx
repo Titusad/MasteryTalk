@@ -32,7 +32,7 @@ import type { ShadowingPhrase } from "@/entities/feedback";
 import {
     computeStressedWords,
     computeLinkedPairs,
-} from "@/features/shadowing/model/shadowing.computations";
+} from "@/entities/session";
 
 interface ShadowingPhraseRaw {
     sentence: string;

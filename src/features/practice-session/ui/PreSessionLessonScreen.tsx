@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "motion/react";
 import { ArrowRight, Eye } from "lucide-react";
 import { SessionProgressBar } from "@/widgets/SessionProgressBar";
-import { PATH_LABELS } from "@/features/dashboard/model/progression-paths";
+import { PATH_LABELS } from "@/shared/lib/paths";
 import type { MicroLesson } from "@/services/microLessons";
 
 interface PreSessionLessonScreenProps {

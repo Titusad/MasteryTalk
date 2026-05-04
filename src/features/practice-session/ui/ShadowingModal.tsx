@@ -50,15 +50,15 @@ import {
     scoreColor,
     spacedRepetitionDays,
     extractShadowingPhrases,
-} from "@/features/shadowing/model";
-import { WaveformBars, ScoreRing, PhraseCard } from "@/features/shadowing/ui";
+} from "@/entities/session";
+import { WaveformBars, ScoreRing, PhraseCard } from "@/shared/ui";
 
 /* Types, constants, pure functions, and sub-components now imported from
    features/shadowing/model and features/shadowing/ui */
 
 /* Re-export for external consumers */
-export type { ShadowingPhrase } from "@/features/shadowing/model";
-export { extractShadowingPhrases } from "@/features/shadowing/model";
+export type { ShadowingPhrase } from "@/entities/session";
+export { extractShadowingPhrases } from "@/entities/session";
 
 type Phase = ShadowingPhase;
 

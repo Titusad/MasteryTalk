@@ -27,7 +27,7 @@ import { RecommendedLessonsCard } from "./RecommendedLessonsCard";
 import { GoalAnchorCard } from "./GoalAnchorCard";
 import { ProgressChartCard } from "./ProgressChartCard";
 import { SinceYouStartedCard } from "./SinceYouStartedCard";
-import { LessonModal } from "@/pages/LessonModal";
+import { LessonModal } from "@/widgets/LessonModal";
 import type { MicroLesson } from "@/services/microLessons";
 
 interface DashboardPageProps {

@@ -63,7 +63,8 @@ import {
   computeProblemWords,
   computePronTip,
 } from "@/features/session-report/model";
-import { ReportSection, ProficiencyGauge } from "@/features/session-report/ui";
+import { ReportSection } from "@/features/session-report/ui";
+import { ProficiencyGauge } from "@/shared/ui";
 
 /* ═══════════════════════════════════════════════════════════════
    MAIN COMPONENT: SessionReport

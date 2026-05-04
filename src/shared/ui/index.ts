@@ -36,4 +36,10 @@ export { PricingCard } from "./PricingCard";
 // ── Session utilities — consumed directly from @/shared/lib/ProgressionContext and @/entities/session
 
 // ── Feedback components ───────────────────────────────────────
+export { ProficiencyGauge, feedbackProficiencyColor, feedbackProficiencyLabel } from "./ProficiencyGauge";
 export { FeedbackAccordion } from "./FeedbackAccordion";
+
+// ── Shadowing UI primitives ───────────────────────────────────
+export { WaveformBars } from "./WaveformBars";
+export { ScoreRing } from "./ScoreRing";
+export { PhraseCard } from "./PhraseCard";

@@ -129,3 +129,6 @@ export interface SelfIntroContext {
   methodology: LevelMethodology;
   introHeadline: string;
 }
+
+/* ── Shadowing domain (computations + types) ── */
+export * from "./shadowing";

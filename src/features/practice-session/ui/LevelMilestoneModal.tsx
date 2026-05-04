@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Trophy, ArrowRight } from "lucide-react";
 import { AppModal } from "@/shared/ui";
-import { PATH_LABELS } from "@/features/dashboard/model/progression-paths";
+import { PATH_LABELS } from "@/shared/lib/paths";
 
 interface LevelMilestoneModalProps {
   open: boolean;

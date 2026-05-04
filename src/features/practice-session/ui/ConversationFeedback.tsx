@@ -27,7 +27,7 @@ import {
   Radar,
 } from "recharts";
 import { PageTitleBlock, FeedbackAccordion } from "@/shared/ui";
-import { ProficiencyGauge } from "@/features/session-report/ui";
+import { ProficiencyGauge } from "@/shared/ui";
 import { SessionProgressBar } from "@/widgets/SessionProgressBar";
 import {
   getBeforeAfterForScenario,

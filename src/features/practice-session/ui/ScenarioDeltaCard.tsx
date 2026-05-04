@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { TrendingUp } from "lucide-react";
 import { motion } from "motion/react";
 import { fetchSessions } from "@/services/adapters/supabase/dashboard.supabase";
-import { PILLAR_NAMES, PILLAR_COLORS } from "@/features/dashboard/model/dashboard.constants";
+import { PILLAR_NAMES, PILLAR_COLORS } from "@/shared/lib/pillars";
 import type { ScenarioType } from "@/services/types";
 
 interface ScenarioDeltaPoint {

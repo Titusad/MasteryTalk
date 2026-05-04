@@ -1693,9 +1693,7 @@ export const VISIBLE_PATHS: ProgressionPath[] = ENABLED_SCENARIO_IDS.length > 0
   ? PROGRESSION_PATHS.filter(p => p.id === "self-intro" || ENABLED_SCENARIO_IDS.includes(p.id))
   : PROGRESSION_PATHS;
 
-export const PATH_LABELS: Record<string, string> = Object.fromEntries(
-  PROGRESSION_PATHS.filter(p => p.id !== "self-intro").map(p => [p.id, p.title])
-);
+export { PATH_LABELS } from "@/shared/lib/paths";
 
 /* ── Helpers ── */
 

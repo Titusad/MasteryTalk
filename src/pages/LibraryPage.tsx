@@ -19,7 +19,7 @@ import { motion } from "motion/react";
 import { MiniFooter } from "@/shared/ui";
 import { MICRO_LESSONS, isLessonComplete, syncLessonProgress } from "@/services/microLessons";
 import type { MicroLesson } from "@/services/microLessons";
-import { LessonModal } from "./LessonModal";
+import { LessonModal } from "@/widgets/LessonModal";
 
 /* ─── Pillar config ─── */
 const PILLAR_META: Record<string, { color: string }> = {
