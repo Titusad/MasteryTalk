@@ -9,7 +9,7 @@ import { SUPABASE_URL } from "@/services/supabase";
  */
 
 export type { MicroLesson } from "./microLessonsData";
-export { MICRO_LESSONS } from "./microLessonsData";
+export { MICRO_LESSONS, getPreSessionLesson } from "./microLessonsData";
 import { MICRO_LESSONS } from "./microLessonsData";
 import type { MicroLesson } from "./microLessonsData";
 

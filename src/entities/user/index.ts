@@ -48,6 +48,8 @@ export interface OnboardingProfile {
   lastJobDescription?: string;
   /** User's Ideal L2 Self goal — shown on dashboard as motivational anchor */
   englishGoal?: string;
+  /** ID of last pre-session lesson shown — prevents same lesson on consecutive sessions */
+  last_pre_session_lesson_id?: string | null;
   /** True after the user completes their first practice session end-to-end */
   narrationCompleted?: boolean;
   /** WhatsApp verification status */

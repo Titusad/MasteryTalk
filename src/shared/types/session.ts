@@ -11,6 +11,7 @@ export type Step =
   | "experience"
   | "context"
   | "self-intro-context"
+  | "lesson"
   | "strategy"
   | "generating"
   | "practice-prep"

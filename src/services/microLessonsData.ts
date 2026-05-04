@@ -1741,3 +1741,45 @@ export const MICRO_LESSONS: MicroLesson[] = [
     ],
   },
 ];
+
+/**
+ * Select the pre-session primer lesson for a given path + level.
+ *
+ * Priority:
+ *   1. Lessons whose levelIds include levelId AND pathIds include pathId
+ *      (cycle sequentially; skip lastLessonId when alternatives exist)
+ *   2. Lessons matching the weakest pillar from pillarScores
+ *      (skip lastLessonId when alternatives exist)
+ *   3. null — step is skipped in the caller
+ */
+export function getPreSessionLesson(
+  pathId: string,
+  levelId: string,
+  lastLessonId?: string | null,
+  pillarScores?: Record<string, number> | null
+): MicroLesson | null {
+  // Priority 1: level-specific lessons
+  const levelSpecific = MICRO_LESSONS.filter(
+    (l) => l.levelIds?.includes(levelId) && l.pathIds?.includes(pathId)
+  );
+  if (levelSpecific.length > 0) {
+    const skipped = levelSpecific.filter((l) => l.id !== lastLessonId);
+    return skipped.length > 0 ? skipped[0] : levelSpecific[0];
+  }
+
+  // Priority 2: weakest pillar fallback
+  if (pillarScores) {
+    const weakestPillar = Object.entries(pillarScores)
+      .filter(([, score]) => typeof score === "number" && score > 0)
+      .sort(([, a], [, b]) => (a as number) - (b as number))[0]?.[0];
+    if (weakestPillar) {
+      const pillarLessons = MICRO_LESSONS.filter(
+        (l) => l.pillar === weakestPillar
+      );
+      const skipped = pillarLessons.filter((l) => l.id !== lastLessonId);
+      return skipped.length > 0 ? skipped[0] : pillarLessons[0] ?? null;
+    }
+  }
+
+  return null;
+}

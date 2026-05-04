@@ -203,6 +203,7 @@ app.put("/make-server-08b8658d/profile", async (c: any) => {
       "wa_preferred_hour", "wa_timezone",
       "wa_dismissed_at_session_count", "wa_card_permanently_dismissed",
       "profile_completed",
+      "last_pre_session_lesson_id",
     ]);
     const safeUpdates: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(updates)) {
