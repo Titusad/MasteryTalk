@@ -258,6 +258,7 @@ export function ProgressionTree({ onStartLevel, onDrillComplete, onLockedClick, 
       <ChooseNextPathModal
         open={chooseNextOpen}
         onClose={() => setChooseNextOpen(false)}
+        completedPathId={isActivePathComplete ? activeTab : undefined}
         availablePaths={availableToUnlock.map(p => ({
           id: p.id,
           title: p.title,

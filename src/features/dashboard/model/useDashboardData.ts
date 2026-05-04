@@ -35,11 +35,13 @@ import {
   getOpenNextSteps,
   computeCEFRProgress,
   computeVelocitySignal,
+  computeSinceYouStarted,
   type EnrichedHistoryItem,
   type UserState,
   type ChurnGapSignal,
   type CEFRProgress,
   type VelocitySignal,
+  type SinceYouStartedPoint,
 } from "./dashboard.computations";
 import type { LandingLang } from "@/shared/i18n/landing-i18n";
 import { LANDING_COPIES } from "@/shared/i18n/landing-i18n";
@@ -99,6 +101,9 @@ export interface DashboardData {
 
   /* Cross-path overview */
   perPathStats: Record<string, { sessions: number; avgScore: number | null }>;
+
+  /* Progress since start */
+  sinceYouStarted: SinceYouStartedPoint[] | null;
 
   /* Lessons */
   recommendedLessons: ReturnType<typeof getRecommendedLessons>;
@@ -284,6 +289,12 @@ export function useDashboardData({
     return getCEFRApprox(proficiencyScore);
   }, [latestSession, proficiencyScore]);
 
+  /* ─── Since You Started ─── */
+  const sinceYouStarted = useMemo(
+    () => computeSinceYouStarted(persistedSessions),
+    [persistedSessions]
+  );
+
   /* ─── Lessons ─── */
   const recommendedLessons = useMemo(
     () => getRecommendedLessons(radarData),
@@ -391,6 +402,7 @@ export function useDashboardData({
     proficiencyDelta,
     cefrApprox,
     latestSession,
+    sinceYouStarted,
     recommendedLessons,
     greeting,
     avatarInitials,

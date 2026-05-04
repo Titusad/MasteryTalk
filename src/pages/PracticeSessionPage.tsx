@@ -74,6 +74,8 @@ import { recommendPath } from "@/features/dashboard/model/path-recommendation";
 import { PathRecommendationCard } from "@/features/practice-session/ui/PathRecommendationCard";
 import { WhatsAppActivationCard } from "@/features/dashboard/ui/WhatsAppActivationCard";
 import { DeepDiveCard } from "@/features/practice-session/ui/DeepDiveCard";
+import { ScenarioDeltaCard } from "@/features/practice-session/ui/ScenarioDeltaCard";
+import { LevelMilestoneModal } from "@/features/practice-session/ui/LevelMilestoneModal";
 import { getRecommendedLessons } from "@/services/microLessons";
 import type { MicroLesson } from "@/services/microLessons";
 import { LessonModal } from "./LessonModal";
@@ -693,6 +695,8 @@ export function PracticeSessionPage({
     );
   }, [feedbackStatus, realFeedback, sessionId, scenarioType, scenario]);
 
+  const [levelMilestoneOpen, setLevelMilestoneOpen] = useState(false);
+
   /* ── Auto-transition for feedback: when BOTH animation AND API are done ── */
   useEffect(() => {
     if (step !== "analyzing" || !feedbackAnimDone) return;
@@ -706,6 +710,7 @@ export function PracticeSessionPage({
         const pillarScores = realFeedback.pillarScores || {};
         completeProgressionLevel(progressionPathId, progressionLevelId, score, pillarScores)
           .catch((err: any) => console.info("[Progression]", err));
+        if (score >= 75) setLevelMilestoneOpen(true);
       }
     } else if (feedbackStatus === "loading") {
       console.warn("[AnalyzeFeedback] ⚠️ Skip pressed while API loading — forcing transition");
@@ -1474,8 +1479,19 @@ export function PracticeSessionPage({
                 />
               ) : null;
 
-              const combinedBottomSlot = (waCardSlot || recommendationSlot || deepDiveSlot)
-                ? <>{waCardSlot}{recommendationSlot}{deepDiveSlot}</>
+              const scenarioDeltaSlot =
+                !isSelfIntro &&
+                scenarioType &&
+                realFeedback?.pillarScores &&
+                Object.keys(realFeedback.pillarScores).length >= 4 ? (
+                  <ScenarioDeltaCard
+                    scenarioType={scenarioType}
+                    currentPillarScores={realFeedback.pillarScores}
+                  />
+                ) : null;
+
+              const combinedBottomSlot = (waCardSlot || recommendationSlot || scenarioDeltaSlot || deepDiveSlot)
+                ? <>{waCardSlot}{recommendationSlot}{scenarioDeltaSlot}{deepDiveSlot}</>
                 : null;
 
               return (
@@ -1562,6 +1578,18 @@ export function PracticeSessionPage({
           onClose={() => setDeepDiveLessonOpen(false)}
           onNavigate={(i) => setDeepDiveLessonIndex(i)}
           onComplete={() => {}}
+        />
+      )}
+
+      {/* ── Level Milestone Celebration ── */}
+      {progressionPathId && progressionLevelDef && (
+        <LevelMilestoneModal
+          open={levelMilestoneOpen}
+          pathId={progressionPathId}
+          levelNumber={progressionLevelDef.level}
+          levelTitle={progressionLevelDef.title}
+          score={Math.round(realFeedback?.professionalProficiency ?? 0)}
+          onClose={() => setLevelMilestoneOpen(false)}
         />
       )}
 

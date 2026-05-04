@@ -57,19 +57,33 @@ export interface ProfileStats {
 /**
  * Fetch all sessions for the authenticated user.
  */
-export async function fetchSessions(): Promise<PersistedSession[]> {
-  try {
-    const token = await getAuthToken();
-    const res = await fetch(`${BASE}/sessions`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!res.ok) throw new Error(`${res.status}`);
-    const data = await res.json();
-    return data.sessions || [];
-  } catch (err) {
-    console.warn("[DashboardService] fetchSessions failed:", err);
-    return [];
+let _sessionsCache: { ts: number; promise: Promise<PersistedSession[]> } | null = null;
+
+export function fetchSessions(): Promise<PersistedSession[]> {
+  if (_sessionsCache && Date.now() - _sessionsCache.ts < 30_000) {
+    return _sessionsCache.promise;
   }
+  const promise = (async () => {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch(`${BASE}/sessions`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error(`${res.status}`);
+      const data = await res.json();
+      return (data.sessions || []) as PersistedSession[];
+    } catch (err) {
+      console.warn("[DashboardService] fetchSessions failed:", err);
+      _sessionsCache = null;
+      return [] as PersistedSession[];
+    }
+  })();
+  _sessionsCache = { ts: Date.now(), promise };
+  return promise;
+}
+
+export function invalidateSessionsCache(): void {
+  _sessionsCache = null;
 }
 
 export async function fetchWAPracticeDates(): Promise<Set<string>> {

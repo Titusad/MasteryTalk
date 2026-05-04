@@ -26,6 +26,7 @@ import { CrossPathCard } from "./CrossPathCard";
 import { RecommendedLessonsCard } from "./RecommendedLessonsCard";
 import { GoalAnchorCard } from "./GoalAnchorCard";
 import { ProgressChartCard } from "./ProgressChartCard";
+import { SinceYouStartedCard } from "./SinceYouStartedCard";
 import { LessonModal } from "@/pages/LessonModal";
 import type { MicroLesson } from "@/services/microLessons";
 
@@ -223,6 +224,9 @@ export function DashboardPage({
                 onEditGoal={() => onNavigateToAccount?.()}
               />
               <ProgressChartCard />
+              {data.sinceYouStarted && data.sinceYouStarted.length > 0 && (
+                <SinceYouStartedCard data={data.sinceYouStarted} />
+              )}
               <CrossPathCard
                 perPathStats={data.perPathStats}
                 progressionState={progressionLoading ? null : progressionState}

@@ -559,3 +559,49 @@ export function computeVelocitySignal(
     avgGainPerSession,
   };
 }
+
+/* ── Since You Started ── */
+
+export interface SinceYouStartedPoint {
+  pillar: string;
+  first: number;
+  latest: number;
+  delta: number;
+}
+
+export function computeSinceYouStarted(
+  sessions: PersistedSession[]
+): SinceYouStartedPoint[] | null {
+  const withScores = sessions
+    .filter((s) => {
+      const sc = s.summary?.pillarScores ?? s.feedback?.pillarScores;
+      return sc && Object.keys(sc).length >= 4;
+    })
+    .sort(
+      (a, b) =>
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    );
+
+  if (withScores.length < 2) return null;
+
+  const firstScores =
+    withScores[0].summary?.pillarScores ??
+    withScores[0].feedback?.pillarScores ??
+    {};
+  const latestScores =
+    withScores[withScores.length - 1].summary?.pillarScores ??
+    withScores[withScores.length - 1].feedback?.pillarScores ??
+    {};
+
+  const result: SinceYouStartedPoint[] = PILLAR_NAMES.map((pillar) => ({
+    pillar,
+    first: Math.round((firstScores[pillar] as number) ?? 0),
+    latest: Math.round((latestScores[pillar] as number) ?? 0),
+    delta: Math.round(
+      ((latestScores[pillar] as number) ?? 0) -
+        ((firstScores[pillar] as number) ?? 0)
+    ),
+  })).filter((p) => p.first > 0 || p.latest > 0);
+
+  return result.length >= 4 ? result : null;
+}
