@@ -1,16 +1,11 @@
-# MasteryTalk PRO — Copy Master
-
-> Archivo único con todo el copy de la aplicación para revisión y edición.
-> Después de editar, los cambios deben aplicarse a:
-> - Landing page: `src/shared/i18n/landing-i18n.ts`
-> - Emails transaccionales: `supabase/functions/make-server-08b8658d/email-templates.ts`
-> - Emails de marketing: Loops.so dashboard
->
-> Última actualización: 2026-05-04
+# Copy — Landing Page
+> Three languages: ES (default) · PT · EN. Language selector applies to landing only.
+> Source implementation: `src/shared/i18n/landing-i18n.ts`
+> Last updated: 2026-05-04
 
 ---
 
-## PARTE 1 — LANDING PAGE (ES)
+## ES — Español
 
 ### Nav
 - How It Works: `Cómo funciona`
@@ -85,9 +80,9 @@
 
 ### Lo que te llevas de cada sesión
 - Section title: `Lo que te llevas de cada sesión.`
-- Item 1: Metric: `Fluidez` / Desc: `Sabes dónde te trabaste y cómo no volver a hacerlo.`
-- Item 2: Metric: `Pronunciación` / Desc: `Qué corregir y cómo debería sonar.`
-- Item 3: Metric: `PDF` / Desc: `Tu informe descargable para estudiar o tener a mano.`
+- Item 1: Metric `Fluidez` / Desc `Sabes dónde te trabaste y cómo no volver a hacerlo.`
+- Item 2: Metric `Pronunciación` / Desc `Qué corregir y cómo debería sonar.`
+- Item 3: Metric `PDF` / Desc `Tu informe descargable para estudiar o tener a mano.`
 
 ### Rutas
 - Section title: `Elige la ruta que necesitas ahora.`
@@ -109,7 +104,7 @@
 - Section title: `El Programa`
 - Headline: `Únete al programa.`
 - Subtitle: `Los primeros 25 suscriptores se convierten en Founding Members — precio bloqueado para siempre a $49 por 3 meses.`
-- Launch badge: `⭐ Founding Member`
+- Launch badge: `★ Founding Member`
 - Slots left: `{{count}} slots Founding Member disponibles`
 - Slots gone: `Founding Member agotado — precio regular activo`
 - Save badge: `Ahorra $18 vs mensual`
@@ -157,23 +152,13 @@
 - Button: `Practica tu primera conversación gratis`
 - Badges: `Sin tarjeta` · `Primera sesión gratis` · `25 slots Founding Member`
 
-### Auth
-- Login title: `Bienvenido de vuelta`
-- Login subtitle: `Inicia sesión para continuar tu entrenamiento`
-- Login Google: `Continuar con Google`
-- Register title: `Crea tu cuenta gratuita`
-- Register subtitle: `Comienza tu entrenamiento profesional en inglés`
-- Register Google: `Registrarse con Google`
-- Register trust: `1ª sesión gratis · Sin tarjeta · Sin suscripción`
-- Register terms: `Al registrarte, aceptas los Términos de Servicio y la Política de Privacidad.`
-
 ### Footer
-- Tagline: `El coach de comunicación profesional con IA para líderes latinoamericanos.`
+- Tagline: `El coach de comunicación profesional con IA para profesionales latinoamericanos.`
 - Copyright: `© 2026 MasteryTalk.pro. Todos los derechos reservados.`
 
 ---
 
-## PARTE 2 — LANDING PAGE (PT)
+## PT — Português
 
 ### Nav
 - How It Works: `Como funciona`
@@ -198,7 +183,7 @@
 - Presentation hook: `Que te ouçam, não apenas que te entendam.`
 - Card CTA: `Começar →`
 
-### Cómo funciona
+### Como funciona
 - Section title: `Três passos. Uma conversa que não te preocupa mais.`
 - Step 1 title: `Receba seu brief. Entre com estrutura.`
 - Step 1 desc: `Antes de falar, você recebe o framework, exemplos reais de respostas fracas vs. fortes e seu template de ancoragem. Não improvisa — chega preparado.`
@@ -218,7 +203,7 @@
 - Item 4 title: `O amigo que te daria o melhor feedback nem sempre está disponível.`
 - Item 4 desc: `MasteryTalk.pro sim. Às 2h da manhã antes da entrevista, uma hora antes da apresentação, ou no domingo antes daquela reunião de segunda. Sem agendar. Sem depender de ninguém.`
 
-### ¿Es para ti?
+### É para você?
 - Section title: `Para quem usa inglês no trabalho — ou quer usar.`
 - Yes list:
   - `Tem entrevistas com empresas que pagam em USD`
@@ -246,20 +231,20 @@
   - `Feedback de fluência e pronúncia com exemplos concretos`
   - `Entra pensando em vencer, não em sobreviver`
 
-### Lo que te llevas
+### O que você leva
 - Section title: `O que você leva de cada sessão.`
 - Item 1: `Fluência` / `Sabe onde travou e como não repetir.`
 - Item 2: `Pronúncia` / `O que corrigir e como deveria soar.`
 - Item 3: `PDF` / `Seu relatório para baixar e ter em mãos.`
 
-### Rutas
+### Rotas
 - Section title: `Escolha a rota que precisa agora.`
 - Subtitle: `Você escolhe seu Primary Path ao assinar. Ao completá-lo, desbloqueia o seguinte — uma rota de cada vez.`
 - Item 1: `Entrevista de emprego` / `Conquiste a vaga. Defenda seu valor. Sem hesitar.`
 - Item 2: `Reuniões remotas` / `Participe, lidere e feche. Não fique só de presença.`
 - Item 3: `Apresentações` / `Que te ouçam, não apenas que te entendam.`
 
-### El Programa
+### O Programa
 - Section title: `Um programa de 3 meses. Não um app.`
 - Subtitle: `Cada bloco te leva mais longe. Não há 'terminar' — sempre há um próximo nível.`
 - Foundation: `Seu Primary Path` / `Pratique o cenário que mais precisa agora. 6 níveis, dificuldade progressiva, feedback de IA em cada sessão.`
@@ -272,7 +257,7 @@
 - Section title: `O Programa`
 - Headline: `Junte-se ao programa.`
 - Subtitle: `Os primeiros 25 assinantes se tornam Founding Members — preço bloqueado para sempre em $49 por 3 meses.`
-- Launch badge: `⭐ Founding Member`
+- Launch badge: `★ Founding Member`
 - Slots left: `{{count}} slots Founding Member disponíveis`
 - Slots gone: `Founding Member esgotado — preço regular ativo`
 - Save badge: `Economize $18 vs mensal`
@@ -318,21 +303,13 @@
 - Button: `Pratique sua primeira conversa grátis`
 - Badges: `Sem cartão` · `Primeira sessão grátis` · `25 slots Founding Member`
 
-### Auth
-- Login title: `Bem-vindo de volta`
-- Login subtitle: `Entre para continuar seu treinamento`
-- Register title: `Crie sua conta gratuita`
-- Register subtitle: `Comece seu treinamento profissional em inglês`
-- Register trust: `1ª sessão grátis · Sem cartão · Sem assinatura`
-- Register terms: `Ao se registrar, você aceita os Termos de Serviço e a Política de Privacidade.`
-
 ### Footer
-- Tagline: `O coach de comunicação profissional com IA para líderes latino-americanos.`
+- Tagline: `O coach de comunicação profissional com IA para profissionais latino-americanos.`
 - Copyright: `© 2026 MasteryTalk.pro. Todos os direitos reservados.`
 
 ---
 
-## PARTE 3 — LANDING PAGE (EN)
+## EN — English
 
 ### Nav
 - How It Works: `How It Works`
@@ -431,7 +408,7 @@
 - Section title: `The Program`
 - Headline: `Join the program.`
 - Subtitle: `The first 25 subscribers become Founding Members — price locked forever at $49 per 3 months.`
-- Launch badge: `⭐ Founding Member`
+- Launch badge: `★ Founding Member`
 - Slots left: `{{count}} Founding Member slots left`
 - Slots gone: `Founding Member slots exhausted — regular pricing active`
 - Save badge: `Save $18 vs monthly`
@@ -477,248 +454,6 @@
 - Button: `Practice your first conversation free`
 - Badges: `No credit card` · `First session free` · `25 Founding Member slots`
 
-### Auth
-- Login title: `Welcome back`
-- Login subtitle: `Sign in to continue your training`
-- Register title: `Create your free account`
-- Register subtitle: `Start your professional communication training`
-- Register trust: `1st session free · No credit card · No subscription`
-- Register terms: `By signing up, you agree to our Terms of Service and Privacy Policy.`
-
 ### Footer
-- Tagline: `The AI-powered professional communication coach for ambitious leaders.`
+- Tagline: `The AI-powered professional communication coach for ambitious professionals.`
 - Copyright: `© 2026 MasteryTalk.pro. All rights reserved.`
-
----
-
-## PARTE 4 — EMAILS TRANSACCIONALES (Resend · English only)
-
-### Email 1 — Welcome
-**Trigger:** New user registers
-**Subject:** (auto — from Resend sender name)
-**Preheader:** `Welcome to MasteryTalk! Your AI-powered English coach is ready.`
-
-**H1:** `Welcome to MasteryTalk, {userName}!`
-
-**Body:**
-> You've just unlocked the most effective way to master professional English — through realistic AI-powered practice conversations.
->
-> Whether you're preparing for a job interview, a sales pitch, or an executive presentation, MasteryTalk gives you a safe space to practice, get real-time feedback, and build the confidence you need.
-
-**Info card:**
-- Your first session: `Free`
-- AI Coach: `GPT-4o powered`
-- Feedback: `Detailed analysis`
-
-**Body continued:**
-> Ready to start? Your first practice session is completely free — no credit card required.
-
-**CTA:** `Start Your First Session →`
-
----
-
-### Email 2 — Session Summary
-**Trigger:** After each session feedback is generated
-**Preheader:** `Your {scenarioLabel} results: Score {score}/100 — see full breakdown.`
-
-**H1:** `Your Session Results`
-
-**Body:**
-> Great work on your **{scenarioLabel}** practice, {userName}! Here's a snapshot of how you did.
-
-**Info card:**
-- Overall Score: `{score}/100`
-- Scenario: `{scenarioLabel}`
-
-**Skill breakdown:** (pillar scores table — auto-generated)
-
-**Top Strengths:** (auto-generated from session)
-
-**Focus Area card:** (auto-generated from top opportunity)
-
-**Divider**
-
-**Body:**
-> Consistency is the key to progress. Each session builds on the last — keep the momentum going!
-
-**CTA:** `Practice Again →`
-
----
-
-### Email 3 — Subscription Confirmation
-**Trigger:** `checkout.session.completed` webhook
-**Preheader:** `Your {planName} subscription is active — full access unlocked!`
-
-**H1:** `You're All Set!`
-
-**Body:**
-> Thank you for upgrading, {userName}! Your subscription is now active and you have full access to everything MasteryTalk has to offer.
-
-**Info card:**
-- Plan: `{planName}`
-- Amount: `${amount} USD`
-- Next billing: `{nextBillingDate}`
-
-**Body:**
-> With your subscription you get unlimited practice sessions, detailed pronunciation analysis, and advanced coaching feedback on every conversation.
-
-**CTA:** `Go to Dashboard →`
-
-**Footer note:** `Need help? Just reply to this email and we'll get back to you.`
-
----
-
-### Email 4 — Renewal Confirmed (with activity)
-**Trigger:** `invoice.payment_succeeded` (user had sessions this cycle)
-**Preheader:** `Your {planName} renewed — {sessionsThisMonth} sessions this month.`
-
-**H1:** `Month {planName} — here's what you built.`
-
-**Body:**
-> Hi {userName} — your subscription renewed and your access continues.
-
-**Progress card:** (auto-generated: sessions, strongest area, WA phrases drilled)
-
-**Billing card:**
-- Amount charged: `${amount} USD`
-- Next renewal: `{nextBillingDate}`
-
-**CTA:** `Keep Going →`
-
-**Footer note:** `Manage your subscription in account settings. Cancel anytime.`
-
----
-
-### Email 4B — Renewal Confirmed (no activity)
-**Trigger:** `invoice.payment_succeeded` (user had 0 sessions this cycle)
-**Preheader:** `Your {planName} renewed — your session is waiting.`
-
-**H1:** `Your subscription renewed — we haven't seen you this month.`
-
-**Body:**
-> Hi {userName} — your {planName} access is active, but you haven't practiced yet this cycle.
-
-**Focus card:**
-> Your sessions show **{weakestPillar}** is the area to work on next. One session is enough to make a dent.
-> *(or: Your next session is ready — pick up where you left off.)*
-
-**Body:**
-> 15 minutes is all it takes. The AI interlocutor is ready when you are.
-
-**CTA:** `Start a session →`
-
-**Footer note:** `Amount charged: ${amount} USD · Next renewal: {nextBillingDate} · Manage subscription`
-
----
-
-### Email 5 — Inactivity Nudge
-**Trigger:** Cron — 7+ days without session, max 1 per 14 days
-**Preheader:** `Your English isn't going to practice itself — come back!`
-
-**H1:** `Your English isn't going to practice itself.`
-
-**Body:**
-> Hi {userName} — it's been a while since your last session.
->
-> The professionals who achieve real fluency don't wait for the perfect moment. They practice even when they're busy — especially then.
-
-**Focus card:**
-> 💡 **10 minutes today** compounds into executive-level English over weeks. Your practice paths are waiting.
-
-**Body:**
-> Pick up where you left off — your progress is saved and your paths are fully unlocked.
-
-**CTA:** `Resume Practice →`
-
-**Footer note:** `You're receiving this because you have an active MasteryTalk PRO subscription. Manage your account.`
-
----
-
-## PARTE 5 — EMAILS DE MARKETING (Loops · English only)
-
-### Loop 1 — Activation (D+2)
-**Trigger:** contact_created · **Delay:** 2 days · **Filter:** none
-**Subject:** `Your communication baseline is waiting`
-
-**Body:**
-> There is a gap between what you know and how you communicate it in English.
->
-> Your first MasteryTalk PRO session measures it. In 8 minutes, you get a score across 6 pillars — vocabulary, fluency, grammar, pronunciation, professional tone, and persuasion.
->
-> No card. No prep. Just talk.
-
-**CTA:** `Start my first session →`
-
----
-
-### Loop 2 — Conversion (D+5)
-**Trigger:** contact_created · **Delay:** 5 days
-**Filter:** `first_session_completed = true` AND `subscription_purchased = false`
-**Subject:** `What the 90-day program actually does`
-
-**Body:**
-> You have your baseline score. You know where the gap is.
->
-> The 90-day program closes it.
->
-> Your Primary Path — chosen from your self-intro results — gives you 6 levels of progressive practice, from foundation to high-pressure scenarios. Each session scores you by pillar. The WhatsApp coach reinforces vocabulary daily between sessions. The gap narrows. The results show in your next client meeting.
->
-> Founding Member price: $49 for 3 months. Locked for you permanently. 25 slots total.
-
-**CTA:** `Join the program →`
-
----
-
-### Loop 3 — Reactivation (D+7)
-**Trigger:** contact_created · **Delay:** 7 days
-**Filter:** `first_session_completed = false`
-**Subject:** `8 minutes. That is all it takes.`
-
-**Body:**
-> One MasteryTalk PRO session takes 8 minutes.
->
-> In 8 minutes you practice the conversation you have tomorrow — the client call, the sprint retro, the interview. The AI scores your fluency, your vocabulary, your professional tone. You finish knowing exactly what to improve.
->
-> You do not need a two-hour block. You need 8 minutes and the willingness to get better.
-
-**CTA:** `Start my first session →`
-
----
-
-### Loop 4 — Post-session upsell (immediate)
-**Trigger:** event `first_session_completed` · **Delay:** 0
-**Filter:** `subscription_purchased = false`
-**Subject:** `You just saw how it works. Here is what comes next.`
-
-**Body:**
-> You completed your first session and received your diagnosis.
->
-> That was one session. The 90-day program is 6 levels of your recommended path — each one harder than the last. Interview pressure, sales objections, executive presentations. The AI interlocutor does not forgive vague answers or indirect communication. Neither does the real market.
->
-> Your score today is your baseline. The program is how you move it.
->
-> Founding Member: $49 for 3 months. Price locked permanently for early adopters.
-
-**CTA:** `Start the program →`
-
----
-
-### Loop 5 — Urgency (D+21)
-**Trigger:** contact_created · **Delay:** 21 days
-**Filter:** `subscription_purchased = false`
-**Subject:** `Founding Member: a few slots remain`
-
-**Body:**
-> The nearshoring market is at peak demand. U.S. companies are hiring LATAM professionals at record pace.
->
-> The filter is not technical skill. It is communication. The professional who leads the meeting, closes the deal, and defends their roadmap in English — that is the one who gets the offer, the promotion, the account.
->
-> MasteryTalk PRO builds that capability in 90 days.
->
-> 25 Founding Member slots. $49 for 3 months, locked permanently. When they fill, the price moves to $129.
-
-**CTA:** `Secure my spot →`
-
----
-
-*Para aplicar cambios: editar este archivo primero, luego actualizar `landing-i18n.ts` y `email-templates.ts` con los valores revisados. Los emails de Loops se actualizan directamente en el dashboard.*
