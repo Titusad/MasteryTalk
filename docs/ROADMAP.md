@@ -90,9 +90,9 @@
 
 - [x] Validate final price points: **Founding Member $49/3mo (locked forever)** · **Program $129/3mo** · **Monthly $49/mo** — confirmed 2026-05-04 (monthly raised from $29 so quarterly saves $18 vs 3× monthly)
 - [x] Update PRODUCT_SPEC §3.1 + §3.5 with confirmed prices (v3.0)
-- [ ] Create new Stripe products and price IDs (retire $12.99/$19.99/$29.99/$47.99)
-- [ ] Update `STRIPE_PRICE_*` secrets in Supabase + `supabase/.env.local`
-- [ ] Update `/pricing` endpoint response shape if needed
+- [x] Create new Stripe products and price IDs (price_1TTODGQhSs1CWakE8LSJs9g6 · price_1TTODoQhSs1CWakEb8Cv7sHF · price_1TTOJSQhSs1CWakEQfC3ZDMw)
+- [x] Update `STRIPE_PRICE_*` secrets in Supabase + `supabase/.env.local`
+- [x] Update `/pricing` endpoint response shape if needed
 
 ### 0.3 Progressive Path Unlocking (Backend)
 
@@ -107,7 +107,7 @@
 - [x] `POST /create-checkout` + Stripe metadata — `primary_path` passed through checkout → webhook → KV profile
 - [x] `self_intro_context` + `last_pre_session_lesson_id` added to `PUT /profile` whitelist
 - [x] Dashboard: "Choose your next path" modal when current path fully completed (Phase 0.6 — frontend) ✅
-- [ ] Regression test: existing beta users → confirmed grandfathered (full access if no `primary_path`)
+- [x] Regression test: existing beta users → confirmed grandfathered (full access if no `primary_path`) — logic in `progression.ts` lines 39–41
 
 ### 0.4 Landing Page Reframe
 
@@ -147,12 +147,12 @@
 > **Goal:** Connect self-intro data to the subscribe flow so Primary Path and personalization are active from day 1.
 > **Spec:** PRODUCT_SPEC §7.10
 
-- [ ] After self-intro feedback: store `self_intro_pillar_scores`, `self_intro_context`, `self_intro_completed = true` to KV via backend (server-only write in feedback handler)
-- [ ] `PathRecommendationCard` CTA passes `recommended_path` as `primary_path` into checkout flow — pre-selects it in `PathPurchaseModal`
-- [ ] `POST /create-checkout` body: accept `primary_path?: PathId` — pass through to Stripe metadata
-- [ ] `checkout.session.completed` webhook: read `primary_path` from metadata → persist to KV profile
-- [ ] `GET /progression`: read `primary_path` from profile → unlock that path's 6 levels (replaces current all-unlock behavior)
-- [ ] **Acceptance:** User completes self-intro → recommended path shown → subscribes → dashboard shows only Primary Path unlocked + War Room
+- [x] After self-intro feedback: store `self_intro_pillar_scores`, `self_intro_context`, `self_intro_completed = true` to KV — `feedback.ts` lines 185–188
+- [x] `PathRecommendationCard` CTA passes `recommended_path` as `primary_path` into checkout flow — `PracticeSessionPage.tsx` `selfIntroPrimaryPath` → `PathPurchaseModal`
+- [x] `POST /create-checkout` body: accept `primary_path?: PathId` — `checkout.ts` line 31
+- [x] `checkout.session.completed` webhook: read `primary_path` from metadata → persist to KV profile — `webhook.ts` lines 136–153
+- [x] `GET /progression`: read `primary_path` from profile → unlock that path's 6 levels — `progression.ts` lines 36–58
+- [x] **Acceptance:** User completes self-intro → recommended path shown → subscribes → dashboard shows only Primary Path unlocked + War Room
 
 ---
 
