@@ -5,7 +5,7 @@
 > oportunidades de mejora alineadas con la **formación del hábito de uso**.
 >
 > **Audiencia:** Producto, diseño, growth.
-> **Actualizado:** 2026-04-29
+> **Actualizado:** 2026-05-04 (Beta v14.6)
 
 ---
 
@@ -32,7 +32,7 @@ Los touchpoints están agrupados en **5 fases** del arco del usuario.
 Fase 0 — Descubrimiento     → Landing Page
 Fase 1 — Primera sesión     → Onboarding → Warm-Up → Feedback
 Fase 2 — Decisión           → Upsell → Pago → Confirmación
-Fase 3 — Primera sesión paga → Dashboard → Sesión completa → Feedback con nivel
+Fase 3 — Primera sesión paga → Dashboard → Sesión completa (con micro-lección) → Feedback
 Fase 4 — Retención / Hábito → Dashboard recurrente → WhatsApp SR → Emails
 Fase 5 — Riesgo de churn    → Nudge de inactividad → Renovación
 ```
@@ -294,11 +294,13 @@ Fase 5 — Riesgo de churn    → Nudge de inactividad → Renovación
 |----------|------|-------------|
 | Proficiency score (hero) | Número generado por AI (Gemini) | Score 0-100 prominente — establece el ancla emocional |
 | ProficiencyGauge | UI animada | Gauge que se llena animadamente al montar |
-| Pillar scores (5) | Texto generado por AI + colores por pilar | Pronunciation (rojo), Fluency (azul), Tone (teal), Grammar (azul), Vocabulary (verde) |
+| Pillar scores (6) | Texto generado por AI + colores por pilar | Vocabulary, Grammar, Fluency, Pronunciation, Professional Tone, Persuasion — alineados al marco CEFR |
 | Before/After examples | Texto generado por AI | Fragmentos reales de la conversación del usuario — lo que dijo vs. lo que debería haber dicho |
 | Shadowing practice | Audio ElevenLabs + UI interactiva | El usuario puede grabar su pronunciación de frases corregidas y comparar |
+| ScenarioDeltaCard | UI dinámica (bottomSlot) | Compara los 6 pilares de esta sesión vs. la sesión anterior del mismo scenarioType — barra ghost del score previo + delta en verde/rojo. Requiere ≥ 2 sesiones del mismo escenario. |
 | Content Insights acordeón | Texto generado por AI (Gemini) + `SmoothHeight` | Colapsable — análisis detallado de tono y vocabulario |
-| Progression gate (≥75) | Lógica de negocio → UI | Score ≥ 75 → "Level Complete" → siguiente nivel desbloqueado |
+| Progression gate (≥75) | Lógica de negocio → UI | Score ≥ 75 → `LevelMilestoneModal` con confetti → siguiente nivel desbloqueado |
+| LevelMilestoneModal | Modal animado (canvas-confetti) | Celebración al completar nivel: badge path/level, score, CTA "Continue" |
 | Narración de audio | TTS estático (ElevenLabs) | Coach que introduce la pantalla de resultados |
 | Retry / Practice Again | UI estática | Regreso al flujo — reinicio sin perder el contexto |
 
@@ -432,13 +434,16 @@ Fase 5 — Riesgo de churn    → Nudge de inactividad → Renovación
 
 | Elemento | Tipo | Descripción |
 |----------|------|-------------|
-| HeroCard | UI dinámica | Context-aware: saludo + estado del usuario (new subscriber) |
-| RecommendedNextCard | UI dinámica (basada en `weakest pillar` de `GET /progression`) | Recomienda la siguiente sesión basado en el pilar más débil |
-| PracticePathsModule | UI dinámica | ProgressionTree con todos los paths y niveles visibles |
-| StreakCard | UI dinámica (7-day grid) | Vacío al inicio — empieza a construir el hábito visual |
-| WhatsAppActivationCard | UI estática | Primera invitación al SR Coach — disponible desde el primer día |
+| HeroCard | UI dinámica | Context-aware: saludo + estado del usuario; CEFR badge dinámico (B1/B2/C1) con gate pills por pilar; "Day X of 90" counter desde `subscription_start_date`; streak 7-day grid |
+| GoalAnchorCard | UI dinámica | Ideal Self del usuario (englishGoal) — ancla motivacional visible en cada retorno; editable desde Account |
+| ProgressChartCard | UI dinámica (recharts) | Línea de evolución del avg score en las últimas 10 sesiones; líneas de referencia CEFR en 60 (B1→B2) y 78 (B2→C1) |
+| SinceYouStartedCard | UI dinámica | Delta por pillar entre primera sesión y última — muestra el progreso total acumulado. Visible con ≥ 2 sesiones con pillarScores |
+| PracticePathsModule | UI dinámica | ProgressionTree con Primary Path desbloqueado + paths bloqueados; `ChooseNextPathModal` cuando path completado (confetti + LinkedIn share) |
+| CrossPathCard | UI dinámica | Progreso comparado entre paths (sesiones + avg score) |
+| RecommendedLessonsCard | UI dinámica | Micro-lecciones recomendadas entre sesiones según pillar más débil |
+| StreakCard (en HeroCard) | UI dinámica (7-day grid) | Cuadros de los últimos 7 días — visual de racha |
+| WhatsAppActivationCard | UI estática | Banner superior cuando WhatsApp no está verificado |
 | PlatformNewsCard | UI estática | Noticias del producto; relevante para early adopters |
-| Empty state | UI estática | El banner "START HERE — Professional Self-Introduction" solo si 0 sesiones |
 
 **Oportunidad:** El dashboard muestra demasiado al mismo tiempo para un usuario nuevo. El `RecommendedNextCard` debería ser el elemento más prominente en la primera visita post-pago — con un mensaje como "Start here. Your first real session is ready." Los demás módulos (StreakCard, WhatsApp, CrossPath) pueden esperar a la segunda visita.
 
@@ -453,12 +458,16 @@ Fase 5 — Riesgo de churn    → Nudge de inactividad → Renovación
 ```
 IntroductionScreen
   → ContextScreen (situación + job description + presets)
+  → PreSessionLessonScreen (micro-lección 90s — primado de vocabulario y recall)  ← NUEVO §7.9
   → StrategyScreen (metodología + examples personalizados)
   → PracticePrepScreen (briefing de preguntas con stepper)
   → InterlocutorIntroScreen (presentación inmersiva)
   → VoicePractice (conversación real)
   → AnalyzingScreen (espera)
-  → FeedbackScreen (resultados + shadowing + progresión)
+  → FeedbackScreen (resultados + shadowing + ScenarioDeltaCard + progresión)
+
+Pasos omitidos en Challenge Mode: lesson + strategy + practice-prep
+Pasos omitidos en War Room: lesson + (experience)
 ```
 
 **Touchpoints nuevos vs. warm-up:**
@@ -505,6 +514,38 @@ IntroductionScreen
 | Block 4.6 en system prompt | Lógica de assembler | `buildSessionFocusBlock()` inyecta instrucciones de foco y tono al interlocutor |
 
 **Oportunidad:** Los campos son optativos, pero no hay feedback visible de que el AI los está usando. Una micro-confirmación post-selección ("Got it — I'll prioritize your Fluency coaching today") antes del Continue reforzaría la causalidad percibida y aumentaría la tasa de uso de esta feature.
+
+#### TP-15a.2 · PreSessionLessonScreen (micro-lección pre-sesión) — NUEVO §7.9
+
+**Contexto:** Aparece entre el ContextScreen y el StrategyScreen en sesiones de path (no Challenge Mode, no War Room, no self-intro). Dura ~90 segundos.
+
+| | |
+|---|---|
+| **Acción** | Lee el concepto clave (2 frases). Ve la power phrase destacada. Responde la pregunta de recall tapando "Reveal answer". Hace clic en "Start session". |
+| **Pensando** | "¿Esto tiene que ver con lo que voy a practicar ahora?" |
+| **Siente** | Ligeramente sorprendido. Percepción de que el sistema lo prepara de forma específica — no genérica. |
+| **Queremos que sienta** | Preparación concreta. *"Tengo el vocabulario exacto que voy a necesitar en los próximos 8 minutos."* |
+
+**Sistema interviene:**
+
+| Elemento | Tipo | Descripción |
+|----------|------|-------------|
+| Badge path + level | UI estática | e.g., "Interview Mastery · Level 2" — contextualiza la lección |
+| Título de lección | Texto estático (microLessonsData) | Título de la lección seleccionada para este path/level |
+| Core concept | Texto estático | `lesson.content.keyConcept` — máximo 2 frases |
+| Power phrase | Texto destacado en card oscura | `lesson.content.example.text` en itálica — la frase exacta a usar |
+| Recall question gateada | UI interactiva | `lesson.recallQuestions[0]` — respuesta oculta hasta que el usuario tapa "Reveal answer" |
+| CTA bloqueado → activo | Lógica de UI | Botón deshabilitado hasta que se revela la respuesta; evita lectura pasiva |
+| `last_pre_session_lesson_id` | Persistencia KV | Se guarda al avanzar — la siguiente sesión recibe una lección diferente |
+
+**Selección de lección:**
+- Prioridad 1: lecciones cuyo `levelIds` + `pathIds` coincidan con la sesión actual (específicas del nivel)
+- Prioridad 2: lección del pilar más débil según `pillarScores` histórico
+- Si ninguna aplica: el paso se omite silenciosamente
+
+**Oportunidad:** La power phrase en la card oscura es el elemento más memorable de la pantalla. Si el usuario la ve justo antes de la conversación y el interlocutor le da oportunidad de usarla, el loop de aprendizaje se cierra en tiempo real. Una micro-señal post-sesión ("Did you use the phrase from your lesson?") en el FeedbackScreen reforzaría la conexión.
+
+---
 
 #### TP-15b · PracticePrepScreen (briefing por pregunta con stepper)
 
@@ -605,7 +646,7 @@ IntroductionScreen
 |----------|------|-------------|
 | `welcomeEmailHtml()` | Template HTML estático (Resend) | Branding + CTA a primera sesión |
 | `sessionSummaryEmailHtml()` | Template HTML dinámico (scores, key improvements) | Datos reales de la sesión — scores + frases mejoradas |
-| Loops sequences (5) | Texto de nurturing (Loops dashboard) | Branch por `language` (ES/PT/EN) — automatizado |
+| Loops sequences (5) | Texto de nurturing (Loops dashboard) | English only — sin branches de idioma (ver política §6.3 PRODUCT_SPEC) |
 | `inactivityNudgeEmailHtml()` | Template HTML + lógica de throttle | Max 1 por 14 días; solo para suscriptores inactivos |
 
 **Oportunidad:** El **session summary email** es el email de mayor valor del producto — muestra las métricas reales del usuario. Sin embargo, no tiene un CTA visible a "Practice Again" ni a "See your next recommended session". Este email, que llega inmediatamente post-sesión, es el momento de mayor intención — conectarlo directamente a la siguiente sesión con un deep link (`/#dashboard?start=true`) aumentaría la frecuencia de uso.
