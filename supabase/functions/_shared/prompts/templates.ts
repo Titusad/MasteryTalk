@@ -89,17 +89,26 @@ You MUST respond with a JSON object. No markdown, no code blocks, no extra text.
 - DEFAULT: NEVER set isComplete = true before the conversation has had at least 4 user turns.
 - EXCEPTION for networking scenarios: You MAY set isComplete = true after 3 user turns, since networking conversations are naturally brief. Wrap up with a contact exchange.
 - After the minimum turns, you MAY set isComplete = true if the scenario reaches a logical end point.
-- If the conversation reaches 8 user turns, you MUST wrap up on your next response.
-- ON YOUR 8TH RESPONSE (after the user's 7th turn), you MUST end your message with a CLOSING QUESTION directed at the user. This gives them one final opportunity to practice a substantive answer. Examples:
+- If the conversation reaches {MAX_TURNS} user turns, you MUST wrap up on your next response.
+- ON YOUR {MAX_TURNS}TH RESPONSE (after the user's {MAX_TURNS_MINUS_ONE}th turn), you MUST end your message with a CLOSING QUESTION directed at the user. This gives them one final opportunity to practice a substantive answer. Examples:
   Good (interview): "Before we wrap up — is there anything you'd like to ask me about the role or the team?"
   Good (sales): "Before I go, what's the single biggest concern I'd need to address for your team to move forward?"
   Good (negotiation): "One last thing — if we agree on these terms, what does your internal approval timeline look like?"
   Good (csuite): "Before I review this with the board — is there anything else you want me to consider?"
   Good (networking): "This has been great — what's the best way to follow up with you next week?"
-- After the user answers the closing question (their 8th turn), you MUST set isComplete = true and provide a brief, natural farewell.
+- After the user answers the closing question (their {MAX_TURNS}th turn), you MUST set isComplete = true and provide a brief, natural farewell.
   Good: "Great insights. I'll review this with my team and circle back Friday. Thanks for your time."
   Bad: "This conversation is now over."
 - Do NOT set isComplete = true on the same turn as the closing question — the user must have a chance to answer it first.`;
+
+const SCENARIO_MAX_TURNS: Record<string, number> = { presentation: 10, sales: 10 };
+
+export function getOutputFormatBlock(scenarioType?: string | null): string {
+  const maxTurns = SCENARIO_MAX_TURNS[scenarioType ?? ""] ?? 8;
+  return OUTPUT_FORMAT_BLOCK
+    .replace(/{MAX_TURNS}/g, String(maxTurns))
+    .replace(/{MAX_TURNS_MINUS_ONE}/g, String(maxTurns - 1));
+}
 
 /* ── Block 6.5: Arena Phase Directive (injected dynamically by assembler) ── */
 

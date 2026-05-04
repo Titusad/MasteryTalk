@@ -28,6 +28,7 @@ app.post("/make-server-08b8658d/create-checkout", async (c) => {
 
     const body = await c.req.json().catch(() => ({}));
     const tier: SubscriptionTier = VALID_TIERS.includes(body.tier) ? body.tier : "monthly";
+    const primaryPath: string | undefined = body.primary_path || undefined;
 
     // Expose slot info so frontend can show "X spots left at launch price"
     const ebAvailable = await isEarlyBirdAvailable();
@@ -48,12 +49,13 @@ app.post("/make-server-08b8658d/create-checkout", async (c) => {
       userId:    user.id,
       userEmail: user.email || undefined,
       tier,
+      primaryPath,
       successUrl,
       cancelUrl,
     });
 
     console.log(`[Checkout] ✅ session created: ${result.checkoutId}`);
-    return c.json({ ...result, tier, isEarlyBird: ebAvailable, slotsLeft });
+    return c.json({ ...result, tier, isFoundingMember: ebAvailable, slotsLeft });
 
   } catch (err) {
     console.error("[Checkout] Error:", err);

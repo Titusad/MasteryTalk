@@ -10,9 +10,10 @@ import type { ScenarioType } from "@/services/types";
 interface PracticePathsModuleProps {
   onStartSession: (scenario: string, scenarioType?: string, levelId?: string, interlocutor?: string) => void;
   onLockedClick?: () => void;
+  primaryPath?: string | null;
 }
 
-export function PracticePathsModule({ onStartSession, onLockedClick }: PracticePathsModuleProps) {
+export function PracticePathsModule({ onStartSession, onLockedClick, primaryPath }: PracticePathsModuleProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -24,6 +25,7 @@ export function PracticePathsModule({ onStartSession, onLockedClick }: PracticeP
           onStartSession(scenario, scenarioType, levelId, interlocutor);
         }}
         onLockedClick={onLockedClick}
+        primaryPath={primaryPath}
       />
     </motion.div>
   );

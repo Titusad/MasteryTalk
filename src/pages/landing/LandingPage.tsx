@@ -290,8 +290,37 @@ export function LandingPage({
               </div>
             </section>
 
-            {/* ───── DIFFERENTIATORS ───── */}
+            {/* ───── EL PROGRAMA ───── */}
             <section className="py-20 md:py-28 bg-[#f0f4f8]">
+              <div className="max-w-6xl mx-auto px-6">
+                <SectionHeading title={copy.programa.sectionTitle} />
+                <p className="text-center text-[#4B505B] max-w-2xl mx-auto mb-14 -mt-6">{copy.programa.subtitle}</p>
+                <div className="grid md:grid-cols-3 gap-6 mb-8">
+                  {copy.programa.blocks.map((block, i) => (
+                    <div key={block.phase} className="bg-white rounded-2xl border border-[#e2e8f0] p-8 flex flex-col gap-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-medium text-[#0f172b] bg-[#f0f4f8] px-2.5 py-1 rounded-full">{block.phase}</span>
+                        <span className="text-[11px] text-[#94a3b8]">{block.duration}</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="w-8 h-8 rounded-full bg-[#0f172b] text-white text-sm font-medium flex items-center justify-center shrink-0">{i + 1}</span>
+                        <h3 className="font-medium text-[#0f172b]">{block.title}</h3>
+                      </div>
+                      <p className="text-sm text-[#4B505B] leading-relaxed">{block.desc}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="bg-[#0f172b] rounded-2xl px-8 py-6 flex flex-col md:flex-row items-start md:items-center gap-4">
+                  <div className="flex-1">
+                    <p className="text-white font-medium text-sm">{copy.programa.warRoom.label}</p>
+                    <p className="text-[#94a3b8] text-sm mt-1">{copy.programa.warRoom.desc}</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* ───── DIFFERENTIATORS ───── */}
+            <section className="py-20 md:py-28 bg-white">
               <div className="max-w-6xl mx-auto px-6">
                 <SectionHeading title={copy.differentiators.sectionTitle} />
                 <div className="grid md:grid-cols-2 gap-6">

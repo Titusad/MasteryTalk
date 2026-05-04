@@ -159,6 +159,7 @@ export function DashboardPage({
           focusArea={data.focusArea}
           cefrProgress={data.cefrProgress}
           velocitySignal={data.velocitySignal}
+          subscriptionStartDate={(userProfile as any)?.subscription_start_date ?? null}
           onStartPractice={handleQuickStart}
         />
 
@@ -252,6 +253,7 @@ export function DashboardPage({
               <PracticePathsModule
                 onStartSession={handleStartSession}
                 onLockedClick={() => setUpsellOpen(true)}
+                primaryPath={(userProfile as any)?.primary_path ?? null}
               />
             </motion.div>
           </div>

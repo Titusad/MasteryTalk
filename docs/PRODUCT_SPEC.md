@@ -4,7 +4,7 @@
 > Any code change MUST be consistent with this spec.
 > If the spec needs to change, update THIS FILE FIRST → get approval → then code.
 >
-> Last updated: 2026-05-03 (v2.9 — Program model adopted: 3-month program framing, progressive path unlocking, War Room as urgency valve, new pricing structure)
+> Last updated: 2026-05-04 (v3.3 — Full consistency audit: removed legacy duplicate §3.3/§3.4/§3.5 sections; updated §2, §3.2, §4.3, §5.3, §5.4, §6.2, §8.3, §10.1.1 to reflect Primary Path model and new pricing; §7.10 moved to correct position after §7.9)
 
 ---
 
@@ -45,8 +45,8 @@ type ScenarioType =
     | "self-intro";
 ```
 
-> `self-intro` is NOT a purchasable Learning Path — it is a free warm-up accessible to all users.
-> `culture` is the **default recommended path** after self-intro warm-up for all users.
+> `self-intro` is NOT a purchasable Learning Path — it is a free warm-up and the intake assessment that drives Primary Path selection.
+> The recommended Primary Path after self-intro is **dynamic** — derived from pillar scores, context, and profession (see §7.5). `culture` is the fallback default when no stronger signal exists.
 
 ### Retired Scenarios
 
@@ -60,20 +60,21 @@ type ScenarioType =
 
 > ⚠️ Pending Stripe update — price IDs below are previous values. New products must be created before launch.
 
-| Tier                    | Price       | Billing   | Notes                                         | Stripe Price ID (pending)        |
-| ----------------------- | ----------- | --------- | --------------------------------------------- | -------------------------------- |
-| **Founding Member**     | $49/3mo     | Quarterly | Max 25 slots shared, auto-applied, ≈$16.33/mo | TBD                              |
-| **Program** (regular)   | $129/3mo    | Quarterly | Hero offer — one full program cycle           | TBD                              |
-| **Monthly access**      | $29/mo      | Monthly   | Entry offer — for users who can't commit 3mo  | TBD                              |
+| Tier                    | Price       | Billing   | Notes                                                              | Stripe Price ID (pending) |
+| ----------------------- | ----------- | --------- | ------------------------------------------------------------------ | ------------------------- |
+| **Founding Member**     | $49/3mo     | Quarterly | 25 slots max, price locked **forever** for early adopters, ≈$16.33/mo | TBD                   |
+| **Program** (regular)   | $129/3mo    | Quarterly | Hero offer — one full program cycle, ≈$43/mo                      | TBD                       |
+| **Monthly access**      | $49/mo      | Monthly   | Flexible entry — no 3-month commitment required                    | TBD                       |
 
 > Founding Member slots (25 total) tracked in KV: `global:early_bird_count`. When exhausted, checkout automatically switches to Program price — no user action required.
 > Previous Early Bird prices ($12.99/$29.99) are retired.
 
 ### §3.2 What a subscription unlocks
 
-- **Immediately on subscribe:** Business Culture path (Foundation Program, all 6 levels) + War Room (5 sessions/month)
-- **Progressively as you advance:** remaining paths unlock based on progression in Business Culture (see §8)
+- **Immediately on subscribe:** Primary Path (chosen from self-intro recommendation — all 6 levels) + War Room (5 sessions/month)
+- **Progressively as you advance:** remaining paths unlock based on Primary Path level completion (see §4.4, §8)
 - AI coaching and detailed feedback on every session
+- Pre-session micro-lessons (curriculum primer before each practice)
 - WhatsApp Spaced Repetition Coach (daily audio challenges)
 - Spaced repetition system
 - Lessons Library (50 micro-lessons, dual-axis recommendations)
@@ -86,12 +87,18 @@ MasteryTalk is sold as a structured **3-month program**, not an open-ended subsc
 
 | Block | Duration | Content | Trigger |
 |-------|----------|---------|---------|
-| Foundation Program | Months 1–3 | Business Culture (6 levels) | Starts on subscribe |
-| Advanced Program | Months 4–6 | Primary scenario path (chosen by user) | Unlocked after completing Business Culture L2 |
-| Mastery Program | Months 7–9 | Remaining paths + cross-path practice | Unlocked progressively (see §8) |
+| Foundation Program | Months 1–3 | **Primary Path** — chosen by user based on self-intro recommendation | Starts on subscribe |
+| Advanced Program | Months 4–6 | Second path — user chooses from remaining paths | Primary Path **fully completed** |
+| Mastery Program | Months 7–9 | Remaining paths — user chooses order | Each path fully completed |
+
+**Primary Path — chosen, not assigned:**
+The Primary Path is the path the user commits to when subscribing. It is pre-selected from the self-intro recommendation (§7.5) but the user can change it at subscribe time. It reflects their actual professional need — a salesperson starts on Sales Champion, not Business Culture.
+
+**Business Culture — woven in, not gated:**
+Business Culture is available as a choosable Primary Path (recommended when self-intro reveals cultural communication gaps). For users on other Primary Paths, BC content is woven into every session via pre-session lessons (§7.9) — BC micro-lessons are tagged with all `pathIds` so they surface across all scenarios. Users get cultural training without a separate mandatory track.
 
 **War Room as urgency valve:**
-War Room (5 sessions/month) unlocks **any scenario immediately** on subscribe — regardless of program phase. This is the release valve for urgent needs (interview in 3 days, presentation tomorrow). It does not replace the program; it complements it.
+War Room (5 sessions/month) unlocks **any scenario immediately** on subscribe. This is for urgent needs (interview tomorrow, presentation in 2 days) and for experienced users who want unstructured practice outside the program arc. It does not replace the program; it complements it.
 
 **After 90 days:**
 The subscription renews into the next program block automatically. Dashboard shows "Día X de 90" and surfaces the next path unlock as a milestone. There is no "program finished" exit — there is always a next level or path to unlock.
@@ -106,12 +113,15 @@ The subscription renews into the next program block automatically. Dashboard sho
 
 ### §3.5 Pricing rationale
 
-| Metric                | Monthly    | Founding Member | Program (regular) |
-| --------------------- | :--------: | :-------------: | :---------------: |
-| Price                 | $29/mo     | $49/3mo ($16.3/mo) | $129/3mo ($43/mo) |
-| Cost/user (15 ses/mo) | $4.03      | $4.03           | $4.03             |
-| Gross margin          | 86%        | 75%             | 91%               |
-| Positioning           | Entry      | Founding access | Hero offer        |
+| Metric                          | Monthly       | Founding Member    | Program (regular)  |
+| ------------------------------- | :-----------: | :----------------: | :----------------: |
+| Price                           | $49/mo        | $49/3mo ($16.3/mo) | $129/3mo ($43/mo)  |
+| API cost/user (90d, ~26 sessions @ $0.43/session) | $11.18 | $11.18    | $11.18             |
+| Gross margin (90-day cycle)     | 77%           | 77%                | 91%                |
+| Positioning                     | Flexible entry | Founding loyalty  | Hero offer         |
+
+> Quarterly makes sense vs monthly: $49/mo × 3 = $147 vs $129/3mo — user saves $18 by committing to the program.
+> Founding Member at $49/3mo forever is a loyalty lock — $16.33/mo effective, a reward for early believers.
 
 Benchmark: Talaera charges $20/mo for live sessions with human coaches. MasteryTalk at $43/mo (program) offers AI practice 24/7 with structured progression — 2× the price, 10× the accessibility, measurable outcomes.
 
@@ -123,37 +133,6 @@ Benchmark: Talaera charges $20/mo for live sessions with human coaches. MasteryT
 - ❌ Annual plan (pending retention data)
 - ❌ All-paths-at-once unlock on subscribe (replaced by progressive model)
 - ❌ Previous prices: $12.99, $19.99, $29.99 EB, $47.99
-
-### §3.3 Early Bird rules
-
-- Maximum **25 slots** globally (tracked in KV: `global:early_bird_count`)
-- Counter increments when checkout uses an early bird price ID (monthly or quarterly EB)
-- Counter decrements on `customer.subscription.deleted` for early bird subscribers
-- `/pricing` endpoint returns live `slotsLeft`, `currentPrice`, `regularPrice` per tier
-- Early bird pricing is **automatic** — user selects "Monthly" or "Quarterly", backend picks the EB price if slots remain
-- No separate "Early Bird" tier selection in the UI
-
-### §3.4 Pricing rationale
-
-| Metric                | Monthly EB |  Monthly  |     Quarterly EB      |       Quarterly        |
-| --------------------- | :--------: | :-------: | :-------------------: | :--------------------: |
-| Price                 | $12.99/mo  | $19.99/mo | $29.99/3mo ($9.99/mo) | $47.99/3mo ($15.99/mo) |
-| Cost/user (15 ses/mo) |   $4.03    |   $4.03   |         $4.03         |         $4.03          |
-| Gross margin          |    69%     |    80%    |          60%          |          75%           |
-| LTV (5 mo avg)        |    ~$65    |   ~$100   |         ~$90          |         ~$120          |
-| Target CAC (3:1)      |    <$22    |   <$33    |         <$30          |          <$40          |
-
-Benchmark: Talaera charges $20/mo for live sessions with human coaches. MasteryTalk at $19.99 offers AI practice 24/7 with no scheduling — same price, more accessibility.
-
-Annual tier: deferred until 6-month retention data is available.
-
-### §3.5 What does NOT exist
-
-- ❌ One-time purchases
-- ❌ Pay-per-session credits
-- ❌ Trial periods
-- ❌ Free tier with path access (only self-intro warm-up is free)
-- ❌ Annual plan (pending retention data)
 
 ---
 
@@ -195,6 +174,12 @@ interface KVProfile {
     // War Room monthly limit
     war_room_monthly_count: number; // sessions used in current calendar month
     war_room_month: string | null; // "YYYY-MM" — auto-reset when month changes
+    // Primary Path & Self-Intro Personalization
+    primary_path: string | null; // PathId — chosen at subscribe time from self-intro recommendation
+    self_intro_completed: boolean; // true after ≥1 self-intro session with feedback
+    self_intro_pillar_scores: Record<string, number> | null; // pillar scores from first self-intro session
+    self_intro_context: "networking" | "team" | "client" | null; // context chosen in self-intro
+    last_pre_session_lesson_id: string | null; // prevents same lesson in consecutive sessions
 }
 ```
 
@@ -210,11 +195,11 @@ interface KVProfile {
 
 ### §4.3 Access rules
 
-| Condition                                                   | Access                         |
-| ----------------------------------------------------------- | ------------------------------ |
-| `subscription_active === true`                              | All paths and levels unlocked  |
-| `subscription_active === false`, `grace_period_until > now` | Access maintained during grace |
-| `subscription_active === false`                             | Free tier only (self-intro)    |
+| Condition                                                   | Access                                              |
+| ----------------------------------------------------------- | --------------------------------------------------- |
+| `subscription_active === true`                              | Primary Path (all 6 levels) + War Room + progressive unlocks per §4.4 |
+| `subscription_active === false`, `grace_period_until > now` | Access maintained during grace                      |
+| `subscription_active === false`                             | Free tier only (self-intro, max 3 sessions)         |
 
 ### §4.4 Progression unlock
 
@@ -222,11 +207,15 @@ Progressive unlocking — `GET /progression` applies the following rules:
 
 | Condition | Access granted |
 | --------- | -------------- |
-| `subscription_active === true` (any tier) | Business Culture — all 6 levels |
-| Business Culture Level 2 completed | Interview Mastery unlocked |
-| Business Culture Level 3 completed | Remote Meeting Presence unlocked |
-| Business Culture Level 4 completed | Presentations unlocked |
-| Business Culture Level 5 completed | Sales Champion unlocked |
+| `subscription_active === true` | Primary Path (`primary_path`) — all 6 levels + War Room |
+| Primary Path **fully completed** (all 6 levels) | User selects one path from remaining locked paths — it unlocks fully (all 6 levels) |
+| Each subsequent path **fully completed** | User selects the next path from remaining locked paths |
+
+**Unlock trigger:** completing all 6 levels of the current active path — not individual level milestones.
+
+**Next path selection:** when a path is completed, the Dashboard surfaces a "Choose your next path" prompt showing the remaining locked paths with descriptions. User picks one → it unlocks immediately.
+
+**Within each path:** Level 1 open on unlock, Levels 2–6 unlock sequentially as each level is completed.
 
 War Room is available immediately on subscribe regardless of path progression.
 
@@ -259,9 +248,9 @@ Journey C: Account page → Manage Subscription → Stripe Customer Portal
 2. `App.tsx` resolves `#dashboard` from hash (strips query params before matching)
 3. `PaymentSuccessHandler` detects `payment=success`, extracts `tier`
 4. Shows **celebration modal** with confetti animation (60 motion particles)
-5. Modal shows tier name, what's unlocked, CTA "Explore your paths"
+5. Modal shows tier name, Primary Path name, and what's unlocked, CTA "Start your program"
 6. On close → navigate to dashboard, refresh user profile
-7. Dashboard reloads progression → all paths appear unlocked
+7. Dashboard reloads progression → Primary Path appears fully unlocked; other paths show locked with unlock conditions
 
 ### §5.4 Stripe Checkout Configuration
 
@@ -278,7 +267,7 @@ Journey C: Account page → Manage Subscription → Stripe Customer Portal
 | `mode`                       | `"subscription"`                                                                   |
 | `success_url`                | `{origin}/#dashboard?payment=success&tier={tier}&session_id={CHECKOUT_SESSION_ID}` |
 | `cancel_url`                 | `{origin}/#dashboard?payment=cancelled`                                            |
-| `subscription_data.metadata` | `{ userId, tier }`                                                                 |
+| `subscription_data.metadata` | `{ userId, tier, primary_path }`                                                   |
 
 ### §5.5 Webhook Contract
 
@@ -324,10 +313,14 @@ Journey C: Account page → Manage Subscription → Stripe Customer Portal
 
 ### §6.2 Pricing Section
 
-2 tier cards (Monthly / Quarterly) shown via `PathPurchaseModal`.
-Launch prices ($12.99 / $29.99) applied automatically when slots remain — fetched live from `/pricing` endpoint.
-When 25 slots exhausted, regular prices ($19.99 / $47.99) shown seamlessly.
+2 tier cards (Monthly / Program) shown via `PathPurchaseModal`:
+- **Program** $129/3mo (hero card) — Founding Member $49/3mo auto-applied when slots remain
+- **Monthly** $49/mo (secondary card) — flexible, no commitment
+
+Founding Member badge shown on Program card when slots remain — fetched live from `/pricing` endpoint.
 All copy via `landing-i18n.ts` (ES / PT / EN).
+
+> Retired prices (do not reference): $12.99, $19.99, $29.99, $47.99.
 
 ### §6.3 Supported Languages
 
@@ -345,16 +338,17 @@ All copy via `landing-i18n.ts` (ES / PT / EN).
 
 ```typescript
 type Step =
-    | "experience" // Professional background
-    | "context" // Situation-specific context (JD, presets, agenda)
-    | "strategy" // Methodology & framework preview
+    | "experience"        // Professional background
+    | "context"           // Situation-specific context (JD, presets, agenda)
+    | "lesson"            // Pre-session curriculum primer (skipped in Challenge Mode, War Room, self-intro)
+    | "strategy"          // Methodology & framework preview
     | "interlocutor-intro" // Immersive interlocutor intro (interview only)
-    | "generating" // Dynamic loader (script generation)
-    | "practice-prep" // Interactive briefing before practice
-    | "practice" // Voice practice with AI
-    | "analyzing" // Dynamic loader (post-practice analysis)
-    | "feedback" // Results & performance analysis
-    | "upsell"; // Subscription CTA
+    | "generating"        // Dynamic loader (script generation)
+    | "practice-prep"     // Interactive briefing before practice
+    | "practice"          // Voice practice with AI
+    | "analyzing"         // Dynamic loader (post-practice analysis)
+    | "feedback"          // Results & performance analysis
+    | "upsell";           // Subscription CTA
 ```
 
 ### §7.1.1 FeedbackScreen — post-session cards (bottom slot)
@@ -386,11 +380,14 @@ Each scenario has 3 presets describing the situation (company, stakes, context) 
 
 ### §7.3 Arena System (Progressive Scaffolding)
 
-| Phase     | AI Tone                    | UI Support                              | Transition           |
-| --------- | -------------------------- | --------------------------------------- | -------------------- |
-| Support   | Friendly, patient          | Power Phrases visible, Try Saying hints | 2+ good interactions |
-| Guidance  | Neutral, professional      | Reduced hints                           | 2+ good interactions |
-| Challenge | Confrontational, demanding | No visible help                         | End of conversation  |
+| Phase     | AI Tone                    | UI Support                                        | Transition           |
+| --------- | -------------------------- | ------------------------------------------------- | -------------------- |
+| Support   | Friendly, patient          | Try Saying hints available (collapsed, tap to reveal) | 2+ good interactions |
+| Guidance  | Neutral, professional      | Hints available but less frequent (tap to reveal) | 2+ good interactions |
+| Challenge | Confrontational, demanding | Hints hidden — no visible help                    | End of conversation  |
+
+> **Hint interaction:** Hints render collapsed by default. User taps "Show hint" to reveal starter phrase, keywords, and strategy. This prevents passive reading and reinforces active recall.
+> **Challenge Mode** (user-activated in ContextScreen): hints are suppressed from turn 1 regardless of arena phase — "No hints, no prep. Exactly like the real thing."
 
 ### §7.4 Self-Introduction Warm-Up
 
@@ -409,11 +406,23 @@ Intro Screen → Context Selection → Strategy → Conversation → Feedback �
 - Always free, no paywall
 - `scenarioType = "self-intro"` — excluded from `PathId`
 
-### §7.5 Path Recommendation Engine (Post Warm-Up)
+### §7.5 Path Recommendation Engine (Post Warm-Up → Primary Path)
 
 Pure function in `features/dashboard/model/path-recommendation.ts`.
 Maps `pillarScores + selfIntroContext + profile` → `PathRecommendation`.
 Type `PathRecommendation` lives in `entities/progression`.
+
+**Elevated role in the program model:**
+The recommendation is no longer just a card — it becomes the user's **Primary Path** when they subscribe. The `PathRecommendationCard` shown after self-intro pre-selects the recommended path in the checkout flow. User can change it before confirming.
+
+**Recommendation logic:**
+- Low direct communication score → recommend `culture`
+- `selfIntroContext === "networking"` + low clarity → recommend `culture`
+- Professional role signals sales → recommend `sales`
+- User explicitly mentions interview/job change → recommend `interview`
+- Default fallback → recommend `culture` (broadest foundation)
+
+**On subscribe:** `primary_path` is set in KV profile from the confirmed recommendation. `GET /progression` uses `primary_path` to determine which 6-level path to unlock first (§4.4).
 
 ### §7.6 Lessons Library (Micro-Lessons)
 
@@ -452,7 +461,7 @@ interface MicroLesson {
 
 War Room is the **urgency release valve** of the program model. It allows any subscribed user to practice any scenario immediately — regardless of which paths are currently unlocked in their program progression.
 
-**Strategic role:** A user in month 1 of their Foundation Program (Business Culture) may have an urgent job interview. War Room lets them practice Interview Mastery scenarios right now, without waiting to unlock that path through program progression. This resolves the tension between structured learning and immediate needs.
+**Strategic role:** Two use cases — (1) urgent need: a user on Sales Champion path has an interview tomorrow, War Room gives them immediate access; (2) experienced user: a user who already understands the concepts wants unstructured practice outside the program arc. War Room serves both without disrupting the program progression. It is deliberately rate-limited to preserve the value of the structured program.
 
 The "War Room" practice mode is rate-limited to **5 sessions per calendar month** per user.
 
@@ -468,6 +477,99 @@ war_room_month: string; // "YYYY-MM" — resets counter on month change
 **`POST /sessions` payload:** `PracticeSessionPage` sends `is_war_room: true` when `startAtContext === true`.
 **`routes/sessions.ts`:** On save, if `is_war_room === true`, increment `war_room_monthly_count` (auto-reset if `war_room_month` !== current month).
 
+### §7.9 Pre-Session Lesson (Curriculum Primer)
+
+A single micro-lesson shown between `context` and `strategy`. Its purpose is to **prime** — not teach comprehensively. The user has just committed to a specific situation; the lesson gives them the vocabulary and framework they are about to apply in that exact context. Strategy then builds on both.
+
+**Full learning loop:**
+```
+context (situation set) → lesson (prime vocabulary + framework) → strategy (apply to this session)
+→ practice (use it) → feedback + DeepDiveCard (reinforce weaknesses)
+```
+
+#### Lesson selection
+
+| Priority | Condition | Source |
+|----------|-----------|--------|
+| 1 | Active `pathId` + `levelId` | Level-specific lessons from `microLessonsData.ts` (`levelIds` match) — cycle sequentially, skip `last_pre_session_lesson_id` |
+| 2 | No level-specific lesson available | Weakest pillar from historical `pillarScores` in KV profile |
+| 3 | `scenarioType === "self-intro"` | Step skipped entirely — no curriculum |
+
+#### Screen content (target: 90 seconds)
+
+1. Path + level badge (e.g., "Business Culture · Level 2")
+2. Lesson title
+3. Core concept — **2 sentences max**
+4. One power phrase from the lesson, styled prominently
+5. Active recall question from `recallQuestions[0]` — answer hidden until tapped
+6. **"Start session →"** CTA — **locked** until user taps "Reveal answer"
+
+#### Skip rules
+
+| Condition | Behavior |
+|-----------|----------|
+| Challenge Mode active | Step skipped — user opted into "no prep, no hints" |
+| War Room (`startAtContext === true`) | Step skipped — urgency mode; concepts are for the program |
+| `scenarioType === "self-intro"` | Step skipped — no curriculum path |
+
+#### New data requirements
+
+**KV profile field:**
+```typescript
+last_pre_session_lesson_id: string | null  // prevents same lesson appearing in consecutive sessions
+```
+
+**PUT /profile whitelist:** add `last_pre_session_lesson_id`
+
+**New function** in `src/services/microLessonsData.ts`:
+```typescript
+getPreSessionLesson(pathId: PathId, levelId: string, lastLessonId?: string | null): MicroLesson | null
+```
+
+**New screen:** `src/features/practice-session/ui/PreSessionLessonScreen.tsx`
+
+### §7.10 Self-Intro Personalization Pipeline
+
+Self-intro is the intake assessment that shapes the entire program experience. Data collected flows into all downstream systems:
+
+**Data collected:**
+
+| Field | Source | Stored as |
+|-------|--------|-----------|
+| Pillar scores | Gemini feedback after self-intro | `self_intro_pillar_scores` (server-only) |
+| Context choice | User selection (networking/team/client) | `self_intro_context` |
+| Path recommendation | §7.5 engine output | Pre-fills checkout → `primary_path` on subscribe (server-only) |
+| Profession | AccountPage / self-intro profile | `profession` |
+
+**Downstream personalization effects:**
+
+| System | Effect |
+|--------|--------|
+| **Primary Path (§4.4)** | `primary_path` determines which 6-level path unlocks first on subscribe |
+| **Pre-session lesson (§7.9)** | Fallback uses `self_intro_pillar_scores` to target weakest pillar when no level-specific lesson matches |
+| **BC content weaving** | BC micro-lessons tagged with all `pathIds` — cultural training embedded in every path's lesson rotation |
+| **DeepDiveCard** | Self-intro scores serve as progress baseline — improvement measured relative to starting point |
+| **Scenario presets** | `self_intro_context` biases preset ordering (a "client meeting" user sees client-facing presets first) |
+
+### §7.8 Turn Limits (Session Length)
+
+Sessions are bounded to prevent cognitive fatigue and control API costs. Limits are scenario-aware:
+
+| Scenario       | Min turns | Max turns | Rationale |
+| -------------- | :-------: | :-------: | --------- |
+| `interview`    | 4         | 8         | Q&A format reaches natural closure at 8 |
+| `meeting`      | 4         | 8         | Structured agenda, 8 turns covers the arc |
+| `culture`      | 4         | 8         | Dialogue-heavy — fatigue hits faster |
+| `self-intro`   | 4         | 8         | Warm-up context, keep concise |
+| `presentation` | 4         | 10        | Setup + delivery + objections + close needs room |
+| `sales`        | 4         | 10        | Rapport + pitch + objection handling + close |
+
+**Enforcement:**
+- Backend (`conversation.ts`): hard closes session when `turns >= maxTurns`
+- System prompt (`templates.ts`): AI is instructed to wrap up at `maxTurns - 1` with a closing question, then set `isComplete = true` after the user's final answer
+
+**API cost at 8 turns:** ≈$0.43/session · at 10 turns: ≈$0.54/session
+
 ---
 
 ## §8 — Learning Path Structure
@@ -481,13 +583,13 @@ Each path has **6 levels**.
 | User state | Path access |
 | ---------- | ----------- |
 | Free (no subscription) | Self-intro only (3 sessions) |
-| Subscribed | Business Culture (all 6 levels) + War Room |
-| BC Level 2 complete | + Interview Mastery |
-| BC Level 3 complete | + Remote Meeting Presence |
-| BC Level 4 complete | + Presentations |
-| BC Level 5 complete | + Sales Champion |
+| Subscribed | Primary Path (`primary_path`) — all 6 levels + War Room |
+| Primary Path fully completed | User chooses next path → unlocks fully |
+| Each subsequent path fully completed | User chooses next path → unlocks fully |
 
-Within each unlocked path: Level 1 open, Levels 2–6 unlock sequentially on level completion.
+Within each unlocked path: Level 1 open on unlock, Levels 2–6 unlock sequentially on completion.
+
+> Business Culture is available as a choosable Primary Path and is the default recommendation for users whose self-intro reveals cultural communication gaps (direct communication score < 60). It is not mandatory — users start on whichever path matches their professional need.
 
 ### §8.2 Sequential level progression
 
@@ -498,7 +600,7 @@ Within each unlocked path: Level 1 open, Levels 2–6 unlock sequentially on lev
 ### §8.3 Locked path UI
 
 Locked paths show in the ProgressionTree with:
-- Lock icon + unlock condition ("Complete Business Culture Level 3 to unlock")
+- Lock icon + unlock condition (e.g., "Complete [Primary Path] Level 3 to unlock")
 - Preview of path name and description (not blurred — visible to motivate)
 - No CTA to purchase — unlocking is earned through progression, not paid
 
@@ -603,8 +705,11 @@ whatsapp_number, whatsapp_verified,
 wa_preferred_hour, wa_timezone,
 wa_dismissed_at_session_count, wa_card_permanently_dismissed,
 profession, audit_booked_at,
-war_room_monthly_count, war_room_month
+war_room_monthly_count, war_room_month,
+self_intro_context, last_pre_session_lesson_id
 ```
+
+> `primary_path`, `self_intro_completed`, `self_intro_pillar_scores` are **server-only** — written by Edge Functions (webhook on subscribe, Gemini feedback handler). Never in the frontend whitelist.
 
 Non-whitelisted fields (plan, tier, subscription_active, etc.) can only be written by server-side Edge Functions.
 
@@ -632,11 +737,9 @@ Non-whitelisted fields (plan, tier, subscription_active, etc.) can only be writt
 |----------|---------|
 | `STRIPE_SECRET_KEY` | Stripe live secret key |
 | `STRIPE_WEBHOOK_SECRET` | Webhook signing secret |
-| `STRIPE_PRICE_MONTHLY_EARLY` | `price_1TS7LTQhSs1CWakEw52C4aze` — $12.99/mo launch |
-| `STRIPE_PRICE_QUARTERLY_EARLY` | `price_1TS7OKQhSs1CWakEX4XZ3aYD` — $29.99/3mo launch |
-| `STRIPE_PRICE_MONTHLY` | `price_1TS7PuQhSs1CWakESriRaNKl` — $19.99/mo regular |
-| `STRIPE_PRICE_QUARTERLY` | `price_1TS7S4QhSs1CWakE3gKaFvjk` — $47.99/3mo regular |
-| `STRIPE_PRICE_EARLY_BIRD` | `price_1TR1YXQhSs1CWakEaoaqW0y7` — legacy, keep for backward compat |
+| `STRIPE_PRICE_MONTHLY` | `price_1TTODGQhSs1CWakE8LSJs9g6` — $49/mo Monthly access |
+| `STRIPE_PRICE_FOUNDING_MEMBER` | `price_1TTODoQhSs1CWakEb8Cv7sHF` — $49/3mo Founding Member (25 slots, forever) |
+| `STRIPE_PRICE_PROGRAM` | `price_1TTOJSQhSs1CWakEQfC3ZDMw` — $129/3mo Program (regular) |
 | `OPENAI_API_KEY` | GPT-4o access |
 | `GEMINI_API_KEY` | Gemini Flash (feedback) |
 | `AZURE_SPEECH_KEY` | Azure Speech (STT + pronunciation) |
@@ -699,7 +802,7 @@ A user sees the `MasteryAuditCard` in FeedbackScreen when ALL of:
 | Backend             | Supabase Edge Functions (Deno + Hono)                                                                                                                                          |
 | Scheduler           | Supabase `pg_cron` (daily 9AM)                                                                                                                                                 |
 | Database            | Supabase PostgreSQL + KV store (`kv_store_4e8a5b39`)                                                                                                                           |
-| Chat AI             | GPT-4o (all sessions, no degradation)                                                                                                                                          |
+| Chat AI             | GPT-4o (all sessions, no degradation) — prompt caching active: system prompt cached automatically from turn 2 onward (50% token discount, ~30% GPT-4o cost reduction + lower latency per turn) |
 | Feedback AI         | Gemini 1.5 Flash                                                                                                                                                               |
 | TTS                 | OpenAI `gpt-4o-mini-tts` (dynamic: interlocutor, briefing, user lines — PRIMARY) + ElevenLabs (dynamic fallback + pre-generated coach narration on R2) + Azure Neural (system) |
 | STT + Pronunciation | Azure Speech REST API                                                                                                                                                          |
@@ -737,3 +840,8 @@ A user sees the `MasteryAuditCard` in FeedbackScreen when ALL of:
 | v2.6    | 2026-04-30 | §7.1.1: DeepDiveCard added as 4th post-session card. §7.6: Lessons Library spec (50 lessons, dual-axis engine, MicroLesson interface with pathIds/levelIds/audioUrl, UI surfaces). §7.7: War Room monthly limit spec (5/month, KV fields war_room_monthly_count + war_room_month). §4.1: new KV fields war_room_monthly_count + war_room_month. §10.1.1: whitelist updated. §11: TTS updated (OpenAI primary, ElevenLabs fallback). |
 | v2.7    | 2026-04-30 | §3 full revision: launch pricing model (Monthly EB $12.99, Quarterly EB $29.99, Monthly $19.99, Quarterly $47.99); §3.4 pricing rationale + CAC/LTV targets + Talaera benchmark; Annual tier deferred.                                                                                                                                                                                                                              |
 | v2.8    | 2026-05-01 | §3.1: ⚠️ warning removed (Stripe prices live, secrets updated). §3.3: early_bird no longer user-selectable — auto-applied by backend. §3.4: pricing rationale table updated with final prices. §5.4: checkout body updated. §6.1–6.2: 2-card pricing modal documented. §10.3: Stripe Price IDs updated (4 new + 1 legacy). §11: TTS voices updated (cedar + marin). §1: business model updated. All copy via i18n (ES/PT/EN).       |
+| v2.9    | 2026-05-03 | Program model adopted: 3-month program framing, progressive path unlocking, War Room as urgency valve, new pricing structure. |
+| v3.0    | 2026-05-04 | §3.1: Monthly updated to $49/mo (quarterly math fix — $49×3=$147 > $129); Founding Member locked forever at $49/3mo. §3.5: pricing rationale updated with 90-day API cost model ($0.43/session). §7.3: hints tap-to-reveal spec; Challenge Mode suppresses hints from turn 1. §7.8: new — scenario-aware turn limits (8 default, 10 for sales/presentation). §11: prompt caching noted (automatic, ~30% GPT-4o cost reduction + latency improvement per turn). |
+| v3.1    | 2026-05-04 | §7.1: new `"lesson"` step added to Step type (between context and strategy). §7.9: new — Pre-Session Lesson spec: curriculum primer, level-specific selection, recall gate unlocks CTA, skip rules for Challenge Mode / War Room / self-intro. New KV field `last_pre_session_lesson_id`. New function `getPreSessionLesson()`. New screen `PreSessionLessonScreen.tsx`. |
+| v3.2    | 2026-05-04 | §3.3: Program arc rewritten — Primary Path is chosen from self-intro recommendation, not hardcoded to Business Culture. BC woven into all paths via pre-session lessons. §4.1: new KV fields (primary_path, self_intro_completed, self_intro_pillar_scores, self_intro_context). §4.4: progression unlock tied to Primary Path level completion, unlock order table per primary path. §7.5: path recommendation elevated to Primary Path selection on subscribe. §7.7: War Room strategic role updated (urgency + experienced users). §7.10: new — Self-Intro Personalization Pipeline. §8.1: default state rewritten around Primary Path. |
+| v3.3    | 2026-05-04 | Full consistency audit — 10 issues fixed: removed legacy duplicate §3.3/§3.4/§3.5 (old prices $12.99/$19.99/$29.99/$47.99); §2 note updated (dynamic recommendation, not always culture); §3.2 updated (Primary Path not BC); §4.3 access rules reflect progressive model; §5.3 post-purchase copy corrected; §5.4 checkout metadata adds primary_path; §6.2 pricing section updated to new prices; §8.3 locked path copy generalized; §10.1.1 whitelist adds self_intro_context + last_pre_session_lesson_id, notes server-only fields; §7.10 moved to correct position after §7.9. |

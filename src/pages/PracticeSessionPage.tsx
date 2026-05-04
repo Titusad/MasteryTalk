@@ -257,6 +257,10 @@ export function PracticeSessionPage({
     }
     return null;
   });
+  // Derived after realFeedback — needed by PathPurchaseModal regardless of current step
+  const selfIntroPrimaryPath = isSelfIntro
+    ? recommendPath(realFeedback?.pillarScores, selfIntroCtx?.id, userProfile)?.pathId ?? undefined
+    : undefined;
   const [feedbackStatus, setFeedbackStatus] = useState<"idle" | "loading" | "ready" | "error">(() => {
     if (initialHistoryState?.step === "feedback") return "ready";
     return "idle";
@@ -1342,6 +1346,7 @@ export function PracticeSessionPage({
                 interlocutor={interlocutor}
                 sessionId={sessionId}
                 scenarioType={scenarioType}
+                challengeMode={challengeModeRef.current}
                 onConversationComplete={() => {
                   // Pre-warm: start feedback + improved script analysis while user
                   // is still reading the last AI message — before they click "Analyze".
@@ -1568,6 +1573,7 @@ export function PracticeSessionPage({
         paywallReason={paywallReason ?? "path-required"}
         ownedPaths={ownedPaths}
         onPurchaseComplete={handlePurchaseComplete}
+        primaryPath={selfIntroPrimaryPath}
       />
 
       {/* ── Level Switch Confirmation Modal ── */}

@@ -36,6 +36,7 @@ interface HeroCardProps {
   focusArea: { pillar: string; score: number } | null;
   cefrProgress: CEFRProgress | null;
   velocitySignal: VelocitySignal | null;
+  subscriptionStartDate?: string | null;
   onStartPractice: () => void;
 }
 
@@ -61,10 +62,15 @@ export function HeroCard({
   focusArea,
   cefrProgress,
   velocitySignal,
+  subscriptionStartDate,
   onStartPractice,
 }: HeroCardProps) {
   const [expandedMetrics, setExpandedMetrics] = useState(false);
   const firstName = userName?.trim().split(" ")[0] || "Explorer";
+
+  const dayOfProgram = subscriptionStartDate
+    ? Math.min(90, Math.floor((Date.now() - new Date(subscriptionStartDate).getTime()) / 86_400_000) + 1)
+    : null;
 
   const actionCard = useMemo(() => {
     if (userState === "new") {
@@ -151,12 +157,19 @@ export function HeroCard({
           {/* Left Column — Diagnosis & Action */}
           <div className="p-6 md:border-r border-[#e2e8f0] flex flex-col gap-4">
             {/* Greeting */}
-            <h1 
-              className="text-2xl md:text-[28px] text-[#0f172b]"
-              style={{ lineHeight: 1.2 }}
-            >
-              {getGreeting()}, {firstName}
-            </h1>
+            <div className="flex items-start justify-between gap-4">
+              <h1
+                className="text-2xl md:text-[28px] text-[#0f172b]"
+                style={{ lineHeight: 1.2 }}
+              >
+                {getGreeting()}, {firstName}
+              </h1>
+              {dayOfProgram !== null && (
+                <span className="shrink-0 mt-1 text-[11px] font-medium text-[#0f172b] bg-[#f0f4f8] border border-[#e2e8f0] px-2.5 py-1 rounded-full whitespace-nowrap">
+                  {dayOfProgram === 1 ? "Program starts today" : `Day ${dayOfProgram} of 90`}
+                </span>
+              )}
+            </div>
 
             {/* Diagnosis */}
             <p

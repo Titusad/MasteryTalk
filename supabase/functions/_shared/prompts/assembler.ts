@@ -24,9 +24,9 @@
 
 import {
   MASTER_SYSTEM_PROMPT,
-  OUTPUT_FORMAT_BLOCK,
   FIRST_MESSAGE_BLOCK,
   MINI_TEMPLATE,
+  getOutputFormatBlock,
 } from "./templates.ts";
 import {
   getPersonaBlock,
@@ -228,8 +228,8 @@ export function assembleSystemPrompt(config: AssemblyConfig): AssemblyResult {
   // Block 5.5: TTS Text Optimization (ensures aiMessage is speech-friendly)
   blocks.push(TTS_TEXT_OPTIMIZATION_BLOCK);
 
-  // Block 6: Output Format + isComplete Rules
-  blocks.push(OUTPUT_FORMAT_BLOCK);
+  // Block 6: Output Format + isComplete Rules (scenario-aware max turns)
+  blocks.push(getOutputFormatBlock(scenarioType));
 
   // Block 7: First Message Instruction (only for prepare-session)
   if (includeFirstMessage) {

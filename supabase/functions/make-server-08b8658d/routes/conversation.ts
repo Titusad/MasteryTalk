@@ -294,9 +294,12 @@ app.post("/make-server-08b8658d/process-turn-stream", async (c: any) => {
       return Math.max(20, Math.min(88, s));
     };
 
+    const MAX_TURNS: Record<string, number> = { presentation: 10, sales: 10 };
+    const maxTurns = MAX_TURNS[session.scenarioType] ?? 8;
+
     const detectComplete = (text: string, turns: number): boolean => {
       if (turns < 4) return false;
-      if (turns >= 8) return true;
+      if (turns >= maxTurns) return true;
       const t = text.toLowerCase();
       return ["thank you for your time", "i'll be in touch", "we'll circle back", "that wraps up", "good luck with", "let's schedule", "you'll hear from us", "pleasure speaking"].some(p => t.includes(p));
     };

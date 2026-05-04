@@ -1,14 +1,15 @@
 /**
- * PathPurchaseModal — Subscription tier selection + Stripe Checkout
+ * PathPurchaseModal — Program subscription tier selection + Stripe Checkout
  *
- * Shows 2 tiers (Monthly / Quarterly) with automatic launch pricing.
- * The backend picks early bird price if slots remain — no user action needed.
+ * Shows 2 tiers: "El Programa" (quarterly, hero) + "Acceso mensual" (secondary).
+ * Founding Member price ($49/3mo) auto-applied when 25 slots remain.
+ * When FM exhausted, quarterly switches to Program price ($129/3mo).
  * All copy via i18n (ES / PT / EN).
  */
 
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { Check, ArrowRight, Star, Flame } from "lucide-react";
+import { Check, ArrowRight, Star } from "lucide-react";
 import { AppModal } from "@/shared/ui/AppModal";
 import type { SubscriptionTier } from "@/entities/payment";
 import type { PaywallReason } from "@/shared/hooks/useUsageGating";
@@ -28,8 +29,8 @@ const PRICING_URL =
 
 const FALLBACK: PricingData = {
   earlyBird: { slotsLeft: 25, available: true },
-  monthly:   { currentPrice: 12.99, regularPrice: 19.99, isEarlyBird: true },
-  quarterly: { currentPrice: 29.99, regularPrice: 47.99, isEarlyBird: true, perMonth: 9.99 },
+  monthly:   { currentPrice: 49, regularPrice: 49, isEarlyBird: false },
+  quarterly: { currentPrice: 49, regularPrice: 129, isEarlyBird: true, perMonth: 16.33 },
 };
 
 /* ── Props ── */
@@ -41,16 +42,17 @@ export interface PathPurchaseModalProps {
   paywallReason: PaywallReason;
   onPurchaseComplete: (purchaseType: any) => void;
   ownedPaths?: string[];
+  primaryPath?: string;
 }
 
 /* ── Component ── */
 
-export function PathPurchaseModal({ open, onClose }: PathPurchaseModalProps) {
+export function PathPurchaseModal({ open, onClose, primaryPath }: PathPurchaseModalProps) {
   const { copy } = useLandingCopy();
   const p        = copy.pricing;
 
   const [pricing, setPricing]           = useState<PricingData | null>(null);
-  const [selectedTier, setSelectedTier] = useState<SubscriptionTier>("monthly");
+  const [selectedTier, setSelectedTier] = useState<SubscriptionTier>("quarterly");
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError]               = useState<string | null>(null);
 
@@ -77,6 +79,7 @@ export function PathPurchaseModal({ open, onClose }: PathPurchaseModalProps) {
       const result = await paymentService.createCheckout("current-user", {
         type: "path",
         tier: selectedTier,
+        ...(primaryPath ? { primary_path: primaryPath } : {}),
       });
       if (result.checkoutUrl) window.location.href = result.checkoutUrl;
     } catch (err: any) {
@@ -111,7 +114,7 @@ export function PathPurchaseModal({ open, onClose }: PathPurchaseModalProps) {
           <p className="text-sm text-[#62748e]">{p.modal.subtitle}</p>
         </motion.div>
 
-        {/* Slots counter */}
+        {/* Founding Member slots counter */}
         {ebActive && (
           <motion.div
             className="flex items-center justify-center gap-2 mb-5"
@@ -120,31 +123,15 @@ export function PathPurchaseModal({ open, onClose }: PathPurchaseModalProps) {
             transition={{ delay: 0.15 }}
           >
             <span className="inline-flex items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold px-3 py-1.5 rounded-full">
-              <Flame className="w-3 h-3" />
+              <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
               {p.slotsLeft.replace("{{count}}", String(slotsLeft))}
             </span>
           </motion.div>
         )}
 
-        {/* Tier cards */}
+        {/* Tier cards — Program (hero) first, Monthly (secondary) second */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-          {/* Monthly */}
-          {renderCard({
-            id: "monthly",
-            label: p.monthly.label,
-            period: p.monthly.period,
-            currentPrice: pr.monthly.currentPrice,
-            regularPrice: pr.monthly.regularPrice,
-            isEarlyBird: ebActive,
-            badge: ebActive ? p.launchBadge : undefined,
-            perMonthLine: undefined,
-            features: p.monthly.features,
-            selected: selectedTier === "monthly",
-            highlight: true,
-            onSelect: () => setSelectedTier("monthly"),
-          })}
-
-          {/* Quarterly */}
+          {/* El Programa / Quarterly — hero card */}
           {renderCard({
             id: "quarterly",
             label: p.quarterly.label,
@@ -156,8 +143,24 @@ export function PathPurchaseModal({ open, onClose }: PathPurchaseModalProps) {
             perMonthLine: p.quarterly.perMonth.replace("{{price}}", `$${pr.quarterly.perMonth}`),
             features: p.quarterly.features,
             selected: selectedTier === "quarterly",
-            highlight: false,
+            highlight: true,
             onSelect: () => setSelectedTier("quarterly"),
+          })}
+
+          {/* Acceso mensual — secondary card */}
+          {renderCard({
+            id: "monthly",
+            label: p.monthly.label,
+            period: p.monthly.period,
+            currentPrice: pr.monthly.currentPrice,
+            regularPrice: pr.monthly.regularPrice,
+            isEarlyBird: false,
+            badge: undefined,
+            perMonthLine: undefined,
+            features: p.monthly.features,
+            selected: selectedTier === "monthly",
+            highlight: false,
+            onSelect: () => setSelectedTier("monthly"),
           })}
         </div>
 

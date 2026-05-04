@@ -44,6 +44,7 @@ export class StripePaymentService implements IPaymentService {
         method: "POST",
         body: JSON.stringify({
           tier: purchase.tier || "monthly",
+          ...(purchase.primary_path ? { primary_path: purchase.primary_path } : {}),
         }),
       });
 

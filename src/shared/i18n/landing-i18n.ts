@@ -107,6 +107,13 @@ export interface LandingCopy {
     subtitle: string;
     items: { name: string; hook: string }[];
   };
+  /* ── El Programa / Program Arc ── */
+  programa: {
+    sectionTitle: string;
+    subtitle: string;
+    blocks: { phase: string; duration: string; title: string; desc: string }[];
+    warRoom: { label: string; desc: string };
+  };
   /* ── Pricing ── */
   pricing: {
     sectionTitle: string;
@@ -285,9 +292,9 @@ export const ES: LandingCopy = {
     cta: "Probar gratis",
   },
   hero: {
-    badge: "✶ Práctica conversacional para profesionales en inglés.",
-    headline: "Practica tus conversaciones profesionales en inglés.",
-    subheadline: "Gana contratos. Trabaja remoto. Conviértete en el profesional que comunica al nivel que piensa.",
+    badge: "✶ El programa de comunicación profesional en inglés para nearshoring.",
+    headline: "90 días para comunicarte con autoridad en inglés profesional.",
+    subheadline: "Un programa estructurado con IA. Practica las conversaciones que importan, recibe feedback real y avanza nivel por nivel. Para el profesional que ya sabe inglés pero no está al nivel que quiere.",
   },
   widget: {
     instruction: "Elige la conversación que quieres ganar.",
@@ -395,7 +402,7 @@ export const ES: LandingCopy = {
   },
   routes: {
     sectionTitle: "Elige la ruta que necesitas ahora.",
-    subtitle: "Tú defines el contexto. La conversación se adapta a ti. La compras una vez — es tuya para siempre.",
+    subtitle: "Tú eliges tu Primary Path al suscribirte. Al completarlo, desbloqueas el siguiente — una ruta a la vez.",
     items: [
       { name: "Entrevista de trabajo", hook: "Consigue el trabajo. Defiende tu valor. Sin titubear." },
       { name: "Reuniones remotas", hook: "Participa, lidera y cierra. No solo estés presente." },
@@ -403,51 +410,53 @@ export const ES: LandingCopy = {
     ],
   },
   pricing: {
-    sectionTitle: "Precios",
-    headline: "Invierte en tu inglés profesional.",
-    subtitle: "Los primeros 25 suscriptores obtienen el precio de lanzamiento automáticamente. Sin código, sin trampa.",
-    launchBadge: "🔥 Precio de lanzamiento",
-    slotsLeft: "{{count}} cupos restantes a este precio",
-    slotsGone: "El precio de lanzamiento ha terminado",
-    saveBadge: "Ahorra 20%",
+    sectionTitle: "El Programa",
+    headline: "Únete al programa.",
+    subtitle: "Los primeros 25 suscriptores se convierten en Founding Members — precio bloqueado para siempre a $49 por 3 meses.",
+    launchBadge: "⭐ Founding Member",
+    slotsLeft: "{{count}} slots Founding Member disponibles",
+    slotsGone: "Founding Member agotado — precio regular activo",
+    saveBadge: "Ahorra $18 vs mensual",
     monthly: {
-      label: "Monthly",
+      label: "Acceso mensual",
       period: "/mes",
       features: [
-        "Todos los paths incluidos",
+        "Tu Primary Path (6 niveles)",
+        "War Room — 5 sesiones/mes",
         "WhatsApp SR Coach diario",
-        "Cancela cuando quieras",
         "Lessons Library completa",
+        "Cancela cuando quieras",
       ],
     },
     quarterly: {
-      label: "Quarterly",
+      label: "El Programa",
       period: "/ 3 meses",
       perMonth: "{{price}}/mes equivalente",
       features: [
-        "Todo lo del plan mensual",
-        "20% de ahorro vs mensual",
-        "Compromiso trimestral",
-        "Ideal para hábito real",
+        "Tu Primary Path + rutas progresivas",
+        "War Room — 5 sesiones/mes",
+        "WhatsApp SR Coach diario",
+        "Lessons Library completa",
+        "Ahorra $18 vs pago mensual",
       ],
     },
     modal: {
-      headline: "Unlock MasteryTalk PRO",
-      subtitle: "All paths, WhatsApp SR Coach, Lessons Library — unlimited sessions.",
-      cta: "Subscribe",
-      ctaProcessing: "Redirecting to Stripe...",
-      legal: "Secure payment with Stripe · Cancel anytime from your account · No hidden fees",
+      headline: "Únete al Programa",
+      subtitle: "Tu Primary Path desde el día 1. War Room para urgencias. Feedback de IA en cada sesión.",
+      cta: "Comenzar programa",
+      ctaProcessing: "Redirigiendo a Stripe...",
+      legal: "Pago seguro con Stripe · Cancela desde tu cuenta · Sin costos ocultos",
     },
     demoLine: "Tu primera sesión de auto-presentación es completamente gratis — sin tarjeta, sin compromiso.",
   },
   faq: {
     sectionTitle: "Preguntas Frecuentes",
     items: [
-      { q: "¿Esto es diferente a Duolingo o un curso de inglés?", a: "No es un curso de gramática. Aprendes comunicación profesional practicando conversaciones reales — con frameworks, con correcciones, pero siempre en contexto. Si ya sabes inglés pero en conversaciones reales no llegas al nivel que eres, esto es para ti." },
-      { q: "¿La conversación se adapta a mi industria o rol?", a: "Sí. Tú defines el contexto — tu rol, tu empresa, el tipo de conversación. La IA construye la sesión alrededor de tu situación. No un escenario genérico. El tuyo." },
-      { q: "¿Hay suscripción o cobro mensual?", a: "No. Compras una ruta una vez y es tuya para siempre. Sin renovaciones, sin cancelaciones, sin sorpresas." },
-      { q: "¿Qué incluye el informe de cada sesión?", a: "Dónde perdiste fluidez, qué pronunciación trabajar y qué frases reemplazar — con ejemplos de cómo debería sonar. Lo descargas en PDF y lo tienes a mano antes de tu próxima conversación real." },
-      { q: "¿Funciona si todavía no trabajo en inglés pero quiero hacerlo?", a: "Sí. Si buscas trabajo en empresas que operan en inglés, practicar las conversaciones antes de tenerlas es exactamente lo que te da ventaja sobre otros candidatos." },
+      { q: "¿Esto es diferente a Duolingo o un curso de inglés?", a: "No es un curso de gramática. Aprendes comunicación profesional practicando conversaciones reales — con frameworks, con correcciones en contexto. Si ya sabes inglés pero en conversaciones reales no llegas al nivel que eres, esto es para ti." },
+      { q: "¿Hay suscripción o cobro mensual?", a: "Sí. MasteryTalk es un programa de suscripción — mensual ($49/mes) o trimestral ($129/3 meses). Los primeros 25 suscriptores quedan bloqueados en $49/3 meses para siempre como Founding Members. No hay compras por sesión ni por ruta individual." },
+      { q: "¿Qué pasa después de 90 días?", a: "Tu programa se renueva automáticamente al siguiente bloque. Al completar tu Primary Path desbloqueas una nueva ruta — tú eliges cuál. El dashboard muestra 'Día X de 90' y siempre hay un siguiente nivel que alcanzar." },
+      { q: "¿Puedo practicar un escenario urgente si tengo una entrevista mañana?", a: "Sí. El War Room te da acceso inmediato a cualquier escenario — sin importar en qué path estés. Incluye 5 sesiones por mes. Es el valve de urgencia del programa: si tienes una entrevista en 3 días, úsalo." },
+      { q: "¿La conversación se adapta a mi industria o rol?", a: "Sí. Tú defines el contexto — tu rol, tu empresa, la situación. La IA construye la sesión alrededor de eso. No un escenario genérico. El tuyo." },
     ],
   },
   finalCta: {
@@ -455,7 +464,20 @@ export const ES: LandingCopy = {
     headline2: "puede cambiar todo.",
     subline: "Una sesión a la vez. Un nivel más cada vez.",
     button: "Practica tu primera conversación gratis",
-    badges: ["Sin tarjeta", "Sin suscripción", "Primeros slots beta"],
+    badges: ["Sin tarjeta", "Primera sesión gratis", "25 slots Founding Member"],
+  },
+  programa: {
+    sectionTitle: "Un programa de 3 meses. No una app.",
+    subtitle: "Cada bloque te lleva más lejos. No hay 'terminar' — siempre hay un siguiente nivel.",
+    blocks: [
+      { phase: "Foundation", duration: "Mes 1–3", title: "Tu Primary Path", desc: "Practica el escenario que más necesitas ahora. 6 niveles, dificultad progresiva, feedback de IA en cada sesión." },
+      { phase: "Advanced", duration: "Mes 4–6", title: "Elige tu siguiente ruta", desc: "Al completar tu Primary Path, desbloqueas una nueva ruta. Tú eliges la que sigue según tus metas." },
+      { phase: "Mastery", duration: "Mes 7+", title: "Dominio cruzado", desc: "Practica todos los escenarios. Cada ruta completada desbloquea la siguiente. No hay techo." },
+    ],
+    warRoom: {
+      label: "War Room incluido desde el día 1",
+      desc: "¿Entrevista mañana pero estás en el path de Cultura? Usa el War Room — acceso inmediato a cualquier escenario, 5 veces por mes.",
+    },
   },
   footer: {
     tagline: "El coach de comunicación profesional con IA para líderes latinoamericanos.",
@@ -593,9 +615,9 @@ export const PT: LandingCopy = {
     cta: "Experimentar grátis",
   },
   hero: {
-    badge: "✶ Prática conversacional para profissionais em inglês.",
-    headline: "Pratique suas conversas profissionais em inglês.",
-    subheadline: "Ganhe contratos. Trabalhe remoto. Torne-se o profissional que se comunica no nível em que pensa.",
+    badge: "✶ O programa de comunicação profissional em inglês para nearshoring.",
+    headline: "90 dias para se comunicar com autoridade em inglês profissional.",
+    subheadline: "Um programa estruturado com IA. Pratique as conversas que importam, receba feedback real e avance nível por nível. Para o profissional que já sabe inglês mas não está no nível que quer.",
   },
   widget: {
     instruction: "Escolha a conversa que você quer vencer.",
@@ -703,7 +725,7 @@ export const PT: LandingCopy = {
   },
   routes: {
     sectionTitle: "Escolha a rota que precisa agora.",
-    subtitle: "Você define o contexto. A conversa se adapta a você. Compra uma vez — é sua para sempre.",
+    subtitle: "Você escolhe seu Primary Path ao assinar. Ao completá-lo, desbloqueia o seguinte — uma rota de cada vez.",
     items: [
       { name: "Entrevista de emprego", hook: "Conquiste a vaga. Defenda seu valor. Sem hesitar." },
       { name: "Reuniões remotas", hook: "Participe, lidere e feche. Não fique só de presença." },
@@ -711,51 +733,53 @@ export const PT: LandingCopy = {
     ],
   },
   pricing: {
-    sectionTitle: "Preços",
-    headline: "Invista no seu inglês profissional.",
-    subtitle: "Os primeiros 25 assinantes recebem o preço de lançamento automaticamente. Sem código, sem truque.",
-    launchBadge: "🔥 Preço de lançamento",
-    slotsLeft: "{{count}} vagas restantes neste preço",
-    slotsGone: "O preço de lançamento encerrou",
-    saveBadge: "Economize 20%",
+    sectionTitle: "O Programa",
+    headline: "Junte-se ao programa.",
+    subtitle: "Os primeiros 25 assinantes se tornam Founding Members — preço bloqueado para sempre em $49 por 3 meses.",
+    launchBadge: "⭐ Founding Member",
+    slotsLeft: "{{count}} slots Founding Member disponíveis",
+    slotsGone: "Founding Member esgotado — preço regular ativo",
+    saveBadge: "Economize $18 vs mensal",
     monthly: {
-      label: "Monthly",
+      label: "Acesso mensal",
       period: "/mês",
       features: [
-        "Todos os paths incluídos",
+        "Seu Primary Path (6 níveis)",
+        "War Room — 5 sessões/mês",
         "WhatsApp SR Coach diário",
-        "Cancele quando quiser",
         "Lessons Library completa",
+        "Cancele quando quiser",
       ],
     },
     quarterly: {
-      label: "Quarterly",
+      label: "O Programa",
       period: "/ 3 meses",
       perMonth: "{{price}}/mês equivalente",
       features: [
-        "Tudo do plano mensal",
-        "20% de economia vs mensal",
-        "Compromisso trimestral",
-        "Ideal para hábito real",
+        "Primary Path + rotas progressivas",
+        "War Room — 5 sessões/mês",
+        "WhatsApp SR Coach diário",
+        "Lessons Library completa",
+        "Economize $18 vs pagamento mensal",
       ],
     },
     modal: {
-      headline: "Unlock MasteryTalk PRO",
-      subtitle: "All paths, WhatsApp SR Coach, Lessons Library — unlimited sessions.",
-      cta: "Subscribe",
-      ctaProcessing: "Redirecting to Stripe...",
-      legal: "Secure payment with Stripe · Cancel anytime from your account · No hidden fees",
+      headline: "Junte-se ao Programa",
+      subtitle: "Seu Primary Path desde o dia 1. War Room para urgências. Feedback de IA em cada sessão.",
+      cta: "Começar programa",
+      ctaProcessing: "Redirecionando para o Stripe...",
+      legal: "Pagamento seguro com Stripe · Cancele pela sua conta · Sem custos ocultos",
     },
     demoLine: "Sua primeira sessão de auto-apresentação é completamente grátis — sem cartão, sem compromisso.",
   },
   faq: {
     sectionTitle: "Perguntas Frequentes",
     items: [
-      { q: "Isso é diferente do Duolingo ou de um curso de inglês?", a: "Não é um curso de gramática. Você aprende comunicação profissional praticando conversas reais — com frameworks, com correções, mas sempre em contexto. Se já sabe inglês mas em conversas reais não chega ao nível que é, isto é para você." },
-      { q: "A conversa se adapta à minha indústria ou cargo?", a: "Sim. Você define o contexto — seu cargo, sua empresa, o tipo de conversa. A IA constrói a sessão ao redor da sua situação. Não um cenário genérico. O seu." },
-      { q: "Tem assinatura ou cobrança mensal?", a: "Não. Compra uma rota uma vez e é sua para sempre. Sem renovações, sem cancelamentos, sem surpresas." },
-      { q: "O que inclui o relatório de cada sessão?", a: "Onde perdeu fluência, qual pronúncia trabalhar e quais frases substituir — com exemplos de como deveria soar. Baixe em PDF e tenha em mãos antes da sua próxima conversa real." },
-      { q: "Funciona se ainda não trabalho em inglês mas quero?", a: "Sim. Se busca trabalho em empresas que operam em inglês, praticar as conversas antes de tê-las é exatamente o que te dá vantagem sobre outros candidatos." },
+      { q: "Isso é diferente do Duolingo ou de um curso de inglês?", a: "Não é um curso de gramática. Você aprende comunicação profissional praticando conversas reais — com frameworks, com correções em contexto. Se já sabe inglês mas em conversas reais não chega ao nível que é, isto é para você." },
+      { q: "Tem assinatura ou cobrança mensal?", a: "Sim. O MasteryTalk é um programa de assinatura — mensal ($49/mês) ou trimestral ($129/3 meses). Os primeiros 25 assinantes ficam bloqueados em $49/3 meses para sempre como Founding Members. Não há compras por sessão nem por rota individual." },
+      { q: "O que acontece depois de 90 dias?", a: "Seu programa se renova automaticamente para o próximo bloco. Ao completar seu Primary Path você desbloqueia uma nova rota — você escolhe qual. O dashboard mostra 'Dia X de 90' e sempre há um próximo nível a alcançar." },
+      { q: "Posso praticar um cenário urgente se tenho uma entrevista amanhã?", a: "Sim. O War Room te dá acesso imediato a qualquer cenário — independentemente de qual path você está. Inclui 5 sessões por mês. É a válvula de urgência do programa: se tem entrevista em 3 dias, use." },
+      { q: "A conversa se adapta à minha indústria ou cargo?", a: "Sim. Você define o contexto — seu cargo, sua empresa, a situação. A IA constrói a sessão ao redor disso. Não um cenário genérico. O seu." },
     ],
   },
   finalCta: {
@@ -763,7 +787,20 @@ export const PT: LandingCopy = {
     headline2: "pode mudar tudo.",
     subline: "Uma sessão de cada vez. Um nível a mais cada vez.",
     button: "Pratique sua primeira conversa grátis",
-    badges: ["Sem cartão", "Sem assinatura", "Primeiros slots beta"],
+    badges: ["Sem cartão", "Primeira sessão grátis", "25 slots Founding Member"],
+  },
+  programa: {
+    sectionTitle: "Um programa de 3 meses. Não um app.",
+    subtitle: "Cada bloco te leva mais longe. Não há 'terminar' — sempre há um próximo nível.",
+    blocks: [
+      { phase: "Foundation", duration: "Mês 1–3", title: "Seu Primary Path", desc: "Pratique o cenário que mais precisa agora. 6 níveis, dificuldade progressiva, feedback de IA em cada sessão." },
+      { phase: "Advanced", duration: "Mês 4–6", title: "Escolha sua próxima rota", desc: "Ao completar seu Primary Path, você desbloqueia uma nova rota. Você escolhe a que vem a seguir." },
+      { phase: "Mastery", duration: "Mês 7+", title: "Domínio cruzado", desc: "Pratique todos os cenários. Cada rota completada desbloqueia a próxima. Não há teto." },
+    ],
+    warRoom: {
+      label: "War Room incluído desde o dia 1",
+      desc: "Entrevista amanhã mas está no path de Cultura? Use o War Room — acesso imediato a qualquer cenário, 5 vezes por mês.",
+    },
   },
   footer: {
     tagline: "O coach de comunicação profissional com IA para líderes latino-americanos.",
@@ -901,9 +938,9 @@ export const EN: LandingCopy = {
     cta: "Try free",
   },
   hero: {
-    badge: "✶ Conversational practice for professionals in English.",
-    headline: "Rehearse your high-stakes conversations in English.",
-    subheadline: "Win contracts. Work remotely. Become the professional who communicates at the level they think.",
+    badge: "✶ The professional English communication program for nearshoring.",
+    headline: "90 days to communicate with authority in professional English.",
+    subheadline: "A structured program powered by AI. Practice the conversations that matter, get real feedback, and advance level by level. For the professional who already knows English but isn't at the level they want.",
   },
   widget: {
     instruction: "Choose the conversation you want to win.",
@@ -1011,7 +1048,7 @@ export const EN: LandingCopy = {
   },
   routes: {
     sectionTitle: "Choose the path you need right now.",
-    subtitle: "You define the context. The conversation adapts to you. Buy it once — it's yours forever.",
+    subtitle: "You choose your Primary Path when you subscribe. Complete it, unlock the next — one path at a time.",
     items: [
       { name: "Job Interview", hook: "Get the job. Defend your value. No hesitation." },
       { name: "Remote Meetings", hook: "Participate, lead, and close. Don't just show up." },
@@ -1019,38 +1056,40 @@ export const EN: LandingCopy = {
     ],
   },
   pricing: {
-    sectionTitle: "Pricing",
-    headline: "Invest in your professional English.",
-    subtitle: "The first 25 subscribers get launch pricing automatically. No code, no catch.",
-    launchBadge: "🔥 Launch price",
-    slotsLeft: "{{count}} spots left at this price",
-    slotsGone: "Launch pricing has ended",
-    saveBadge: "Save 20%",
+    sectionTitle: "The Program",
+    headline: "Join the program.",
+    subtitle: "The first 25 subscribers become Founding Members — price locked forever at $49 per 3 months.",
+    launchBadge: "⭐ Founding Member",
+    slotsLeft: "{{count}} Founding Member slots left",
+    slotsGone: "Founding Member slots exhausted — regular pricing active",
+    saveBadge: "Save $18 vs monthly",
     monthly: {
-      label: "Monthly",
+      label: "Monthly access",
       period: "/month",
       features: [
-        "All practice paths included",
+        "Your Primary Path (6 levels)",
+        "War Room — 5 sessions/month",
         "Daily WhatsApp SR Coach",
-        "Cancel anytime",
         "Full Lessons Library",
+        "Cancel anytime",
       ],
     },
     quarterly: {
-      label: "Quarterly",
+      label: "The Program",
       period: "/ 3 months",
       perMonth: "{{price}}/mo equivalent",
       features: [
-        "Everything in Monthly",
-        "20% savings vs monthly",
-        "Quarterly commitment",
-        "Best for building real habit",
+        "Primary Path + progressive paths",
+        "War Room — 5 sessions/month",
+        "Daily WhatsApp SR Coach",
+        "Full Lessons Library",
+        "Save $18 vs monthly billing",
       ],
     },
     modal: {
-      headline: "Unlock MasteryTalk PRO",
-      subtitle: "All paths, WhatsApp SR Coach, Lessons Library — unlimited sessions.",
-      cta: "Subscribe",
+      headline: "Join the Program",
+      subtitle: "Your Primary Path from day 1. War Room for urgent needs. AI feedback on every session.",
+      cta: "Start program",
       ctaProcessing: "Redirecting to Stripe...",
       legal: "Secure payment with Stripe · Cancel anytime from your account · No hidden fees",
     },
@@ -1059,11 +1098,11 @@ export const EN: LandingCopy = {
   faq: {
     sectionTitle: "Frequently Asked Questions",
     items: [
-      { q: "Is this different from Duolingo or an English course?", a: "It's not a grammar course. You learn professional communication by practicing real conversations — with frameworks, with corrections, but always in context. If you already know English but in real conversations you don't reach your level, this is for you." },
-      { q: "Does the conversation adapt to my industry or role?", a: "Yes. You define the context — your role, your company, the type of conversation. The AI builds the session around your situation. Not a generic scenario. Yours." },
-      { q: "Is there a subscription or monthly charge?", a: "No. You buy a path once and it's yours forever. No renewals, no cancellations, no surprises." },
-      { q: "What does each session report include?", a: "Where you lost fluency, what pronunciation to work on, and which phrases to replace — with examples of how it should sound. Download it as PDF and keep it handy before your next real conversation." },
-      { q: "Does it work if I don't work in English yet but want to?", a: "Yes. If you're looking for work at companies that operate in English, practicing the conversations before having them is exactly what gives you an edge over other candidates." },
+      { q: "Is this different from Duolingo or an English course?", a: "It's not a grammar course. You learn professional communication by practicing real conversations — with frameworks, corrections in context. If you already know English but in real conversations you don't reach your level, this is for you." },
+      { q: "Is there a subscription or monthly charge?", a: "Yes. MasteryTalk is a subscription program — monthly ($49/mo) or quarterly ($129/3 months). The first 25 subscribers are locked in at $49/3 months forever as Founding Members. There are no per-session or per-path purchases." },
+      { q: "What happens after 90 days?", a: "Your program renews automatically into the next block. Once you complete your Primary Path you unlock a new one — you choose which. The dashboard shows 'Day X of 90' and there's always a next level to reach." },
+      { q: "Can I practice an urgent scenario if I have an interview tomorrow?", a: "Yes. The War Room gives you immediate access to any scenario — regardless of which path you're on. Includes 5 sessions per month. It's the urgency valve of the program: interview in 3 days? Use it." },
+      { q: "Does the conversation adapt to my industry or role?", a: "Yes. You define the context — your role, your company, the situation. The AI builds the session around that. Not a generic scenario. Yours." },
     ],
   },
   finalCta: {
@@ -1071,7 +1110,20 @@ export const EN: LandingCopy = {
     headline2: "could change everything.",
     subline: "One session at a time. One level up each time.",
     button: "Practice your first conversation free",
-    badges: ["No credit card", "No subscription", "Early beta slots"],
+    badges: ["No credit card", "First session free", "25 Founding Member slots"],
+  },
+  programa: {
+    sectionTitle: "A 3-month program. Not an app.",
+    subtitle: "Each block takes you further. There's no 'finishing' — there's always a next level.",
+    blocks: [
+      { phase: "Foundation", duration: "Month 1–3", title: "Your Primary Path", desc: "Practice the scenario you need most right now. 6 levels, progressive difficulty, AI feedback on every session." },
+      { phase: "Advanced", duration: "Month 4–6", title: "Choose your next path", desc: "Once you complete your Primary Path, you unlock a new one. You choose what comes next based on your goals." },
+      { phase: "Mastery", duration: "Month 7+", title: "Cross-path mastery", desc: "Practice all scenarios. Every completed path unlocks the next. No ceiling." },
+    ],
+    warRoom: {
+      label: "War Room included from day 1",
+      desc: "Interview tomorrow but you're on the Culture path? Use War Room — immediate access to any scenario, 5 times a month.",
+    },
   },
   footer: {
     tagline: "The AI-powered professional communication coach for ambitious leaders.",

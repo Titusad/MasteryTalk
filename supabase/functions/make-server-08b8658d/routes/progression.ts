@@ -27,31 +27,109 @@ app.get("/make-server-08b8658d/progression", async (c) => {
       }
     }
 
-    // If the user has an active subscription, unlock all locked levels
     const profileRaw = await kv.get(`profile:${user.id}`);
     const profile = profileRaw
       ? (typeof profileRaw === "string" ? JSON.parse(profileRaw) : profileRaw)
       : null;
 
     if (profile?.subscription_active) {
-      for (const key of Object.keys(merged)) {
-        if (key === "activeGoal") continue;
-        const pathState = merged[key] as Record<string, { status: string }>;
-        if (typeof pathState === "object" && pathState !== null) {
-          for (const levelId of Object.keys(pathState)) {
-            if (pathState[levelId]?.status === "locked") {
-              pathState[levelId] = { ...pathState[levelId], status: "unlocked" };
+      const primaryPath: string | null = profile.primary_path || null;
+
+      if (!primaryPath) {
+        // Legacy subscriber (subscribed before primary_path model) — grant full access
+        for (const key of Object.keys(merged)) {
+          if (key === "activeGoal" || key === "unlocked_paths") continue;
+          const pathState = merged[key] as Record<string, { status: string }>;
+          if (typeof pathState === "object" && pathState !== null) {
+            for (const levelId of Object.keys(pathState)) {
+              if (pathState[levelId]?.status === "locked") {
+                pathState[levelId] = { ...pathState[levelId], status: "unlocked" };
+              }
             }
           }
         }
+        console.log(`[Progression GET] legacy subscriber — full access granted for ${user.id}`);
+      } else {
+        // Progressive model — unlock primary_path + self-intro + any user-chosen unlocked paths
+        const additionalPaths: string[] = merged.unlocked_paths || [];
+        const pathsToUnlock = new Set(["self-intro", primaryPath, ...additionalPaths]);
+
+        for (const key of Object.keys(merged)) {
+          if (key === "activeGoal" || key === "unlocked_paths") continue;
+          const pathState = merged[key] as Record<string, { status: string }>;
+          if (typeof pathState === "object" && pathState !== null && pathsToUnlock.has(key)) {
+            for (const levelId of Object.keys(pathState)) {
+              if (pathState[levelId]?.status === "locked") {
+                pathState[levelId] = { ...pathState[levelId], status: "unlocked" };
+              }
+            }
+          }
+        }
+        console.log(`[Progression GET] progressive unlock — paths: [${[...pathsToUnlock].join(", ")}] for ${user.id}`);
       }
-      console.log(`[Progression GET] subscription_active — all locked levels unlocked for ${user.id}`);
     }
 
     return c.json(merged);
   } catch (err) {
     console.log("[Progression GET] Error:", err);
     return c.json({ error: `Failed to fetch progression: ${err}` }, 500);
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// POST /progression/unlock-path
+// Called when user picks their next path after completing the current one.
+// Validates subscription + adds pathId to unlocked_paths[].
+// ═══════════════════════════════════════════════════════════════
+app.post("/make-server-08b8658d/progression/unlock-path", async (c) => {
+  try {
+    const user = await getAuthUser(c.req.header("Authorization"));
+    if (!user) return c.json({ error: "Unauthorized" }, 401);
+
+    const { pathId } = await c.req.json();
+    if (!pathId) return c.json({ error: "Missing pathId" }, 400);
+
+    const profileRaw = await kv.get(`profile:${user.id}`);
+    const profile = profileRaw
+      ? (typeof profileRaw === "string" ? JSON.parse(profileRaw) : profileRaw)
+      : null;
+
+    if (!profile?.subscription_active) {
+      return c.json({ error: "Active subscription required" }, 403);
+    }
+
+    const progRaw = await kv.get(`progression:${user.id}`);
+    const state = progRaw
+      ? (typeof progRaw === "string" ? JSON.parse(progRaw) : progRaw)
+      : getDefaultProgressionState();
+
+    // Add path to unlocked list (deduplicated)
+    const currentUnlocked: string[] = state.unlocked_paths || [];
+    if (!currentUnlocked.includes(pathId)) {
+      state.unlocked_paths = [...currentUnlocked, pathId];
+    }
+
+    // Unlock level 1 of the new path (first level of pathState)
+    const pathState = state[pathId] as Record<string, { status: string }> | undefined;
+    if (pathState) {
+      const levelIds = Object.keys(pathState);
+      if (levelIds.length > 0) {
+        const firstLevel = levelIds[0];
+        if (pathState[firstLevel]?.status === "locked") {
+          pathState[firstLevel] = { ...pathState[firstLevel], status: "unlocked" };
+        }
+        state[pathId] = pathState;
+      }
+    }
+
+    state.activeGoal = pathId;
+    await kv.set(`progression:${user.id}`, state);
+
+    console.log(`[Progression] ✅ Path unlocked: ${pathId} for user ${user.id}`);
+    return c.json({ success: true, unlockedPath: pathId, state });
+  } catch (err) {
+    console.log("[Progression unlock-path] Error:", err);
+    return c.json({ error: `Failed to unlock path: ${err}` }, 500);
   }
 });
 

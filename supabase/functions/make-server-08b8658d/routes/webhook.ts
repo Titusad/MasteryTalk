@@ -133,6 +133,7 @@ app.post("/make-server-08b8658d/webhook/stripe", async (c) => {
 
         const userId = session.metadata?.userId;
         const tier = session.metadata?.tier || "monthly";
+        const primaryPath = session.metadata?.primary_path || null;
 
         if (!userId) {
           console.warn("[Webhook] checkout.session.completed — no userId in session metadata");
@@ -149,6 +150,7 @@ app.post("/make-server-08b8658d/webhook/stripe", async (c) => {
         profile.stripe_customer_id = session.customer;
         profile.stripe_subscription_id = session.subscription;
         profile.subscription_start_date = new Date().toISOString();
+        if (primaryPath) profile.primary_path = primaryPath;
 
         await saveProfile(userId, profile);
 

@@ -155,7 +155,7 @@ Landing (#)
   └── PracticeWidget → Auth (Google)
         └── LanguageTransitionModal (ES/PT únicamente, no EN)
               └── PracticeSessionPage (#practice-session)
-                    experience → context → strategy
+                    experience → context → [lesson] → strategy
                     → [interlocutor-intro, solo interview]
                     → generating → practice-prep → practice
                     → analyzing → feedback → [upsell]
@@ -169,7 +169,9 @@ Dashboard (#dashboard)
   └── PathPurchaseModal (paywall / upsell)
 ```
 
-**War Room** (`startAtContext=true`): salta `experience` → va directo a `context`. Límite: 5/mes.
+**War Room** (`startAtContext=true`): salta `experience` → va directo a `context`. Salta también `lesson`. Límite: 5/mes.
+
+**`[lesson]`** se salta cuando: Challenge Mode activo · War Room · `scenarioType === "self-intro"`. CTA bloqueado hasta que el usuario tapee "Reveal answer" en la pregunta de recall.
 
 **Bifurcación en `generating` por scenarioType:**
 - `interview` → `generateInterviewBriefing` → `InterviewBriefingScreen`

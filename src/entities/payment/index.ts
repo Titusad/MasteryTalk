@@ -56,6 +56,7 @@ export interface PurchaseDetails {
   type: PurchaseType;
   scenarioType?: string;
   tier?: SubscriptionTier;
+  primary_path?: string;
 }
 
 export interface CheckoutResult {

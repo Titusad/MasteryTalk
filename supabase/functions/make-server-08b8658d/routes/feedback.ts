@@ -72,6 +72,7 @@ app.post("/make-server-08b8658d/analyze-feedback", async (c) => {
     const fbBody = await c.req.json();
     const { sessionId, scenarioType } = fbBody;
     const fbLocale = fbBody.locale || null;
+    const selfIntroContext: string | null = fbBody.self_intro_context || null;
 
     if (!sessionId) {
       return c.json({ error: "Missing sessionId for feedback analysis" }, 400);
@@ -178,6 +179,16 @@ ${transcript}`;
           professionalProficiency: professionalProficiency ?? prevStats.professionalProficiency,
           lastFeedbackAt: new Date().toISOString(),
         };
+
+        // Store self-intro intake data (first session only — never overwrite once set)
+        const effectiveType = scenarioType || session.scenarioType;
+        if (effectiveType === "self-intro" && !profile.self_intro_completed) {
+          profile.self_intro_completed = true;
+          profile.self_intro_pillar_scores = pillarScores;
+          if (selfIntroContext) profile.self_intro_context = selfIntroContext;
+          console.log(`[AnalyzeFeedback] 🎯 Self-intro intake stored — context=${selfIntroContext}`);
+        }
+
         await kv.set(`profile:${userId}`, profile);
         console.log(`[AnalyzeFeedback] 📊 Persisted pillarScores to profile:${userId}`);
       }

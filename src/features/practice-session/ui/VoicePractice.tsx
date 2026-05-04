@@ -54,6 +54,7 @@ function VoicePractice({
   interlocutor,
   sessionId,
   scenarioType,
+  challengeMode,
   onViewFeedback,
   onConversationComplete,
   onEnd,
@@ -61,6 +62,8 @@ function VoicePractice({
   interlocutor: string;
   sessionId: string;
   scenarioType?: ScenarioType;
+  /** When true (Challenge Mode): hints suppressed from turn 1 */
+  challengeMode?: boolean;
   onViewFeedback: (pronData: TurnPronunciationData[]) => void;
   /** Fires as soon as the conversation ends — use to pre-warm feedback analysis */
   onConversationComplete?: () => void;
@@ -70,6 +73,17 @@ function VoicePractice({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isConversationComplete, setIsConversationComplete] =
     useState(false);
+  const [hintRevealed, setHintRevealed] = useState(false);
+
+  // Derive arena phase from AI turn count — mirrors backend directive injected by assembler
+  const aiTurnCount = messages.filter((m) => m.role === "ai").length;
+  const arenaPhase: "support" | "guidance" | "challenge" = challengeMode
+    ? "challenge"
+    : aiTurnCount <= 3
+    ? "support"
+    : aiTurnCount <= 6
+    ? "guidance"
+    : "challenge";
   const [isProcessing, setIsProcessing] = useState(false);
   const [isAiTyping, setIsAiTyping] = useState(false);
   const [revealingMsgIndex, setRevealingMsgIndex] = useState<
@@ -89,6 +103,11 @@ function VoicePractice({
   const lastScrolledMsgCount = useRef(0);
   /** Track which message indices have been fully revealed (prevents re-animation) */
   const revealedMsgsRef = useRef(new Set<number>());
+
+  /* Reset hint when a new AI message arrives */
+  useEffect(() => {
+    setHintRevealed(false);
+  }, [messages.length]);
 
   /* ── Real MediaRecorder hook ── */
   const recorder = useMediaRecorder();
@@ -1057,80 +1076,62 @@ function VoicePractice({
                     </span>
                   )}
 
-                  {/* "Try saying..." hint */}
+                  {/* "Try saying..." hint — hidden in challenge phase and Challenge Mode */}
                   <AnimatePresence>
                     {isLatestAiMsg &&
                       trySaying &&
                       aiFullyRevealed &&
-                      !isConversationComplete && (
+                      !isConversationComplete &&
+                      arenaPhase !== "challenge" && (
                         <motion.div
                           key="try-saying"
-                          className="mt-3 w-full bg-[#f0fdf4] border border-[#b9f8cf] rounded-xl px-4 py-3 overflow-hidden"
+                          className="mt-3 w-full"
                           initial={{ opacity: 0, y: 6 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -4 }}
-                          transition={{
-                            duration: 0.35,
-                            delay: 0.2,
-                            ease: [0.25, 1, 0.5, 1],
-                          }}
-                          onAnimationComplete={() => {
-                            // Auto-scroll so the hint is visible above the mic bar
-                            chatEndRef.current?.scrollIntoView({
-                              behavior: "smooth",
-                              block: "end",
-                            });
-                          }}
+                          transition={{ duration: 0.35, delay: 0.2, ease: [0.25, 1, 0.5, 1] }}
                         >
-                          <p
-                            className="text-xs text-[#15803d] font-medium"
-                          >
-                             Try opening with:{" "}
-                            <span
-                              className="text-[#0f172b] italic"
+                          {!hintRevealed ? (
+                            <button
+                              className="flex items-center gap-1.5 text-xs text-[#45556c] border border-[#e2e8f0] rounded-lg px-3 py-1.5 hover:border-[#94a3b8] hover:text-[#0f172b] transition-colors"
+                              onClick={() => {
+                                setHintRevealed(true);
+                                setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" }), 100);
+                              }}
                             >
-                              "{trySaying.starter}"
-                            </span>
-                          </p>
-                          {trySaying.keywords &&
-                            trySaying.keywords.length > 0 && (
-                              <p
-                                className="text-[11px] text-[#0f172b] mt-1.5 font-medium"
-                              >
-                                Key{" "}
-                                <span
-                                  className="text-[#45556c]"
-                                  style={{ fontWeight: 400 }}
-                                >
-                                  Key words:
-                                </span>{" "}
-                                {trySaying.keywords.map(
-                                  (kw: string, ki: number) => (
+                              <span>💡</span> Show hint
+                            </button>
+                          ) : (
+                            <motion.div
+                              key="hint-content"
+                              className="bg-[#f0fdf4] border border-[#b9f8cf] rounded-xl px-4 py-3 overflow-hidden"
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: "auto" }}
+                              transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
+                              onAnimationComplete={() => chatEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" })}
+                            >
+                              <p className="text-xs text-[#15803d] font-medium">
+                                Try opening with:{" "}
+                                <span className="text-[#0f172b] italic">"{trySaying.starter}"</span>
+                              </p>
+                              {trySaying.keywords && trySaying.keywords.length > 0 && (
+                                <p className="text-[11px] text-[#0f172b] mt-1.5">
+                                  <span className="text-[#45556c]">Key words: </span>
+                                  {trySaying.keywords.map((kw: string, ki: number) => (
                                     <span key={ki}>
-                                      <span
-                                        className="bg-[#dcfce7] text-[#166534] px-1.5 py-0.5 rounded-md text-[10px]"
-                                        style={{
-                                          fontWeight: 600,
-                                        }}
-                                      >
+                                      <span className="bg-[#dcfce7] text-[#166534] px-1.5 py-0.5 rounded-md text-[10px]" style={{ fontWeight: 600 }}>
                                         {kw}
                                       </span>
-                                      {ki <
-                                        (trySaying.keywords
-                                          ?.length ?? 0) -
-                                        1 && (
-                                          <span className="mx-1 text-[#cbd5e1]">
-                                            ·
-                                          </span>
-                                        )}
+                                      {ki < (trySaying.keywords?.length ?? 0) - 1 && (
+                                        <span className="mx-1 text-[#cbd5e1]">·</span>
+                                      )}
                                     </span>
-                                  ),
-                                )}
-                              </p>
-                            )}
-                          <p className="text-[10px] text-[#45556c] mt-1">
-                            {trySaying.strategy}
-                          </p>
+                                  ))}
+                                </p>
+                              )}
+                              <p className="text-[10px] text-[#45556c] mt-1">{trySaying.strategy}</p>
+                            </motion.div>
+                          )}
                         </motion.div>
                       )}
                   </AnimatePresence>
