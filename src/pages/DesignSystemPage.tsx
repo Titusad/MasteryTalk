@@ -33,16 +33,15 @@ import {
   PricingCard,
   COLORS,
   PageTitleBlock,
-  AccuracyRing,
-  HighlightWithTooltip,
-  StageBadge,
-  SubtleTextLink,
   RecordButton,
   RecordingWaveformBars,
   RecordingTimer,
-  highlightEnglish,
-  renderStressedPhrase,
 } from "@/shared/ui";
+import { AccuracyRing } from "@/shared/ui/AccuracyRing";
+import { StageBadge } from "@/shared/ui/StageBadge";
+import { SubtleTextLink } from "@/shared/ui/SubtleTextLink";
+import { highlightEnglish, renderStressedPhrase } from "@/shared/ui/TextHelpers";
+import { HighlightWithTooltip } from "@/shared/ui/HighlightTooltip";
 import {
   PhaseIndicator,
   ArenaProgressBar,

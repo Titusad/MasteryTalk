@@ -26,7 +26,8 @@ import {
   PolarAngleAxis,
   Radar,
 } from "recharts";
-import { PageTitleBlock, ProficiencyGauge, FeedbackAccordion } from "@/shared/ui";
+import { PageTitleBlock, FeedbackAccordion } from "@/shared/ui";
+import { ProficiencyGauge } from "@/features/session-report/ui";
 import { SessionProgressBar } from "@/widgets/SessionProgressBar";
 import {
   getBeforeAfterForScenario,

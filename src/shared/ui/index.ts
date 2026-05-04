@@ -18,7 +18,6 @@ export { COLORS } from "./design-tokens";
 // ── UI primitives ─────────────────────────────────────────────
 export { BrandLogo } from "./BrandLogo";
 export { SmoothHeight } from "./SmoothHeight";
-export { HighlightWithTooltip } from "./HighlightTooltip";
 export { RecordButton, RecordingWaveformBars, RecordingTimer } from "./RecordButton";
 export { AnalyzingScreen } from "./AnalyzingScreen";
 // SessionProgressBar lives in src/widgets/SessionProgressBar — import directly from there
@@ -32,14 +31,9 @@ export { PastelBlobs } from "./PastelBlobs";
 export { MiniFooter } from "./MiniFooter";
 export { TermsCheckbox } from "./TermsCheckbox";
 export { PageTitleBlock } from "./PageTitleBlock";
-export { AccuracyRing } from "./AccuracyRing";
-export { StageBadge } from "./StageBadge";
-export { SubtleTextLink } from "./SubtleTextLink";
-export { highlightEnglish, renderStressedPhrase, stripStressMarkers } from "./TextHelpers";
 export { PricingCard } from "./PricingCard";
 
 // ── Session utilities — consumed directly from @/shared/lib/ProgressionContext and @/entities/session
 
 // ── Feedback components ───────────────────────────────────────
-export { ProficiencyGauge } from "./ProficiencyGauge";
 export { FeedbackAccordion } from "./FeedbackAccordion";
