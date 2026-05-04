@@ -199,7 +199,7 @@ app.put("/make-server-08b8658d/profile", async (c: any) => {
       "keyExperience", "cvSummary", "cvFileName", "cvConsentGiven",
       "deckSummary", "deckFileName", "lastJobDescription",
       "narrationCompleted", "sessionMode", "activeGoal", "english_goal",
-      "market_focus", "whatsapp_number", "whatsapp_verified",
+      "market_focus", "whatsapp_number",
       "wa_preferred_hour", "wa_timezone",
       "wa_dismissed_at_session_count", "wa_card_permanently_dismissed",
       "profile_completed",

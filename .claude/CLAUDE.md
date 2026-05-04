@@ -38,7 +38,7 @@ Toda la arquitectura frontend sigue FSD. Ver §6 y referencia canónica: https:/
 
 ## 1. Producto
 
-**MasteryTalk PRO** — simulador de comunicación profesional en inglés para nearshoring LATAM (México, Colombia, Brasil).
+**MasteryTalk PRO** — simulador de comunicación profesional en inglés para profesionales en nearshoring de cualquier país del mundo. Foco comercial principal: Colombia, México, Brasil y LATAM en general.
 
 **Propuesta de valor:** No vendemos clases. Vendemos acceso a riqueza y poder.
 

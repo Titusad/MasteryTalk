@@ -6,6 +6,9 @@ const app = new Hono();
 
 app.post("/make-server-08b8658d/pronunciation-assess", async (c) => {
   try {
+    const user = await getAuthUser(c.req.header("Authorization"));
+    if (!user) return c.json({ error: "Unauthorized — valid session required" }, 401);
+
     const azureKey = (globalThis as any).Deno.env.get("AZURE_SPEECH_KEY");
     const azureRegion = (globalThis as any).Deno.env.get("AZURE_SPEECH_REGION");
 

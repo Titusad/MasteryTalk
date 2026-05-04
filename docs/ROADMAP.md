@@ -52,6 +52,59 @@
 
 ---
 
+## Phase 0 — Pre-launch Repositioning (Priority: BEFORE LAUNCH)
+
+> **Goal:** Reframe MasteryTalk from a subscription service to a structured 3-month program before the first paying user arrives.
+> Pre-launch = no price anchoring, no legacy users to protect — full margin of maneuver.
+> Decision adopted 2026-05-03. See PRODUCT_SPEC §3.3 for full program model spec.
+
+### 0.1 Program Model Definition ✅ (Documented — 2026-05-03)
+- [x] Adopt "3-month program" framing (Modelo A: subscription as container, program as experience)
+- [x] Business Culture as Foundation Program — entry point for all subscribers
+- [x] Progressive path unlocking as user advances (see PRODUCT_SPEC §4.4 and §8)
+- [x] War Room repositioned as urgency valve — any scenario, immediately, 5/month
+- [x] Post-90-days arc defined: Foundation → Advanced → Mastery (no churn trigger)
+- [x] Document in PRODUCT_SPEC v2.9
+
+### 0.2 Pricing Reframe
+> **Goal:** Launch at program prices. New Stripe products required.
+- [ ] Validate final price points: Founding Member $49/3mo · Program $129/3mo · Monthly $29/mo
+- [ ] Create new Stripe products and price IDs (retire $12.99/$19.99/$29.99/$47.99)
+- [ ] Update `STRIPE_PRICE_*` secrets in Supabase + `supabase/.env.local`
+- [ ] Update PRODUCT_SPEC §3.1 with new price IDs once created
+- [ ] Update `/pricing` endpoint response shape if needed
+
+### 0.3 Progressive Path Unlocking (Backend)
+> **Goal:** Implement progressive path unlocking instead of all-paths-on-subscribe.
+- [ ] Update `GET /progression` — remove auto-unlock-all behavior
+- [ ] Implement unlock rules per PRODUCT_SPEC §4.4 (BC Level 2 → Interview, etc.)
+- [ ] Update `progression:{userId}` KV schema to track per-path unlock state
+- [ ] Regression test: existing users in beta → define migration strategy (grandfathered full access or progressive)
+
+### 0.4 Landing Page Reframe
+> **Goal:** Lead with transformation outcome, not feature list.
+- [ ] New hero headline — outcome-oriented ("90 días para comunicarte con autoridad en inglés profesional" or similar)
+- [ ] New "El Programa" section — Foundation → Advanced → Mastery arc visible as curriculum
+- [ ] Pricing section: Program (hero, $129/3mo) vs Monthly entry ($29/mo)
+- [ ] FAQ update: "¿Qué pasa después de 90 días?", "¿Puedo practicar mi escenario urgente?" (War Room answer)
+- [ ] Update `landing-i18n.ts` (ES/PT/EN)
+
+### 0.5 Pricing Modal + Checkout Reframe
+> **Goal:** "Únete al programa" not "elige un plan".
+- [ ] `PathPurchaseModal` — program framing, new price structure
+- [ ] Hero card: Programa 3 meses ($129) — secondary: Acceso mensual ($29)
+- [ ] Founding Member badge when slots remain
+- [ ] Update checkout copy and `POST /create-checkout` tier naming if needed
+
+### 0.6 Dashboard — Program Arc UI
+> **Goal:** User feels they're in a program, not using an app.
+- [ ] Day counter: "Día X de 90" visible in HeroCard or dedicated widget
+- [ ] Locked paths in ProgressionTree show unlock condition (not just lock icon)
+- [ ] Next milestone indicator: "X niveles más para desbloquear Interview Mastery"
+- [ ] Onboarding day 1 message: "Tu programa empieza hoy — 90 días"
+
+---
+
 ## Phase 1 — Beta Launch Checklist (Priority: NOW)
 
 > **Goal:** Everything needed before inviting first paying users.
@@ -389,7 +442,7 @@
 
 ### 3.1.2 U.S. Business Culture Mastery Path 🇺🇸 ⚡ HIGH PRIORITY
 > **Why:** Transforms MasteryTalk from a language tool to a nearshoring performance platform.
-> Cultural fit is the #1 unspoken reason LATAM professionals don't advance in U.S. companies.
+> Cultural fit is the #1 unspoken reason nearshoring professionals don't advance in U.S. companies — especially those from LATAM markets (Colombia, Mexico, Brazil), the primary commercial focus.
 >
 > **Default first path:** After self-intro warm-up, this is the recommended path for ALL users
 > unless they have a specific immediate need (interview, sales pitch, etc.).

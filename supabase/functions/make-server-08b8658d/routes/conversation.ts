@@ -18,7 +18,7 @@ app.post("/make-server-08b8658d/prepare-session", async (c: any) => {
       return c.json({ error: "Missing systemPrompt for session preparation" }, 400);
     }
 
-    const sessionId = `vsession_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const sessionId = crypto.randomUUID();
 
     console.log(`[PrepareSession] Creating session ${sessionId} | type=${scenarioType} interlocutor=${interlocutor}`);
 
@@ -53,6 +53,7 @@ app.post("/make-server-08b8658d/prepare-session", async (c: any) => {
     };
 
     const sessionState = {
+      userId: user.id,
       systemPrompt,
       scenario: scenario || "",
       interlocutor: interlocutor || "",
@@ -101,6 +102,10 @@ app.post("/make-server-08b8658d/process-turn", async (c: any) => {
     }
 
     const session = raw;
+
+    if (session.userId && session.userId !== user.id) {
+      return c.json({ error: "Forbidden" }, 403);
+    }
 
     if (session.isComplete) {
       return c.json({
@@ -234,6 +239,10 @@ app.post("/make-server-08b8658d/process-turn-stream", async (c: any) => {
     if (!raw) return c.json({ error: `Session ${sessionId} not found` }, 404);
 
     const session = raw as any;
+
+    if (session.userId && session.userId !== user.id) {
+      return c.json({ error: "Forbidden" }, 403);
+    }
 
     if (session.isComplete) {
       const body = `data: ${JSON.stringify({ t: "end", text: "This conversation has concluded.", isComplete: true, arenaPhase: session.arenaPhase || "support" })}\n\n`;

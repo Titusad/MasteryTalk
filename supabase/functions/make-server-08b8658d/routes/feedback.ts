@@ -89,6 +89,11 @@ app.post("/make-server-08b8658d/analyze-feedback", async (c) => {
     }
 
     const session = raw;
+
+    if (session.userId && session.userId !== user.id) {
+      return c.json({ error: "Forbidden" }, 403);
+    }
+
     const messages = session.messages || [];
     const internalAnalysis = session.internalAnalysis || [];
 
@@ -284,6 +289,11 @@ app.post("/make-server-08b8658d/generate-summary", async (c) => {
     }
 
     const session = raw;
+
+    if (session.userId && session.userId !== user.id) {
+      return c.json({ error: "Forbidden" }, 403);
+    }
+
     const messages = session.messages || [];
     const internalAnalysis = session.internalAnalysis || [];
 
