@@ -8,18 +8,18 @@
 ## ⚠️ LECTURA OBLIGATORIA AL INICIO DE CADA SESIÓN
 
 ### Siempre (toda sesión)
-1. **`docs/PRODUCT_SPEC.md`** — Source of truth: precios, KV model, API surface, escenarios, flujo de sesión
-2. **`docs/ROADMAP.md`** — Estado actual (Beta v14.2), prioridades, pendientes
+1. **`docs/product/PRODUCT_SPEC.md`** — Source of truth: precios, KV model, API surface, escenarios, flujo de sesión
+2. **`docs/product/ROADMAP.md`** — Estado actual (Beta v14.6), prioridades, pendientes
 3. **`CONTRIBUTING.md`** — Flujo de sesión, protocolo de commits
 
 ### Según el tipo de tarea
 | Tarea | Leer también |
 |-------|-------------|
-| UI / componentes / diseño | `docs/DESIGN_SYSTEM.md` · `.agent/skills/frontend-design/SKILL.md` |
-| Copy / voz de marca | `docs/BRAND_VOICE.md` |
-| Sistema de prompts de IA | `docs/SYSTEM_PROMPTS.md` · `docs/LEARNING_METHODOLOGY.md` |
-| Feedback / niveles CEFR | `docs/CEFR_CALIBRATION.md` |
-| UX / flujos de usuario | `docs/UX_POLISH.md` · `docs/JOURNEY.md` |
+| UI / componentes / diseño | `docs/product/DESIGN_SYSTEM.md` · `.agent/skills/frontend-design/SKILL.md` |
+| Copy / comunicación | `docs/business/BRAND_VOICE.md` · `docs/copy/` |
+| Sistema de prompts de IA | `docs/engineering/SYSTEM_PROMPTS.md` · `docs/engineering/LEARNING_METHODOLOGY.md` |
+| Feedback / niveles CEFR | `docs/engineering/CEFR_CALIBRATION.md` |
+| UX / flujos de usuario | `docs/product/UX_POLISH.md` · `docs/product/JOURNEY.md` |
 | Edge Functions / API | `.agent/skills/api-patterns/SKILL.md` |
 | Debugging | `.agent/skills/systematic-debugging/SKILL.md` |
 | Deploy | `.agent/skills/deployment-procedures/SKILL.md` · `memory/project_deploy_commands.md` |
@@ -29,7 +29,7 @@
 ### Principios de desarrollo
 
 **SDD — Spec-Driven Development:**
-Toda feature, cambio de precio o decisión de producto → actualizar `docs/PRODUCT_SPEC.md` PRIMERO → aprobación explícita → luego código. El spec es la fuente de verdad; el código es la consecuencia.
+Toda feature, cambio de precio o decisión de producto → actualizar `docs/product/PRODUCT_SPEC.md` PRIMERO → aprobación explícita → luego código. El spec es la fuente de verdad; el código es la consecuencia.
 
 **FSD — Feature-Sliced Design:**
 Toda la arquitectura frontend sigue FSD. Ver §6 y referencia canónica: https://feature-sliced.design/
@@ -49,13 +49,13 @@ Toda la arquitectura frontend sigue FSD. Ver §6 y referencia canónica: https:/
 > El modelo de suscripción es únicamente Monthly / Quarterly — no existen créditos individuales.
 
 **Escenarios activos:** `interview` · `meeting` · `presentation` · `sales` · `culture` · `self-intro` (free warm-up, 3 sesiones).
-Ver definición canónica en `docs/PRODUCT_SPEC.md §2`.
+Ver definición canónica en `docs/product/PRODUCT_SPEC.md §2`.
 
 ---
 
 ## 2. Stack tecnológico
 
-> Fuente canónica: `docs/PRODUCT_SPEC.md §11`. Lo siguiente es referencia rápida.
+> Fuente canónica: `docs/product/PRODUCT_SPEC.md §11`. Lo siguiente es referencia rápida.
 
 | Capa | Tecnología |
 |------|-----------|
@@ -81,25 +81,25 @@ Ver definición canónica en `docs/PRODUCT_SPEC.md §2`.
 
 ## 3. Modelo de negocio
 
-> Fuente canónica: `docs/PRODUCT_SPEC.md §3`.
+> Fuente canónica: `docs/product/PRODUCT_SPEC.md §3`.
 
 **⚠️ PRECIOS CANÓNICOS — usar SIEMPRE estos valores:**
 
-| Plan | Launch (25 slots, auto-aplicado) | Regular |
-|------|:--------------------------------:|:-------:|
-| Monthly | **$12.99/mo** | $19.99/mo |
-| Quarterly | **$29.99/3mo** ($9.99/mo) | $47.99/3mo ($15.99/mo) |
+| Plan | Founding Member (25 slots, precio permanente) | Regular |
+|------|:--------------------------------------------:|:-------:|
+| Monthly | **$49/mo** | $49/mo |
+| Quarterly (El Programa) | **$49/3mo** ($16.33/mo) | $129/3mo ($43/mo) |
 
 - Self-intro: **3 sesiones gratuitas**, sin tarjeta
-- Launch pricing se aplica automáticamente mientras queden slots — el usuario solo elige Monthly o Quarterly
+- Founding Member se aplica automáticamente al Quarterly mientras queden slots — precio bloqueado para siempre
 - War Room: máx. **5 sesiones/mes** incluidas en la suscripción
-- **NO existen:** $4.99, $9.99 standalone, $16.99, $39.99, créditos individuales, Early Bird como tier separado
+- **NO existen:** $12.99, $19.99, $29.99, $47.99, créditos individuales, compras por sesión o por ruta
 
 ---
 
 ## 4. Design System
 
-> **Fuente canónica: `docs/DESIGN_SYSTEM.md`** — leer antes de crear cualquier UI.
+> **Fuente canónica: `docs/product/DESIGN_SYSTEM.md`** — leer antes de crear cualquier UI.
 
 Reglas críticas (recordatorio rápido):
 
@@ -114,7 +114,7 @@ Reglas críticas (recordatorio rápido):
 
 ## 5. Component Registry
 
-> **Fuente canónica: `docs/DESIGN_SYSTEM.md §6`** — verificar ANTES de crear cualquier componente.
+> **Fuente canónica: `docs/product/DESIGN_SYSTEM.md §6`** — verificar ANTES de crear cualquier componente.
 
 **Regla:** Buscar antes de crear. Si existe canónico → reutilizar o extender. Si no existe → crear en `src/shared/ui/`. NUNCA crear header, modal, botón o card inline desde cero.
 
@@ -213,7 +213,7 @@ Esperar confirmación ("sí", "procede", "adelante"). Si aparece algo fuera del 
 
 ### Regla #1 — Buscar antes de crear
 
-Verificar `docs/DESIGN_SYSTEM.md §6`. Si existe canónico → usar. Si no → crear en `src/shared/ui/`.
+Verificar `docs/product/DESIGN_SYSTEM.md §6`. Si existe canónico → usar. Si no → crear en `src/shared/ui/`.
 
 ### Regla #2 — Scope mínimo
 
@@ -296,7 +296,7 @@ GET  /progression      → estado progression (auto-unlock si subscription_activ
 
 ## 14. Estado y prioridades
 
-> Ver `docs/ROADMAP.md` — contiene el estado completo (Beta v14.2), lo que está live, gaps conocidos y backlog priorizado.
+> Ver `docs/product/ROADMAP.md` — contiene el estado completo (Beta v14.6), lo que está live, gaps conocidos y backlog priorizado.
 
 ---
 
@@ -342,5 +342,5 @@ Cada escenario activo tiene dos registros independientes:
 
 ---
 
-*v2.1 — 2026-05-01*
-*Cambios: Separación completa entre guía operacional (CLAUDE.md) y documentación de producto (PRODUCT_SPEC / ROADMAP / DESIGN_SYSTEM). Twilio añadido al stack. War Room nombrado explícitamente. §14 Estado → pointer a ROADMAP.md. Component Registry condensado → pointer a DESIGN_SYSTEM.md §6. UX phases y pending eliminados de CLAUDE.md.*
+*v2.2 — 2026-05-04*
+*Cambios: Reorganización de docs/ en subcarpetas (business/ product/ engineering/ copy/). Todos los paths actualizados. Precios canónicos actualizados a modelo Founding Member ($49/3mo) / Program ($129/3mo) / Monthly ($49/mo). Beta v14.6. Fila Copy añadida a tabla de tareas.*
