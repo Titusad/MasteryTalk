@@ -557,6 +557,42 @@ Self-intro is the intake assessment that shapes the entire program experience. D
 | **DeepDiveCard** | Self-intro scores serve as progress baseline — improvement measured relative to starting point |
 | **Scenario presets** | `self_intro_context` biases preset ordering (a "client meeting" user sees client-facing presets first) |
 
+### §7.11 WhatsApp SR Coach
+
+The WhatsApp SR Coach extends practice into the user's daily context — outside the app, via daily audio challenges sent through WhatsApp.
+
+**Dispatch:** Triggered daily by `POST /cron/daily-sr` (Supabase `pg_cron`, 9AM). One challenge per verified user per day, sent only to users with `whatsapp_verified === true`.
+
+**Message structure:**
+
+Each challenge consists of two outbound messages sent in sequence:
+
+1. **Text message** — greeting, focus area, and prompt:
+   > Hi, [FirstName]. Your pronunciation focus for today is [focus area].
+   > Send a voice note saying: "[target phrase]"
+
+2. **Audio message** — TTS-generated clip of the target phrase, pronounced correctly. Serves as the pronunciation model before the user attempts.
+   - Generated via OpenAI `gpt-4o-mini-tts`, voice `cedar`
+   - Sent as Twilio media message (MP3/OGG)
+   - Cached in Cloudflare R2 — same phrase is not re-generated if already cached
+
+**Incoming audio (user response):** `POST /webhook/twilio` receives the voice note → routes to Azure Speech REST API for pronunciation scoring.
+
+**Feedback message (outbound, English only):**
+
+| Result | Format |
+|--------|--------|
+| Good (score ≥ 80) | "Score: [X]/100. '[key word]' — clean. Marked as mastered. Next review in 3 days." |
+| Needs work (score < 80) | "Score: [X]/100. [Specific observation — what broke and where]. [One-sentence adjustment]. One more." |
+
+**Phrase selection:** Drawn from the user's weakest pronunciation patterns identified in recent sessions (stored in SR phrase pool, keyed by userId in KV).
+
+**Mastery tracking:** Score ≥ 80 → phrase marked mastered → `wa_phrases_mastered` increments in KV profile → phrase re-enters rotation after 7 days (spaced repetition interval).
+
+**All messages in English.** The channel is an extension of the immersion environment — no Spanish or Spanglish in outbound messages.
+
+---
+
 ### §7.8 Turn Limits (Session Length)
 
 Sessions are bounded to prevent cognitive fatigue and control API costs. Limits are scenario-aware:
@@ -853,3 +889,4 @@ A user sees the `MasteryAuditCard` in FeedbackScreen when ALL of:
 | v3.1    | 2026-05-04 | §7.1: new `"lesson"` step added to Step type (between context and strategy). §7.9: new — Pre-Session Lesson spec: curriculum primer, level-specific selection, recall gate unlocks CTA, skip rules for Challenge Mode / War Room / self-intro. New KV field `last_pre_session_lesson_id`. New function `getPreSessionLesson()`. New screen `PreSessionLessonScreen.tsx`. |
 | v3.2    | 2026-05-04 | §3.3: Program arc rewritten — Primary Path is chosen from self-intro recommendation, not hardcoded to Business Culture. BC woven into all paths via pre-session lessons. §4.1: new KV fields (primary_path, self_intro_completed, self_intro_pillar_scores, self_intro_context). §4.4: progression unlock tied to Primary Path level completion, unlock order table per primary path. §7.5: path recommendation elevated to Primary Path selection on subscribe. §7.7: War Room strategic role updated (urgency + experienced users). §7.10: new — Self-Intro Personalization Pipeline. §8.1: default state rewritten around Primary Path. |
 | v3.3    | 2026-05-04 | Full consistency audit — 10 issues fixed: removed legacy duplicate §3.3/§3.4/§3.5 (old prices $12.99/$19.99/$29.99/$47.99); §2 note updated (dynamic recommendation, not always culture); §3.2 updated (Primary Path not BC); §4.3 access rules reflect progressive model; §5.3 post-purchase copy corrected; §5.4 checkout metadata adds primary_path; §6.2 pricing section updated to new prices; §8.3 locked path copy generalized; §10.1.1 whitelist adds self_intro_context + last_pre_session_lesson_id, notes server-only fields; §7.10 moved to correct position after §7.9. |
+| v3.4    | 2026-05-04 | §7.11: new — WhatsApp SR Coach full spec: daily message structure (text + TTS audio reference), OpenAI gpt-4o-mini-tts voice cedar cached in R2, Azure Speech scoring, feedback format, mastery tracking, English-only policy. |
