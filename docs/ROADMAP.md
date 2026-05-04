@@ -1,12 +1,12 @@
 # MasteryTalk PRO — Roadmap
 
-> **Last updated:** 2026-05-04 (Beta v14.5)
+> **Last updated:** 2026-05-04 (Beta v14.6)
 > **Spec reference:** [`PRODUCT_SPEC.md`](./PRODUCT_SPEC.md)
 > **Rule:** New items go here FIRST → spec update if needed → then code.
 
 ---
 
-## Current State (Beta v14.5 — 2026-05-04)
+## Current State (Beta v14.6 — 2026-05-04)
 
 ### ✅ What's Live
 
@@ -501,20 +501,20 @@
 > **Goal:** Add a curriculum-driven micro-lesson between `context` and `strategy`. User reads one level-specific lesson, taps to reveal the recall answer, then proceeds. Reinforces program identity and primes vocabulary before practice.
 > **Spec:** `PRODUCT_SPEC.md §7.9`
 
-- [ ] Add `"lesson"` to `Step` type in `src/entities/session/index.ts`
-- [ ] Create `src/features/practice-session/ui/PreSessionLessonScreen.tsx`
-  - Path + level badge, lesson title, 2-sentence concept, power phrase, recall question (reveal gate)
+- [x] Add `"lesson"` to `Step` type in `src/shared/types/session.ts` + `SessionProgressBar` phases
+- [x] Create `src/features/practice-session/ui/PreSessionLessonScreen.tsx`
+  - Path + level badge, lesson title, keyConcept, power phrase, recall question (reveal gate)
   - "Start session →" CTA locked until user taps "Reveal answer"
-- [ ] Add `getPreSessionLesson(pathId, levelId, lastLessonId?)` to `src/services/microLessonsData.ts`
-  - Primary: filter by `levelIds` match, skip `lastLessonId`, cycle sequentially
-  - Fallback: weakest pillar from `profile.stats.pillarScores`
-  - Returns `null` for `self-intro` (step skipped)
-- [ ] Wire into `PracticeSessionPage.tsx` — insert `"lesson"` step after `"context"`, before `"strategy"`
-  - Skip when: `challengeModeRef.current === true` OR `startAtContext === true` (War Room) OR `scenarioType === "self-intro"`
-- [ ] Add `last_pre_session_lesson_id: string | null` to KV profile fields (`src/entities/user/`)
-- [ ] Add `last_pre_session_lesson_id` to `PUT /profile` whitelist in backend
-- [ ] Save `last_pre_session_lesson_id` after lesson is shown (via `PUT /profile`)
-- [ ] **Acceptance:** Lesson appears between context and strategy in standard flow; skipped in Challenge Mode, War Room, and self-intro; CTA locked until recall revealed
+- [x] Add `getPreSessionLesson(pathId, levelId, lastLessonId?, pillarScores?)` to `src/services/microLessonsData.ts`
+  - Priority 1: filter by `levelIds` + `pathIds` match, skip `lastLessonId`, cycle sequentially
+  - Priority 2: weakest pillar from `pillarScores` fallback
+  - Returns `null` when no lesson found (step skipped)
+- [x] Wire into `PracticeSessionPage.tsx` via `gateWithLesson()` helper — replaces all context→strategy/generating/practice-prep transitions; script generation fires before lesson so it runs in background
+  - Skip when: `challengeModeRef.current` OR `startAtContext` (War Room) OR `isSelfIntro` OR no `progressionPathId`/`progressionLevelId`
+- [x] Add `last_pre_session_lesson_id: string | null` to `OnboardingProfile` in `src/entities/user/`
+- [x] Add `last_pre_session_lesson_id` to `PUT /profile` whitelist in `routes/auth.ts`
+- [x] Save `last_pre_session_lesson_id` on lesson advance via `PUT /profile`; update local `userProfile` optimistically
+- [x] **Acceptance:** Lesson appears between context and strategy in standard flow; skipped in Challenge Mode, War Room, and self-intro; CTA locked until recall revealed. Commit e777d2c.
 
 ---
 
@@ -743,3 +743,4 @@
 | 2026-05-01 | Phase 2.5 Sprint A complete (A.1–A.4) + Sprint B complete (B.1–B.3). A.4 Challenge Mode (skip briefing toggle). B.3 Pushed output in all 5 SCENARIO_ADAPTATION blocks. B.1 Ideal Self field (AccountPage + GoalAnchorCard). B.2 ProgressChartCard (recharts LineChart, last 10 sessions, CEFR milestones). Current state → Beta v14.3.                                                                                                                                                                                                       |
 | 2026-05-04 | **Product strategy session — major decisions:** (1) Pricing finalized: FM $49/3mo locked forever · Program $129/3mo · Monthly $49/mo. (2) Primary Path model: user chooses path from self-intro recommendation — BC not mandatory, content woven via §7.9 pre-session lessons. (3) Progression unlock trigger: full path completion (all 6 levels), user chooses next path. (4) Self-intro elevated to intake assessment → primary_path on subscribe. (5) Pre-session lesson step §7.9 specced (Sprint B.4). **Coded:** hints tap-to-reveal + challenge suppression; scenario-aware turn limits (8/10). **Spec:** PRODUCT_SPEC v3.3. **ROADMAP:** Phase 0.1 revised, 0.6 updated, 0.7 added, 3.1.2 updated, Known Gaps documented. Current state → Beta v14.4. |
 | 2026-05-04 | **Retention sprint (Beta v14.5):** SinceYouStartedCard (pillar delta first→latest), ScenarioDeltaCard (per-scenario comparison in FeedbackScreen), LevelMilestoneModal (confetti + score on level completion ≥75), ChooseNextPathModal path completion celebration + LinkedIn share. fetchSessions TTL cache (30s). PILLAR_COLORS consolidated. PATH_LABELS centralized. Security review: 0 vulnerabilities. 119/119 tests passing. COMMERCIAL_PITCH.md: full commercial document + EF EPI 2026 data + updated market numbers + arbitraje salarial. Commit 9cff182. |
+| 2026-05-04 | **Pre-session lesson step (Beta v14.6 — §7.9):** `"lesson"` step live between context and strategy. `getPreSessionLesson()` (level-specific → pillar fallback). `PreSessionLessonScreen` (badge, keyConcept, power phrase, recall gate, locked CTA). `gateWithLesson()` helper in PracticeSessionPage. `last_pre_session_lesson_id` persisted. Skip: Challenge Mode, War Room, self-intro. Script generation fires before lesson for zero added latency. Backend whitelist updated. Commit e777d2c. Current state → Beta v14.6. |
