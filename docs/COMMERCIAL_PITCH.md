@@ -81,9 +81,9 @@ Cada ruta tiene **6 niveles de dificultad progresiva**, desde fundamentos ejecut
 
 | Ruta | Para quién |
 |------|-----------|
-| **Job Interview Mastery** | Profesionales buscando posiciones senior o de liderazgo en empresas globales |
+| **Interview Mastery** | Profesionales buscando posiciones senior o de liderazgo en empresas globales |
 | **Remote Meeting Presence** | Managers y ICs que lideran o participan en meetings con stakeholders norteamericanos |
-| **Presentations & Storytelling** | Quienes presentan roadmaps, resultados o propuestas a audiencias ejecutivas |
+| **Presentations** | Quienes presentan roadmaps, resultados o propuestas a audiencias ejecutivas |
 | **Sales Champion** | Account executives y founders que necesitan cerrar deals en inglés |
 | **U.S. Business Culture** | Profesionales con gaps en comunicación directa, manejo de conflictos o cultura organizacional norteamericana |
 
@@ -204,15 +204,23 @@ El resultado medible: el profesional sale de reuniones habiendo liderado la conv
 
 ## POR QUÉ AHORA
 
-El mercado de nearshoring está en su pico de crecimiento. La demanda de talento LATAM en empresas norteamericanas nunca fue tan alta.
+El mercado de nearshoring está en su pico de crecimiento. La demanda de talento LATAM en empresas norteamericanas nunca fue tan alta. Y los números lo confirman: el 76% de las empresas estadounidenses que ya emplean talento nearshore planean agregar más contrataciones en LATAM antes de que termine 2026 — el modelo pasó de experimental a estrategia central.
 
-Pero la competencia también creció. El profesional que cierra esa posición senior, que sube a leadership, que convierte ese prospect en cliente — no es necesariamente el más técnico.
+Pero hay un dato que lo explica todo.
 
-Es el que comunica mejor.
+El EF English Proficiency Index 2026 — el estándar global de medición de competencia en inglés — clasifica a los tres principales hubs de talento técnico de la región en la banda **Bajo**:
 
-La ventana de oportunidad no es permanente. El momento de desarrollar esa capacidad es antes de que llegue la situación que la exige.
+- Colombia: 485 puntos — Bajo
+- Brasil: 466 puntos — Bajo
+- México: 459 puntos — Bajo
 
-MasteryTalk PRO existe para que la brecha de comunicación no sea el techo de vidrio de ningún profesional en LATAM.
+Demanda norteamericana en máximos históricos. Talento técnico de clase mundial. Inglés en banda baja.
+
+Ese es el gap. Esa es la oportunidad. Y ese es exactamente el problema que MasteryTalk PRO existe para resolver.
+
+El profesional que cierra esa posición senior, que sube a leadership, que convierte ese prospect en cliente — no es necesariamente el más técnico. Es el que comunica mejor.
+
+La ventana no es permanente. El momento de desarrollar esa capacidad es antes de que llegue la situación que la exige.
 
 ---
 
@@ -220,13 +228,15 @@ MasteryTalk PRO existe para que la brecha de comunicación no sea el techo de vi
 
 > Esta sección es para uso en versiones de inversionistas, aliados y decks de ventas B2B.
 > No se incluye en el guión de video ni en el pitch directo al usuario.
+> Última actualización de datos: 2026.
 
-### El mercado
+### El mercado — tamaño real
 
-- El mercado de outsourcing en LATAM alcanzará casi **$20 billion** en 2025, con un CAGR proyectado del 9% para los próximos 5 años *(Emapta, 2025)*
-- El mercado IT de LATAM se proyecta en **$59.7 billion** en 2025, impulsado por IA, cloud y mobile *(Alcor, 2025)*
+El número de $20B subestima severamente el mercado. Solo el sector de servicios IT de México está valuado en **$21.28 billion en 2025**, con proyección de alcanzar **$37.28 billion para 2030** *(South / Hire With Near, 2026)*. Cuando se suman Colombia ($1.76B en exportaciones de TI), Costa Rica ($16.1B en servicios corporativos) y Brasil, el mercado total de servicios tech nearshore supera con creces los $50B.
+
 - **90%** de los líderes de empresas globales ya operan en LATAM o planean abrir operaciones en los próximos 3 años *(SSO Network, 2025)*
-- **45%** de empresas estadounidenses planean aumentar contratación en LATAM en 2025 *(CXC Global, 2025)*
+- **45%** de startups de EE.UU. planean aumentar contrataciones en LATAM en 2025 *(CXC Global / Emapta)*
+- **76%** de las empresas estadounidenses que ya emplean talento nearshore planean agregar más contrataciones en LATAM antes de que termine 2026 — el modelo pasó de experimental a estrategia de crecimiento *(Oyster HR, 2026)*
 
 ### El talento
 
@@ -234,15 +244,45 @@ MasteryTalk PRO existe para que la brecha de comunicación no sea el techo de vi
 - La región gradúa cerca de **1 millón** de personas en carreras técnicas por año *(Blue Coding, 2023)*
 - Colombia y Brasil proyectan el crecimiento más rápido del mercado de nearshoring, con CAGR de **9.4%** *(Emapta, 2025)*
 
-### La brecha de inglés como problema de negocio
+### El arbitraje salarial — por qué la demanda no para
 
-- Los profesionales bilingües ganan hasta **20% más** que sus pares con el mismo perfil técnico en roles de tecnología *(Stack Commerce, 2024)*
-- El nivel de inglés es el **factor diferenciador** entre mercados que compiten en costo y zona horaria — es el criterio de desempate para empleadores norteamericanos *(LATAMhire, 2025)*
-- Las empresas con equipos LATAM de alto nivel de inglés reportan hasta **25% más** en satisfacción de clientes y **20% de reducción** en tiempos de entrega de proyectos *(HireSouth, 2025)*
+Las empresas estadounidenses ahorran entre **60% y 70%** en nómina al cubrir roles de alto impacto con talento de LATAM:
+
+| Rol | Salario promedio EE.UU. | Salario promedio LATAM | Ahorro |
+|-----|------------------------|----------------------|--------|
+| Software Engineer | $124,820 / año | $40,200 / año | **68%** |
+
+*(South LATAM Salary Benchmark 2026 / Hire With Near 2026 Salary Guide)*
+
+Este diferencial es estructural, no coyuntural. Explica por qué el 76% de las empresas que probaron el modelo quieren más.
+
+### El problema lingüístico — el cuello de botella del mercado
+
+Este es el dato que cierra el argumento. El **EF English Proficiency Index 2026** — el estándar global de medición de competencia en inglés con más de 2.2 millones de participantes — clasifica a los tres principales hubs de talento técnico de LATAM en la banda **Bajo**:
+
+| País | Puntaje EF EPI 2026 | Clasificación |
+|------|---------------------|---------------|
+| Colombia | 485 | Bajo |
+| Brasil | 466 | Bajo |
+| México | 459 | Bajo |
+
+*(EF English Proficiency Index 2026 / World Population Review 2026)*
+
+Demanda norteamericana en máximos. Talento técnico de clase mundial. Inglés en banda baja en los tres mercados principales. El cuello de botella no es el talento — es la comunicación.
 
 ### La oportunidad de MasteryTalk PRO
 
-El mercado de entrenamiento de inglés profesional para nearshoring no tiene un player dedicado que combine IA conversacional, progresión estructurada y feedback calibrado por CEFR. Las alternativas actuales son: tutores humanos costosos (Talaera: $20/sesión), apps de idiomas genéricas (Duolingo, Babbel: sin contexto profesional) o cursos grabados sin práctica en tiempo real. MasteryTalk PRO es el único producto construido específicamente para este segmento.
+El mercado de entrenamiento de inglés profesional para nearshoring no tiene un player dedicado que combine IA conversacional, progresión estructurada y feedback calibrado por CEFR. Las alternativas actuales son: tutores humanos costosos (Talaera: $20/sesión), apps de idiomas genéricas (Duolingo, Babbel: sin contexto profesional) o cursos grabados sin práctica en tiempo real. MasteryTalk PRO es el único producto construido específicamente para este segmento, en el momento exacto en que el mercado lo necesita.
+
+### Fuentes
+
+| Dato | Fuente |
+|------|--------|
+| Mercado IT México / arbitraje salarial | [South — LATAM Salary Benchmark 2026](https://www.hireinsouth.com/post/latam-salary-benchmark) · [Hire With Near — 2026 Salary Guide](https://www.hirewithnear.com/salary-guide-us-vs-latam) |
+| 76% empresas amplían nearshore 2026 | [Oyster HR — Why US companies hire in LATAM](https://www.oysterhr.com/library/why-us-companies-are-hiring-remote-talent-in-latin-america) |
+| 45% intención de contratación | [Emapta — Nearshoring Statistics 2026](https://emapta.com/blog/nearshoring-statistics/) |
+| Talento tech LATAM / CAGR | [Alcor — Nearshore Outsourcing to Latin America](https://alcor.com/nearshore-outsourcing-latin-america/) |
+| EF EPI 2026 | [EF English Proficiency Index](https://www.ef.com/wwen/epi/) · [World Population Review 2026](https://worldpopulationreview.com/country-rankings/ef-english-proficiency-index-by-country) |
 
 ---
 

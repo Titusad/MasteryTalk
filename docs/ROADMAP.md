@@ -1,12 +1,12 @@
 # MasteryTalk PRO — Roadmap
 
-> **Last updated:** 2026-05-04 (Beta v14.4)
+> **Last updated:** 2026-05-04 (Beta v14.5)
 > **Spec reference:** [`PRODUCT_SPEC.md`](./PRODUCT_SPEC.md)
 > **Rule:** New items go here FIRST → spec update if needed → then code.
 
 ---
 
-## Current State (Beta v14.4 — 2026-05-04)
+## Current State (Beta v14.5 — 2026-05-04)
 
 ### ✅ What's Live
 
@@ -49,6 +49,14 @@
 - **Hints tap-to-reveal** — Try Saying hints collapsed by default; reveal on tap; suppressed in Challenge arena phase and Challenge Mode (`challengeMode` prop wired from PracticeSessionPage)
 - **Scenario-aware turn limits** — `presentation` + `sales` max 10 turns; all others max 8 (min 4); enforced in `conversation.ts` + `templates.ts` via `getOutputFormatBlock(scenarioType)`
 - **Prompt caching** — OpenAI automatic caching on system prompt from turn 2 onward (~30% GPT-4o cost reduction + lower latency)
+- **Retention sprint (Beta v14.5):**
+  - `SinceYouStartedCard` — Dashboard sidebar card showing pillar delta from first session to latest (requires ≥ 2 sessions with pillarScores)
+  - `ScenarioDeltaCard` — FeedbackScreen bottomSlot card comparing current session vs. previous session of same scenarioType, per pillar; ghost bar shows previous score
+  - `LevelMilestoneModal` — Confetti celebration modal on level completion (score ≥ 75); triggered automatically after `completeProgressionLevel`
+  - `ChooseNextPathModal` — Updated: path completion celebration (confetti + Trophy) + LinkedIn share on full path completion; `PATH_LABELS` centralized in `progression-paths.ts`
+  - `fetchSessions` TTL cache — 30-second module-level cache in `dashboard.supabase.ts`; eliminates redundant network call when `ScenarioDeltaCard` mounts on FeedbackScreen
+  - `PILLAR_COLORS` consolidated — all new components import from `dashboard.constants.ts`
+  - `COMMERCIAL_PITCH.md` — Full commercial document with EF EPI 2026 data, updated market numbers, arbitraje salarial table, source index
 
 ### ⚠️ Known Gaps
 
@@ -734,3 +742,4 @@
 | 2026-05-01 | Added Phase 2.5 — Pedagogical Depth: 9 gaps from LEARNING_METHODOLOGY.md organized into Sprint A (Quick Wins), Sprint B (Medium Effort), Sprint C (Foundational). New docs: LEARNING_METHODOLOGY.md, CEFR_CALIBRATION.md.                                                                                                                                                                                                                                                                                                                    |
 | 2026-05-01 | Phase 2.5 Sprint A complete (A.1–A.4) + Sprint B complete (B.1–B.3). A.4 Challenge Mode (skip briefing toggle). B.3 Pushed output in all 5 SCENARIO_ADAPTATION blocks. B.1 Ideal Self field (AccountPage + GoalAnchorCard). B.2 ProgressChartCard (recharts LineChart, last 10 sessions, CEFR milestones). Current state → Beta v14.3.                                                                                                                                                                                                       |
 | 2026-05-04 | **Product strategy session — major decisions:** (1) Pricing finalized: FM $49/3mo locked forever · Program $129/3mo · Monthly $49/mo. (2) Primary Path model: user chooses path from self-intro recommendation — BC not mandatory, content woven via §7.9 pre-session lessons. (3) Progression unlock trigger: full path completion (all 6 levels), user chooses next path. (4) Self-intro elevated to intake assessment → primary_path on subscribe. (5) Pre-session lesson step §7.9 specced (Sprint B.4). **Coded:** hints tap-to-reveal + challenge suppression; scenario-aware turn limits (8/10). **Spec:** PRODUCT_SPEC v3.3. **ROADMAP:** Phase 0.1 revised, 0.6 updated, 0.7 added, 3.1.2 updated, Known Gaps documented. Current state → Beta v14.4. |
+| 2026-05-04 | **Retention sprint (Beta v14.5):** SinceYouStartedCard (pillar delta first→latest), ScenarioDeltaCard (per-scenario comparison in FeedbackScreen), LevelMilestoneModal (confetti + score on level completion ≥75), ChooseNextPathModal path completion celebration + LinkedIn share. fetchSessions TTL cache (30s). PILLAR_COLORS consolidated. PATH_LABELS centralized. Security review: 0 vulnerabilities. 119/119 tests passing. COMMERCIAL_PITCH.md: full commercial document + EF EPI 2026 data + updated market numbers + arbitraje salarial. Commit 9cff182. |
