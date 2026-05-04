@@ -322,13 +322,19 @@ All copy via `landing-i18n.ts` (ES / PT / EN).
 
 > Retired prices (do not reference): $12.99, $19.99, $29.99, $47.99.
 
-### §6.3 Supported Languages
+### §6.3 Language Policy
 
-| Code | Landing | Dashboard |
-| ---- | ------- | --------- |
-| `es` | ✅ Full | ✅ Full   |
-| `pt` | ✅ Full | ✅ Full   |
-| `en` | ✅ Full | ✅ Full   |
+**Rule:** The language selector applies exclusively to the landing page. Every other surface is English-only.
+
+| Surface | Language | Rationale |
+| ------- | -------- | --------- |
+| Landing page | ES / PT / EN (user-selectable) | Reduces acquisition friction — user discovers the product in their native language |
+| Dashboard & app | English only | Full immersion — the product IS English communication practice |
+| Practice sessions | English only | AI personas, feedback, all in-session copy |
+| Transactional emails (Resend) | English only | Reinforces the product's identity |
+| Marketing emails (Loops) | English only | The email itself is a sample of the English professional communication we sell |
+
+> The `language` field in the user's contact profile (Loops) is kept as analytics data — it identifies which market the user came from, but does not determine the email language.
 
 ---
 
@@ -612,6 +618,7 @@ Locked paths show in the ProgressionTree with:
 
 Provider: **Resend** (`hello@masterytalk.pro`, domain verified)
 Secret: `RESEND_API_KEY` in Supabase secrets + `supabase/.env.local`
+Language: **English only** (see §6.3)
 
 | Email                  | Trigger                                                         | Template                                                                                                |
 | ---------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
@@ -621,48 +628,49 @@ Secret: `RESEND_API_KEY` in Supabase secrets + `supabase/.env.local`
 | Renewal confirmed      | `invoice.payment_succeeded` (billing_reason=subscription_cycle) | `renewalConfirmationEmailHtml()` — two branches: ROI format (sessions > 0) or Reactivation (0 sessions) |
 | Inactivity nudge       | Cron: 7+ days without session, max 1 per 14 days                | `inactivityNudgeEmailHtml()`                                                                            |
 
-### §9.1 Marketing Automation — Loops.so (Planned — ROADMAP 3.1.3)
+### §9.1 Marketing Automation — Loops.so (ROADMAP 3.1.3)
 
-Provider: **Loops.so** (`mail.go.masterytalk.pro`, subdominio separado)
+Provider: **Loops.so** (`mail.go.masterytalk.pro`, separate subdomain)
 Secret: `LOOPS_API_KEY` in Supabase secrets
+Language: **English only** — no language branches. The `language` contact property is kept as analytics data only (see §6.3).
 
-**Arquitectura de separación:**
+**Channel separation:**
 
-| Canal         | Dominio                   | Proveedor | Tipo                  |
-| ------------- | ------------------------- | --------- | --------------------- |
-| Transaccional | `hello@masterytalk.pro`   | Resend    | Auth, pagos, sesiones |
-| Marketing     | `mail.go.masterytalk.pro` | Loops     | Nurturing, lifecycle  |
+| Channel       | Domain                    | Provider | Type                     |
+| ------------- | ------------------------- | -------- | ------------------------ |
+| Transactional | `hello@masterytalk.pro`   | Resend   | Auth, payments, sessions |
+| Marketing     | `mail.go.masterytalk.pro` | Loops    | Nurturing, lifecycle     |
 
-Los subdominios separados protegen la reputación de entrega — un problema de spam en marketing no afecta los transaccionales.
+Separate subdomains protect deliverability — a spam issue in marketing does not affect transactionals.
 
-**Integración técnica:**
+**Technical integration:**
 
-- Loops se conecta a Supabase vía OAuth nativo → `auth.users` INSERT crea contacto automáticamente (sin código)
-- Eventos de negocio disparados server-side desde Edge Functions vía `POST /marketing/track`
-- El frontend nunca llama a Loops directamente (API key solo en Supabase secrets)
+- Loops connects to Supabase via native OAuth → `auth.users` INSERT creates contact automatically (no code)
+- Business events fired server-side from Edge Functions via `POST /marketing/track`
+- Frontend never calls Loops directly (API key in Supabase secrets only)
+- Backend: `routes/marketing.ts` — `POST /marketing/track` + `POST /marketing/contact/update` ✅
 
-**Eventos de negocio rastreados:**
+**Business events tracked:**
 
-| Evento                    | Disparado desde      | Trigger                                                 |
-| ------------------------- | -------------------- | ------------------------------------------------------- |
-| `first_session_completed` | `routes/sessions.ts` | Primera sesión guardada (session_index tiene 1 entrada) |
-| `session_milestone_3`     | `routes/sessions.ts` | 3 sesiones completadas                                  |
-| `session_milestone_10`    | `routes/sessions.ts` | 10 sesiones completadas                                 |
-| `subscription_purchased`  | `routes/webhook.ts`  | `checkout.session.completed` webhook                    |
+| Event                     | Fired from           | Trigger                                              |
+| ------------------------- | -------------------- | ---------------------------------------------------- |
+| `first_session_completed` | `routes/sessions.ts` | First session saved                                  |
+| `session_milestone_3`     | `routes/sessions.ts` | 3 sessions completed                                 |
+| `session_milestone_10`    | `routes/sessions.ts` | 10 sessions completed                                |
+| `subscription_purchased`  | `routes/webhook.ts`  | `checkout.session.completed` webhook                 |
 
-**Secuencias de nurturing (construidas en Loops dashboard):**
+**Nurturing sequences (built in Loops dashboard — English only):**
 
-| #   | Trigger                                         | Delay     | Objetivo                                       |
-| --- | ----------------------------------------------- | --------- | ---------------------------------------------- |
-| 1   | contact_created                                 | D+2       | Activación — "¿Completaste tu primera sesión?" |
-| 2   | contact_created                                 | D+5       | Conversión — social proof + CTA suscripción    |
-| 3   | contact_created (sin `first_session_completed`) | D+7       | Re-activación — objeción "no tengo tiempo"     |
-| 4   | `first_session_completed`                       | inmediato | Up-sell post-sesión — "¿Qué sigue?"            |
-| 5   | contact_created (sin `subscription_purchased`)  | D+21      | Urgencia — Early Bird últimos cupos            |
+| # | Trigger | Delay | Filter | Subject |
+| - | ------- | ----- | ------ | ------- |
+| 1 | `contact_created` | D+2 | — | "Your communication baseline is waiting" |
+| 2 | `contact_created` | D+5 | `first_session_completed = true` AND `subscription_purchased = false` | "What the 90-day program actually does" |
+| 3 | `contact_created` | D+7 | `first_session_completed = false` | "8 minutes. That is all it takes." |
+| 4 | `first_session_completed` | immediate | `subscription_purchased = false` | "You just saw how it works. Here is what comes next." |
+| 5 | `contact_created` | D+21 | `subscription_purchased = false` | "Founding Member: a few slots remain" |
 
-Todas las secuencias tienen branch por `language` (es / pt / en) para las 3 versiones de copy.
-El welcome D+0 lo sigue haciendo Resend. Loops arranca desde D+2.
-Base legal: `terms_accepted_at` (aceptación de ToS en signup). Loops añade unsubscribe link automáticamente.
+The D+0 welcome is handled by Resend. Loops starts at D+2.
+Legal basis: `terms_accepted_at` (ToS acceptance at signup). Loops adds unsubscribe link automatically.
 
 ---
 
