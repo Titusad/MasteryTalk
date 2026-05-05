@@ -111,6 +111,31 @@ export function LandingPage({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [lang, setLangLocal] = useState<LandingLang>(landingLang ?? "es");
+
+  const [landingPricing, setLandingPricing] = useState<{
+    quarterly: number; monthly: number; perMonth: number; slotsLeft: number; ebActive: boolean;
+  } | null>(null);
+
+  useEffect(() => {
+    fetch("https://zkuryztcwmazspscomiu.supabase.co/functions/v1/make-server-08b8658d/pricing")
+      .then(r => r.json())
+      .then(data => setLandingPricing({
+        quarterly: data.quarterly.currentPrice,
+        monthly:   data.monthly.currentPrice,
+        perMonth:  data.quarterly.perMonth,
+        slotsLeft: data.earlyBird.slotsLeft,
+        ebActive:  data.earlyBird.available,
+      }))
+      .catch(() => {});
+  }, []);
+
+  const lp = {
+    quarterly: landingPricing?.quarterly ?? 59,
+    monthly:   landingPricing?.monthly   ?? 49,
+    perMonth:  landingPricing?.perMonth  ?? 19.67,
+    slotsLeft: landingPricing?.slotsLeft ?? 25,
+    ebActive:  landingPricing?.ebActive  ?? true,
+  };
   const setLang = (l: LandingLang) => { setLangLocal(l); onLangChange?.(l); };
   const copy = LANDING_COPIES[lang];
 
@@ -451,51 +476,78 @@ export function LandingPage({
               <DotPattern />
               <div className="relative z-10 max-w-4xl mx-auto px-6">
                 <div className="text-center mb-4">
-                  <h2 className="text-3xl md:text-4xl text-gray-900 mb-2" style={{ fontWeight: 700 }}>{copy.pricing.headline}</h2>
-                  <span className="inline-block text-xs font-semibold bg-amber-100 text-amber-700 px-3 py-1 rounded-full mb-3">{copy.pricing.launchBadge}</span>
+                  <h2 className="text-3xl md:text-4xl text-gray-900 mb-2 font-bold">{copy.pricing.headline}</h2>
+                  {lp.ebActive && (
+                    <span className="inline-block text-xs font-semibold bg-amber-100 text-amber-700 px-3 py-1 rounded-full mb-3">{copy.pricing.launchBadge}</span>
+                  )}
                 </div>
-                <p className="text-center text-[#4B505B] mb-12">{copy.pricing.subtitle}</p>
+                <p className="text-center text-[#4B505B] mb-4">{copy.pricing.subtitle}</p>
+                <p className="text-center text-sm text-[#62748e] mb-10">{copy.pricing.anchorLine}</p>
 
                 {/* Pricing cards */}
                 <div className="grid md:grid-cols-2 gap-6 mb-10 max-w-3xl mx-auto">
-                  {/* Monthly */}
-                  <div className="relative rounded-2xl p-6 md:p-8 flex flex-col bg-[#2d2d2d] shadow-xl ring-2 ring-[#50C878]/30">
-                    <p className="text-sm text-white mb-3" style={{ fontWeight: 600 }}>{copy.pricing.monthly.label}</p>
+
+                  {/* El Programa / Quarterly — hero card */}
+                  <div className="relative rounded-2xl p-6 md:p-8 flex flex-col bg-[#2d2d2d]">
+                    {/* Scarcity + cancel co-located */}
+                    {lp.ebActive && (
+                      <div className="flex items-center justify-between mb-4">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-amber-400 text-amber-900 px-2.5 py-1 rounded-full">
+                          ⭐ {copy.pricing.launchBadge}
+                        </span>
+                        <span className="text-[10px] text-white/50">
+                          {copy.pricing.slotsLeft.replace("{{count}}", String(lp.slotsLeft))}
+                        </span>
+                      </div>
+                    )}
+                    <p className="text-sm text-white font-semibold mb-3">{copy.pricing.quarterly.label}</p>
                     <div className="mb-1">
-                      <span className="text-4xl md:text-5xl text-white" style={{ fontWeight: 800 }}>$12.99</span>
-                      <span className="text-sm text-white/60 ml-1">{copy.pricing.monthly.period}</span>
-                      <span className="ml-2 text-sm line-through text-white/30">$19.99</span>
+                      <span className="text-4xl md:text-5xl text-white font-bold">${lp.quarterly}</span>
+                      <span className="text-sm text-white/60 ml-1">{copy.pricing.quarterly.period}</span>
+                      {lp.ebActive && lp.quarterly < 129 && (
+                        <span className="ml-2 text-sm line-through text-white/30">$129</span>
+                      )}
                     </div>
-                    <ul className="space-y-1.5 mb-6 mt-4">
-                      {copy.pricing.monthly.features.map(f => (
+                    <p className="text-[10px] text-white/50 mb-1">
+                      {copy.pricing.quarterly.perMonth.replace("{{price}}", `$${lp.perMonth}`)}
+                    </p>
+                    <p className="text-[11px] text-emerald-400 italic mb-4">{copy.pricing.roiLine}</p>
+                    <ul className="space-y-1.5 mb-4 flex-1">
+                      {copy.pricing.quarterly.features.map(f => (
                         <li key={f} className="flex items-center gap-2 text-xs text-white/80">
                           <span className="text-emerald-400">✓</span>{f}
                         </li>
                       ))}
                     </ul>
-                    <button className="w-full py-3 rounded-full text-sm bg-white text-[#2d2d2d] hover:bg-gray-100 transition-colors mt-auto shadow-lg" style={{ fontWeight: 500 }} onClick={handlePricingClick}>
+                    <p className="text-[10px] text-white/40 mb-4">{copy.pricing.cancelLine}</p>
+                    <button
+                      className="w-full py-3 rounded-full text-sm font-medium bg-white text-[#2d2d2d] hover:bg-gray-100 transition-colors mt-auto"
+                      onClick={handlePricingClick}
+                    >
                       {copy.pricing.modal.cta}
                     </button>
                   </div>
 
-                  {/* Quarterly */}
-                  <div className="relative rounded-2xl p-6 md:p-8 flex flex-col bg-white border border-gray-200 hover:shadow-md transition-shadow">
-                    <span className="absolute -top-3 left-6 text-[10px] font-semibold bg-[#DBEDDF] text-[#0f172b] px-2.5 py-1 rounded-full">{copy.pricing.saveBadge}</span>
-                    <p className="text-sm text-gray-900 mb-3" style={{ fontWeight: 600 }}>{copy.pricing.quarterly.label}</p>
+                  {/* Acceso mensual — secondary card */}
+                  <div className="relative rounded-2xl p-6 md:p-8 flex flex-col bg-white border border-gray-200">
+                    <p className="text-sm text-gray-900 font-semibold mb-3">{copy.pricing.monthly.label}</p>
                     <div className="mb-1">
-                      <span className="text-4xl md:text-5xl text-[#2d2d2d]" style={{ fontWeight: 800 }}>$29.99</span>
-                      <span className="text-sm text-[#94a3b8] ml-1">{copy.pricing.quarterly.period}</span>
-                      <span className="ml-2 text-sm line-through text-[#94a3b8]">$47.99</span>
+                      <span className="text-4xl md:text-5xl text-[#2d2d2d] font-bold">${lp.monthly}</span>
+                      <span className="text-sm text-[#94a3b8] ml-1">{copy.pricing.monthly.period}</span>
                     </div>
-                    <p className="text-xs text-[#62748e] mb-4">{copy.pricing.quarterly.perMonth.replace("{{price}}", "$9.99")}</p>
-                    <ul className="space-y-1.5 mb-6">
-                      {copy.pricing.quarterly.features.map(f => (
-                        <li key={f} className="flex items-center gap-2 text-xs text-[#45556c]">
-                          <span className="text-emerald-500">✓</span>{f}
-                        </li>
-                      ))}
-                    </ul>
-                    <button className="w-full py-3 rounded-full text-sm border-2 border-[#2d2d2d] text-gray-900 hover:bg-gray-50 transition-colors mt-auto" style={{ fontWeight: 500 }} onClick={handlePricingClick}>
+                    <div className="mb-6 mt-5 flex-1">
+                      <ul className="space-y-1.5">
+                        {copy.pricing.monthly.features.map(f => (
+                          <li key={f} className="flex items-center gap-2 text-xs text-[#45556c]">
+                            <span className="text-emerald-500">✓</span>{f}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <button
+                      className="w-full py-3 rounded-full text-sm font-medium border-2 border-[#2d2d2d] text-gray-900 hover:bg-gray-50 transition-colors mt-auto"
+                      onClick={handlePricingClick}
+                    >
                       {copy.pricing.modal.cta}
                     </button>
                   </div>
@@ -506,7 +558,7 @@ export function LandingPage({
                   className="rounded-2xl px-6 py-4 text-center border border-[#50C878]/20 max-w-3xl mx-auto"
                   style={{ background: "linear-gradient(135deg, rgba(80,200,120,0.08), rgba(0,211,243,0.06))" }}
                 >
-                  <p className="text-sm text-[#4B505B]" style={{ fontWeight: 500 }}>{copy.pricing.demoLine}</p>
+                  <p className="text-sm font-medium text-[#4B505B]">{copy.pricing.demoLine}</p>
                 </div>
               </div>
             </section>

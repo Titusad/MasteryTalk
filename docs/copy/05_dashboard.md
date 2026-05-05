@@ -119,8 +119,8 @@
 
 ### Founding Member (slots available)
 - Badge: `★ Founding Member — {N} slots left`
-- Price: `$49 / 3 months`
-- Per month equiv: `$16.33/mo — locked forever`
+- Price: `$59 / 3 months`
+- Per month equiv: `$19.67/mo — locked forever`
 - Value note: `Price locked permanently. Never increases.`
 
 ### Program (regular)

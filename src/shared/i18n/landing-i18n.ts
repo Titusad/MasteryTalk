@@ -142,6 +142,9 @@ export interface LandingCopy {
       legal: string;
     };
     demoLine: string;
+    anchorLine: string;  // external price anchor above cards
+    roiLine: string;     // ROI framing below quarterly price
+    cancelLine: string;  // cancel-anytime co-located with scarcity
   };
   /* ── FAQ ── */
   faq: {
@@ -412,7 +415,7 @@ export const ES: LandingCopy = {
   pricing: {
     sectionTitle: "El Programa",
     headline: "Únete al programa.",
-    subtitle: "Los primeros 25 suscriptores se convierten en Founding Members — precio bloqueado para siempre a $49 por 3 meses.",
+    subtitle: "Los primeros 25 suscriptores se convierten en Founding Members — precio bloqueado para siempre a $59 por 3 meses.",
     launchBadge: "⭐ Founding Member",
     slotsLeft: "{{count}} slots Founding Member disponibles",
     slotsGone: "Founding Member agotado — precio regular activo",
@@ -448,12 +451,15 @@ export const ES: LandingCopy = {
       legal: "Pago seguro con Stripe · Cancela desde tu cuenta · Sin costos ocultos",
     },
     demoLine: "Tu primera sesión de auto-presentación es completamente gratis — sin tarjeta, sin compromiso.",
+    anchorLine: "Menos que una hora con un tutor de inglés. Resultados en 90 días.",
+    roiLine: "Se paga solo con tu primer aumento.",
+    cancelLine: "Cancela en un clic. Sin App Store, sin sorpresas.",
   },
   faq: {
     sectionTitle: "Preguntas Frecuentes",
     items: [
       { q: "¿Esto es diferente a Duolingo o un curso de inglés?", a: "No es un curso de gramática. Aprendes comunicación profesional practicando conversaciones reales — con frameworks, con correcciones en contexto. Si ya sabes inglés pero en conversaciones reales no llegas al nivel que eres, esto es para ti." },
-      { q: "¿Hay suscripción o cobro mensual?", a: "Sí. MasteryTalk es un programa de suscripción — mensual ($49/mes) o trimestral ($129/3 meses). Los primeros 25 suscriptores quedan bloqueados en $49/3 meses para siempre como Founding Members. No hay compras por sesión ni por ruta individual." },
+      { q: "¿Hay suscripción o cobro mensual?", a: "Sí. MasteryTalk es un programa de suscripción — mensual ($49/mes) o trimestral ($129/3 meses). Los primeros 25 suscriptores quedan bloqueados en $59/3 meses para siempre como Founding Members. No hay compras por sesión ni por ruta individual." },
       { q: "¿Qué pasa después de 90 días?", a: "Tu programa se renueva automáticamente al siguiente bloque. Al completar tu Primary Path desbloqueas una nueva ruta — tú eliges cuál. El dashboard muestra 'Día X de 90' y siempre hay un siguiente nivel que alcanzar." },
       { q: "¿Puedo practicar un escenario urgente si tengo una entrevista mañana?", a: "Sí. El War Room te da acceso inmediato a cualquier escenario — sin importar en qué path estés. Incluye 5 sesiones por mes. Es el valve de urgencia del programa: si tienes una entrevista en 3 días, úsalo." },
       { q: "¿La conversación se adapta a mi industria o rol?", a: "Sí. Tú defines el contexto — tu rol, tu empresa, la situación. La IA construye la sesión alrededor de eso. No un escenario genérico. El tuyo." },
@@ -735,7 +741,7 @@ export const PT: LandingCopy = {
   pricing: {
     sectionTitle: "O Programa",
     headline: "Junte-se ao programa.",
-    subtitle: "Os primeiros 25 assinantes se tornam Founding Members — preço bloqueado para sempre em $49 por 3 meses.",
+    subtitle: "Os primeiros 25 assinantes se tornam Founding Members — preço bloqueado para sempre em $59 por 3 meses.",
     launchBadge: "⭐ Founding Member",
     slotsLeft: "{{count}} slots Founding Member disponíveis",
     slotsGone: "Founding Member esgotado — preço regular ativo",
@@ -771,12 +777,15 @@ export const PT: LandingCopy = {
       legal: "Pagamento seguro com Stripe · Cancele pela sua conta · Sem custos ocultos",
     },
     demoLine: "Sua primeira sessão de auto-apresentação é completamente grátis — sem cartão, sem compromisso.",
+    anchorLine: "Menos que uma hora com um tutor de inglês. Resultados em 90 dias.",
+    roiLine: "Se paga com a sua primeira promoção.",
+    cancelLine: "Cancele em um clique. Sem App Store, sem surpresas.",
   },
   faq: {
     sectionTitle: "Perguntas Frequentes",
     items: [
       { q: "Isso é diferente do Duolingo ou de um curso de inglês?", a: "Não é um curso de gramática. Você aprende comunicação profissional praticando conversas reais — com frameworks, com correções em contexto. Se já sabe inglês mas em conversas reais não chega ao nível que é, isto é para você." },
-      { q: "Tem assinatura ou cobrança mensal?", a: "Sim. O MasteryTalk é um programa de assinatura — mensal ($49/mês) ou trimestral ($129/3 meses). Os primeiros 25 assinantes ficam bloqueados em $49/3 meses para sempre como Founding Members. Não há compras por sessão nem por rota individual." },
+      { q: "Tem assinatura ou cobrança mensal?", a: "Sim. O MasteryTalk é um programa de assinatura — mensal ($49/mês) ou trimestral ($129/3 meses). Os primeiros 25 assinantes ficam bloqueados em $59/3 meses para sempre como Founding Members. Não há compras por sessão nem por rota individual." },
       { q: "O que acontece depois de 90 dias?", a: "Seu programa se renova automaticamente para o próximo bloco. Ao completar seu Primary Path você desbloqueia uma nova rota — você escolhe qual. O dashboard mostra 'Dia X de 90' e sempre há um próximo nível a alcançar." },
       { q: "Posso praticar um cenário urgente se tenho uma entrevista amanhã?", a: "Sim. O War Room te dá acesso imediato a qualquer cenário — independentemente de qual path você está. Inclui 5 sessões por mês. É a válvula de urgência do programa: se tem entrevista em 3 dias, use." },
       { q: "A conversa se adapta à minha indústria ou cargo?", a: "Sim. Você define o contexto — seu cargo, sua empresa, a situação. A IA constrói a sessão ao redor disso. Não um cenário genérico. O seu." },
@@ -1058,7 +1067,7 @@ export const EN: LandingCopy = {
   pricing: {
     sectionTitle: "The Program",
     headline: "Join the program.",
-    subtitle: "The first 25 subscribers become Founding Members — price locked forever at $49 per 3 months.",
+    subtitle: "The first 25 subscribers become Founding Members — price locked forever at $59 per 3 months.",
     launchBadge: "⭐ Founding Member",
     slotsLeft: "{{count}} Founding Member slots left",
     slotsGone: "Founding Member slots exhausted — regular pricing active",
@@ -1094,12 +1103,15 @@ export const EN: LandingCopy = {
       legal: "Secure payment with Stripe · Cancel anytime from your account · No hidden fees",
     },
     demoLine: "Your first self-introduction session is completely free — no credit card, no commitment.",
+    anchorLine: "Less than one hour with an English tutor. Results in 90 days.",
+    roiLine: "Pays for itself with your first raise.",
+    cancelLine: "Cancel in one click. No App Store, no surprises.",
   },
   faq: {
     sectionTitle: "Frequently Asked Questions",
     items: [
       { q: "Is this different from Duolingo or an English course?", a: "It's not a grammar course. You learn professional communication by practicing real conversations — with frameworks, corrections in context. If you already know English but in real conversations you don't reach your level, this is for you." },
-      { q: "Is there a subscription or monthly charge?", a: "Yes. MasteryTalk is a subscription program — monthly ($49/mo) or quarterly ($129/3 months). The first 25 subscribers are locked in at $49/3 months forever as Founding Members. There are no per-session or per-path purchases." },
+      { q: "Is there a subscription or monthly charge?", a: "Yes. MasteryTalk is a subscription program — monthly ($49/mo) or quarterly ($129/3 months). The first 25 subscribers are locked in at $59/3 months forever as Founding Members. There are no per-session or per-path purchases." },
       { q: "What happens after 90 days?", a: "Your program renews automatically into the next block. Once you complete your Primary Path you unlock a new one — you choose which. The dashboard shows 'Day X of 90' and there's always a next level to reach." },
       { q: "Can I practice an urgent scenario if I have an interview tomorrow?", a: "Yes. The War Room gives you immediate access to any scenario — regardless of which path you're on. Includes 5 sessions per month. It's the urgency valve of the program: interview in 3 days? Use it." },
       { q: "Does the conversation adapt to my industry or role?", a: "Yes. You define the context — your role, your company, the situation. The AI builds the session around that. Not a generic scenario. Yours." },

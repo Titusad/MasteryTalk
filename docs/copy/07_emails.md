@@ -173,7 +173,7 @@
 >
 > Your Primary Path — chosen from your self-intro results — gives you 6 levels of progressive practice, from foundation to high-pressure scenarios. Each session scores you by pillar. The WhatsApp coach reinforces vocabulary daily between sessions. The gap narrows. The results show in your next client meeting.
 >
-> Founding Member price: $49 for 3 months. Locked for you permanently. 25 slots total.
+> Founding Member price: $59 for 3 months. Locked for you permanently. 25 slots total.
 
 **CTA:** `Join the program →`
 
@@ -205,7 +205,7 @@
 >
 > Your score today is your baseline. The program is how you move it.
 >
-> Founding Member: $49 for 3 months. Price locked permanently for early adopters.
+> Founding Member: $59 for 3 months. Price locked permanently for early adopters.
 
 **CTA:** `Start the program →`
 
@@ -222,6 +222,6 @@
 >
 > MasteryTalk PRO builds that capability in 90 days.
 >
-> 25 Founding Member slots. $49 for 3 months, locked permanently. When they fill, the price moves to $129.
+> 25 Founding Member slots. $59 for 3 months, locked permanently. When they fill, the price moves to $129.
 
 **CTA:** `Secure my spot →`

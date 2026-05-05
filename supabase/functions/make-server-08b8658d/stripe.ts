@@ -4,9 +4,9 @@
  *
  *  Tiers (user-selectable):
  *  - monthly   → $49/mo (Monthly access — no commitment)
- *  - quarterly → $49/3mo Founding Member (auto, 25 slots) → $129/3mo Program
+ *  - quarterly → $59/3mo Founding Member (auto, 25 slots) → $129/3mo Program
  *
- *  Founding Member: first 25 quarterly subscriptions get $49/3mo locked
+ *  Founding Member: first 25 quarterly subscriptions get $59/3mo locked
  *  forever. When slots exhausted, quarterly auto-switches to $129/3mo.
  *  No user action required — backend picks price based on slot count.
  *
@@ -16,7 +16,7 @@
  *  - STRIPE_SECRET_KEY
  *  - STRIPE_WEBHOOK_SECRET
  *  - STRIPE_PRICE_MONTHLY          ($49/mo)
- *  - STRIPE_PRICE_FOUNDING_MEMBER  ($49/3mo — Founding Member)
+ *  - STRIPE_PRICE_FOUNDING_MEMBER  ($59/3mo — Founding Member)
  *  - STRIPE_PRICE_PROGRAM          ($129/3mo — regular Program)
  * ══════════════════════════════════════════════════════════════
  */

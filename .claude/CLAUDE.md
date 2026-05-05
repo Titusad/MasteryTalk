@@ -88,7 +88,7 @@ Ver definición canónica en `docs/product/PRODUCT_SPEC.md §2`.
 | Plan | Founding Member (25 slots, precio permanente) | Regular |
 |------|:--------------------------------------------:|:-------:|
 | Monthly | **$49/mo** | $49/mo |
-| Quarterly (El Programa) | **$49/3mo** ($16.33/mo) | $129/3mo ($43/mo) |
+| Quarterly (El Programa) | **$59/3mo** ($19.67/mo) | $129/3mo ($43/mo) |
 
 - Self-intro: **3 sesiones gratuitas**, sin tarjeta
 - Founding Member se aplica automáticamente al Quarterly mientras queden slots — precio bloqueado para siempre

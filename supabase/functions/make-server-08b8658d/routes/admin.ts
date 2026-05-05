@@ -1,5 +1,4 @@
 import { Hono } from "npm:hono";
-import * as jose from "npm:jose";
 import * as kv from "../kv_store.ts";
 import { getAuthUser, getAdminClient } from "../_shared.ts";
 
@@ -11,41 +10,25 @@ const ADMIN_EMAILS = ADMIN_EMAILS_RAW
   ? ADMIN_EMAILS_RAW.split(",").map((e: string) => e.trim().toLowerCase())
   : [];
 
-// Verify JWT locally using SUPABASE_JWT_SECRET — no network round-trip, no cold-start issues.
+// Uses the same getAuthUser() pattern as all other working routes.
 async function requireAdmin(c: any, next: any) {
-  try {
-    const token = (c.req.header("authorization") || "").replace(/^Bearer\s+/i, "").trim();
-    if (!token) {
-      console.warn("[requireAdmin] No token provided");
-      return c.json({ error: "Unauthorized" }, 401);
-    }
+  const authHeader = c.req.header("Authorization") || c.req.header("authorization") || "";
+  console.log(`[requireAdmin] token present: ${!!authHeader}, ADMIN_EMAILS: [${ADMIN_EMAILS.join(",")}]`);
 
-    const jwtSecret = (globalThis as any).Deno.env.get("SUPABASE_JWT_SECRET");
-    if (!jwtSecret) {
-      console.error("[requireAdmin] SUPABASE_JWT_SECRET not set");
-      return c.json({ error: "Server misconfigured" }, 500);
-    }
-
-    const secret = new TextEncoder().encode(jwtSecret);
-    const { payload } = await jose.jwtVerify(token, secret);
-    const email = ((payload.email as string) || "").toLowerCase();
-
-    if (!email) {
-      console.warn("[requireAdmin] JWT valid but no email in payload");
-      return c.json({ error: "Unauthorized" }, 401);
-    }
-
-    if (!ADMIN_EMAILS.includes(email)) {
-      console.warn(`[requireAdmin] Access denied for ${email}. Allowed: ${ADMIN_EMAILS.join(", ")}`);
-      return c.json({ error: "Forbidden" }, 403);
-    }
-
-    console.log(`[requireAdmin] Access granted for ${email}`);
-    await next();
-  } catch (err) {
-    console.error("[requireAdmin] JWT verification failed:", err);
+  const user = await getAuthUser(authHeader);
+  if (!user || !user.email) {
+    console.warn("[requireAdmin] getAuthUser returned no user");
     return c.json({ error: "Unauthorized" }, 401);
   }
+
+  const email = user.email.toLowerCase();
+  if (!ADMIN_EMAILS.includes(email)) {
+    console.warn(`[requireAdmin] Forbidden: ${email} not in [${ADMIN_EMAILS.join(",")}]`);
+    return c.json({ error: "Forbidden" }, 403);
+  }
+
+  console.log(`[requireAdmin] Access granted: ${email}`);
+  await next();
 }
 
 app.use("/make-server-08b8658d/admin/*", requireAdmin);

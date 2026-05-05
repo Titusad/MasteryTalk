@@ -2,7 +2,7 @@
  * PathPurchaseModal — Program subscription tier selection + Stripe Checkout
  *
  * Shows 2 tiers: "El Programa" (quarterly, hero) + "Acceso mensual" (secondary).
- * Founding Member price ($49/3mo) auto-applied when 25 slots remain.
+ * Founding Member price ($59/3mo) auto-applied when 25 slots remain.
  * When FM exhausted, quarterly switches to Program price ($129/3mo).
  * All copy via i18n (ES / PT / EN).
  */
@@ -30,7 +30,7 @@ const PRICING_URL =
 const FALLBACK: PricingData = {
   earlyBird: { slotsLeft: 25, available: true },
   monthly:   { currentPrice: 49, regularPrice: 49, isEarlyBird: false },
-  quarterly: { currentPrice: 49, regularPrice: 129, isEarlyBird: true, perMonth: 16.33 },
+  quarterly: { currentPrice: 59, regularPrice: 129, isEarlyBird: true, perMonth: 19.67 },
 };
 
 /* ── Props ── */

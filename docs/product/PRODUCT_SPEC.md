@@ -62,7 +62,7 @@ type ScenarioType =
 
 | Tier                    | Price       | Billing   | Notes                                                              | Stripe Price ID (pending) |
 | ----------------------- | ----------- | --------- | ------------------------------------------------------------------ | ------------------------- |
-| **Founding Member**     | $49/3mo     | Quarterly | 25 slots max, price locked **forever** for early adopters, ≈$16.33/mo | TBD                   |
+| **Founding Member**     | $59/3mo     | Quarterly | 25 slots max, price locked **forever** for early adopters, ≈$19.67/mo | `price_1TTODoQhSs1CWakEb8Cv7sHF` |
 | **Program** (regular)   | $129/3mo    | Quarterly | Hero offer — one full program cycle, ≈$43/mo                      | TBD                       |
 | **Monthly access**      | $49/mo      | Monthly   | Flexible entry — no 3-month commitment required                    | TBD                       |
 
@@ -115,13 +115,13 @@ The subscription renews into the next program block automatically. Dashboard sho
 
 | Metric                          | Monthly       | Founding Member    | Program (regular)  |
 | ------------------------------- | :-----------: | :----------------: | :----------------: |
-| Price                           | $49/mo        | $49/3mo ($16.3/mo) | $129/3mo ($43/mo)  |
+| Price                           | $49/mo        | $59/3mo ($19.67/mo) | $129/3mo ($43/mo)  |
 | API cost/user (90d, ~26 sessions @ $0.43/session) | $11.18 | $11.18    | $11.18             |
-| Gross margin (90-day cycle)     | 77%           | 77%                | 91%                |
+| Gross margin (90-day cycle)     | 77%           | 81%                | 91%                |
 | Positioning                     | Flexible entry | Founding loyalty  | Hero offer         |
 
 > Quarterly makes sense vs monthly: $49/mo × 3 = $147 vs $129/3mo — user saves $18 by committing to the program.
-> Founding Member at $49/3mo forever is a loyalty lock — $16.33/mo effective, a reward for early believers.
+> Founding Member at $59/3mo forever is a loyalty lock — $19.67/mo effective, a reward for early believers. Clearly cheaper than the $49/mo monthly (saves $88 over 3 months) with no ambiguity from matching price digits.
 
 Benchmark: Talaera charges $20/mo for live sessions with human coaches. MasteryTalk at $43/mo (program) offers AI practice 24/7 with structured progression — 2× the price, 10× the accessibility, measurable outcomes.
 
@@ -314,7 +314,7 @@ Journey C: Account page → Manage Subscription → Stripe Customer Portal
 ### §6.2 Pricing Section
 
 2 tier cards (Monthly / Program) shown via `PathPurchaseModal`:
-- **Program** $129/3mo (hero card) — Founding Member $49/3mo auto-applied when slots remain
+- **Program** $129/3mo (hero card) — Founding Member $59/3mo auto-applied when slots remain
 - **Monthly** $49/mo (secondary card) — flexible, no commitment
 
 Founding Member badge shown on Program card when slots remain — fetched live from `/pricing` endpoint.
@@ -782,7 +782,7 @@ Non-whitelisted fields (plan, tier, subscription_active, etc.) can only be writt
 | `STRIPE_SECRET_KEY` | Stripe live secret key |
 | `STRIPE_WEBHOOK_SECRET` | Webhook signing secret |
 | `STRIPE_PRICE_MONTHLY` | `price_1TTODGQhSs1CWakE8LSJs9g6` — $49/mo Monthly access |
-| `STRIPE_PRICE_FOUNDING_MEMBER` | `price_1TTODoQhSs1CWakEb8Cv7sHF` — $49/3mo Founding Member (25 slots, forever) |
+| `STRIPE_PRICE_FOUNDING_MEMBER` | `price_1TTODoQhSs1CWakEb8Cv7sHF` — $59/3mo Founding Member (25 slots, forever) |
 | `STRIPE_PRICE_PROGRAM` | `price_1TTOJSQhSs1CWakEQfC3ZDMw` — $129/3mo Program (regular) |
 | `OPENAI_API_KEY` | GPT-4o access |
 | `GEMINI_API_KEY` | Gemini Flash (feedback) |

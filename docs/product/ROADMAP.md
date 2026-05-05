@@ -11,7 +11,7 @@
 ### ✅ What's Live
 
 - **6 active scenarios:** interview, meeting, presentation, sales, culture, self-intro (free warm-up)
-- **Stripe subscriptions live** — ⚠️ Old prices still active in Stripe ($12.99/$29.99 EB → $19.99/$47.99 regular). New prices confirmed ($49/3mo FM · $129/3mo Program · $49/mo Monthly) but Stripe products not yet created (see Phase 0.2)
+- **Stripe subscriptions live** — ⚠️ Old prices still active in Stripe ($12.99/$29.99 EB → $19.99/$47.99 regular). New prices confirmed ($59/3mo FM · $129/3mo Program · $49/mo Monthly) but Stripe products not yet created (see Phase 0.2)
 - **Webhook fully operational** — checkout.session.completed as primary activation
 - **Payment success flow** — celebration modal with confetti, redirect to dashboard
 - **Subscription unlock** — all paths/levels unlock on any active subscription ⚠️ temporary; progressive model pending Phase 0.3
@@ -88,7 +88,7 @@
 
 > **Goal:** Launch at program prices. New Stripe products required.
 
-- [x] Validate final price points: **Founding Member $49/3mo (locked forever)** · **Program $129/3mo** · **Monthly $49/mo** — confirmed 2026-05-04 (monthly raised from $29 so quarterly saves $18 vs 3× monthly)
+- [x] Validate final price points: **Founding Member $59/3mo (locked forever)** · **Program $129/3mo** · **Monthly $49/mo** — confirmed 2026-05-05 (raised from $49 to $59 to eliminate same-number confusion with monthly; $19.67/mo effective; saves $88 vs 3× monthly)
 - [x] Update PRODUCT_SPEC §3.1 + §3.5 with confirmed prices (v3.0)
 - [x] Create new Stripe products and price IDs (price_1TTODGQhSs1CWakE8LSJs9g6 · price_1TTODoQhSs1CWakEb8Cv7sHF · price_1TTOJSQhSs1CWakEQfC3ZDMw)
 - [x] Update `STRIPE_PRICE_*` secrets in Supabase + `supabase/.env.local`
@@ -115,7 +115,7 @@
 
 - [x] New hero headline — "90 días para comunicarte con autoridad en inglés profesional" (ES/PT/EN)
 - [x] New "El Programa" section — Foundation → Advanced → Mastery arc + War Room callout (ES/PT/EN)
-- [x] Pricing section — program framing: "El Programa" hero card ($129/3mo · $49 FM), "Acceso mensual" secondary ($49/mo), correct features list
+- [x] Pricing section — program framing: "El Programa" hero card ($129/3mo · $59 FM), "Acceso mensual" secondary ($49/mo), correct features list
 - [x] FAQ — fixed "¿Hay suscripción?" (was wrong: "no, compras una vez"), added "¿Qué pasa después de 90 días?", added War Room urgency question
 - [x] `finalCta.badges` — fixed "Sin suscripción" badge (was incorrect)
 - [x] `routes.subtitle` — fixed "compras una vez" (subscription model)
@@ -126,7 +126,7 @@
 > **Goal:** "Únete al programa" not "elige un plan".
 
 - [x] `PathPurchaseModal` — "El Programa" as hero card (quarterly, dark, selected by default), "Acceso mensual" as secondary
-- [x] FALLBACK prices updated to $49/mo + $49/$129 quarterly (FM / regular)
+- [x] FALLBACK prices updated to $49/mo + $59/$129 quarterly (FM / regular)
 - [x] Founding Member badge (⭐) on quarterly card when FM slots available; "Ahorra $18 vs mensual" when exhausted
 - [x] Monthly card: no badge, `highlight: false`, never shows FM styling
 - [x] Slots counter: Star icon (FM feel) replacing Flame (EB feel)
@@ -741,6 +741,6 @@
 | 2026-05-01 | Beta v14.2: Launch pricing model — Monthly EB $12.99 / Quarterly EB $29.99 (auto-applied, 25 shared slots) → regular $19.99/$47.99. PathPurchaseModal redesigned to 2 cards with dynamic pricing from /pricing endpoint. TTS voices updated to cedar + marin (OpenAI recommended). Full i18n pricing section (ES/PT/EN). Stripe secrets updated (4 new price IDs). PRODUCT_SPEC v2.8. Commits: dd51943, 00e6513, 722a58a, 77202c1.                                                                                                           |
 | 2026-05-01 | Added Phase 2.5 — Pedagogical Depth: 9 gaps from LEARNING_METHODOLOGY.md organized into Sprint A (Quick Wins), Sprint B (Medium Effort), Sprint C (Foundational). New docs: LEARNING_METHODOLOGY.md, CEFR_CALIBRATION.md.                                                                                                                                                                                                                                                                                                                    |
 | 2026-05-01 | Phase 2.5 Sprint A complete (A.1–A.4) + Sprint B complete (B.1–B.3). A.4 Challenge Mode (skip briefing toggle). B.3 Pushed output in all 5 SCENARIO_ADAPTATION blocks. B.1 Ideal Self field (AccountPage + GoalAnchorCard). B.2 ProgressChartCard (recharts LineChart, last 10 sessions, CEFR milestones). Current state → Beta v14.3.                                                                                                                                                                                                       |
-| 2026-05-04 | **Product strategy session — major decisions:** (1) Pricing finalized: FM $49/3mo locked forever · Program $129/3mo · Monthly $49/mo. (2) Primary Path model: user chooses path from self-intro recommendation — BC not mandatory, content woven via §7.9 pre-session lessons. (3) Progression unlock trigger: full path completion (all 6 levels), user chooses next path. (4) Self-intro elevated to intake assessment → primary_path on subscribe. (5) Pre-session lesson step §7.9 specced (Sprint B.4). **Coded:** hints tap-to-reveal + challenge suppression; scenario-aware turn limits (8/10). **Spec:** PRODUCT_SPEC v3.3. **ROADMAP:** Phase 0.1 revised, 0.6 updated, 0.7 added, 3.1.2 updated, Known Gaps documented. Current state → Beta v14.4. |
+| 2026-05-04 | **Product strategy session — major decisions:** (1) Pricing finalized: FM $49/3mo locked forever · Program $129/3mo · Monthly $49/mo. *(Note: FM revised to $59/3mo on 2026-05-05 — see below.)* (2) Primary Path model: user chooses path from self-intro recommendation — BC not mandatory, content woven via §7.9 pre-session lessons. (3) Progression unlock trigger: full path completion (all 6 levels), user chooses next path. (4) Self-intro elevated to intake assessment → primary_path on subscribe. (5) Pre-session lesson step §7.9 specced (Sprint B.4). **Coded:** hints tap-to-reveal + challenge suppression; scenario-aware turn limits (8/10). **Spec:** PRODUCT_SPEC v3.3. **ROADMAP:** Phase 0.1 revised, 0.6 updated, 0.7 added, 3.1.2 updated, Known Gaps documented. Current state → Beta v14.4. |
 | 2026-05-04 | **Retention sprint (Beta v14.5):** SinceYouStartedCard (pillar delta first→latest), ScenarioDeltaCard (per-scenario comparison in FeedbackScreen), LevelMilestoneModal (confetti + score on level completion ≥75), ChooseNextPathModal path completion celebration + LinkedIn share. fetchSessions TTL cache (30s). PILLAR_COLORS consolidated. PATH_LABELS centralized. Security review: 0 vulnerabilities. 119/119 tests passing. COMMERCIAL_PITCH.md: full commercial document + EF EPI 2026 data + updated market numbers + arbitraje salarial. Commit 9cff182. |
 | 2026-05-04 | **Pre-session lesson step (Beta v14.6 — §7.9):** `"lesson"` step live between context and strategy. `getPreSessionLesson()` (level-specific → pillar fallback). `PreSessionLessonScreen` (badge, keyConcept, power phrase, recall gate, locked CTA). `gateWithLesson()` helper in PracticeSessionPage. `last_pre_session_lesson_id` persisted. Skip: Challenge Mode, War Room, self-intro. Script generation fires before lesson for zero added latency. Backend whitelist updated. Commit e777d2c. Current state → Beta v14.6. |

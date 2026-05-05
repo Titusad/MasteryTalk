@@ -407,7 +407,7 @@
 ### Pricing
 - Section title: `The Program`
 - Headline: `Join the program.`
-- Subtitle: `The first 25 subscribers become Founding Members — price locked forever at $49 per 3 months.`
+- Subtitle: `The first 25 subscribers become Founding Members — price locked forever at $59 per 3 months.`
 - Launch badge: `★ Founding Member`
 - Slots left: `{{count}} Founding Member slots left`
 - Slots gone: `Founding Member slots exhausted — regular pricing active`
@@ -439,7 +439,7 @@
 - Q1: `Is this different from Duolingo or an English course?`
 - A1: `It's not a grammar course. You learn professional communication by practicing real conversations — with frameworks, corrections in context. If you already know English but in real conversations you don't reach your level, this is for you.`
 - Q2: `Is there a subscription or monthly charge?`
-- A2: `Yes. MasteryTalk is a subscription program — monthly ($49/mo) or quarterly ($129/3 months). The first 25 subscribers are locked in at $49/3 months forever as Founding Members. There are no per-session or per-path purchases.`
+- A2: `Yes. MasteryTalk is a subscription program — monthly ($49/mo) or quarterly ($129/3 months). The first 25 subscribers are locked in at $59/3 months forever as Founding Members. There are no per-session or per-path purchases.`
 - Q3: `What happens after 90 days?`
 - A3: `Your program renews automatically into the next block. Once you complete your Primary Path you unlock a new one — you choose which. The dashboard shows 'Day X of 90' and there's always a next level to reach.`
 - Q4: `Can I practice an urgent scenario if I have an interview tomorrow?`

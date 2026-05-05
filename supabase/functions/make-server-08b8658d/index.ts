@@ -117,17 +117,17 @@ app.get("/make-server-08b8658d/pricing", async (c: any) => {
       available: ebAvailable,
     },
     monthly: {
-      currentPrice:  ebAvailable ? 12.99 : 19.99,
-      regularPrice:  19.99,
-      earlyPrice:    12.99,
-      isEarlyBird:   ebAvailable,
+      currentPrice:  49,
+      regularPrice:  49,
+      earlyPrice:    49,
+      isEarlyBird:   false,
     },
     quarterly: {
-      currentPrice:  ebAvailable ? 29.99 : 47.99,
-      regularPrice:  47.99,
-      earlyPrice:    29.99,
+      currentPrice:  ebAvailable ? 59 : 129,
+      regularPrice:  129,
+      earlyPrice:    59,
       isEarlyBird:   ebAvailable,
-      perMonth:      ebAvailable ? 9.99 : 15.99,
+      perMonth:      ebAvailable ? 19.67 : 43,
     },
   });
 });

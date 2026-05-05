@@ -825,6 +825,10 @@ export default function App() {
             authUser && ADMIN_EMAILS.includes(authUser.email?.toLowerCase() || "") ? (
               <AdminDashboardPage
                 onBack={handleBackToDashboard}
+                getToken={async () => {
+                  const { getAuthToken } = await import("../services/supabase");
+                  return getAuthToken();
+                }}
               />
             ) : (
               <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" as const, alignItems: "center", justifyContent: "center", background: "#0f172a", color: "#e2e8f0", gap: 16 }}>

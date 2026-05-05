@@ -128,7 +128,7 @@ MasteryTalk no es una suscripción a una app — es un programa estructurado de 
 
 | Oferta | Precio | Descripción |
 |--------|--------|-------------|
-| **Founding Member** | $49/3 meses (~$16/mes) | 25 slots limitados — precio bloqueado para siempre |
+| **Founding Member** | $59/3 meses (~$19.67/mes) | 25 slots limitados — precio bloqueado para siempre |
 | **Programa** (regular) | $129/3 meses (~$43/mes) | Oferta principal — un ciclo completo de programa |
 | **Acceso mensual** | $49/mes | Entrada flexible — sin compromiso trimestral |
 
@@ -139,7 +139,7 @@ MasteryTalk no es una suscripción a una app — es un programa estructurado de 
 **Benchmark competitivo:** Talaera cobra $20/mes por sesiones en vivo con coach humano con agenda previa. MasteryTalk a $43/mes (Programa) ofrece un programa estructurado con IA 24/7, progresión medible en CEFR y outcomes concretos — el doble de precio, diez veces más accesible.
 
 **Margen bruto (ciclo 90 días, ~15 sesiones/mes):**
-- Founding Member ($49/3mo): ~77%
+- Founding Member ($59/3mo): ~81%
 - Programa regular ($129/3mo): ~91%
 - Monthly ($49/mo × 3 = $147/ciclo): ~77%
 
@@ -215,7 +215,7 @@ Todos los emails en **inglés**. El welcome D+0 lo hace Resend. Loops arranca de
 
 ### Live y funcionando
 - 5 escenarios activos (+ self-intro free): interview, meeting, presentation, sales, culture
-- Stripe subscriptions live — FM $49/3mo · Programa $129/3mo · Monthly $49/mo
+- Stripe subscriptions live — FM $59/3mo · Programa $129/3mo · Monthly $49/mo
 - Flujo completo: setup → micro-lección → briefing → conversación → feedback → micro-lecciones recomendadas
 - **Pre-session lesson step (§7.9):** micro-lección de 90 segundos entre context y strategy — recall gateado, seleccionada por nivel/ruta o pilar más débil
 - 50 micro-lecciones con recall activo y recomendación dual-eje
@@ -274,7 +274,7 @@ Todos los emails en **inglés**. El welcome D+0 lo hace Resend. Loops arranca de
 - No hay app móvil (pendiente PMF en web)
 - No se desbloquean todas las rutas desde el día 1 — Progressive model: Primary Path primero, luego una ruta a la vez
 - No hay escenarios de negociación, C-suite o clientes externos (roadmap futuro)
-- Precios legacy retirados: $12.99, $19.99, $29.99 EB, $47.99 — la estructura actual es $49/mo · $49/3mo FM · $129/3mo Programa
+- Precios legacy retirados: $12.99, $19.99, $29.99 EB, $47.99 — la estructura actual es $49/mo · $59/3mo FM · $129/3mo Programa
 
 ---
 
@@ -286,7 +286,7 @@ Todos los emails en **inglés**. El welcome D+0 lo hace Resend. Loops arranca de
 | Costo IA por usuario activo | ~$4.03/mes (15 sesiones) |
 | Gross margin (Programa $129/3mo) | ~91% |
 | Gross margin (Monthly $49/mo) | ~77% |
-| Gross margin (FM $49/3mo) | ~77% |
+| Gross margin (FM $59/3mo) | ~81% |
 | Benchmark competitivo | Talaera $20/sesión human coach → MasteryTalk $43/mo IA 24/7 |
 
 ---

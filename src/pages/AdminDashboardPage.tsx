@@ -119,20 +119,23 @@ interface UserDetail {
 
 interface AdminDashboardPageProps {
   onBack: () => void;
+  getToken?: () => Promise<string>;
 }
 
 const BASE = `${SUPABASE_URL}/functions/v1/make-server-08b8658d`;
 
-async function adminFetch(path: string) {
-  const token = await getAuthToken();
-  const res = await fetch(`${BASE}${path}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`${res.status}: ${err}`);
-  }
-  return res.json();
+function makeAdminFetch(getToken: () => Promise<string>) {
+  return async function adminFetch(path: string) {
+    const token = await getToken();
+    const res = await fetch(`${BASE}${path}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`${res.status}: ${err}`);
+    }
+    return res.json();
+  };
 }
 
 /* ─── Pillar colors ─── */
@@ -148,7 +151,8 @@ const PILLAR_COLORS: Record<string, string> = {
 /* ─── Sort helper ─── */
 type SortKey = "displayName" | "sessionsCount" | "professionalProficiency" | "createdAt";
 
-export function AdminDashboardPage({ onBack }: AdminDashboardPageProps) {
+export function AdminDashboardPage({ onBack, getToken: getTokenProp }: AdminDashboardPageProps) {
+  const adminFetch = makeAdminFetch(getTokenProp ?? getAuthToken);
   const [kpis, setKpis] = useState<AdminKPIs | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [selectedUser, setSelectedUser] = useState<UserDetail | null>(null);
