@@ -43,7 +43,7 @@ export type SubscriptionTier = "early_bird" | "monthly" | "quarterly";
 export const TIER_INFO: Record<SubscriptionTier, { label: string; regularPrice: number; foundingPrice?: number; maxSlots?: number }> = {
   early_bird: { label: "Early Bird",        regularPrice: 9.99 },              // legacy — existing subscribers only
   monthly:    { label: "Monthly access",    regularPrice: 49.00 },
-  quarterly:  { label: "Program",           regularPrice: 129.00, foundingPrice: 49.00, maxSlots: 25 },
+  quarterly:  { label: "Program",           regularPrice: 129.00, foundingPrice: 59.00, maxSlots: 25 },
 };
 
 export const PRODUCT_INFO = {

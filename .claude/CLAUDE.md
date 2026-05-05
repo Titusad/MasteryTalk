@@ -205,6 +205,27 @@ Esperar confirmación ("sí", "procede", "adelante"). Si aparece algo fuera del 
 
 ---
 
+### 🔍 ANÁLISIS PROFUNDO ANTES DE PROPONER SOLUCIONES
+
+**NUNCA proponer ni implementar un parche sin entender la causa raíz.**
+
+Antes de escribir cualquier solución — especialmente ante un bug o comportamiento inesperado — ejecutar este protocolo:
+
+1. **Trazar el flujo completo:** ¿dónde empieza el dato? ¿por qué capas pasa? ¿dónde termina? Nunca asumir que el problema está en la capa más visible.
+2. **Leer el código fuente relevante:** leer los archivos implicados (frontend, backend, i18n, config) antes de proponer cualquier cambio. No inferir — verificar.
+3. **Verificar el estado real:** si hay una API, leerla. Si hay un endpoint, llamarlo. Si hay un KV store, inspeccionarlo. La fuente de verdad es el sistema en ejecución, no la documentación ni las suposiciones.
+4. **Identificar todas las capas afectadas:** un bug de datos puede tener origen en backend, frontend, config o infraestructura. Descartar cada capa explícitamente antes de proponer la solución.
+5. **Proponer con rigor:** la solución debe cumplir simultáneamente:
+   - **Seguridad:** sin XSS, sin inyección, sin exposición de secretos, sin bypass de auth
+   - **Correctitud:** resuelve la causa raíz, no el síntoma
+   - **Backend:** sin efectos secundarios en otros endpoints, sin romper contratos de API
+   - **Frontend:** cumple Design System, sin inline styles, sin violaciones FSD
+   - **Mantenibilidad:** sin duplicación, sin magic numbers, sin dead code
+
+**Si el análisis revela que el plan original era incompleto → notificar antes de proceder, no silenciosamente corregir el rumbo.**
+
+---
+
 ### Regla #0 — Diagnóstico antes de instruir
 
 1. **Credenciales:** buscar en `supabase/.env.local`, `.env.local`, `.env` antes de pedir dashboard.
