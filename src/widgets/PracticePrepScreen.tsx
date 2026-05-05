@@ -19,6 +19,7 @@ import { READINESS_URLS } from "@/features/practice-session/model/narrator-audio
 import { motion } from "motion/react";
 import {
     ArrowLeft,
+    Sparkles,
 } from "lucide-react";
 import {
     PageTitleBlock,
@@ -122,10 +123,8 @@ export function PracticePrepScreen({
     return (
         <div aria-label="PracticePrepScreen"
             className="w-full min-h-full flex flex-col bg-[#f0f4f8] relative overflow-hidden"
-           
         >
-
-
+            <Sparkles className="absolute top-4 right-4 w-4 h-4 text-[#94a3b8]" aria-label="AI-generated content" />
             <main className="relative w-full max-w-[800px] mx-auto px-4 sm:px-6 pt-6 pb-20">
 
                 {/* Header */}
