@@ -32,6 +32,7 @@ const AdminDashboardPage = lazyRetry(() => import("../pages/AdminDashboardPage")
 const TermsPage = lazyRetry(() => import("../pages/legal/TermsPage").then(m => ({ default: m.TermsPage })));
 const PrivacyPage = lazyRetry(() => import("../pages/legal/PrivacyPage").then(m => ({ default: m.PrivacyPage })));
 const CookiesPage = lazyRetry(() => import("../pages/legal/CookiesPage").then(m => ({ default: m.CookiesPage })));
+const TransparencyPage = lazyRetry(() => import("../pages/legal/TransparencyPage").then(m => ({ default: m.TransparencyPage })));
 const OnboardingProfileScreen = lazyRetry(() => import("@/features/onboarding/ui/OnboardingProfileScreen").then(m => ({ default: m.OnboardingProfileScreen })));
 
 import { LoadingScreen } from "./components/LoadingScreen";
@@ -83,6 +84,7 @@ export default function App() {
     if (hashPath === "#admin") return "admin";
     if (hashPath === "#terms") return "terms";
     if (hashPath === "#privacy") return "privacy";
+    if (hashPath === "#transparency") return "transparency";
     if (hashPath === "#landing2") return "landing2";
     if (hashPath === "#landing3") return "landing3";
 
@@ -484,6 +486,7 @@ export default function App() {
       else if (hash === "#terms") setPage("terms");
       else if (hash === "#privacy") setPage("privacy");
       else if (hash === "#cookies") setPage("cookies");
+      else if (hash === "#transparency") setPage("transparency");
       else if (hash === "#landing2") setPage("landing2");
       else if (hash === "#landing3") setPage("landing3");
       else if (hash.startsWith("#study-phase")) setPage("study-phase");
@@ -846,6 +849,7 @@ export default function App() {
           {page === "terms" && <TermsPage />}
           {page === "privacy" && <PrivacyPage />}
           {page === "cookies" && <CookiesPage />}
+          {page === "transparency" && <TransparencyPage />}
 
           {showLangModal && (
             <LanguageTransitionModal

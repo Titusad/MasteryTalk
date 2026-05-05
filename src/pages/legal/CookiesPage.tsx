@@ -10,7 +10,7 @@ export function CookiesPage() {
         variant="public"
         showBackButton
         backLabel="Back"
-        onBack={() => window.history.back()}
+        onBack={() => { window.location.hash = ''; }}
       />
 
       <main className="max-w-3xl mx-auto px-6 py-12 md:py-16">

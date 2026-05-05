@@ -19,7 +19,7 @@ export function PrivacyPage() {
         variant="public"
         showBackButton
         backLabel="Back"
-        onBack={() => window.history.back()}
+        onBack={() => { window.location.hash = ''; }}
       />
 
       {/* Content */}

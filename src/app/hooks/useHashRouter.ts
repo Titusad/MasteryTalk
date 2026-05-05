@@ -26,7 +26,8 @@ export type Page =
   | "study-phase"
   | "terms"
   | "privacy"
-  | "cookies";
+  | "cookies"
+  | "transparency";
 
 const AUTH_PAGES: Record<string, Page> = {
   "#dashboard": "dashboard",
