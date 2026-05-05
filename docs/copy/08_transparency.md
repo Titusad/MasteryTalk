@@ -92,9 +92,21 @@
 **Heading:** `Your sessions. Your data.`
 
 **Body:**
-> Audio from your practice sessions is processed in real time to generate feedback and is not stored permanently. Session performance data — your pillar scores, progression state, and spaced repetition history — is retained to personalize your experience and track your improvement over time.
+> We handle three types of data differently, and we are explicit about each.
+
+**Data type 1 — Session audio:**
+> Processed in real time to generate your feedback and pronunciation scores. Not stored permanently after the session ends.
+
+**Data type 2 — Performance data:**
+> Your pillar scores, progression state, and spaced repetition history are retained to personalize your experience and track your improvement over time. This is what makes the program work across sessions.
+
+**Data type 3 — Professional profile (CV, role, industry):**
+> Information you choose to share about your professional background — including any resume or CV you upload — is stored only with your explicit authorization. You will be asked to consent before this data is saved, and you can withdraw that consent or delete it at any time from your account settings.
 >
-> You can request deletion of your data at any time from your account settings.
+> This data is used exclusively to personalize your practice sessions. It is never shared with third parties without a separate, explicit consent process.
+
+**Closing:**
+> You can request full deletion of your data at any time from your account settings.
 
 ---
 
