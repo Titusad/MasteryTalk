@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import {
     PageTitleBlock,
+    FeedbackThumbs,
 } from "@/shared/ui";
 import type { InterviewBriefingData } from "@/services/types";
 import type { ScenarioType } from "@/services/types";
@@ -124,7 +125,10 @@ export function PracticePrepScreen({
         <div aria-label="PracticePrepScreen"
             className="w-full min-h-full flex flex-col bg-[#f0f4f8] relative overflow-hidden"
         >
-            <Sparkles className="absolute top-4 right-4 w-4 h-4 text-[#94a3b8]" aria-label="AI-generated content" />
+            <div className="absolute top-4 right-4 flex items-center gap-2">
+                <FeedbackThumbs contentType="session_brief" contentId={scenarioType ?? "session_brief"} />
+                <Sparkles className="w-4 h-4 text-[#94a3b8]" aria-label="AI-generated content" />
+            </div>
             <main className="relative w-full max-w-[800px] mx-auto px-4 sm:px-6 pt-6 pb-20">
 
                 {/* Header */}

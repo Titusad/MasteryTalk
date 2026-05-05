@@ -23,6 +23,7 @@ import {
   Globe,
   Sparkles,
 } from "lucide-react";
+import { FeedbackThumbs } from "@/shared/ui";
 import { useState, useCallback, useMemo } from "react";
 import DOMPurify from "dompurify";
 import type {
@@ -110,7 +111,10 @@ export function StrategyScreen({
 
   return (
     <div className="w-full min-h-full flex flex-col bg-[#f0f4f8] relative overflow-hidden">
-      <Sparkles className="absolute top-4 right-4 w-4 h-4 text-[#94a3b8]" aria-label="AI-generated content" />
+      <div className="absolute top-4 right-4 flex items-center gap-2">
+        <FeedbackThumbs contentType="strategy" contentId={levelTitle} />
+        <Sparkles className="w-4 h-4 text-[#94a3b8]" aria-label="AI-generated content" />
+      </div>
       <main className="relative w-full max-w-[768px] mx-auto px-6 pt-6 pb-20">
 
         {/* Header badge + locale toggle */}

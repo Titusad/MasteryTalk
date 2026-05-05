@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { ArrowRight, Sparkles } from "lucide-react";
+import { FeedbackThumbs } from "@/shared/ui";
 import { useNarration } from "@/shared/lib/useNarration";
 import type { InterlocutorKey } from "@/features/practice-session/model/narrator-audio";
 
@@ -159,7 +160,10 @@ export function InterlocutorIntroScreen({
     <div
       className="w-full min-h-[calc(100dvh-4rem)] bg-[#0f172b] flex flex-col items-center justify-center px-6 relative"
     >
-      <Sparkles className="absolute top-4 right-4 w-4 h-4 text-white/20" aria-label="AI-generated content" />
+      <div className="absolute top-4 right-4 flex items-center gap-2">
+        <FeedbackThumbs contentType="interlocutor_intro" contentId={interlocutor} />
+        <Sparkles className="w-4 h-4 text-white/20" aria-label="AI-generated content" />
+      </div>
       <motion.div
         className="text-center max-w-md w-full"
         initial={{ opacity: 0 }}

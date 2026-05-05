@@ -161,20 +161,23 @@ export function AdminDashboardPage({ onBack }: AdminDashboardPageProps) {
   const [sortAsc, setSortAsc] = useState(false);
   const [view, setView] = useState<"overview" | "detail">("overview");
   const [apiUsage, setApiUsage] = useState<ApiUsageData | null>(null);
-  const [activeTab, setActiveTab] = useState<"platform" | "costs">("platform");
+  const [activeTab, setActiveTab] = useState<"platform" | "costs" | "feedback">("platform");
+  const [feedbackData, setFeedbackData] = useState<{ byType: Record<string, { up: number; down: number }>; totals: { up: number; down: number }; recentNegative: any[] } | null>(null);
 
   const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const [kpiData, userData, usageData] = await Promise.all([
+      const [kpiData, userData, usageData, fbData] = await Promise.all([
         adminFetch("/admin/kpis"),
         adminFetch("/admin/users"),
         adminFetch("/admin/api-usage").catch(() => null),
+        adminFetch("/admin/content-feedback").catch(() => null),
       ]);
       setKpis(kpiData);
       setUsers(userData.users || []);
       setApiUsage(usageData);
+      setFeedbackData(fbData);
     } catch (err: any) {
       setError(err.message || "Failed to load admin data");
     } finally {
@@ -433,6 +436,21 @@ export function AdminDashboardPage({ onBack }: AdminDashboardPageProps) {
             Platform
           </button>
           <button
+            onClick={() => setActiveTab("feedback")}
+            style={{
+              padding: "8px 20px",
+              borderRadius: 8,
+              border: activeTab === "feedback" ? "1px solid #22c55e" : "1px solid #334155",
+              background: activeTab === "feedback" ? "rgba(34,197,94,0.15)" : "rgba(30,41,59,0.5)",
+              color: activeTab === "feedback" ? "#86efac" : "#94a3b8",
+              cursor: "pointer",
+              fontSize: 13,
+              fontWeight: 600,
+            }}
+          >
+            Content Feedback
+          </button>
+          <button
             onClick={() => setActiveTab("costs")}
             style={{
               padding: "8px 20px",
@@ -448,6 +466,85 @@ export function AdminDashboardPage({ onBack }: AdminDashboardPageProps) {
             API Costs
           </button>
         </div>
+
+        {/* ── Content Feedback Tab ── */}
+        {activeTab === "feedback" && (
+          <>
+            {!feedbackData ? (
+              <p style={{ color: "#94a3b8", fontSize: 14 }}>No feedback data yet.</p>
+            ) : (
+              <>
+                {/* Totals */}
+                <div style={{ display: "flex", gap: 16, marginBottom: 24 }}>
+                  {[
+                    { label: "Total Thumbs Up", value: feedbackData.totals.up, color: "#22c55e" },
+                    { label: "Total Thumbs Down", value: feedbackData.totals.down, color: "#ef4444" },
+                    {
+                      label: "Satisfaction",
+                      value: feedbackData.totals.up + feedbackData.totals.down > 0
+                        ? `${Math.round((feedbackData.totals.up / (feedbackData.totals.up + feedbackData.totals.down)) * 100)}%`
+                        : "—",
+                      color: "#6366f1",
+                    },
+                  ].map((stat) => (
+                    <div key={stat.label} style={{ background: "rgba(30,41,59,0.8)", border: "1px solid #334155", borderRadius: 12, padding: "16px 24px", flex: 1 }}>
+                      <p style={{ color: "#94a3b8", fontSize: 12, marginBottom: 6 }}>{stat.label}</p>
+                      <p style={{ color: stat.color, fontSize: 28, fontWeight: 700 }}>{stat.value}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* By content type */}
+                <div style={{ background: "rgba(30,41,59,0.8)", border: "1px solid #334155", borderRadius: 12, padding: 20, marginBottom: 24 }}>
+                  <p style={{ color: "#e2e8f0", fontSize: 14, fontWeight: 600, marginBottom: 16 }}>By Content Type</p>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                    <thead>
+                      <tr style={{ color: "#94a3b8", textAlign: "left" }}>
+                        <th style={{ paddingBottom: 8, fontWeight: 500 }}>Type</th>
+                        <th style={{ paddingBottom: 8, fontWeight: 500 }}>Thumbs Up</th>
+                        <th style={{ paddingBottom: 8, fontWeight: 500 }}>Thumbs Down</th>
+                        <th style={{ paddingBottom: 8, fontWeight: 500 }}>Score</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Object.entries(feedbackData.byType).map(([type, counts]) => {
+                        const total = counts.up + counts.down;
+                        const pct = total > 0 ? Math.round((counts.up / total) * 100) : 0;
+                        return (
+                          <tr key={type} style={{ borderTop: "1px solid #1e293b" }}>
+                            <td style={{ padding: "10px 0", color: "#e2e8f0" }}>{type.replace(/_/g, " ")}</td>
+                            <td style={{ color: "#22c55e" }}>{counts.up}</td>
+                            <td style={{ color: "#ef4444" }}>{counts.down}</td>
+                            <td style={{ color: pct >= 70 ? "#22c55e" : pct >= 50 ? "#f59e0b" : "#ef4444", fontWeight: 600 }}>{pct}%</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Recent negative with comments */}
+                {feedbackData.recentNegative.length > 0 && (
+                  <div style={{ background: "rgba(30,41,59,0.8)", border: "1px solid #334155", borderRadius: 12, padding: 20 }}>
+                    <p style={{ color: "#e2e8f0", fontSize: 14, fontWeight: 600, marginBottom: 16 }}>Recent Negative Feedback with Comments</p>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                      {feedbackData.recentNegative.map((entry: any, i: number) => (
+                        <div key={i} style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 8, padding: "12px 16px" }}>
+                          <div style={{ display: "flex", gap: 12, marginBottom: 4 }}>
+                            <span style={{ color: "#f87171", fontSize: 12, fontWeight: 600 }}>{(entry.contentType ?? "").replace(/_/g, " ")}</span>
+                            <span style={{ color: "#475569", fontSize: 12 }}>{entry.contentId}</span>
+                            <span style={{ color: "#475569", fontSize: 12, marginLeft: "auto" }}>{entry.createdAt ? new Date(entry.createdAt).toLocaleDateString() : ""}</span>
+                          </div>
+                          <p style={{ color: "#e2e8f0", fontSize: 13 }}>"{entry.comment}"</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </>
+        )}
 
         {/* ── API Costs Tab ── */}
         {activeTab === "costs" && apiUsage && (

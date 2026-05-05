@@ -11,6 +11,7 @@
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, ChevronLeft, ChevronRight, CheckCircle2, Lightbulb, BookOpen, Target, Sparkles, Play, Pause, Brain, Eye } from "lucide-react";
+import { FeedbackThumbs } from "@/shared/ui";
 import type { MicroLesson } from "@/services/microLessons";
 import { markLessonComplete, isLessonComplete } from "@/services/microLessons";
 
@@ -344,19 +345,22 @@ export function LessonModal({ lessons, currentIndex, onClose, onNavigate, onComp
                   </button>
                 )}
 
-                {done ? (
-                  <span className="flex items-center gap-1.5 text-sm text-[#22c55e]" style={{ fontWeight: 600 }}>
-                    <CheckCircle2 className="w-4 h-4" /> Completed
-                  </span>
-                ) : (
-                  <button
-                    onClick={handleComplete}
-                    className="px-4 py-2 rounded-xl bg-[#22c55e] text-white text-sm hover:bg-[#16a34a] transition-colors cursor-pointer"
-                    style={{ fontWeight: 600 }}
-                  >
-                    Mark Complete
-                  </button>
-                )}
+                <div className="flex items-center gap-3">
+                  <FeedbackThumbs contentType="lesson" contentId={lesson.id} />
+                  {done ? (
+                    <span className="flex items-center gap-1.5 text-sm text-[#22c55e]" style={{ fontWeight: 600 }}>
+                      <CheckCircle2 className="w-4 h-4" /> Completed
+                    </span>
+                  ) : (
+                    <button
+                      onClick={handleComplete}
+                      className="px-4 py-2 rounded-xl bg-[#22c55e] text-white text-sm hover:bg-[#16a34a] transition-colors cursor-pointer"
+                      style={{ fontWeight: 600 }}
+                    >
+                      Mark Complete
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>

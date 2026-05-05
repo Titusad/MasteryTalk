@@ -39,6 +39,10 @@ export { PricingCard } from "./PricingCard";
 export { ProficiencyGauge, feedbackProficiencyColor, feedbackProficiencyLabel } from "./ProficiencyGauge";
 export { FeedbackAccordion } from "./FeedbackAccordion";
 
+// ── Feedback widget ───────────────────────────────────────────
+export { FeedbackThumbs } from "./FeedbackThumbs";
+export type { FeedbackContentType } from "./FeedbackThumbs";
+
 // ── Shadowing UI primitives ───────────────────────────────────
 export { WaveformBars } from "./WaveformBars";
 export { ScoreRing } from "./ScoreRing";

@@ -330,6 +330,59 @@ app.get("/make-server-08b8658d/admin/api-usage", async (c: any) => {
 });
 
 // ═══════════════════════════════════════════════════════════════
+// GET /admin/content-feedback — Feedback metrics (thumbs)
+// ═══════════════════════════════════════════════════════════════
+app.get("/make-server-08b8658d/admin/content-feedback", async (c: any) => {
+  try {
+    const adminSupabase = getAdminClient();
+
+    // Fetch all aggregates: content_feedback_agg:*
+    const { data: rows, error } = await adminSupabase
+      .from("kv_store_4e8a5b39")
+      .select("key, value")
+      .like("key", "content_feedback_agg:%");
+
+    if (error) throw error;
+
+    const byType: Record<string, { up: number; down: number }> = {};
+
+    for (const row of rows ?? []) {
+      const parts = row.key.split(":");
+      const contentType = parts[1] ?? "unknown";
+      const agg = JSON.parse(row.value ?? "{}");
+      if (!byType[contentType]) byType[contentType] = { up: 0, down: 0 };
+      byType[contentType].up += agg.up ?? 0;
+      byType[contentType].down += agg.down ?? 0;
+    }
+
+    // Fetch recent thumb-downs with comments
+    const { data: commentRows } = await adminSupabase
+      .from("kv_store_4e8a5b39")
+      .select("key, value")
+      .like("key", "content_feedback:%")
+      .order("key", { ascending: false })
+      .limit(50);
+
+    const recentNegative = (commentRows ?? [])
+      .map((r: any) => {
+        try { return JSON.parse(r.value); } catch { return null; }
+      })
+      .filter((e: any) => e && e.vote === "down" && e.comment)
+      .slice(0, 20);
+
+    const totals = Object.values(byType).reduce(
+      (acc, v) => ({ up: acc.up + v.up, down: acc.down + v.down }),
+      { up: 0, down: 0 }
+    );
+
+    return c.json({ byType, totals, recentNegative });
+  } catch (err) {
+    console.error("[Admin/ContentFeedback]", err);
+    return c.json({ error: `Failed: ${err}` }, 500);
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
 // Progression Tree — GET /progression
 // Fetch user's progression state from KV
 // ═══════════════════════════════════════════════════════════════

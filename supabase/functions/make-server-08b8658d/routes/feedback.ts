@@ -369,4 +369,45 @@ ${transcript}`;
     return c.json({ error: `Summary generation failed: ${err}` }, 500);
   }
 });
+/* ── Content Feedback (thumbs up/down) ── */
+
+app.post("/make-server-08b8658d/content-feedback", async (c) => {
+  try {
+    const user = await getAuthUser(c.req.header("Authorization"));
+    if (!user) return c.json({ error: "Unauthorized" }, 401);
+
+    const body = await c.req.json();
+    const { contentType, contentId, sessionId, vote, comment } = body;
+
+    if (!contentType || !contentId || !["up", "down"].includes(vote)) {
+      return c.json({ error: "Missing or invalid fields" }, 400);
+    }
+
+    const entry = {
+      userId: user.id,
+      contentType,
+      contentId,
+      sessionId: sessionId ?? null,
+      vote,
+      comment: comment?.trim() ?? null,
+      createdAt: new Date().toISOString(),
+    };
+
+    const key = `content_feedback:${contentType}:${contentId}:${user.id}:${Date.now()}`;
+    await kv.set(key, JSON.stringify(entry));
+
+    // Aggregate counters per contentType
+    const aggKey = `content_feedback_agg:${contentType}:${contentId}`;
+    const existing = await kv.get(aggKey);
+    const agg = existing ? JSON.parse(existing) : { up: 0, down: 0 };
+    agg[vote] = (agg[vote] ?? 0) + 1;
+    await kv.set(aggKey, JSON.stringify(agg));
+
+    return c.json({ ok: true });
+  } catch (err) {
+    console.error("[ContentFeedback] Failed to save:", err);
+    return c.json({ error: "Failed to save feedback" }, 500);
+  }
+});
+
 export default app;
