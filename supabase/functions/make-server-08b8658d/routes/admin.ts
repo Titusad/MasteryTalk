@@ -29,20 +29,18 @@ async function requireAdmin(c: any, next: any) {
   const token = authHeader.replace(/^Bearer\s+/i, "").trim();
 
   if (!token) {
-    console.warn("[requireAdmin] No token");
-    return c.json({ error: "Unauthorized" }, 401);
+    return c.json({ error: "Unauthorized", reason: "no_token", headerLen: authHeader.length }, 401);
   }
 
+  const parts = token.split(".");
   const email = jwtEmail(token)?.toLowerCase() ?? "";
-  console.log(`[requireAdmin] email="${email}" ADMIN_EMAILS=[${ADMIN_EMAILS.join(",")}]`);
 
   if (!email) {
-    return c.json({ error: "Unauthorized" }, 401);
+    return c.json({ error: "Unauthorized", reason: "no_email", parts: parts.length, tokenLen: token.length }, 401);
   }
 
   if (!ADMIN_EMAILS.includes(email)) {
-    console.warn(`[requireAdmin] Forbidden: ${email}`);
-    return c.json({ error: "Forbidden" }, 403);
+    return c.json({ error: "Forbidden", email, adminEmails: ADMIN_EMAILS }, 403);
   }
 
   await next();
