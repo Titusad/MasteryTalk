@@ -1,4 +1,4 @@
-import { SUPABASE_URL } from "@/services/supabase";
+import { SUPABASE_URL, getAuthToken } from "@/services/supabase";
 /**
  * ══════════════════════════════════════════════════════════════
  *  MasteryTalk PRO — Admin Dashboard (Internal)
@@ -124,9 +124,7 @@ interface AdminDashboardPageProps {
 const BASE = `${SUPABASE_URL}/functions/v1/make-server-08b8658d`;
 
 async function adminFetch(path: string) {
-  const supabase = getSupabaseClient();
-  const { data: { session } } = await supabase.auth.getSession();
-  const token = session?.access_token || "";
+  const token = await getAuthToken();
   const res = await fetch(`${BASE}${path}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
