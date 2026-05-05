@@ -10,24 +10,41 @@ const ADMIN_EMAILS = ADMIN_EMAILS_RAW
   ? ADMIN_EMAILS_RAW.split(",").map((e: string) => e.trim().toLowerCase())
   : [];
 
-// Uses the same getAuthUser() pattern as all other working routes.
+/** Decode JWT payload without network — extracts email from the base64 payload segment. */
+function jwtEmail(token: string): string | null {
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
+    const pad = parts[1].length % 4;
+    const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/") + "=".repeat(pad ? 4 - pad : 0);
+    const payload = JSON.parse(atob(base64));
+    return (payload.email as string) || null;
+  } catch {
+    return null;
+  }
+}
+
 async function requireAdmin(c: any, next: any) {
   const authHeader = c.req.header("Authorization") || c.req.header("authorization") || "";
-  console.log(`[requireAdmin] token present: ${!!authHeader}, ADMIN_EMAILS: [${ADMIN_EMAILS.join(",")}]`);
+  const token = authHeader.replace(/^Bearer\s+/i, "").trim();
 
-  const user = await getAuthUser(authHeader);
-  if (!user || !user.email) {
-    console.warn("[requireAdmin] getAuthUser returned no user");
+  if (!token) {
+    console.warn("[requireAdmin] No token");
     return c.json({ error: "Unauthorized" }, 401);
   }
 
-  const email = user.email.toLowerCase();
+  const email = jwtEmail(token)?.toLowerCase() ?? "";
+  console.log(`[requireAdmin] email="${email}" ADMIN_EMAILS=[${ADMIN_EMAILS.join(",")}]`);
+
+  if (!email) {
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+
   if (!ADMIN_EMAILS.includes(email)) {
-    console.warn(`[requireAdmin] Forbidden: ${email} not in [${ADMIN_EMAILS.join(",")}]`);
+    console.warn(`[requireAdmin] Forbidden: ${email}`);
     return c.json({ error: "Forbidden" }, 403);
   }
 
-  console.log(`[requireAdmin] Access granted: ${email}`);
   await next();
 }
 

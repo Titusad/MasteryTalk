@@ -363,5 +363,5 @@ Cada escenario activo tiene dos registros independientes:
 
 ---
 
-*v2.2 — 2026-05-04*
-*Cambios: Reorganización de docs/ en subcarpetas (business/ product/ engineering/ copy/). Todos los paths actualizados. Precios canónicos actualizados a modelo Founding Member ($49/3mo) / Program ($129/3mo) / Monthly ($49/mo). Beta v14.6. Fila Copy añadida a tabla de tareas.*
+*v2.3 — 2026-05-05*
+*Cambios: Precio Founding Member actualizado a $59/3mo ($19.67/mo). Nueva sección §8 "Análisis profundo antes de proponer soluciones" — protocolo de diagnóstico completo (causa raíz, todas las capas, rigor en seguridad/backend/frontend/mantenibilidad) antes de cualquier implementación.*
