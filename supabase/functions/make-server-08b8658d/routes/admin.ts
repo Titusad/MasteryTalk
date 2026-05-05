@@ -1,4 +1,5 @@
 import { Hono } from "npm:hono";
+import * as jose from "npm:jose";
 import * as kv from "../kv_store.ts";
 import { getAuthUser, getAdminClient } from "../_shared.ts";
 
@@ -10,19 +11,39 @@ const ADMIN_EMAILS = ADMIN_EMAILS_RAW
   ? ADMIN_EMAILS_RAW.split(",").map((e: string) => e.trim().toLowerCase())
   : [];
 
+// Verify JWT locally using SUPABASE_JWT_SECRET — no network round-trip, no cold-start issues.
 async function requireAdmin(c: any, next: any) {
   try {
-    const token = (c.req.header("authorization") || "").replace(/^Bearer\s+/i, "");
-    if (!token) return c.json({ error: "Unauthorized" }, 401);
-    const { data: { user }, error } = await getAdminClient().auth.getUser(token);
-    if (error || !user?.email) return c.json({ error: "Unauthorized" }, 401);
-    const email = user.email.toLowerCase();
+    const token = (c.req.header("authorization") || "").replace(/^Bearer\s+/i, "").trim();
+    if (!token) {
+      console.warn("[requireAdmin] No token provided");
+      return c.json({ error: "Unauthorized" }, 401);
+    }
+
+    const jwtSecret = (globalThis as any).Deno.env.get("SUPABASE_JWT_SECRET");
+    if (!jwtSecret) {
+      console.error("[requireAdmin] SUPABASE_JWT_SECRET not set");
+      return c.json({ error: "Server misconfigured" }, 500);
+    }
+
+    const secret = new TextEncoder().encode(jwtSecret);
+    const { payload } = await jose.jwtVerify(token, secret);
+    const email = ((payload.email as string) || "").toLowerCase();
+
+    if (!email) {
+      console.warn("[requireAdmin] JWT valid but no email in payload");
+      return c.json({ error: "Unauthorized" }, 401);
+    }
+
     if (!ADMIN_EMAILS.includes(email)) {
-      console.warn(`[Admin] Access denied for ${email}`);
+      console.warn(`[requireAdmin] Access denied for ${email}. Allowed: ${ADMIN_EMAILS.join(", ")}`);
       return c.json({ error: "Forbidden" }, 403);
     }
+
+    console.log(`[requireAdmin] Access granted for ${email}`);
     await next();
-  } catch {
+  } catch (err) {
+    console.error("[requireAdmin] JWT verification failed:", err);
     return c.json({ error: "Unauthorized" }, 401);
   }
 }
