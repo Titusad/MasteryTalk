@@ -154,7 +154,7 @@ const PILLAR_COLORS: Record<string, string> = {
 type SortKey = "displayName" | "sessionsCount" | "professionalProficiency" | "createdAt";
 
 export function AdminDashboardPage({ onBack, getToken: getTokenProp }: AdminDashboardPageProps) {
-  const adminFetch = makeAdminFetch(getTokenProp ?? getAuthToken);
+  const resolveToken = getTokenProp ?? getAuthToken;
   const [kpis, setKpis] = useState<AdminKPIs | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [selectedUser, setSelectedUser] = useState<UserDetail | null>(null);
@@ -172,6 +172,10 @@ export function AdminDashboardPage({ onBack, getToken: getTokenProp }: AdminDash
     setLoading(true);
     setError(null);
     try {
+      // Get token ONCE — concurrent calls cause Web Lock contention in Supabase client
+      const token = await resolveToken();
+      const adminFetch = makeAdminFetch(() => Promise.resolve(token));
+
       const [kpiData, userData, usageData, fbData] = await Promise.all([
         adminFetch("/admin/kpis"),
         adminFetch("/admin/users"),
@@ -196,7 +200,8 @@ export function AdminDashboardPage({ onBack, getToken: getTokenProp }: AdminDash
   const handleViewUser = async (userId: string) => {
     setDetailLoading(userId);
     try {
-      const detail = await adminFetch(`/admin/users/${userId}`);
+      const token = await resolveToken();
+      const detail = await makeAdminFetch(() => Promise.resolve(token))(`/admin/users/${userId}`);
       setSelectedUser(detail);
       setView("detail");
     } catch (err: any) {
