@@ -46,9 +46,19 @@ async function requireAdmin(c: any, next: any) {
   await next();
 }
 
-app.use("/make-server-08b8658d/admin/*", requireAdmin);
+/** Call at the start of every admin route — same pattern as other authenticated routes. */
+async function checkAdmin(c: any): Promise<Response | null> {
+  const authHeader = c.req.header("Authorization") || c.req.header("authorization") || "";
+  const token = authHeader.replace(/^Bearer\s+/i, "").trim();
+  if (!token) return c.json({ error: "Unauthorized", reason: "no_token" }, 401);
+  const email = jwtEmail(token)?.toLowerCase() ?? "";
+  if (!email) return c.json({ error: "Unauthorized", reason: "no_email", parts: token.split(".").length }, 401);
+  if (!ADMIN_EMAILS.includes(email)) return c.json({ error: "Forbidden", email, adminEmails: ADMIN_EMAILS }, 403);
+  return null;
+}
 
 app.get("/make-server-08b8658d/admin/users", async (c: any) => {
+  const deny = await checkAdmin(c); if (deny) return deny;
   try {
     const adminSupabase = getAdminClient();
 
@@ -99,6 +109,7 @@ app.get("/make-server-08b8658d/admin/users", async (c: any) => {
 
 /** GET /admin/users/:id — Full user detail with sessions & SR cards */
 app.get("/make-server-08b8658d/admin/users/:id", async (c: any) => {
+  const deny = await checkAdmin(c); if (deny) return deny;
   try {
     const userId = c.req.param("id");
     const profileRaw = await kv.get(`profile:${userId}`);
@@ -153,6 +164,7 @@ app.get("/make-server-08b8658d/admin/users/:id", async (c: any) => {
 
 /** GET /admin/kpis — Platform-wide aggregated metrics */
 app.get("/make-server-08b8658d/admin/kpis", async (c: any) => {
+  const deny = await checkAdmin(c); if (deny) return deny;
   try {
     const adminSupabase = getAdminClient();
 
@@ -251,6 +263,7 @@ app.get("/make-server-08b8658d/admin/kpis", async (c: any) => {
 // GET /admin/api-usage — API cost tracking (30d)
 // ═══════════════════════════════════════════════════════════════
 app.get("/make-server-08b8658d/admin/api-usage", async (c: any) => {
+  const deny = await checkAdmin(c); if (deny) return deny;
   try {
     const adminSupabase = getAdminClient();
 
@@ -352,6 +365,7 @@ app.get("/make-server-08b8658d/admin/api-usage", async (c: any) => {
 // GET /admin/content-feedback — Feedback metrics (thumbs)
 // ═══════════════════════════════════════════════════════════════
 app.get("/make-server-08b8658d/admin/content-feedback", async (c: any) => {
+  const deny = await checkAdmin(c); if (deny) return deny;
   try {
     const adminSupabase = getAdminClient();
 
