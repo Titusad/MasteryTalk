@@ -581,10 +581,12 @@ export function LandingPage({
                           const legalRoutes: Record<string, string> = {
                             "Privacidad": "#privacy", "Privacy": "#privacy", "Privacidade": "#privacy",
                             "Términos": "#terms", "Terms": "#terms", "Termos": "#terms",
+                            "Cookies": "#cookies",
+                            "Transparencia IA": "#transparency", "AI Transparency": "#transparency", "Transparência IA": "#transparency",
                           };
                           const href = legalRoutes[item];
                           return href ? (
-                            <a key={item} href={href} target="_blank" rel="noopener noreferrer" className="block text-[#4B505B] hover:text-gray-900 cursor-pointer transition-colors">{item}</a>
+                            <a key={item} href={href} className="block text-[#4B505B] hover:text-gray-900 cursor-pointer transition-colors">{item}</a>
                           ) : (
                             <a key={item} className="block text-[#4B505B] hover:text-gray-900 cursor-pointer transition-colors">{item}</a>
                           );

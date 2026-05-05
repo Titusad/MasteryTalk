@@ -484,7 +484,7 @@ export const ES: LandingCopy = {
     columns: [
       { title: "Producto", items: ["Cómo funciona", "Funcionalidades", "Precios"] },
       { title: "Empresa", items: ["Sobre nosotros", "Blog", "Contacto"] },
-      { title: "Legal", items: ["Privacidad", "Términos", "Cookies"] },
+      { title: "Legal", items: ["Privacidad", "Términos", "Cookies", "Transparencia IA"] },
     ],
     copyright: "© 2026 MasteryTalk.pro. Todos los derechos reservados.",
     dashboardLink: "Ir al dashboard",
@@ -807,7 +807,7 @@ export const PT: LandingCopy = {
     columns: [
       { title: "Produto", items: ["Como funciona", "Funcionalidades", "Preços"] },
       { title: "Empresa", items: ["Sobre nós", "Blog", "Contato"] },
-      { title: "Legal", items: ["Privacidade", "Termos", "Cookies"] },
+      { title: "Legal", items: ["Privacidade", "Termos", "Cookies", "Transparência IA"] },
     ],
     copyright: "© 2026 MasteryTalk.pro. Todos os direitos reservados.",
     dashboardLink: "Ir ao dashboard",
@@ -1130,7 +1130,7 @@ export const EN: LandingCopy = {
     columns: [
       { title: "Product", items: ["How It Works", "Features", "Pricing"] },
       { title: "Company", items: ["About Us", "Blog", "Contact"] },
-      { title: "Legal", items: ["Privacy", "Terms", "Cookies"] },
+      { title: "Legal", items: ["Privacy", "Terms", "Cookies", "AI Transparency"] },
     ],
     copyright: "© 2026 MasteryTalk.pro. All rights reserved.",
     dashboardLink: "Go to dashboard",
