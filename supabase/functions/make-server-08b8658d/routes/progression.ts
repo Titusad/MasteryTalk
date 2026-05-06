@@ -80,15 +80,17 @@ app.get("/make-server-08b8658d/progression", async (c) => {
         console.log(`[Progression GET] progressive unlock — paths: [${[...pathsToUnlock].join(", ")}] for ${user.id}`);
       }
     } else {
-      // ── Free user: unlock Level 1 of english_goal path only after ≥1 session ──
+      // ── Free user: unlock first 2 levels of english_goal path after ≥1 session ──
       const sessionsCount = (profile?.stats?.sessions_count as number) ?? 0;
       if (englishGoal && sessionsCount >= 1 && merged[englishGoal]) {
         const goalPath = merged[englishGoal] as Record<string, { status: string }>;
-        const firstLevelId = Object.keys(goalPath)[0];
-        if (firstLevelId && goalPath[firstLevelId]?.status === "locked") {
-          goalPath[firstLevelId] = { ...goalPath[firstLevelId], status: "unlocked" };
-        }
-        console.log(`[Progression GET] free unlock — level 1 of ${englishGoal} for ${user.id}`);
+        const levelIds = Object.keys(goalPath);
+        levelIds.slice(0, 2).forEach(levelId => {
+          if (goalPath[levelId]?.status === "locked") {
+            goalPath[levelId] = { ...goalPath[levelId], status: "unlocked" };
+          }
+        });
+        console.log(`[Progression GET] free unlock — levels 1-2 of ${englishGoal} for ${user.id}`);
       }
     }
 

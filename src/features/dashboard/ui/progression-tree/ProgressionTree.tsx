@@ -76,25 +76,24 @@ interface ProgressionTreeProps {
 }
 
 export function ProgressionTree({ onStartLevel, onDrillComplete, onLockedClick, primaryPath, englishGoal }: ProgressionTreeProps) {
-  const [activeTab, setActiveTab] = useState<PathId>(() =>
-    (englishGoal as PathId | null) && VISIBLE_PATHS.some(p => p.id === englishGoal)
-      ? englishGoal as PathId
-      : "self-intro"
-  );
+  const [activeTab, setActiveTab] = useState<PathId>(() => {
+    if (englishGoal && VISIBLE_PATHS.some(p => p.id === englishGoal)) return englishGoal as PathId;
+    const first = VISIBLE_PATHS.find(p => p.id !== "self-intro");
+    return (first?.id ?? "interview") as PathId;
+  });
   const [chooseNextOpen, setChooseNextOpen] = useState(false);
   const { state, loading, refetch: fetchState } = useProgressionState();
 
   useEffect(() => {
     const goal = state.activeGoal || englishGoal;
-    if (goal) {
+    if (goal && goal !== "self-intro") {
       const isVisible = VISIBLE_PATHS.some(p => p.id === goal);
-      setActiveTab(isVisible ? goal as PathId : "self-intro");
+      if (isVisible) setActiveTab(goal as PathId);
     }
   }, [state.activeGoal, englishGoal]);
 
-  // Reorder tabs: self-intro first, englishGoal second, rest after
+  // Tabs: englishGoal first, rest after — self-intro hidden (launched from HeroCard)
   const orderedPaths = [
-    ...VISIBLE_PATHS.filter(p => p.id === "self-intro"),
     ...VISIBLE_PATHS.filter(p => p.id === englishGoal && p.id !== "self-intro"),
     ...VISIBLE_PATHS.filter(p => p.id !== "self-intro" && p.id !== englishGoal),
   ];
