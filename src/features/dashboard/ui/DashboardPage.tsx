@@ -9,11 +9,12 @@
  */
 import { useState } from "react";
 import { motion } from "motion/react";
-import { Zap, MessageCircle } from "lucide-react";
-import { MiniFooter } from "@/shared/ui";
+import { MessageCircle } from "lucide-react";
+import { MiniFooter, AppModal, GoalPickerStep } from "@/shared/ui";
 import type { LandingLang } from "@/shared/i18n/landing-i18n";
 import { PathPurchaseModal } from "@/widgets/PathPurchaseModal";
 import type { PurchaseType, OnboardingProfile } from "@/services/types";
+
 
 import { useDashboardData } from "../model";
 import { useProgressionState } from "../model/useProgressionState";
@@ -24,7 +25,6 @@ import { SRDashboardCard } from "./SRDashboardCard";
 import { PracticePathsModule } from "./PracticePathsModule";
 import { CrossPathCard } from "./CrossPathCard";
 import { RecommendedLessonsCard } from "./RecommendedLessonsCard";
-import { GoalAnchorCard } from "./GoalAnchorCard";
 import { ProgressChartCard } from "./ProgressChartCard";
 import { SinceYouStartedCard } from "./SinceYouStartedCard";
 import { LessonModal } from "@/widgets/LessonModal";
@@ -51,6 +51,7 @@ export function DashboardPage({
   onStartNewPractice,
   onNavigateToLibrary,
   onNavigateToAccount,
+  onProfileUpdate,
   userProfile,
   lang = "en",
   ownedPaths = [],
@@ -63,6 +64,7 @@ export function DashboardPage({
   });
 
   const [upsellOpen, setUpsellOpen] = useState(false);
+  const [showGoalEdit, setShowGoalEdit] = useState(false);
   const [pendingScenario, setPendingScenario] = useState<string | null>(null);
   const [dashLessonOpen, setDashLessonOpen] = useState(false);
   const [dashLessons, setDashLessons] = useState<MicroLesson[]>([]);
@@ -161,47 +163,33 @@ export function DashboardPage({
           cefrProgress={data.cefrProgress}
           velocitySignal={data.velocitySignal}
           subscriptionStartDate={(userProfile as any)?.subscription_start_date ?? null}
+          englishGoal={userProfile?.englishGoal}
+          onEditGoal={() => setShowGoalEdit(true)}
           onStartPractice={handleQuickStart}
         />
 
-        {/* ── Row 2: 4 actionable cards (WhatsApp moved to banner above) ── */}
+        {/* ── Row 2: 4 info widgets ── */}
         <motion.div
           className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.08 }}
         >
-          <SRDashboardCard totalSessions={data.totalSessions} />
-
-          {/* Emergency Prep / War Room */}
-          <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-6 flex flex-col">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-xs font-medium uppercase tracking-wider text-[#94a3b8]">War Room</p>
-              <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${warRoomExhausted ? "bg-red-50 text-red-500" : "bg-[#f0f4f8] text-[#62748e]"}`}>
-                {warRoomCount}/{WAR_ROOM_LIMIT} this month
-              </span>
-            </div>
-            <p className="text-sm font-semibold text-[#0f172b] mb-1">Meeting in 30 minutes?</p>
-            <p className="text-xs text-[#62748e] leading-relaxed mb-4 flex-1">
-              {warRoomExhausted
-                ? "You've used all 5 War Room sessions for this month. They reset on the 1st."
-                : "Paste the agenda or invite — I'll build a targeted session right now."}
-            </p>
-            <button
-              disabled={warRoomExhausted}
-              onClick={() => !warRoomExhausted && handleStartSession("Emergency practice session", "meeting", undefined, undefined, true)}
-              className={`w-full flex items-center justify-center gap-2 rounded-lg text-sm font-medium py-2.5 transition-colors ${
-                warRoomExhausted
-                  ? "bg-[#f1f5f9] text-[#94a3b8] cursor-not-allowed"
-                  : "bg-[#0f172b] text-white hover:bg-[#1d293d] cursor-pointer"
-              }`}
-            >
-              <Zap className="w-3.5 h-3.5" />
-              {warRoomExhausted ? "Limit reached" : "Start emergency prep"}
-            </button>
-          </div>
-
-          {/* News */}
+          <SRDashboardCard
+            totalSessions={data.totalSessions}
+            onStartSession={handleQuickStart}
+          />
+          <ProgressChartCard onStartSession={handleQuickStart} />
+          <RecommendedLessonsCard
+            pillarScores={userProfile?.stats?.pillarScores as Record<string, number> | undefined}
+            onOpenLesson={(lessons, idx) => {
+              setDashLessons(lessons);
+              setDashLessonIndex(idx);
+              setDashLessonOpen(true);
+            }}
+            onNavigateToLibrary={onNavigateToLibrary}
+            onStartSession={handleQuickStart}
+          />
           <PlatformNewsCard />
         </motion.div>
 
@@ -218,35 +206,14 @@ export function DashboardPage({
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.08 }}
             >
-              <GoalAnchorCard
-                englishGoal={userProfile?.englishGoal}
-                daysActive={data.streak ?? 0}
-                onEditGoal={() => onNavigateToAccount?.()}
-              />
-              <ProgressChartCard />
               {data.sinceYouStarted && data.sinceYouStarted.length > 0 && (
                 <SinceYouStartedCard data={data.sinceYouStarted} />
               )}
               <CrossPathCard
                 perPathStats={data.perPathStats}
                 progressionState={progressionLoading ? null : progressionState}
+                onStartSession={handleQuickStart}
               />
-              {(() => {
-                const pillarScores = userProfile?.stats?.pillarScores as Record<string, number> | null;
-                const sessionsCount = userProfile?.stats?.sessions_count ?? 0;
-                if (!pillarScores || sessionsCount < 1) return null;
-                return (
-                  <RecommendedLessonsCard
-                    pillarScores={pillarScores}
-                    onOpenLesson={(lessons, idx) => {
-                      setDashLessons(lessons);
-                      setDashLessonIndex(idx);
-                      setDashLessonOpen(true);
-                    }}
-                    onNavigateToLibrary={onNavigateToLibrary}
-                  />
-                );
-              })()}
             </motion.div>
 
             <motion.div
@@ -285,6 +252,22 @@ export function DashboardPage({
           onComplete={() => {}}
         />
       )}
+
+      <AppModal
+        open={showGoalEdit}
+        onClose={() => setShowGoalEdit(false)}
+        size="md"
+        showCloseButton
+      >
+        <GoalPickerStep
+          initialValue={userProfile?.englishGoal}
+          ctaLabel="Save Goal"
+          onComplete={(goal) => {
+            onProfileUpdate?.({ englishGoal: goal } as OnboardingProfile);
+            setShowGoalEdit(false);
+          }}
+        />
+      </AppModal>
     </div>
   );
 }

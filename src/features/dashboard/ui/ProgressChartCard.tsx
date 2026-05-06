@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
 import { TrendingUp } from "lucide-react";
 import { motion } from "motion/react";
+
+const PILLARS = ["Vocabulary", "Grammar", "Fluency", "Tone", "Persuasion"];
 import { fetchSessions } from "@/services/adapters/supabase/dashboard.supabase";
 import type { PersistedSession } from "@/services/adapters/supabase/dashboard.supabase";
 
@@ -50,7 +52,11 @@ function buildChartData(sessions: PersistedSession[]): ChartPoint[] {
   });
 }
 
-export function ProgressChartCard() {
+interface ProgressChartCardProps {
+  onStartSession?: () => void;
+}
+
+export function ProgressChartCard({ onStartSession }: ProgressChartCardProps) {
   const [data, setData] = useState<ChartPoint[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -64,7 +70,48 @@ export function ProgressChartCard() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading || data.length < 3) return null;
+  if (loading) return null;
+
+  if (data.length < 3) {
+    return (
+      <motion.div
+        className="bg-white rounded-2xl border border-[#e2e8f0] p-4 h-[200px] flex flex-col"
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <div className="flex items-center gap-2 mb-3">
+          <TrendingUp className="w-4 h-4 text-[#94a3b8]" />
+          <p className="text-xs font-medium uppercase tracking-wider text-[#94a3b8]">Score Progression</p>
+        </div>
+        <div className="flex flex-col gap-3">
+          <p className="text-xs text-[#62748e] leading-relaxed">
+            After each session we score you across {PILLARS.length} pillars:{" "}
+            <span className="text-[#0f172b] font-medium">{PILLARS.join(", ")}</span>.
+            {" "}This chart tracks your evolution over time.
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {PILLARS.map((p) => (
+              <span
+                key={p}
+                className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#f0f4f8] text-[#62748e]"
+              >
+                {p}
+              </span>
+            ))}
+          </div>
+          {onStartSession && (
+            <button
+              onClick={onStartSession}
+              className="text-xs font-medium text-[#6366f1] hover:text-[#4f46e5] transition-colors cursor-pointer text-left"
+            >
+              Start your first session →
+            </button>
+          )}
+        </div>
+      </motion.div>
+    );
+  }
 
   const minScore = Math.max(0, Math.min(...data.map((d) => d.avg)) - 8);
   const maxScore = Math.min(100, Math.max(...data.map((d) => d.avg)) + 8);
@@ -75,7 +122,7 @@ export function ProgressChartCard() {
 
   return (
     <motion.div
-      className="bg-white rounded-2xl border border-[#e2e8f0] p-4"
+      className="bg-white rounded-2xl border border-[#e2e8f0] p-4 h-[200px] flex flex-col"
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
@@ -86,7 +133,7 @@ export function ProgressChartCard() {
         <span className="ml-auto text-[11px] text-[#94a3b8]">last {data.length} sessions</span>
       </div>
 
-      <ResponsiveContainer width="100%" height={120}>
+      <ResponsiveContainer width="100%" height={100}>
         <LineChart data={data} margin={{ top: 4, right: 4, left: -24, bottom: 0 }}>
           <XAxis
             dataKey="label"

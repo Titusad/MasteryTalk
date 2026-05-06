@@ -14,9 +14,10 @@ interface SRPhrase {
 interface SRDashboardCardProps {
   totalSessions: number;
   onPracticeAll?: () => void;
+  onStartSession?: () => void;
 }
 
-export function SRDashboardCard({ totalSessions, onPracticeAll }: SRDashboardCardProps) {
+export function SRDashboardCard({ totalSessions, onPracticeAll, onStartSession }: SRDashboardCardProps) {
   const [phrases, setPhrases] = useState<SRPhrase[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -143,14 +144,24 @@ export function SRDashboardCard({ totalSessions, onPracticeAll }: SRDashboardCar
   if (totalSessions === 0) {
     return (
       <CardWrapper>
-        <div className="flex flex-col items-center justify-center text-center gap-3 py-2">
-          <span className="w-12 h-12 rounded-full bg-[#f8fafc] border border-[#e2e8f0] flex items-center justify-center">
-            <RefreshCw className="w-5 h-5 text-[#62748e]" />
+        <div className="flex flex-col gap-3 py-1">
+          <span className="w-10 h-10 rounded-full bg-[#f8fafc] border border-[#e2e8f0] flex items-center justify-center">
+            <RefreshCw className="w-4 h-4 text-[#62748e]" />
           </span>
-          <p className="text-base font-semibold text-[#0f172b]">Pronunciation Review</p>
-          <p className="text-sm text-[#62748e] leading-relaxed max-w-[220px]">
-            Complete your first session to unlock daily pronunciation practice with spaced repetition.
-          </p>
+          <div>
+            <p className="text-sm font-semibold text-[#0f172b] mb-1">Pronunciation Review</p>
+            <p className="text-xs text-[#62748e] leading-relaxed">
+              After each session we extract the phrases you struggled with and schedule them using a Leitner spaced-repetition system — so they stick long-term.
+            </p>
+          </div>
+          {onStartSession && (
+            <button
+              onClick={onStartSession}
+              className="text-xs font-medium text-[#6366f1] hover:text-[#4f46e5] transition-colors cursor-pointer text-left"
+            >
+              Start your first session →
+            </button>
+          )}
         </div>
       </CardWrapper>
     );

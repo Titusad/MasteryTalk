@@ -9,7 +9,7 @@
  * Landing page header is a separate marketing component (per DESIGN_SYSTEM §6.1).
  */
 
-import { ArrowLeft, LogOut, BookOpen, User, ChevronDown } from "lucide-react";
+import { ArrowLeft, LogOut, BookOpen, User, ChevronDown, Zap } from "lucide-react";
 import type React from "react";
 import { useState, useRef, useEffect } from "react";
 import { BrandLogo } from "./BrandLogo";
@@ -94,6 +94,9 @@ export interface AppHeaderProps {
   onNavigateToAccount?: () => void;
   onNavigateToHistory?: () => void;
   onNavigateToLibrary?: () => void;
+  /** Quick Session button (dashboard only) */
+  onQuickSession?: () => void;
+  quickSessionDisabled?: boolean;
   /** Extra content rendered left of the avatar/logout cluster (e.g. PathBadge) */
   rightSlot?: React.ReactNode;
 
@@ -115,6 +118,8 @@ export function AppHeader({
   onNavigateToAccount,
   onNavigateToHistory,
   onNavigateToLibrary,
+  onQuickSession,
+  quickSessionDisabled,
   rightSlot,
   leftSlot,
   onGoToDashboard,
@@ -188,6 +193,21 @@ export function AppHeader({
               >
                 <BookOpen className="w-4 h-4" />
                 Lessons Library
+              </button>
+            )}
+
+            {onQuickSession !== undefined && (
+              <button
+                onClick={quickSessionDisabled ? undefined : onQuickSession}
+                disabled={quickSessionDisabled}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  quickSessionDisabled
+                    ? "bg-[#f1f5f9] text-[#94a3b8] cursor-not-allowed"
+                    : "bg-[#0f172b] text-white hover:bg-[#1d293d] cursor-pointer"
+                }`}
+              >
+                <Zap className="w-3.5 h-3.5" />
+                Quick Session
               </button>
             )}
 

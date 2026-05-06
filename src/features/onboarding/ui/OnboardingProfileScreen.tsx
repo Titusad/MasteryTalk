@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import { SUPABASE_URL, getAuthToken } from "@/services/supabase";
 import type { OnboardingProfile } from "@/services/types";
+import { GoalPickerStep } from "@/shared/ui";
 
 /* ═══════════════════════ OPTIONS ═══════════════════════ */
 
@@ -203,12 +204,19 @@ function CustomSelect({
 interface OnboardingProfileScreenProps {
   onComplete: (profile: OnboardingProfile) => void;
   existingProfile?: OnboardingProfile | null;
+  userName?: string;
 }
 
 export function OnboardingProfileScreen({
   onComplete,
   existingProfile,
+  userName,
 }: OnboardingProfileScreenProps) {
+  const firstName = userName?.split(" ")[0] ?? "";
+  /* ── Step state ── */
+  const [step, setStep] = useState<1 | 2>(1);
+  const [pendingProfile, setPendingProfile] = useState<OnboardingProfile | null>(null);
+
   /* ── Manual fields state ── */
   const [position, setPosition] = useState(existingProfile?.position ?? "");
   const [customPosition, setCustomPosition] = useState("");
@@ -323,7 +331,7 @@ export function OnboardingProfileScreen({
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  /* ── Submit ── */
+  /* ── Step 1 → Step 2 ── */
   const handleContinue = () => {
     const industryLabel =
       INDUSTRY_OPTIONS.find((o) => o.value === industry)?.label ||
@@ -351,7 +359,13 @@ export function OnboardingProfileScreen({
       profile.keyExperience = achievements.trim();
     }
 
-    onComplete(profile);
+    setPendingProfile(profile);
+    setStep(2);
+  };
+
+  /* ── Step 2 → Complete ── */
+  const handleGoalComplete = (goal: string) => {
+    onComplete({ ...(pendingProfile ?? {}), englishGoal: goal } as OnboardingProfile);
   };
 
   return (
@@ -382,7 +396,19 @@ export function OnboardingProfileScreen({
             scrollbarColor: "#cbd5e1 transparent",
           }}
         >
-        <div className="px-7 pt-8 pb-8">
+        {/* ── Step indicator ── */}
+        <div className="flex items-center justify-center gap-2 pt-6 pb-2 px-7">
+          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium transition-colors ${step >= 1 ? "bg-[#0f172b] text-white" : "bg-[#e2e8f0] text-[#94a3b8]"}`}>
+            {step > 1 ? <Check className="w-3 h-3" /> : "1"}
+          </div>
+          <div className={`w-10 h-px transition-colors ${step === 2 ? "bg-[#0f172b]" : "bg-[#e2e8f0]"}`} />
+          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium transition-colors ${step === 2 ? "bg-[#0f172b] text-white" : "bg-[#e2e8f0] text-[#94a3b8]"}`}>
+            2
+          </div>
+        </div>
+
+        {step === 1 && (
+        <div className="px-7 pt-6 pb-8">
           {/* ── Header ── */}
           <div className="text-center mb-7">
             <div className="w-12 h-12 rounded-2xl bg-[#0f172b] flex items-center justify-center mx-auto mb-4">
@@ -392,10 +418,10 @@ export function OnboardingProfileScreen({
               className="text-xl md:text-2xl text-[#0f172b] mb-1.5"
               style={{ lineHeight: 1.2 }}
             >
-            Welcome!
+            Nice to meet you {firstName ? `, ${firstName}` : ""}! 
             </h1>
             <p className="text-[#62748e] text-sm mx-auto">
-              Nice to meet you! Please complete your professional profile so I can coach you effectively.
+              To personalize your experience, please complete your professional profile.
             </p>
           </div>
 
@@ -480,7 +506,7 @@ export function OnboardingProfileScreen({
                     Upload your CV / Resume
                   </span>
                   <span className="text-xs text-[#94a3b8]">
-                    Recommended if you're practicing for interviews
+                    Recommended to optimize your training, specially in Interview contexts.
                   </span>
                 </div>
               </div>
@@ -551,6 +577,9 @@ export function OnboardingProfileScreen({
                         >
                           Reading your document...
                         </p>
+                        <span className="text-xs text-[#94a3b8]">
+                        This information will be stored in your profile. We'll never share it with third parties.
+                        </span>
                       </div>
                     )}
 
@@ -589,7 +618,7 @@ export function OnboardingProfileScreen({
                             className="mt-0.5 w-4 h-4 rounded border-[#c7d2e0] text-[#0f172b] focus:ring-[#0f172b] cursor-pointer"
                           />
                           <span className="text-xs text-[#45556c] leading-relaxed">
-                            I authorize using my CV data to personalize my coaching sessions and to receive job proposals.
+                            Check here if you want to receive Job Proposals based on your CV. 
                           </span>
                         </label>
                       </div>
@@ -651,6 +680,14 @@ export function OnboardingProfileScreen({
             )}
           </button>
         </div>
+        )}
+        {step === 2 && (
+          <GoalPickerStep
+            onComplete={handleGoalComplete}
+            onBack={() => setStep(1)}
+            initialValue={existingProfile?.englishGoal}
+          />
+        )}
         </div>{/* /scroll container */}
       </motion.div>
     </div>

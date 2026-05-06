@@ -691,6 +691,7 @@ export default function App() {
             <OnboardingProfileScreen
               existingProfile={userProfile}
               onComplete={handleOnboardingComplete}
+              userName={authUser?.displayName || authUser?.email?.split("@")[0]}
             />
           )}
 
@@ -789,6 +790,8 @@ export default function App() {
                 }}
                 onNavigateToHistory={handleNavigateToHistory}
                 onNavigateToLibrary={handleNavigateToLibrary}
+                onQuickSession={page === "dashboard" ? () => handleStartNewPractice("Emergency practice session", "meeting", undefined, undefined, true) : undefined}
+                quickSessionDisabled={!(userProfile as any)?.subscription_active || (userProfile?.stats?.sessions_count ?? 0) < 1}
               />
               {page === "dashboard" && (
                 <DashboardPage

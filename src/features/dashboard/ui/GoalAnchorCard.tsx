@@ -1,6 +1,14 @@
 import { Target, Pencil } from "lucide-react";
 import { motion } from "motion/react";
 
+const GOAL_LABELS: Record<string, string> = {
+  interview: "Job Interview",
+  sales: "Sales & Negotiation",
+  meeting: "Team Meetings",
+  presentation: "Presentations",
+  culture: "Culture & Teamwork",
+};
+
 interface GoalAnchorCardProps {
   englishGoal?: string;
   daysActive: number;
@@ -8,7 +16,9 @@ interface GoalAnchorCardProps {
 }
 
 export function GoalAnchorCard({ englishGoal, daysActive, onEditGoal }: GoalAnchorCardProps) {
-  if (!englishGoal) {
+  const displayGoal = englishGoal ? (GOAL_LABELS[englishGoal] ?? englishGoal) : undefined;
+
+  if (!displayGoal) {
     return (
       <motion.div
         className="bg-white rounded-2xl border border-[#e2e8f0] p-4"
@@ -56,7 +66,7 @@ export function GoalAnchorCard({ englishGoal, daysActive, onEditGoal }: GoalAnch
         </button>
       </div>
       <p className="text-sm font-medium text-white leading-snug mb-3">
-        "{englishGoal}"
+        "{displayGoal}"
       </p>
       <p className="text-xs text-white/40">
         {daysActive} day{daysActive !== 1 ? "s" : ""} practicing · keep going

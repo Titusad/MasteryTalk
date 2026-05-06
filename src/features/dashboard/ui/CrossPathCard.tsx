@@ -4,6 +4,7 @@ import type { ProgressionState, LevelState } from "@/services/types";
 interface CrossPathCardProps {
   perPathStats: Record<string, { sessions: number; avgScore: number | null }>;
   progressionState?: ProgressionState | null;
+  onStartSession?: () => void;
 }
 
 const PATH_LABEL: Record<string, string> = {
@@ -14,12 +15,47 @@ const PATH_LABEL: Record<string, string> = {
   culture: "U.S. Business Culture",
 };
 
-export function CrossPathCard({ perPathStats, progressionState }: CrossPathCardProps) {
+export function CrossPathCard({ perPathStats, progressionState, onStartSession }: CrossPathCardProps) {
   const entries = Object.entries(perPathStats).filter(
     ([key]) => key !== "self-intro" && PATH_LABEL[key]
   );
 
-  if (entries.length < 2) return null;
+  if (entries.length < 2) {
+    return (
+      <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-6">
+        <p className="text-xs font-medium uppercase tracking-wider text-[#94a3b8] mb-4">
+          Progress Across Paths
+        </p>
+        <div className="flex flex-col gap-3">
+          <span className="w-10 h-10 rounded-full bg-[#f8fafc] border border-[#e2e8f0] flex items-center justify-center">
+            <BarChart2 className="w-4 h-4 text-[#62748e]" />
+          </span>
+          <p className="text-xs text-[#62748e] leading-relaxed">
+            Once you practice across multiple paths, here you'll see a side-by-side comparison of your level completions and scores.
+          </p>
+          <div className="space-y-2">
+            {Object.keys(PATH_LABEL).slice(0, 3).map((key) => (
+              <div key={key}>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs text-[#94a3b8]">{PATH_LABEL[key]}</span>
+                  <span className="text-xs text-[#94a3b8]">0/6 levels</span>
+                </div>
+                <div className="h-1.5 bg-[#f0f4f8] rounded-full" />
+              </div>
+            ))}
+          </div>
+          {onStartSession && (
+            <button
+              onClick={onStartSession}
+              className="text-xs font-medium text-[#6366f1] hover:text-[#4f46e5] transition-colors cursor-pointer text-left"
+            >
+              Start your first session →
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   const TOTAL_LEVELS = 6;
   const sorted = [...entries].sort((a, b) => b[1].sessions - a[1].sessions);

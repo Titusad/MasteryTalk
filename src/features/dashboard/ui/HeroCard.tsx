@@ -6,11 +6,19 @@
 import { useState, useMemo } from "react";
 import DOMPurify from "dompurify";
 import { motion } from "motion/react";
-import { ChevronDown, Zap, ArrowRight, Check } from "lucide-react";
+import { ChevronDown, Zap, ArrowRight, Check, Pencil } from "lucide-react";
 import { ProficiencyRing } from "./ProficiencyRing";
 import type { UserState, ChurnGapSignal, CEFRProgress, VelocitySignal } from "../model/dashboard.computations";
 import type { RadarDataPoint } from "../model/dashboard.constants";
 import { PILLAR_NAMES } from "../model/dashboard.constants";
+
+const GOAL_LABELS: Record<string, string> = {
+  interview: "Job Interview",
+  sales: "Sales & Negotiation",
+  meeting: "Team Meetings",
+  presentation: "Presentations",
+  culture: "Culture & Teamwork",
+};
 
 const PILLAR_COLOR_MAP: Record<string, string> = {
   Vocabulary: "#5b3eb5",
@@ -37,6 +45,8 @@ interface HeroCardProps {
   cefrProgress: CEFRProgress | null;
   velocitySignal: VelocitySignal | null;
   subscriptionStartDate?: string | null;
+  englishGoal?: string;
+  onEditGoal?: () => void;
   onStartPractice: () => void;
 }
 
@@ -63,8 +73,11 @@ export function HeroCard({
   cefrProgress,
   velocitySignal,
   subscriptionStartDate,
+  englishGoal,
+  onEditGoal,
   onStartPractice,
 }: HeroCardProps) {
+  const goalLabel = englishGoal ? (GOAL_LABELS[englishGoal] ?? englishGoal) : null;
   const [expandedMetrics, setExpandedMetrics] = useState(false);
   const firstName = userName?.trim().split(" ")[0] || "Explorer";
 
@@ -77,7 +90,9 @@ export function HeroCard({
       return {
         label: "START HERE",
         title: "Professional Self-Introduction",
-        subtitle: "3 min · Calibrate your baseline score",
+        subtitle: goalLabel
+          ? `To reach your goal of ${goalLabel}, let's calibrate your baseline.`
+          : "3 min · Calibrate your baseline score",
         ctaLabel: "Start Warm-Up",
         ctaAction: onStartPractice,
         wrapperClass: "bg-[#f0f4f8] border border-[#e2e8f0]",
@@ -170,6 +185,24 @@ export function HeroCard({
                 </span>
               )}
             </div>
+
+            {/* Goal pill */}
+            {goalLabel && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium text-[#6366f1] bg-[#eef2ff] px-2.5 py-1 rounded-full">
+                  Goal: {goalLabel}
+                </span>
+                {onEditGoal && (
+                  <button
+                    onClick={onEditGoal}
+                    className="p-1 rounded-md hover:bg-[#f1f5f9] transition-colors cursor-pointer"
+                    title="Change goal"
+                  >
+                    <Pencil className="w-3 h-3 text-[#94a3b8]" />
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* Diagnosis */}
             <p
