@@ -127,13 +127,11 @@ const BASE = `${SUPABASE_URL}/functions/v1/make-server-08b8658d`;
 function makeAdminFetch(getToken: () => Promise<string>) {
   return async function adminFetch(path: string) {
     const token = await getToken();
-    console.log(`[adminFetch] ${path} — token length: ${token?.length ?? 0}, starts: ${token?.substring(0, 20)}`);
     const res = await fetch(`${BASE}${path}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (!res.ok) {
       const err = await res.text();
-      console.error(`[adminFetch] ${path} → ${res.status}: ${err}`);
       throw new Error(`${res.status}: ${err}`);
     }
     return res.json();

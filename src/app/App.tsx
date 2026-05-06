@@ -826,20 +826,6 @@ export default function App() {
               <AdminDashboardPage
                 onBack={handleBackToDashboard}
                 getToken={async () => {
-                  // Read directly from localStorage — bypasses all client-side timing issues
-                  const STORAGE_KEY = "sb-zkuryztcwmazspscomiu-auth-token";
-                  try {
-                    const raw = localStorage.getItem(STORAGE_KEY);
-                    if (raw) {
-                      const parsed = JSON.parse(raw);
-                      const token = parsed?.access_token as string | undefined;
-                      if (token && token.length > 20) {
-                        console.log("[admin getToken] localStorage hit, length:", token.length);
-                        return token;
-                      }
-                    }
-                  } catch {}
-                  console.log("[admin getToken] localStorage miss — falling back to getAuthToken()");
                   const { getAuthToken } = await import("../services/supabase");
                   return getAuthToken();
                 }}

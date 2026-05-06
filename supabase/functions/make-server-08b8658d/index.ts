@@ -104,9 +104,6 @@ app.use("/*", async (c: any, next: any) => {
   await next();
 });
 
-// ── TEMP DEBUG: confirm code runs for admin paths ──
-app.get("/make-server-08b8658d/admin-test", (c: any) => c.json({ code: "running", ts: Date.now() }));
-
 // ── Public: pricing info (no auth required) ──
 app.get("/make-server-08b8658d/pricing", async (c: any) => {
   const slotsUsed   = await getEarlyBirdCount();
