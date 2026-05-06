@@ -1,4 +1,4 @@
-import { BarChart2 } from "lucide-react";
+import { BarChart2, GitCompareArrows } from "lucide-react";
 import type { ProgressionState, LevelState } from "@/services/types";
 
 interface CrossPathCardProps {
@@ -23,14 +23,14 @@ export function CrossPathCard({ perPathStats, progressionState, onStartSession }
   if (entries.length < 2) {
     return (
       <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-6">
-        <p className="text-xs font-medium uppercase tracking-wider text-[#94a3b8] mb-4">
-          Progress Across Paths
-        </p>
+        <div className="flex items-center gap-2 mb-4">
+          <BarChart2 className="w-4 h-4 text-[#0f172b] shrink-0" />
+          <p className="text-xs font-medium uppercase tracking-wider text-[#0f172b]">
+            Progress Across Paths
+          </p>
+        </div>
         <div className="flex flex-col gap-3">
-          <span className="w-10 h-10 rounded-full bg-[#f8fafc] border border-[#e2e8f0] flex items-center justify-center">
-            <BarChart2 className="w-4 h-4 text-[#62748e]" />
-          </span>
-          <p className="text-xs text-[#62748e] leading-relaxed">
+          <p className="text-sm text-[#62748e] leading-relaxed">
             Once you practice across multiple paths, here you'll see a side-by-side comparison of your level completions and scores.
           </p>
           <div className="space-y-2">
@@ -79,18 +79,16 @@ export function CrossPathCard({ perPathStats, progressionState, onStartSession }
 
   return (
     <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-6">
-      <p className="text-xs font-medium uppercase tracking-wider text-[#94a3b8] mb-4">
-        Progress Across Paths
-      </p>
-
       <div className="flex items-center gap-2 mb-4">
-        <span className="w-8 h-8 rounded-full bg-[#eef2ff] flex items-center justify-center flex-shrink-0">
-          <BarChart2 className="w-4 h-4 text-[#6366f1]" />
-        </span>
-        <p className="text-sm font-semibold text-[#0f172b]">
-          {entries.length} paths practiced
+        <BarChart2 className="w-4 h-4 text-[#0f172b] shrink-0" />
+        <p className="text-xs font-medium uppercase tracking-wider text-[#0f172b]">
+          Progress Across Paths
         </p>
       </div>
+
+      <p className="text-sm font-semibold text-[#0f172b] mb-4">
+        {entries.length} paths practiced
+      </p>
 
       <div className="space-y-3">
         {sorted.map(([key]) => {
