@@ -34,22 +34,22 @@ export function RecommendedLessonsCard({ pillarScores, onOpenLesson, onNavigateT
   if (!pillarScores || Object.keys(pillarScores).length === 0) {
     return (
       <motion.div
-        className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-6 h-full"
+        className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-6"
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <div className="flex items-center gap-2 mb-1">
+        <div className="flex items-center gap-2 mb-4">
           <Sparkles className="w-4 h-4 text-[#0f172b] shrink-0" />
           <p className="text-xs font-medium uppercase tracking-wider text-[#0f172b]">Recommended for you</p>
         </div>
-        <p className="text-xs text-[#62748e] mb-4 ml-9 leading-relaxed">
+        <p className="text-sm text-[#62748e] mb-4 leading-relaxed">
           After your first session, we identify which skills need the most attention and surface targeted micro-lessons here.
         </p>
         {onStartSession && (
           <button
             onClick={onStartSession}
-            className="text-xs font-medium text-[#6366f1] hover:text-[#4f46e5] transition-colors cursor-pointer ml-9 block"
+            className="text-xs font-medium text-[#6366f1] hover:text-[#4f46e5] transition-colors cursor-pointer"
           >
             Start your first session →
           </button>
@@ -77,11 +77,11 @@ export function RecommendedLessonsCard({ pillarScores, onOpenLesson, onNavigateT
       transition={{ duration: 0.4 }}
     >
       {/* Header */}
-      <div className="flex items-center gap-2 mb-1">
+      <div className="flex items-center gap-2 mb-4">
         <Sparkles className="w-4 h-4 text-[#0f172b] shrink-0" />
         <p className="text-xs font-medium uppercase tracking-wider text-[#0f172b]">Recommended for you</p>
       </div>
-      <p className="text-xs text-[#62748e] mb-4 ml-9">
+      <p className="text-xs text-[#62748e] mb-4">
         Based on areas where focused study pays off most.
       </p>
 
