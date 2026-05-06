@@ -72,19 +72,32 @@ interface ProgressionTreeProps {
   onDrillComplete?: (pathId: string, levelId: string, score: number) => void;
   onLockedClick?: () => void;
   primaryPath?: string | null;
+  englishGoal?: string | null;
 }
 
-export function ProgressionTree({ onStartLevel, onDrillComplete, onLockedClick, primaryPath }: ProgressionTreeProps) {
-  const [activeTab, setActiveTab] = useState<PathId>("self-intro");
+export function ProgressionTree({ onStartLevel, onDrillComplete, onLockedClick, primaryPath, englishGoal }: ProgressionTreeProps) {
+  const [activeTab, setActiveTab] = useState<PathId>(() =>
+    (englishGoal as PathId | null) && VISIBLE_PATHS.some(p => p.id === englishGoal)
+      ? englishGoal as PathId
+      : "self-intro"
+  );
   const [chooseNextOpen, setChooseNextOpen] = useState(false);
   const { state, loading, refetch: fetchState } = useProgressionState();
 
   useEffect(() => {
-    if (state.activeGoal) {
-      const isVisible = VISIBLE_PATHS.some(p => p.id === state.activeGoal);
-      setActiveTab(isVisible ? state.activeGoal as PathId : "self-intro");
+    const goal = state.activeGoal || englishGoal;
+    if (goal) {
+      const isVisible = VISIBLE_PATHS.some(p => p.id === goal);
+      setActiveTab(isVisible ? goal as PathId : "self-intro");
     }
-  }, [state.activeGoal]);
+  }, [state.activeGoal, englishGoal]);
+
+  // Reorder tabs: self-intro first, englishGoal second, rest after
+  const orderedPaths = [
+    ...VISIBLE_PATHS.filter(p => p.id === "self-intro"),
+    ...VISIBLE_PATHS.filter(p => p.id === englishGoal && p.id !== "self-intro"),
+    ...VISIBLE_PATHS.filter(p => p.id !== "self-intro" && p.id !== englishGoal),
+  ];
 
   const activePath = PROGRESSION_PATHS.find((p) => p.id === activeTab)!;
 
@@ -151,7 +164,7 @@ export function ProgressionTree({ onStartLevel, onDrillComplete, onLockedClick, 
         {/* Path Tabs */}
         <div className="px-5 pt-5 pb-0">
           <div className="flex gap-1 p-1 bg-[#f1f5f9] rounded-xl mb-1 overflow-x-auto">
-            {VISIBLE_PATHS.map((path) => {
+            {orderedPaths.map((path) => {
               const isLocked = path.id !== "self-intro" && !unlockedPathIds.has(path.id);
               return (
                 <button

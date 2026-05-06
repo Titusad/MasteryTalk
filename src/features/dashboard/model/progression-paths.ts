@@ -1708,7 +1708,7 @@ export function getDefaultProgressionState(): ProgressionState {
       "si-3": { status: "unlocked" },
     },
     interview: {
-      "int-1": { status: "unlocked" },
+      "int-1": { status: "locked" },
       "int-2": { status: "locked" },
       "int-3": { status: "locked" },
       "int-4": { status: "locked" },
@@ -1716,7 +1716,7 @@ export function getDefaultProgressionState(): ProgressionState {
       "int-6": { status: "locked" },
     },
     sales: {
-      "sal-1": { status: "unlocked" },
+      "sal-1": { status: "locked" },
       "sal-2": { status: "locked" },
       "sal-3": { status: "locked" },
       "sal-4": { status: "locked" },
@@ -1724,7 +1724,7 @@ export function getDefaultProgressionState(): ProgressionState {
       "sal-6": { status: "locked" },
     },
     meeting: {
-      "meet-1": { status: "unlocked" },
+      "meet-1": { status: "locked" },
       "meet-2": { status: "locked" },
       "meet-3": { status: "locked" },
       "meet-4": { status: "locked" },
@@ -1732,7 +1732,7 @@ export function getDefaultProgressionState(): ProgressionState {
       "meet-6": { status: "locked" },
     },
     presentation: {
-      "pres-1": { status: "unlocked" },
+      "pres-1": { status: "locked" },
       "pres-2": { status: "locked" },
       "pres-3": { status: "locked" },
       "pres-4": { status: "locked" },
@@ -1740,7 +1740,7 @@ export function getDefaultProgressionState(): ProgressionState {
       "pres-6": { status: "locked" },
     },
     client: {
-      "cli-1": { status: "unlocked" },
+      "cli-1": { status: "locked" },
       "cli-2": { status: "locked" },
       "cli-3": { status: "locked" },
       "cli-4": { status: "locked" },
@@ -1748,7 +1748,7 @@ export function getDefaultProgressionState(): ProgressionState {
       "cli-6": { status: "locked" },
     },
     csuite: {
-      "cs-1": { status: "unlocked" },
+      "cs-1": { status: "locked" },
       "cs-2": { status: "locked" },
       "cs-3": { status: "locked" },
       "cs-4": { status: "locked" },
@@ -1756,7 +1756,7 @@ export function getDefaultProgressionState(): ProgressionState {
       "cs-6": { status: "locked" },
     },
     culture: {
-      "cul-1": { status: "unlocked" },
+      "cul-1": { status: "locked" },
       "cul-2": { status: "locked" },
       "cul-3": { status: "locked" },
       "cul-4": { status: "locked" },

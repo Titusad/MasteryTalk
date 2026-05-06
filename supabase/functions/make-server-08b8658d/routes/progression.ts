@@ -32,6 +32,18 @@ app.get("/make-server-08b8658d/progression", async (c) => {
       ? (typeof profileRaw === "string" ? JSON.parse(profileRaw) : profileRaw)
       : null;
 
+    // ── Self-intro: always fully unlocked for every user ──
+    if (merged["self-intro"]) {
+      const si = merged["self-intro"] as Record<string, { status: string }>;
+      for (const levelId of Object.keys(si)) {
+        si[levelId] = { ...si[levelId], status: "unlocked" };
+      }
+    }
+
+    // ── activeGoal: always driven by the user's english_goal ──
+    const englishGoal = profile?.english_goal as string | null | undefined;
+    if (englishGoal) merged.activeGoal = englishGoal;
+
     if (profile?.subscription_active) {
       const primaryPath: string | null = profile.primary_path || null;
 
@@ -66,6 +78,17 @@ app.get("/make-server-08b8658d/progression", async (c) => {
           }
         }
         console.log(`[Progression GET] progressive unlock — paths: [${[...pathsToUnlock].join(", ")}] for ${user.id}`);
+      }
+    } else {
+      // ── Free user: unlock Level 1 of english_goal path only after ≥1 session ──
+      const sessionsCount = (profile?.stats?.sessions_count as number) ?? 0;
+      if (englishGoal && sessionsCount >= 1 && merged[englishGoal]) {
+        const goalPath = merged[englishGoal] as Record<string, { status: string }>;
+        const firstLevelId = Object.keys(goalPath)[0];
+        if (firstLevelId && goalPath[firstLevelId]?.status === "locked") {
+          goalPath[firstLevelId] = { ...goalPath[firstLevelId], status: "unlocked" };
+        }
+        console.log(`[Progression GET] free unlock — level 1 of ${englishGoal} for ${user.id}`);
       }
     }
 

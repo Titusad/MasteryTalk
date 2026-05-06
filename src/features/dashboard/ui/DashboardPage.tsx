@@ -225,6 +225,7 @@ export function DashboardPage({
                 onStartSession={handleStartSession}
                 onLockedClick={() => setUpsellOpen(true)}
                 primaryPath={(userProfile as any)?.primary_path ?? null}
+                englishGoal={userProfile?.englishGoal ?? null}
               />
             </motion.div>
           </div>

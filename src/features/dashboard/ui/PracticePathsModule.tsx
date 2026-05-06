@@ -11,9 +11,10 @@ interface PracticePathsModuleProps {
   onStartSession: (scenario: string, scenarioType?: string, levelId?: string, interlocutor?: string) => void;
   onLockedClick?: () => void;
   primaryPath?: string | null;
+  englishGoal?: string | null;
 }
 
-export function PracticePathsModule({ onStartSession, onLockedClick, primaryPath }: PracticePathsModuleProps) {
+export function PracticePathsModule({ onStartSession, onLockedClick, primaryPath, englishGoal }: PracticePathsModuleProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -26,6 +27,7 @@ export function PracticePathsModule({ onStartSession, onLockedClick, primaryPath
         }}
         onLockedClick={onLockedClick}
         primaryPath={primaryPath}
+        englishGoal={englishGoal}
       />
     </motion.div>
   );

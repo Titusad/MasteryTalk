@@ -575,7 +575,10 @@ export default function App() {
     if ("profile_completed" in profile) kvFields.profile_completed = profile.profile_completed;
     if ("seniority" in profile && profile.seniority) kvFields.seniority = profile.seniority;
     if ("keyExperience" in profile && profile.keyExperience) kvFields.keyExperience = profile.keyExperience;
-    if ("englishGoal" in profile) kvFields.english_goal = profile.englishGoal || "";
+    if ("englishGoal" in profile) {
+      kvFields.english_goal = profile.englishGoal || "";
+      kvFields.primary_path = profile.englishGoal || "";
+    }
 
     if (Object.keys(kvFields).length > 0) {
       import("../services/supabase").then(({ getAuthToken }) => {

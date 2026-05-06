@@ -4,6 +4,8 @@
  */
 
 export const LEVEL_TITLES: Record<string, string> = {
+  // Self-Introduction
+  "si-1": "Networking Event", "si-2": "Team Introduction", "si-3": "Client Meeting",
   // Interview Mastery
   "int-1": "Phone Screen", "int-2": "Behavioral Round",
   "int-3": "Storytelling & STAR Deep Dive", "int-4": "Technical Discussion",
@@ -28,9 +30,14 @@ export const LEVEL_TITLES: Record<string, string> = {
   "cs-1": "Speaking Up in the Room", "cs-2": "Presenting to Leadership",
   "cs-3": "Asking for Resources", "cs-4": "Navigating Political Conversations",
   "cs-5": "Delivering Uncomfortable Truths", "cs-6": "Influencing Without Authority",
+  // Culture & Teamwork
+  "cul-1": "Direct Communication & Feedback", "cul-2": "Meeting Culture",
+  "cul-3": "Cross-Cultural Collaboration", "cul-4": "Navigating Disagreement",
+  "cul-5": "Building Trust Remotely", "cul-6": "Executive Update",
 };
 
 export const NEXT_LEVEL: Record<string, string> = {
+  "si-1": "si-2", "si-2": "si-3",
   "int-1": "int-2", "int-2": "int-3", "int-3": "int-4",
   "int-4": "int-5", "int-5": "int-6",
   "sal-1": "sal-2", "sal-2": "sal-3", "sal-3": "sal-4",
@@ -43,6 +50,8 @@ export const NEXT_LEVEL: Record<string, string> = {
   "cli-4": "cli-5", "cli-5": "cli-6",
   "cs-1": "cs-2", "cs-2": "cs-3", "cs-3": "cs-4",
   "cs-4": "cs-5", "cs-5": "cs-6",
+  "cul-1": "cul-2", "cul-2": "cul-3", "cul-3": "cul-4",
+  "cul-4": "cul-5", "cul-5": "cul-6",
 };
 
 export const LEVEL_ORDER = [
@@ -57,20 +66,22 @@ export const LEVEL_ORDER = [
 function makePath(prefix: string, count: number) {
   const state: Record<string, { status: string }> = {};
   for (let i = 1; i <= count; i++) {
-    state[`${prefix}-${i}`] = { status: i === 1 ? "unlocked" : "locked" };
+    state[`${prefix}-${i}`] = { status: "locked" };
   }
   return state;
 }
 
 export function getDefaultProgressionState() {
   return {
-    activeGoal: "interview",
+    activeGoal: null as string | null,
+    "self-intro": makePath("si", 3),
     interview: makePath("int", 6),
     sales: makePath("sal", 6),
     meeting: makePath("meet", 6),
     presentation: makePath("pres", 6),
     client: makePath("cli", 6),
     csuite: makePath("cs", 6),
+    culture: makePath("cul", 6),
   };
 }
 
