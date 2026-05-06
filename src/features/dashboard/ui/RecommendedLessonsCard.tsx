@@ -48,20 +48,10 @@ export function RecommendedLessonsCard({ pillarScores, onOpenLesson, onNavigateT
         <p className="text-xs text-[#62748e] mb-4 ml-9 leading-relaxed">
           After your first session, we identify which skills need the most attention and surface targeted micro-lessons here.
         </p>
-        <div className="ml-9 space-y-2">
-          {["Grammar", "Vocabulary", "Fluency"].map((pillar) => (
-            <div key={pillar} className="flex items-center gap-3 p-3 rounded-xl border border-[#e2e8f0] bg-[#f8fafc]">
-              <div className="w-8 h-8 rounded-lg bg-[#f0f4f8] flex items-center justify-center text-xs font-bold text-[#94a3b8]">
-                {pillar.charAt(0)}
-              </div>
-              <div className="flex-1 h-2 bg-[#f0f4f8] rounded-full" />
-            </div>
-          ))}
-        </div>
         {onStartSession && (
           <button
             onClick={onStartSession}
-            className="text-xs font-medium text-[#6366f1] hover:text-[#4f46e5] transition-colors cursor-pointer mt-4 ml-9 block"
+            className="text-xs font-medium text-[#6366f1] hover:text-[#4f46e5] transition-colors cursor-pointer ml-9 block"
           >
             Start your first session →
           </button>
