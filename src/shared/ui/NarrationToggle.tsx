@@ -43,7 +43,7 @@ export function NarrationToggle() {
     <motion.button
       onClick={toggle}
       title={muted ? "Enable coach narration" : "Mute coach narration"}
-      className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full shadow-lg transition-colors overflow-hidden"
+      className="fixed top-[62px] right-4 z-50 flex items-center gap-2 rounded-full shadow-lg transition-colors overflow-hidden"
       style={{
         background: muted ? "#e2e8f0" : "#0f172b",
         color: muted ? "#94a3b8" : "white",

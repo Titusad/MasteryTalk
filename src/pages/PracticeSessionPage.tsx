@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Menu, AlertTriangle } from "lucide-react";
-import { AppHeader, MiniFooter } from "@/shared/ui";
+import { AppHeader, MiniFooter, NarrationToggle } from "@/shared/ui";
 import { AnalyzingScreen } from "@/shared/ui";
 import { PracticeSideNav } from "@/widgets/PracticeSideNav";
 import { realConversationService } from "@/services";
@@ -910,6 +910,7 @@ export function PracticeSessionPage({
         }
         onGoToDashboard={() => setShowExitConfirm(true)}
       />
+      <NarrationToggle />
 
       {/* Exit confirmation dialog */}
       {showExitConfirm && (
