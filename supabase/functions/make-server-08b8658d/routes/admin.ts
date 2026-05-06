@@ -416,8 +416,7 @@ app.get("/make-server-08b8658d/admin/content-feedback", async (c: any) => {
 });
 
 // ═══════════════════════════════════════════════════════════════
-// Progression Tree — GET /progression
-// Fetch user's progression state from KV
-// ═══════════════════════════════════════════════════════════════
+// ── Module load test ──
+app.get("/make-server-08b8658d/admin-module-ping", (c: any) => c.json({ module: "admin.ts loaded", emails: ADMIN_EMAILS }));
 
 export default app;

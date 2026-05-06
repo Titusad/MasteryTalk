@@ -507,24 +507,30 @@ const ADMIN_EMAILS = ADMIN_EMAILS_RAW
   ? ADMIN_EMAILS_RAW.split(",").map((e: string) => e.trim().toLowerCase())
   : [];
 
-/** Middleware: require admin email */
+/** Decode JWT payload without network call */
+function jwtEmail(token: string): string | null {
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
+    const pad = parts[1].length % 4;
+    const b64 = parts[1].replace(/-/g, "+").replace(/_/g, "/") + "=".repeat(pad ? 4 - pad : 0);
+    const payload = JSON.parse(atob(b64));
+    return (payload.email as string) || null;
+  } catch { return null; }
+}
+
+/** Middleware: require admin email — local JWT decode, no network */
 async function requireAdmin(c: any, next: any) {
   try {
-    const authHeader = c.req.header("authorization") || "";
-    const token = authHeader.replace(/^Bearer\s+/i, "");
-    if (!token) return c.json({ error: "Unauthorized" }, 401);
+    const authHeader = c.req.header("Authorization") || c.req.header("authorization") || "";
+    const token = authHeader.replace(/^Bearer\s+/i, "").trim();
+    if (!token) return c.json({ error: "Unauthorized", reason: "no_token" }, 401);
 
-    const adminSupabase = createClient(
-      (globalThis as any).Deno.env.get("SUPABASE_URL"),
-      (globalThis as any).Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),
-    );
-    const { data: { user }, error } = await adminSupabase.auth.getUser(token);
-    if (error || !user?.email) return c.json({ error: "Unauthorized" }, 401);
+    const email = jwtEmail(token)?.toLowerCase() ?? "";
+    if (!email) return c.json({ error: "Unauthorized", reason: "no_email" }, 401);
 
-    const email = user.email.toLowerCase();
     if (!ADMIN_EMAILS.includes(email)) {
-      console.log(`[Admin] Access denied for ${email}`);
-      return c.json({ error: "Forbidden — not an admin" }, 403);
+      return c.json({ error: "Forbidden", email }, 403);
     }
 
     c.set("adminEmail", email);
