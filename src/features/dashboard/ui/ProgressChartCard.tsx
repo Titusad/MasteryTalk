@@ -75,7 +75,7 @@ export function ProgressChartCard({ onStartSession }: ProgressChartCardProps) {
   if (data.length < 3) {
     return (
       <motion.div
-        className="bg-white rounded-2xl border border-[#e2e8f0] p-4 h-[200px] flex flex-col"
+        className="bg-white rounded-2xl border border-[#e2e8f0] p-4 flex flex-col"
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
@@ -122,7 +122,7 @@ export function ProgressChartCard({ onStartSession }: ProgressChartCardProps) {
 
   return (
     <motion.div
-      className="bg-white rounded-2xl border border-[#e2e8f0] p-4 h-[200px] flex flex-col"
+      className="bg-white rounded-2xl border border-[#e2e8f0] p-4 flex flex-col"
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
