@@ -271,6 +271,7 @@ export async function generateSummary(
         ? data.professionalProficiency
         : null,
     cefrApprox: data.cefrApprox || null,
+    pronunciationNotes: data.pronunciationNotes || [],
   };
 }
 

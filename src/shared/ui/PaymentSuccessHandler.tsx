@@ -235,7 +235,7 @@ export function PaymentSuccessHandler({
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.9 }}
                 >
-                  Manage your subscription anytime from Account settings
+                  Cancel anytime in one click from Account settings. No penalties.
                 </motion.p>
               </div>
             </motion.div>

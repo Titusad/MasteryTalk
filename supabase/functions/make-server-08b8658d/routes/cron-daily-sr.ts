@@ -292,6 +292,13 @@ app.post("/make-server-08b8658d/cron/daily-sr", async (c) => {
               mediaUrl: audioUrl || undefined,
             });
             messageSid = result.messageSid;
+
+            // Follow-up free-form message with pronunciation context (within 24h window)
+            if (card.problem_word) {
+              const contextMsg = copy.weakPoint(card.problem_word, card.phonetic ?? undefined)
+                + ` Focus on this word as you shadow the phrase.`;
+              await sendWhatsAppMessage({ to: whatsappNumber, body: contextMsg }).catch(() => {});
+            }
           } else {
             // Fallback: free-form (sandbox / dev only)
             const problemHint = card.problem_word

@@ -31,6 +31,9 @@ import type {
   ContentInsight,
   InterviewReadinessData,
   RealFeedbackData,
+  PronunciationCategory,
+  PronunciationNote,
+  ImprovementArea,
 } from "@/entities/feedback";
 export type {
   SessionSummaryNextStep,
@@ -43,6 +46,9 @@ export type {
   ContentInsight,
   InterviewReadinessData,
   RealFeedbackData,
+  PronunciationCategory,
+  PronunciationNote,
+  ImprovementArea,
 };
 
 /* ── Progression (entities/progression) ── */
@@ -260,20 +266,6 @@ export interface VocabPronunciationEntry {
   mastery: 'learning' | 'practicing' | 'mastered';
   commonError?: string;
   lastPracticed: string;
-}
-
-export type PronunciationCategory = "Claridad" | "Ritmo" | "Entonación";
-
-export interface PronunciationNote {
-  word: string;
-  phonetic: string;
-  tip: string;
-  category: PronunciationCategory;
-}
-
-export interface ImprovementArea {
-  category: PronunciationCategory;
-  description: string;
 }
 
 export interface ResultsSummary {

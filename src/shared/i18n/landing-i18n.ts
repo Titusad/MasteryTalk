@@ -506,7 +506,7 @@ export const ES: LandingCopy = {
     },
     register: {
       title: "Crea tu cuenta gratuita",
-      subtitle: "Comienza tu entrenamiento profesional en inglés",
+      subtitle: "Solo Google. Sin tarjeta de crédito.",
       google: "Registrarse con Google",
       divider: "Registro seguro en un clic",
       toggle: "¿Ya tienes cuenta?",
@@ -832,7 +832,7 @@ export const PT: LandingCopy = {
     },
     register: {
       title: "Crie sua conta gratuita",
-      subtitle: "Comece seu treinamento profissional em inglês",
+      subtitle: "Só Google. Sem cartão de crédito.",
       google: "Registrar com Google",
       divider: "Registro seguro em um clique",
       toggle: "Já tem conta?",
@@ -1158,7 +1158,7 @@ export const EN: LandingCopy = {
     },
     register: {
       title: "Create your free account",
-      subtitle: "Start your professional communication training",
+      subtitle: "Google only. No credit card.",
       google: "Sign up with Google",
       divider: "Secure one-click registration",
       toggle: "Already have an account?",

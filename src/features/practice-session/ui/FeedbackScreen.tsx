@@ -45,6 +45,7 @@ import type {
     BeforeAfterComparison,
     Strength,
     Opportunity,
+    PronunciationNote,
 } from "@/services/types";
 import type { RealFeedbackData } from "./ConversationFeedback";
 import { ShadowingModal } from "@/features/practice-session/ui/ShadowingModal";
@@ -85,6 +86,7 @@ interface FeedbackScreenProps {
     onFinish: () => void;
     /** Whether this is the user's first free retry */
     canRetryFree?: boolean;
+    pronunciationNotes?: PronunciationNote[];
     /** Optional slot rendered below progression gate (e.g. path recommendation) */
     bottomSlot?: React.ReactNode;
     narratorUrl?: string;
@@ -98,6 +100,7 @@ export function FeedbackScreen({
     onDownloadPdf,
     onFinish,
     canRetryFree = true,
+    pronunciationNotes = [],
     bottomSlot,
     narratorUrl,
 }: FeedbackScreenProps) {
@@ -344,6 +347,46 @@ export function FeedbackScreen({
                                     </p>
                                 </div>
                             ))}
+                        </div>
+                    </motion.div>
+                )}
+
+                {/* ═══ PRONUNCIATION COACH ═══ */}
+                {pronunciationNotes.length > 0 && (
+                    <motion.div
+                        className="bg-white rounded-3xl border border-[#e2e8f0] p-4 md:p-6 mb-6"
+                        initial={{ opacity: 0, y: 16 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.22 }}
+                    >
+                        <div className="flex items-center gap-2 mb-4">
+                            <AudioLines className="w-4 h-4 text-[#6366f1]" />
+                            <p className="text-sm text-[#0f172b] font-semibold">Pronunciation Coach</p>
+                        </div>
+                        <div className="space-y-3">
+                            {pronunciationNotes.map((note, i) => {
+                                const categoryColors: Record<string, { bg: string; text: string }> = {
+                                    Claridad:    { bg: "bg-blue-50",   text: "text-blue-700" },
+                                    Ritmo:       { bg: "bg-emerald-50", text: "text-emerald-700" },
+                                    Entonación:  { bg: "bg-violet-50", text: "text-violet-700" },
+                                };
+                                const cc = categoryColors[note.category] ?? { bg: "bg-gray-50", text: "text-gray-700" };
+                                return (
+                                    <div key={i} className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-3.5">
+                                        <div className="flex items-center gap-2 mb-1.5">
+                                            <span className="text-xs text-[#0f172b] font-semibold">{note.word}</span>
+                                            <span className="text-[10px] text-[#62748e] font-mono">{note.phonetic}</span>
+                                            <span className={`ml-auto text-[10px] font-semibold px-2 py-0.5 rounded-full ${cc.bg} ${cc.text}`}>
+                                                {note.category}
+                                            </span>
+                                        </div>
+                                        <p className="text-xs text-[#45556c] leading-relaxed flex items-start gap-1.5">
+                                            <Lightbulb className="w-3 h-3 text-[#f59e0b] shrink-0 mt-0.5" />
+                                            {note.tip}
+                                        </p>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </motion.div>
                 )}

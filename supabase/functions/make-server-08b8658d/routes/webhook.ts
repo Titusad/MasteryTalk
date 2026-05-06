@@ -166,7 +166,7 @@ app.post("/make-server-08b8658d/webhook/stripe", async (c) => {
         if (email && tierInfo) {
           sendEmail({
             to: email,
-            subject: `Welcome to MasteryTalk PRO — ${tierInfo.label}!`,
+            subject: `Your subscription is active — manage or cancel anytime`,
             html: subscriptionConfirmationEmailHtml({
               userName: (session.customer_details?.name || email).split(" ")[0],
               planName: `MasteryTalk PRO (${tierInfo.label})`,

@@ -1,6 +1,6 @@
 # MasteryTalk PRO — Roadmap
 
-> **Last updated:** 2026-05-04 (Beta v14.6)
+> **Last updated:** 2026-05-06 (Beta v14.7)
 > **Spec reference:** [`PRODUCT_SPEC.md`](./PRODUCT_SPEC.md)
 > **Rule:** New items go here FIRST → spec update if needed → then code.
 
@@ -60,12 +60,13 @@
 
 ### ⚠️ Known Gaps
 
-- Stripe products not updated to new prices — old prices ($12.99/$29.99/$19.99/$47.99) still live (Phase 0.2)
+- ~~Stripe products not updated to new prices~~ — resolved: FM $59/3mo · Program $129/3mo · Monthly $49/mo live
 - All paths unlock on subscribe — progressive model not yet implemented (Phase 0.3)
 - Self-intro data not yet stored as intake assessment or wired to primary_path (Phase 0.7)
 - WhatsApp in sandbox mode (requires Meta Business approval for production)
 - Google OAuth consent screen still shows dev app name
 - Stripe Customer Portal requires manual activation in Stripe Dashboard settings
+- Email templates do not HTML-escape user-provided fields (`userName`, `strongerPhrase`) — pre-existing pattern; risk is low (data from OAuth/GPT-4o), fix should be applied consistently across all templates in a dedicated security sprint
 
 ---
 
@@ -744,3 +745,4 @@
 | 2026-05-04 | **Product strategy session — major decisions:** (1) Pricing finalized: FM $49/3mo locked forever · Program $129/3mo · Monthly $49/mo. *(Note: FM revised to $59/3mo on 2026-05-05 — see below.)* (2) Primary Path model: user chooses path from self-intro recommendation — BC not mandatory, content woven via §7.9 pre-session lessons. (3) Progression unlock trigger: full path completion (all 6 levels), user chooses next path. (4) Self-intro elevated to intake assessment → primary_path on subscribe. (5) Pre-session lesson step §7.9 specced (Sprint B.4). **Coded:** hints tap-to-reveal + challenge suppression; scenario-aware turn limits (8/10). **Spec:** PRODUCT_SPEC v3.3. **ROADMAP:** Phase 0.1 revised, 0.6 updated, 0.7 added, 3.1.2 updated, Known Gaps documented. Current state → Beta v14.4. |
 | 2026-05-04 | **Retention sprint (Beta v14.5):** SinceYouStartedCard (pillar delta first→latest), ScenarioDeltaCard (per-scenario comparison in FeedbackScreen), LevelMilestoneModal (confetti + score on level completion ≥75), ChooseNextPathModal path completion celebration + LinkedIn share. fetchSessions TTL cache (30s). PILLAR_COLORS consolidated. PATH_LABELS centralized. Security review: 0 vulnerabilities. 119/119 tests passing. COMMERCIAL_PITCH.md: full commercial document + EF EPI 2026 data + updated market numbers + arbitraje salarial. Commit 9cff182. |
 | 2026-05-04 | **Pre-session lesson step (Beta v14.6 — §7.9):** `"lesson"` step live between context and strategy. `getPreSessionLesson()` (level-specific → pillar fallback). `PreSessionLessonScreen` (badge, keyConcept, power phrase, recall gate, locked CTA). `gateWithLesson()` helper in PracticeSessionPage. `last_pre_session_lesson_id` persisted. Skip: Challenge Mode, War Room, self-intro. Script generation fires before lesson for zero added latency. Backend whitelist updated. Commit e777d2c. Current state → Beta v14.6. |
+| 2026-05-05 | **Billing transparency + competitive positioning sprint (Beta v14.7):** (1) Pricing: FM raised $49→$59/3mo ($19.67/mo) — eliminates same-number confusion with Monthly. Backend `/pricing` endpoint updated. All docs + PRODUCT_SPEC synced. (2) Landing pricing section rewritten: connected to `GET /pricing` API (no hardcoded prices), quarterly as hero card, price anchors (coach/tutor), `roiLine` ("Se paga solo con tu primer aumento"), `cancelLine` + scarcity co-located in Founding Member card. (3) AuthModal register subtitle → "Solo Google. Sin tarjeta de crédito." PracticeWidget `microcopy` now rendered with Check icon. (4) Transactional emails: subscription confirmation subject + secondary "Manage subscription" CTA + cancel footer; renewal Branch B cancel link on its own line; PaymentSuccessHandler footer → "Cancel anytime in one click. No penalties." (5) **pronunciationNotes live in FeedbackScreen:** Gemini Flash tips were generated but never rendered. `PronunciationCategory`/`PronunciationNote`/`ImprovementArea` moved to `entities/feedback`. `generateSummary()` now maps `pronunciationNotes`. New "Pronunciation Coach" section in FeedbackScreen: word + phonetic + category badge + tip. (6) SR Coach second message: after production Twilio template, sends free-form `weakPoint` context if `problem_word` exists. (7) Session summary email: `strongerPhrase` card ("Your phrase to own") with `beforeAfter[0].professionalVersion`, formatted for LinkedIn. (8) `WhatsAppActivationCard` feedback variant: shows `strongerPhrase` excerpt from session in card title area. (9) `CLAUDE.md` v2.3: new "Análisis profundo antes de proponer soluciones" protocol. Security: 0 new vulnerabilities (pre-existing HTML non-escaping in emails documented as known gap). Tests: 119/119 passing. |

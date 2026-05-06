@@ -238,6 +238,7 @@ ${transcript}`;
             strengths: topStrTexts,
             topOpportunity: topOpp,
             pillarScores,
+            strongerPhrase: beforeAfter?.[0]?.professionalVersion ?? null,
           }),
         }).catch(() => {});
       }

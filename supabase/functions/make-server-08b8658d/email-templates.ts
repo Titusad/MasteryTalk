@@ -181,6 +181,7 @@ export interface SessionSummaryEmailData {
   strengths: string[];
   topOpportunity: string | null;
   pillarScores: Record<string, number> | null;
+  strongerPhrase?: string | null;
 }
 
 export function sessionSummaryEmailHtml(data: SessionSummaryEmailData): string {
@@ -275,6 +276,15 @@ export function sessionSummaryEmailHtml(data: SessionSummaryEmailData): string {
       ${strengthsHtml}
       ${focusHtml}
 
+      ${data.strongerPhrase ? `
+      <div class="divider" style="height: 1px; background: ${B.border}; margin: 24px 0;"></div>
+      <p class="section-title" style="color: ${B.text}; font-size: 13px; font-weight: 600; margin: 0 0 8px; text-transform: uppercase; letter-spacing: 0.5px;">Your phrase to own</p>
+      <div style="border-left: 3px solid ${B.accent}; padding: 10px 16px; background: ${B.surface}; border-radius: 0 8px 8px 0; margin-bottom: 8px;">
+        <p style="color: ${B.text}; font-size: 14px; font-style: italic; margin: 0; line-height: 1.6;">"${data.strongerPhrase.length > 160 ? data.strongerPhrase.slice(0, 157) + "…" : data.strongerPhrase}"</p>
+      </div>
+      <p style="color: ${B.textMuted}; font-size: 12px; margin: 0 0 16px;">Copy this to your next LinkedIn post or use it in your next meeting.</p>
+      ` : ""}
+
       <div class="divider" style="height: 1px; background: ${B.border}; margin: 24px 0;"></div>
       <p>
         Consistency is the key to progress. Each session builds on the last —
@@ -350,13 +360,17 @@ export function subscriptionConfirmationEmailHtml(data: SubscriptionEmailData): 
       <div class="cta-wrapper">
         <a href="${B.url}/#dashboard" class="cta">Go to Dashboard &rarr;</a>
       </div>
+      <div class="cta-wrapper" style="margin-top: 12px;">
+        <a href="${B.url}/#account" style="display: inline-block; padding: 12px 28px; border: 2px solid ${B.border}; border-radius: 999px; font-size: 14px; font-weight: 600; color: ${B.text}; text-decoration: none;">Manage subscription &rarr;</a>
+      </div>
       <div class="divider" style="height: 1px; background: ${B.border}; margin: 24px 0;"></div>
       <p style="font-size: 13px; color: ${B.textMuted};">
-        Need help? Just reply to this email and we'll get back to you.
+        Cancel anytime in one click from your account. No penalties, no hidden fees.
+        Need help? Just reply to this email.
       </p>
     </div>`;
 
-  return baseLayout(content, `Your ${data.planName} subscription is active — full access unlocked!`);
+  return baseLayout(content, `Your ${data.planName} is active — manage or cancel anytime`);
 }
 
 /* ── Renewal confirmation ── */
@@ -491,7 +505,9 @@ export function renewalConfirmationEmailHtml(data: RenewalEmailData): string {
       <div class="divider"></div>
       <p style="font-size: 13px; color: ${B.textMuted};">
         Amount charged: <strong>$${data.amountUsd.toFixed(2)} USD</strong> &nbsp;·&nbsp; Next renewal: <strong>${data.nextBillingDate}</strong>
-        &nbsp;·&nbsp; <a href="${B.url}/#account" style="color: ${B.accent};">Manage subscription</a>
+      </p>
+      <p style="font-size: 13px; color: ${B.textMuted}; margin-top: 8px;">
+        <a href="${B.url}/#account" style="color: ${B.accent}; font-weight: 600;">Cancel anytime in one click</a> — no penalties.
       </p>
     </div>`;
 

@@ -48,6 +48,11 @@
 
 **Focus area:** *(auto-generated — top opportunity)*
 
+**Your phrase to own:** *(conditional — `beforeAfter[0].professionalVersion` if available)*
+> "{strongerPhrase}"
+>
+> Copy this to your next LinkedIn post or use it in your next meeting.
+
 **Body:**
 > Consistency is what moves the score. Each session builds on the last.
 
@@ -77,7 +82,9 @@
 
 **CTA:** `Go to your dashboard →`
 
-**Footer note:** `Questions? Reply to this email.`
+**CTA secondary:** `Manage subscription →` *(links to /#account)*
+
+**Footer note:** `Cancel anytime in one click from your account. No penalties, no hidden fees. Questions? Reply to this email.`
 
 ---
 
@@ -98,7 +105,7 @@
 
 **CTA:** `Keep going →`
 
-**Footer note:** `Manage your subscription in account settings.`
+**Footer note:** `Manage your subscription in account settings. Cancel anytime.`
 
 ---
 
@@ -121,7 +128,10 @@
 
 **CTA:** `Start a session →`
 
-**Footer note:** `Amount charged: ${amount} USD · Next renewal: {nextBillingDate} · Manage subscription`
+**Billing footer:**
+`Amount charged: ${amount} USD · Next renewal: {nextBillingDate}`
+
+**Cancel line:** `Cancel anytime in one click` *(links to /#account, separate line)*
 
 ---
 

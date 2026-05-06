@@ -478,6 +478,12 @@ export function PracticeWidget({
               );
             })}
           </div>
+
+          {/* Trust signal */}
+          <p className="flex items-center justify-center gap-1.5 text-sm text-[#62748e] mt-6">
+            <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" strokeWidth={2.5} />
+            {copy.widget.microcopy}
+          </p>
         </div>
       </div>
 

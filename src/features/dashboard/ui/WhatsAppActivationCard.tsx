@@ -53,6 +53,8 @@ interface WhatsAppActivationCardProps {
   /** Number of previous dismissals (0 = first, 1 = second → permanent) */
   dismissCount?: number;
   onDismiss?: () => void;
+  /** A phrase from the current session to anchor the WA CTA contextually */
+  strongerPhrase?: string | null;
 }
 
 export function WhatsAppActivationCard({
@@ -61,6 +63,7 @@ export function WhatsAppActivationCard({
   variant = "dashboard",
   dismissCount = 0,
   onDismiss,
+  strongerPhrase,
 }: WhatsAppActivationCardProps) {
   const [step, setStep] = useState<Step>(whatsappVerified ? "done" : "idle");
   const [phone, setPhone] = useState(initialNumber || "");
@@ -165,11 +168,16 @@ export function WhatsAppActivationCard({
             <MessageCircle className="w-5 h-5 text-[#25d366]" />
           </span>
           <div className="flex-1 min-w-0">
-            <p className="text-sm text-[#0f172b] mb-1 font-semibold" >
-              Practice this phrase tomorrow on WhatsApp
+            <p className="text-sm text-[#0f172b] mb-1 font-semibold">
+              Practice this on WhatsApp tomorrow
             </p>
+            {strongerPhrase && (
+              <p className="text-xs text-[#0f172b]/70 italic leading-relaxed mb-1 border-l-2 border-[#6366f1]/30 pl-2">
+                "{strongerPhrase.length > 80 ? strongerPhrase.slice(0, 77) + "…" : strongerPhrase}"
+              </p>
+            )}
             <p className="text-xs text-[#62748e] leading-relaxed mb-3">
-              Activate your coach in 30 seconds — receive daily audio challenges and get your pronunciation score instantly.
+              Activate your coach in 30 seconds — daily audio challenges, instant pronunciation score.
             </p>
             <div className="flex items-center gap-3 flex-wrap">
               <button

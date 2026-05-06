@@ -392,10 +392,10 @@ export function OnboardingProfileScreen({
               className="text-xl md:text-2xl text-[#0f172b] mb-1.5"
               style={{ lineHeight: 1.2 }}
             >
-              Your Professional Profile
+            Welcome!
             </h1>
             <p className="text-[#62748e] text-sm mx-auto">
-              Help me understand your background so I can coach you effectively.
+              Nice to meet you! Please complete your professional profile so I can coach you effectively.
             </p>
           </div>
 

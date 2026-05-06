@@ -5,6 +5,22 @@
  * services/types.ts re-exports from here for backward compat.
  */
 
+/* ── Pronunciation domain types ── */
+
+export type PronunciationCategory = "Claridad" | "Ritmo" | "Entonación";
+
+export interface PronunciationNote {
+  word: string;
+  phonetic: string;
+  tip: string;
+  category: PronunciationCategory;
+}
+
+export interface ImprovementArea {
+  category: PronunciationCategory;
+  description: string;
+}
+
 /* ── Session Summary ── */
 
 export interface SessionSummaryNextStep {
@@ -20,6 +36,7 @@ export interface SessionSummary {
   pillarScores?: Record<string, number> | null;
   professionalProficiency?: number | null;
   cefrApprox?: string | null;
+  pronunciationNotes?: PronunciationNote[];
 }
 
 /* ── Core feedback items ── */

@@ -1494,6 +1494,7 @@ export function PracticeSessionPage({
                     variant="feedback"
                     dismissCount={dismissCount}
                     onDismiss={handleWaDismiss}
+                    strongerPhrase={realFeedback?.beforeAfter?.[0]?.professionalVersion ?? null}
                   />
                 </div>
               ) : null;
@@ -1545,6 +1546,7 @@ export function PracticeSessionPage({
                   scenarioType={scenarioType}
                   realFeedback={realFeedback}
                   pronunciationData={sessionPronData}
+                  pronunciationNotes={sessionSummary?.pronunciationNotes ?? []}
                   narratorUrl={FEEDBACK_URLS[scenarioType ?? "interview"]}
                   onPracticeAgain={canRepeat ? handlePracticeAgain : undefined}
                   onDownloadPdf={() => {
