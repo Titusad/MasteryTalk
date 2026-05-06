@@ -40,10 +40,8 @@ export function RecommendedLessonsCard({ pillarScores, onOpenLesson, onNavigateT
         transition={{ duration: 0.4 }}
       >
         <div className="flex items-center gap-2 mb-1">
-          <div className="w-7 h-7 rounded-lg bg-[#f0f4f8] flex items-center justify-center">
-            <Sparkles className="w-3.5 h-3.5 text-[#94a3b8]" />
-          </div>
-          <p className="text-sm text-[#0f172b] font-semibold">Recommended for you</p>
+          <Sparkles className="w-4 h-4 text-[#0f172b] shrink-0" />
+          <p className="text-xs font-medium uppercase tracking-wider text-[#0f172b]">Recommended for you</p>
         </div>
         <p className="text-xs text-[#62748e] mb-4 ml-9 leading-relaxed">
           After your first session, we identify which skills need the most attention and surface targeted micro-lessons here.
@@ -80,12 +78,8 @@ export function RecommendedLessonsCard({ pillarScores, onOpenLesson, onNavigateT
     >
       {/* Header */}
       <div className="flex items-center gap-2 mb-1">
-        <div className="w-7 h-7 rounded-lg bg-[#6366f1]/10 flex items-center justify-center">
-          <Sparkles className="w-3.5 h-3.5 text-[#6366f1]" />
-        </div>
-        <p className="text-sm text-[#0f172b] font-semibold">
-          Recommended for you
-        </p>
+        <Sparkles className="w-4 h-4 text-[#0f172b] shrink-0" />
+        <p className="text-xs font-medium uppercase tracking-wider text-[#0f172b]">Recommended for you</p>
       </div>
       <p className="text-xs text-[#62748e] mb-4 ml-9">
         Based on areas where focused study pays off most.

@@ -81,8 +81,8 @@ export function ProgressChartCard({ onStartSession }: ProgressChartCardProps) {
         transition={{ duration: 0.3 }}
       >
         <div className="flex items-center gap-2 mb-3">
-          <TrendingUp className="w-4 h-4 text-[#94a3b8]" />
-          <p className="text-xs font-medium uppercase tracking-wider text-[#94a3b8]">Score Progression</p>
+          <TrendingUp className="w-4 h-4 text-[#0f172b]" />
+          <p className="text-xs font-medium uppercase tracking-wider text-[#0f172b]">Score Progression</p>
         </div>
         <div className="flex flex-col gap-3">
           <p className="text-xs text-[#62748e] leading-relaxed">
@@ -128,8 +128,8 @@ export function ProgressChartCard({ onStartSession }: ProgressChartCardProps) {
       transition={{ duration: 0.3 }}
     >
       <div className="flex items-center gap-2 mb-3">
-        <TrendingUp className="w-4 h-4 text-[#6366f1]" />
-        <p className="text-xs font-medium uppercase tracking-wider text-[#94a3b8]">Score Progression</p>
+        <TrendingUp className="w-4 h-4 text-[#0f172b]" />
+        <p className="text-xs font-medium uppercase tracking-wider text-[#0f172b]">Score Progression</p>
         <span className="ml-auto text-[11px] text-[#94a3b8]">last {data.length} sessions</span>
       </div>
 

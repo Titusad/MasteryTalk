@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Check, Play, RefreshCw, X, Volume2 } from "lucide-react";
+import { Check, Play, RefreshCw, X, Volume2, Mic } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 interface SRPhrase {
@@ -132,9 +132,12 @@ export function SRDashboardCard({ totalSessions, onPracticeAll, onStartSession }
   // Wrapper for all states to include the title
   const CardWrapper = ({ children }: { children: React.ReactNode }) => (
     <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-6">
-      <p className="text-xs font-medium uppercase tracking-wider text-[#94a3b8] mb-4">
-        Daily Pronunciation Practice
-      </p>
+      <div className="flex items-center gap-2 mb-4">
+        <Mic className="w-4 h-4 text-[#0f172b] shrink-0" />
+        <p className="text-xs font-medium uppercase tracking-wider text-[#0f172b]">
+          Daily Pronunciation Practice
+        </p>
+      </div>
       {children}
       {renderModal()}
     </div>
@@ -145,9 +148,6 @@ export function SRDashboardCard({ totalSessions, onPracticeAll, onStartSession }
     return (
       <CardWrapper>
         <div className="flex flex-col gap-3 py-1">
-          <span className="w-10 h-10 rounded-full bg-[#f8fafc] border border-[#e2e8f0] flex items-center justify-center">
-            <RefreshCw className="w-4 h-4 text-[#62748e]" />
-          </span>
           <div>
             <p className="text-sm font-semibold text-[#0f172b] mb-1">Pronunciation Review</p>
             <p className="text-xs text-[#62748e] leading-relaxed">

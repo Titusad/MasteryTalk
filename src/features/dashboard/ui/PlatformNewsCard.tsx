@@ -2,6 +2,7 @@
  * PlatformNewsCard — Static news announcements for the dashboard left column.
  * Max 2 items. Design System compliant.
  */
+import { Bell } from "lucide-react";
 
 const NEWS_ITEMS = [
   {
@@ -19,9 +20,10 @@ const DOT_COLOR = { feature: "bg-[#0f172b]", report: "bg-[#6366f1]" };
 export function PlatformNewsCard() {
   return (
     <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-6">
-      <p className="text-xs font-medium uppercase tracking-wider text-[#94a3b8] mb-3">
-        News & Updates
-      </p>
+      <div className="flex items-center gap-2 mb-3">
+        <Bell className="w-4 h-4 text-[#0f172b] shrink-0" />
+        <p className="text-xs font-medium uppercase tracking-wider text-[#0f172b]">News & Updates</p>
+      </div>
       {NEWS_ITEMS.map((item, i) => (
         <div
           key={i}
