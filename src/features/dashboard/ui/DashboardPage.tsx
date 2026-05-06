@@ -224,8 +224,10 @@ export function DashboardPage({
               <PracticePathsModule
                 onStartSession={handleStartSession}
                 onLockedClick={() => setUpsellOpen(true)}
+                onNeedSelfIntro={handleQuickStart}
                 primaryPath={(userProfile as any)?.primary_path ?? null}
                 englishGoal={userProfile?.englishGoal ?? null}
+                totalSessions={data.totalSessions}
               />
             </motion.div>
           </div>

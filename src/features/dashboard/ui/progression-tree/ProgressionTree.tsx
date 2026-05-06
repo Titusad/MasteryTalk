@@ -71,11 +71,13 @@ interface ProgressionTreeProps {
   ) => void;
   onDrillComplete?: (pathId: string, levelId: string, score: number) => void;
   onLockedClick?: () => void;
+  onNeedSelfIntro?: () => void;
   primaryPath?: string | null;
   englishGoal?: string | null;
+  totalSessions?: number;
 }
 
-export function ProgressionTree({ onStartLevel, onDrillComplete, onLockedClick, primaryPath, englishGoal }: ProgressionTreeProps) {
+export function ProgressionTree({ onStartLevel, onDrillComplete, onLockedClick, onNeedSelfIntro, primaryPath, englishGoal, totalSessions = 0 }: ProgressionTreeProps) {
   const [activeTab, setActiveTab] = useState<PathId>(() => {
     if (englishGoal && VISIBLE_PATHS.some(p => p.id === englishGoal)) return englishGoal as PathId;
     const first = VISIBLE_PATHS.find(p => p.id !== "self-intro");
@@ -117,12 +119,15 @@ export function ProgressionTree({ onStartLevel, onDrillComplete, onLockedClick, 
   );;
 
   const handleNodeClick = (levelId: string, status: LevelStatus, level: ProgressionLevel) => {
+    // Guard: self-intro must be completed before accessing any goal path
+    if (activeTab !== "self-intro" && totalSessions < 1) {
+      onNeedSelfIntro?.();
+      return;
+    }
     if (status === "locked") {
       onLockedClick?.();
       return;
     }
-    // Both "unlocked" and "study" levels launch a practice session
-    // (learning content is now embedded in the session's Preparation phase)
     onStartLevel(level.scenario, activeTab, level.id, level.interlocutor);
   };
 
@@ -202,6 +207,24 @@ export function ProgressionTree({ onStartLevel, onDrillComplete, onLockedClick, 
           <div className="px-5 pt-3 pb-0 space-y-0.5">
             <h3 className="text-base font-semibold text-[#0f172b]">{activePath.title}</h3>
             <p className="text-sm text-[#62748e] leading-relaxed">{activePath.description}</p>
+          </div>
+        )}
+
+        {/* Self-intro gate banner */}
+        {totalSessions < 1 && (
+          <div className="mx-5 mt-4 bg-[#f0f4f8] border border-[#e2e8f0] rounded-xl px-4 py-3 flex items-center justify-between gap-4">
+            <p className="text-xs text-[#45556c] leading-relaxed">
+              <span className="font-semibold text-[#0f172b]">Complete your warm-up first.</span>{" "}
+              A 3-min Self-Introduction calibrates your level and unlocks this path.
+            </p>
+            {onNeedSelfIntro && (
+              <button
+                onClick={onNeedSelfIntro}
+                className="shrink-0 text-xs font-semibold text-white bg-[#0f172b] px-3 py-1.5 rounded-lg hover:bg-[#1d293d] transition-colors cursor-pointer whitespace-nowrap"
+              >
+                Start warm-up →
+              </button>
+            )}
           </div>
         )}
 

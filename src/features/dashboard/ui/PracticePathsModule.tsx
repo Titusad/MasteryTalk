@@ -10,11 +10,13 @@ import type { ScenarioType } from "@/services/types";
 interface PracticePathsModuleProps {
   onStartSession: (scenario: string, scenarioType?: string, levelId?: string, interlocutor?: string) => void;
   onLockedClick?: () => void;
+  onNeedSelfIntro?: () => void;
   primaryPath?: string | null;
   englishGoal?: string | null;
+  totalSessions?: number;
 }
 
-export function PracticePathsModule({ onStartSession, onLockedClick, primaryPath, englishGoal }: PracticePathsModuleProps) {
+export function PracticePathsModule({ onStartSession, onLockedClick, onNeedSelfIntro, primaryPath, englishGoal, totalSessions }: PracticePathsModuleProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -26,8 +28,10 @@ export function PracticePathsModule({ onStartSession, onLockedClick, primaryPath
           onStartSession(scenario, scenarioType, levelId, interlocutor);
         }}
         onLockedClick={onLockedClick}
+        onNeedSelfIntro={onNeedSelfIntro}
         primaryPath={primaryPath}
         englishGoal={englishGoal}
+        totalSessions={totalSessions}
       />
     </motion.div>
   );
