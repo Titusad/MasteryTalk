@@ -1,6 +1,6 @@
 # MasteryTalk PRO — Roadmap
 
-> **Last updated:** 2026-05-06 (Beta v14.7)
+> **Last updated:** 2026-05-07 (Beta v14.8)
 > **Spec reference:** [`PRODUCT_SPEC.md`](./PRODUCT_SPEC.md)
 > **Rule:** New items go here FIRST → spec update if needed → then code.
 
@@ -519,6 +519,92 @@
 
 ---
 
+### Sprint D — Practice Flow Evolution
+
+> **Goal:** Restructure the in-session learning flow into a proper curriculum experience — course-like navigation, richer preparation, and language-first approach. Unblocks multi-path scale.
+> **Priority:** High — these changes define the product quality bar for launch.
+
+#### D.1 — Multi-path briefing support (Prerequisite for D.2–D.4)
+
+> **Why:** `BriefingStepperCarousel`, `STRATEGY_URLS`, `INTRO_URLS`, and all pre-session content currently only cover `interview` and `sales`. All other paths run the flow but with no level-specific preparation content.
+
+- [ ] Audit all paths: identify which have `methodology` defined in `progression-paths.ts` (interview ✅, sales ✅, meeting ⚠️, presentation ⚠️, culture ⚠️)
+- [ ] Write `methodology` objects for `meeting`, `presentation`, `culture` paths — all 6 levels each (name, tagline, explanation, pattern bad/good, anchorPhrases, coachTip)
+- [ ] Write interlocutor intro scripts for all missing level/interlocutor combos → generate audio → add to `INTRO_URLS`
+- [ ] Write strategy narration scripts for all missing levels → generate audio → add to `STRATEGY_URLS`
+- [ ] Write feedback narration scripts for meeting/presentation/culture → add to `FEEDBACK_URLS`
+- [ ] **Acceptance:** Any path's Level 1 session runs the full flow (intro narration → lesson → strategy with narration → briefing cards → practice → feedback narration) without any missing step or empty content
+
+#### D.2 — Revised practice flow: Introduction-first
+
+> **Why:** Current flow puts Context before the user understands the framework. Teaching first, then contextualizing is more effective.
+> **New step sequence:** `intro` → `strategy` (Introduction: what is this + framework) → `context` (apply to your situation) → `lesson` (vocabulary primer) → `generating` → `practice-prep` (coach: "let's review the questions") → `practice`
+
+- [ ] Reorder steps in `PracticeSessionPage.tsx`: `strategy` moves before `context` for path sessions
+- [ ] Update `SessionProgressBar` phase order to reflect new sequence
+- [ ] `IntroductionScreen` for path sessions: explain what the level scenario is (e.g., "A Phone Screen is a 20-min call with a recruiter designed to...") — distinct from the existing self-intro `intro` step
+- [ ] `PracticePrepScreen` coach message: level-specific opening ("Let's review the 5 most common Phone Screen questions and how to tackle each one. We'll also practice your pronunciation and power phrases.")
+- [ ] Wire `gateWithLesson()` to fire after context (vocabulary primer) — currently fires between context and strategy
+- [ ] **Acceptance:** New user starting Interview Level 1 sees: intro (what is a phone screen) → strategy (framework) → context (their job) → vocabulary lesson → coach intro → Q&A cards
+
+#### D.3 — Side nav as course navigation (Stepper migration)
+
+> **Why:** The in-page step dots (Question 1/5 + dots) are weak navigation. Moving the stepper to `PracticeSideNav` gives users a course-like map of their session progress and enables non-linear navigation to completed questions.
+> **Reference:** Standard course UX (Udemy, Coursera) — active level expands showing steps below it.
+
+- [ ] Add session state to `PracticeSideNav` props: `sessionSteps?: { id: string; label: string; status: "pending" | "active" | "done" }[]`
+- [ ] `PracticeSessionPage` lifts question list + current step status and passes it down via `onSessionStepsChange` callback
+- [ ] `PracticeSideNav` renders expanded steps under the active level: Introduction, Vocabulary, Question 1…N (with ✓ done / ● active / ○ pending indicators)
+- [ ] Clicking a completed step navigates back to that question (`activeQuestionIdx` + `activeStep` reset)
+- [ ] Remove inline step dots from `BriefingStepperCarousel` header once side nav is source of truth
+- [ ] `PracticeSideNav` collapses other levels (accordion) to keep focus on current one
+- [ ] **Acceptance:** Side nav shows real-time step progress during session; user can jump to any completed question; dots removed from in-page header
+
+#### D.4 — Level vocabulary + pronunciation module
+
+> **Why:** Nearshoring professionals need to own the specific vocabulary of each level before practicing it under pressure. A vocabulary step before Q&A practice reduces cognitive load and directly targets pronunciation gaps.
+> **Placement:** New step between `lesson` (framework primer) and `generating` (Q&A generation).
+
+- [ ] Define `VocabularyBank` type: `{ term: string; definition: string; example: string; audioUrl?: string; ipa?: string }[]`
+- [ ] Add `vocabularyBank?: VocabularyBank` to `ProgressionLevel` in `progression-paths.ts`
+- [ ] Populate vocabulary banks for Interview Level 1–3 first (MVP: 5–8 terms per level)
+- [ ] Create `VocabularyScreen.tsx` — step screen: term card + definition + example sentence + "Tap to hear" TTS button + shadowing repeat input (optional)
+- [ ] Wire into `PracticeSessionPage.tsx` — new step `"vocabulary"` inserted between `lesson` and `generating`
+- [ ] Skip when: `challengeModeRef.current` OR `startAtContext` (War Room) OR `isSelfIntro` OR no vocabulary data for the level
+- [ ] Add `"vocabulary"` to `SessionProgressBar` phases
+- [ ] Generate TTS for all vocabulary terms via `POST /tts` → cache audio URLs
+- [ ] **Acceptance:** Interview Level 1 session shows vocabulary step with 5–8 terms; each has audio; user can shadow; step skippable; Challenge Mode and War Room bypass it
+
+---
+
+### Sprint E — Coach Experience
+
+> **Goal:** Make the AI coach narration feel more present and accessible — subtitles for users who can't play audio, and better visual integration of the Coach button.
+
+#### E.1 — Narration subtitle bubble
+
+> **Why:** Users in open offices, on mobile, or with hearing accessibility needs can't benefit from narration. Showing the script as a caption makes the coach's message always readable.
+
+- [ ] Convert comment-only scripts in `narrator-audio.ts` into exported `NARRATOR_SCRIPTS: Record<string, string>` (context, generating, analyzing, interlocutor keys already written as comments)
+- [ ] Write missing scripts for `STRATEGY_URLS` (one per level) — short coaching sentences matching the audio tone
+- [ ] Write missing scripts for `INTRO_URLS` and `FEEDBACK_URLS`
+- [ ] Extend `useNarration(url, script?)` — accepts optional `script` string, exposes it as return value
+- [ ] Create `NarrationCaption.tsx` — fixed-position bubble (bottom-center, above footer): dark pill with text, `AnimatePresence` fade in/out on `isPlaying`; closes on click
+- [ ] All `narratorUrl=` call sites in `PracticeSessionPage` receive matching `narratorScript=` prop
+- [ ] `StrategyScreen` + `IntroductionScreen` + `PracticePrepScreen` + `AnalyzingScreen` + `InterlocutorIntroScreen` pass script to `useNarration` → render `<NarrationCaption>`
+- [ ] **Acceptance:** When Coach narrates, text appears as subtitle bubble; disappears when audio ends or user clicks; works even when audio is muted (shows text only)
+
+#### E.2 — Flipbook card animation ✅ (Implemented locally — 2026-05-07)
+
+> Flipbook `rotateX` transition in `BriefingStepperCarousel`. Directional: forward flips down, backward flips up. Duration 0.38s.
+
+- [x] `FLIP_VARIANTS` with `rotateX`, `transformPerspective: 900`, `transformOrigin: "top center"`
+- [x] `flipDirection` state drives `custom` prop on `AnimatePresence`
+- [x] `goToStep()` sets direction before changing step
+- [ ] Deploy to production after local validation
+
+---
+
 ### Sprint C — Foundational
 
 > Architectural impact. Requires design decisions before implementation. Evaluate after Sprint B.
@@ -745,4 +831,5 @@
 | 2026-05-04 | **Product strategy session — major decisions:** (1) Pricing finalized: FM $49/3mo locked forever · Program $129/3mo · Monthly $49/mo. *(Note: FM revised to $59/3mo on 2026-05-05 — see below.)* (2) Primary Path model: user chooses path from self-intro recommendation — BC not mandatory, content woven via §7.9 pre-session lessons. (3) Progression unlock trigger: full path completion (all 6 levels), user chooses next path. (4) Self-intro elevated to intake assessment → primary_path on subscribe. (5) Pre-session lesson step §7.9 specced (Sprint B.4). **Coded:** hints tap-to-reveal + challenge suppression; scenario-aware turn limits (8/10). **Spec:** PRODUCT_SPEC v3.3. **ROADMAP:** Phase 0.1 revised, 0.6 updated, 0.7 added, 3.1.2 updated, Known Gaps documented. Current state → Beta v14.4. |
 | 2026-05-04 | **Retention sprint (Beta v14.5):** SinceYouStartedCard (pillar delta first→latest), ScenarioDeltaCard (per-scenario comparison in FeedbackScreen), LevelMilestoneModal (confetti + score on level completion ≥75), ChooseNextPathModal path completion celebration + LinkedIn share. fetchSessions TTL cache (30s). PILLAR_COLORS consolidated. PATH_LABELS centralized. Security review: 0 vulnerabilities. 119/119 tests passing. COMMERCIAL_PITCH.md: full commercial document + EF EPI 2026 data + updated market numbers + arbitraje salarial. Commit 9cff182. |
 | 2026-05-04 | **Pre-session lesson step (Beta v14.6 — §7.9):** `"lesson"` step live between context and strategy. `getPreSessionLesson()` (level-specific → pillar fallback). `PreSessionLessonScreen` (badge, keyConcept, power phrase, recall gate, locked CTA). `gateWithLesson()` helper in PracticeSessionPage. `last_pre_session_lesson_id` persisted. Skip: Challenge Mode, War Room, self-intro. Script generation fires before lesson for zero added latency. Backend whitelist updated. Commit e777d2c. Current state → Beta v14.6. |
+| 2026-05-07 | **Practice Flow Evolution + Coach Experience (Beta v14.8 — planned):** Added Sprint D (D.1 multi-path briefing support, D.2 revised flow Introduction-first, D.3 side nav as course navigation, D.4 vocabulary + pronunciation module) and Sprint E (E.1 narration subtitle bubble, E.2 flipbook animation ✅ local). D.1 is prerequisite for all others. Priority: D.1 → D.2 → D.3 → E.1 → D.4. |
 | 2026-05-05 | **Billing transparency + competitive positioning sprint (Beta v14.7):** (1) Pricing: FM raised $49→$59/3mo ($19.67/mo) — eliminates same-number confusion with Monthly. Backend `/pricing` endpoint updated. All docs + PRODUCT_SPEC synced. (2) Landing pricing section rewritten: connected to `GET /pricing` API (no hardcoded prices), quarterly as hero card, price anchors (coach/tutor), `roiLine` ("Se paga solo con tu primer aumento"), `cancelLine` + scarcity co-located in Founding Member card. (3) AuthModal register subtitle → "Solo Google. Sin tarjeta de crédito." PracticeWidget `microcopy` now rendered with Check icon. (4) Transactional emails: subscription confirmation subject + secondary "Manage subscription" CTA + cancel footer; renewal Branch B cancel link on its own line; PaymentSuccessHandler footer → "Cancel anytime in one click. No penalties." (5) **pronunciationNotes live in FeedbackScreen:** Gemini Flash tips were generated but never rendered. `PronunciationCategory`/`PronunciationNote`/`ImprovementArea` moved to `entities/feedback`. `generateSummary()` now maps `pronunciationNotes`. New "Pronunciation Coach" section in FeedbackScreen: word + phonetic + category badge + tip. (6) SR Coach second message: after production Twilio template, sends free-form `weakPoint` context if `problem_word` exists. (7) Session summary email: `strongerPhrase` card ("Your phrase to own") with `beforeAfter[0].professionalVersion`, formatted for LinkedIn. (8) `WhatsAppActivationCard` feedback variant: shows `strongerPhrase` excerpt from session in card title area. (9) `CLAUDE.md` v2.3: new "Análisis profundo antes de proponer soluciones" protocol. Security: 0 new vulnerabilities (pre-existing HTML non-escaping in emails documented as known gap). Tests: 119/119 passing. |
