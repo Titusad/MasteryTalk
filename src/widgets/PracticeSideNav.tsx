@@ -258,11 +258,11 @@ export function PracticeSideNav({
 
                 {/* Session steps accordion — only under active level */}
                 {isActive && sessionSteps && sessionSteps.length > 0 && (
-                  <div className="ml-[42px] mt-1 mb-2 space-y-0.5">
+                  <div className="ml-[42px] mt-1 mb-2 space-y-0.5 overflow-hidden">
                     {sessionSteps.map((s) => (
                       <div
                         key={s.id}
-                        className={`flex items-center gap-2 px-2 py-1.5 rounded-lg ${
+                        className={`flex items-center gap-2 px-2 py-1.5 rounded-lg min-w-0 ${
                           s.status === "active" ? "bg-[#eef2ff]" : ""
                         }`}
                       >
@@ -273,7 +273,7 @@ export function PracticeSideNav({
                         ) : (
                           <div className="w-2 h-2 rounded-full border border-[#cbd5e1] shrink-0" />
                         )}
-                        <span className={`text-[11px] leading-snug ${
+                        <span className={`text-[11px] truncate ${
                           s.status === "active"
                             ? "text-[#4338ca] font-medium"
                             : s.status === "done"
