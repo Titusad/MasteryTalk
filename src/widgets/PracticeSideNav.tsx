@@ -60,6 +60,12 @@ const STATUS_CONFIG: Record<
   },
 };
 
+export interface SessionStepItem {
+  id: string;
+  label: string;
+  status: "pending" | "active" | "done";
+}
+
 interface PracticeSideNavProps {
   activePathId: PathId;
   activeLevelId?: string;
@@ -69,6 +75,8 @@ interface PracticeSideNavProps {
     levelId: string,
     interlocutor: string,
   ) => void;
+  /** Session Q&A steps to show under the active level */
+  sessionSteps?: SessionStepItem[];
   /** Mobile drawer mode */
   isDrawerOpen?: boolean;
   onDrawerClose?: () => void;
@@ -78,6 +86,7 @@ export function PracticeSideNav({
   activePathId,
   activeLevelId,
   onLevelSwitch,
+  sessionSteps,
   isDrawerOpen = false,
   onDrawerClose,
 }: PracticeSideNavProps) {
@@ -246,6 +255,37 @@ export function PracticeSideNav({
                     />
                   )}
                 </motion.button>
+
+                {/* Session steps accordion — only under active level */}
+                {isActive && sessionSteps && sessionSteps.length > 0 && (
+                  <div className="ml-[42px] mt-1 mb-2 space-y-0.5">
+                    {sessionSteps.map((s) => (
+                      <div
+                        key={s.id}
+                        className={`flex items-center gap-2 px-2 py-1.5 rounded-lg ${
+                          s.status === "active" ? "bg-[#eef2ff]" : ""
+                        }`}
+                      >
+                        {s.status === "done" ? (
+                          <CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" />
+                        ) : s.status === "active" ? (
+                          <div className="w-2 h-2 rounded-full bg-[#6366f1] shrink-0" />
+                        ) : (
+                          <div className="w-2 h-2 rounded-full border border-[#cbd5e1] shrink-0" />
+                        )}
+                        <span className={`text-[11px] leading-snug ${
+                          s.status === "active"
+                            ? "text-[#4338ca] font-medium"
+                            : s.status === "done"
+                              ? "text-[#62748e]"
+                              : "text-[#94a3b8]"
+                        }`}>
+                          {s.label}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             );
           })

@@ -4,6 +4,7 @@ import { Menu, AlertTriangle } from "lucide-react";
 import { AppHeader, MiniFooter, NarrationToggle } from "@/shared/ui";
 import { AnalyzingScreen } from "@/shared/ui";
 import { PracticeSideNav } from "@/widgets/PracticeSideNav";
+import type { SessionStepItem } from "@/widgets/PracticeSideNav";
 import { realConversationService } from "@/services";
 import { toServiceError } from "@/services/errors";
 import type { ServiceError } from "@/services/errors";
@@ -371,6 +372,9 @@ export function PracticeSessionPage({
     () => scenarioType === "interview" ? interviewBriefingCache.get(sKey) : null
   );
 
+  /* Session Q&A steps for side nav — populated when briefing is ready */
+  const [sessionSteps, setSessionSteps] = useState<SessionStepItem[]>([]);
+
   /**
    * Briefing data packaged for the interviewer prompt (Gap A+B).
    * Populated when user clicks "Practice Interview" — null until then.
@@ -454,6 +458,11 @@ export function PracticeSessionPage({
           abortController.signal
         );
         setInterviewBriefing(briefing);
+        setSessionSteps(briefing.anticipatedQuestions.map((q, i) => ({
+          id: String(q.id ?? i),
+          label: q.question.length > 38 ? q.question.slice(0, 38) + "…" : q.question,
+          status: i === 0 ? "active" : "pending",
+        } as SessionStepItem)));
         // Content-aware cache key: same logic as the read path
         const fp = JSON.stringify(
           Object.entries(allFields).sort(([a], [b]) => a.localeCompare(b))
@@ -952,6 +961,7 @@ export function PracticeSessionPage({
             activePathId={progressionPathId}
             activeLevelId={progressionLevelId}
             onLevelSwitch={handleSideNavLevelSwitch}
+            sessionSteps={sessionSteps.length > 0 ? sessionSteps : undefined}
             isDrawerOpen={drawerOpen}
             onDrawerClose={() => setDrawerOpen(false)}
           />
@@ -1308,6 +1318,12 @@ export function PracticeSessionPage({
                 interlocutor={interlocutor}
                 briefingData={interviewBriefing}
                 narratorUrl={PREP_URLS["interview"]}
+                onProgressChange={(activeIdx, completedSet) => {
+                  setSessionSteps(prev => prev.map((s, i) => ({
+                    ...s,
+                    status: completedSet.has(i) ? "done" : i === activeIdx ? "active" : "pending",
+                  })));
+                }}
                 onStartSimulation={(userDrafts) => {
                   const briefingPayload: SessionConfig["interviewBriefing"] = {
                     anticipatedQuestions: interviewBriefing.anticipatedQuestions.map((q) => ({

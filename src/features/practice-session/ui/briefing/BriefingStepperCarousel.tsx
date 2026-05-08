@@ -33,6 +33,7 @@ interface BriefingStepperCarouselProps {
     cards: InterviewQuestionCard[];
     onAllComplete: (completedCount: number) => void;
     onDraftChange?: (questionId: number, text: string) => void;
+    onProgressChange?: (activeIdx: number, completedSet: Set<number>) => void;
     scenarioType?: string;
     interlocutor?: string;
     cardLabel?: string;
@@ -43,6 +44,7 @@ export function BriefingStepperCarousel({
     cards,
     onAllComplete,
     onDraftChange,
+    onProgressChange,
     scenarioType,
     interlocutor,
     cardLabel = "Question",
@@ -138,6 +140,11 @@ export function BriefingStepperCarousel({
         playFlipSound();
         setActiveStep(step);
     }, [activeStep, playFlipSound]);
+
+    /* ── Report progress to parent (side nav) ── */
+    useEffect(() => {
+        onProgressChange?.(activeQuestionIdx, completedQuestions);
+    }, [activeQuestionIdx, completedQuestions, onProgressChange]);
 
     /* ── Answer submission → stores draft, advances to feedback ── */
     const handleAnswerSubmit = useCallback((draft: string, pronAssessment?: AzurePronunciationAssessment) => {

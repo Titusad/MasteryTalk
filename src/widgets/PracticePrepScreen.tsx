@@ -85,6 +85,7 @@ interface PracticePrepScreenProps {
     scenario?: string;
     scenarioType?: ScenarioType;
     narratorUrl?: string;
+    onProgressChange?: (activeIdx: number, completedSet: Set<number>) => void;
 }
 
 /* ── Main Screen ── */
@@ -96,6 +97,7 @@ export function PracticePrepScreen({
     scenario,
     scenarioType,
     narratorUrl,
+    onProgressChange,
 }: PracticePrepScreenProps) {
     useNarration(narratorUrl || null);
     const [allDone, setAllDone] = useState(false);
@@ -153,6 +155,7 @@ export function PracticePrepScreen({
                         cards={briefingData.anticipatedQuestions}
                         onAllComplete={handleAllComplete}
                         onDraftChange={handleDraftChange}
+                        onProgressChange={onProgressChange}
                         scenarioType={scenarioType}
                         cardLabel={(SCENARIO_PREP_CONFIG[scenarioType ?? "interview"] ?? SCENARIO_PREP_CONFIG.interview).cardLabel}
                         completedLabel={(SCENARIO_PREP_CONFIG[scenarioType ?? "interview"] ?? SCENARIO_PREP_CONFIG.interview).completedLabel}
