@@ -409,6 +409,20 @@ export function FeedbackCard({
                         </span>
                     </div>
 
+                    {/* ── Your answer ── */}
+                    {userDraft && (
+                        <div>
+                            <h3 className="text-xs font-semibold text-[#94a3b8] uppercase tracking-wider mb-2">
+                                Your Answer
+                            </h3>
+                            <div className="bg-[#f8fafc] rounded-xl border border-[#e2e8f0] p-4">
+                                <p className="text-sm text-[#45556c] leading-relaxed italic">
+                                    "{userDraft}"
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
                     {/* ── Improved Response ── */}
                     <div>
                         <div className="flex items-center gap-2 mb-2">
