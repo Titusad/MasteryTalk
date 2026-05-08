@@ -8,9 +8,14 @@
 import { useState, useEffect } from "react";
 import { useNarration } from "@/shared/lib/useNarration";
 import { motion } from "motion/react";
-import { ArrowRight, ClipboardList, Lightbulb, Mic, Clock } from "lucide-react";
+import { ArrowRight, Clock } from "lucide-react";
 import { getSupabaseClient } from "@/services/supabase";
 import type { ScenarioType } from "@/entities/session";
+
+const PILLARS = [
+  "Vocabulary", "Grammar", "Fluency",
+  "Pronunciation", "Professional Tone", "Persuasion",
+] as const;
 
 const SCENARIO_LABELS: Record<ScenarioType, string> = {
   interview: "Interview",
@@ -47,12 +52,19 @@ const STEPS = [
   },
 ];
 
+export interface IntroMeta {
+  sessionFocus?: string;
+  confidenceScore?: number;
+}
+
 interface IntroductionScreenProps {
   scenarioType: ScenarioType;
   levelTitle: string;
   introHeadline: string;
-  onContinue: () => void;
+  onContinue: (meta: IntroMeta) => void;
   narratorUrl?: string;
+  /** When true, hides focus/confidence — used for self-intro warm-up */
+  minimal?: boolean;
 }
 
 export function IntroductionScreen({
@@ -61,9 +73,14 @@ export function IntroductionScreen({
   introHeadline,
   onContinue,
   narratorUrl,
+  minimal = false,
 }: IntroductionScreenProps) {
   useNarration(narratorUrl || null);
   const [firstName, setFirstName] = useState("there");
+  const [sessionFocus, setSessionFocus] = useState<string | null>(null);
+  const [confidenceScore, setConfidenceScore] = useState<number | null>(null);
+
+  const canContinue = minimal || confidenceScore !== null;
 
   useEffect(() => {
     getSupabaseClient().auth.getUser().then(({ data }) => {
@@ -136,17 +153,78 @@ export function IntroductionScreen({
         <span> Time in practice: ~15-20 min</span>
       </div>
 
-      {/* Motivational */}
-      <p className="text-sm text-[#62748e] text-center mb-8 mt-2 font-medium" >
-        Are you ready?
-      </p>
+      {/* Focus + confidence check-in */}
+      {!minimal && (
+        <motion.div
+          className="w-full bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-5 mb-6 space-y-5"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.3 }}
+        >
+          {/* Focus area */}
+          <div>
+            <p className="text-sm font-medium text-[#0f172b] mb-2.5">
+              Focus area{" "}
+              <span className="text-[#94a3b8] font-normal">(optional)</span>
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {PILLARS.map((pillar) => (
+                <button
+                  key={pillar}
+                  onClick={() => setSessionFocus(sessionFocus === pillar ? null : pillar)}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+                    sessionFocus === pillar
+                      ? "bg-[#0f172b] text-white"
+                      : "border border-[#e2e8f0] text-[#45556c] hover:border-[#94a3b8] bg-white"
+                  }`}
+                >
+                  {pillar}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Confidence check */}
+          <div>
+            <p className="text-sm font-medium text-[#0f172b] mb-2.5">
+              How are you feeling about this session?
+            </p>
+            <div className="flex items-center gap-2">
+              {[1, 2, 3, 4, 5].map((score) => (
+                <button
+                  key={score}
+                  onClick={() => setConfidenceScore(confidenceScore === score ? null : score)}
+                  className={`w-10 h-10 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+                    confidenceScore === score
+                      ? "bg-[#0f172b] text-white"
+                      : "border border-[#e2e8f0] text-[#45556c] hover:border-[#94a3b8] bg-white"
+                  }`}
+                >
+                  {score}
+                </button>
+              ))}
+            </div>
+            <div className="flex justify-between mt-1.5 px-0.5">
+              <span className="text-xs text-[#94a3b8]">Nervous</span>
+              <span className="text-xs text-[#94a3b8]">Confident</span>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {/* CTA */}
       <motion.button
-        onClick={onContinue}
-        className="w-full py-3.5 rounded-full text-white font-semibold text-[15px] flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-[0.98]"
-        style={{ background: "#0f172b" }}
-        whileTap={{ scale: 0.97 }}
+        onClick={() => canContinue && onContinue({
+          sessionFocus: sessionFocus ?? undefined,
+          confidenceScore: confidenceScore ?? undefined,
+        })}
+        disabled={!canContinue}
+        className={`w-full py-3.5 rounded-full font-semibold text-[15px] flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${
+          canContinue
+            ? "bg-[#0f172b] text-white hover:opacity-90 cursor-pointer"
+            : "bg-[#e2e8f0] text-[#94a3b8] cursor-not-allowed"
+        }`}
+        whileTap={canContinue ? { scale: 0.97 } : {}}
       >
         Let's Go
         <ArrowRight className="w-4 h-4" />

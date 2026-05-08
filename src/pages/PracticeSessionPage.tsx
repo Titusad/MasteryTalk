@@ -997,6 +997,7 @@ export function PracticeSessionPage({
                     levelTitle="Warm-Up"
                     introHeadline="introduce yourself with clarity and confidence in any professional setting"
                     onContinue={() => setStep("self-intro-context")}
+                    minimal
                   />
                 );
               }
@@ -1010,7 +1011,9 @@ export function PracticeSessionPage({
                   levelTitle={levelDef.title}
                   introHeadline={levelDef.introHeadline}
                   narratorUrl={progressionLevelId ? INTRO_URLS[progressionLevelId] : undefined}
-                  onContinue={() => {
+                  onContinue={(meta) => {
+                    sessionFocusRef.current = meta.sessionFocus;
+                    confidenceScoreRef.current = meta.confidenceScore;
                     const hasProfileContext = userProfile?.cvSummary || (userProfile?.position && userProfile?.industry);
                     setStep(hasProfileContext ? "context" : "experience");
                   }}
@@ -1057,8 +1060,9 @@ export function PracticeSessionPage({
                 narratorUrl={NARRATOR_URLS.context[scenarioType as keyof typeof NARRATOR_URLS.context] || ""}
                 onContinue={(extraData, meta?: ContextScreenMeta) => {
                   // Capture coaching parameters synchronously before state updates fire
-                  sessionFocusRef.current = meta?.sessionFocus;
-                  confidenceScoreRef.current = meta?.confidenceScore;
+                  // sessionFocus and confidenceScore already set from IntroductionScreen
+                  if (meta?.sessionFocus) sessionFocusRef.current = meta.sessionFocus;
+                  if (meta?.confidenceScore !== undefined) confidenceScoreRef.current = meta.confidenceScore;
                   challengeModeRef.current = meta?.challengeMode ?? false;
                   // Inject profile data into guided fields for AI generation
                   const enriched = { ...extraData };

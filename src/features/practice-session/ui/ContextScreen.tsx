@@ -224,8 +224,6 @@ function ContextScreen({
     useNarration(narratorUrl || null);
     const storageKey = `masterytalk_extra_ctx_${scenarioType || "default"}`;
 
-    const [sessionFocus, setSessionFocus] = useState<string | null>(null);
-    const [confidenceScore, setConfidenceScore] = useState<number | null>(null);
     const [challengeMode, setChallengeMode] = useState(false);
     const [selectedPreset, setSelectedPreset] = useState<SituationPreset | null>(null);
     const [presetsOpen, setPresetsOpen] = useState(true);
@@ -273,11 +271,8 @@ function ContextScreen({
     const canContinue = selectedPreset !== null || hasCustomContent;
 
     const buildMeta = (): ContextScreenMeta | undefined => {
-        const meta: ContextScreenMeta = {};
-        if (sessionFocus) meta.sessionFocus = sessionFocus;
-        if (confidenceScore !== null) meta.confidenceScore = confidenceScore;
-        if (challengeMode) meta.challengeMode = true;
-        return Object.keys(meta).length > 0 ? meta : undefined;
+        if (challengeMode) return { challengeMode: true };
+        return undefined;
     };
 
     const handleContinue = () => {
@@ -409,64 +404,14 @@ function ContextScreen({
                     </motion.div>
                 )}
 
-                {/* ── Coaching parameters: focus + confidence ── */}
+
+                {/* Challenge Mode toggle */}
                 <motion.div
-                    className="mb-8 bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-4"
+                    className="mb-8"
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: 0.3 }}
                 >
-                    {/* Focus selector */}
-                    <div className="mb-5">
-                        <p className="text-sm font-medium text-[#0f172b] mb-2.5">
-                            Focus area{" "}
-                            <span className="text-[#94a3b8] font-normal">(optional)</span>
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                            {PILLARS.map((pillar) => (
-                                <button
-                                    key={pillar}
-                                    onClick={() => setSessionFocus(sessionFocus === pillar ? null : pillar)}
-                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                                        sessionFocus === pillar
-                                            ? "bg-[#0f172b] text-white"
-                                            : "border border-[#e2e8f0] text-[#45556c] hover:border-[#94a3b8] bg-white"
-                                    }`}
-                                >
-                                    {pillar}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Confidence check */}
-                    <div className="mb-5">
-                        <p className="text-sm font-medium text-[#0f172b] mb-2.5">
-                            How are you feeling about this session?{" "}
-                            <span className="text-[#94a3b8] font-normal">(optional)</span>
-                        </p>
-                        <div className="flex items-center gap-2">
-                            {[1, 2, 3, 4, 5].map((score) => (
-                                <button
-                                    key={score}
-                                    onClick={() => setConfidenceScore(confidenceScore === score ? null : score)}
-                                    className={`w-10 h-10 rounded-lg text-sm font-medium transition-colors ${
-                                        confidenceScore === score
-                                            ? "bg-[#0f172b] text-white"
-                                            : "border border-[#e2e8f0] text-[#45556c] hover:border-[#94a3b8] bg-white"
-                                    }`}
-                                >
-                                    {score}
-                                </button>
-                            ))}
-                        </div>
-                        <div className="flex justify-between mt-1.5 px-0.5">
-                            <span className="text-xs text-[#94a3b8]">Nervous</span>
-                            <span className="text-xs text-[#94a3b8]">Confident</span>
-                        </div>
-                    </div>
-
-                    {/* Challenge Mode toggle */}
                     <div className={`flex items-center justify-between rounded-xl px-3 py-3 transition-colors ${challengeMode ? "bg-[#0f172b]" : "bg-[#f8fafc] border border-[#e2e8f0]"}`}>
                         <div>
                             <p className={`text-sm font-medium ${challengeMode ? "text-white" : "text-[#0f172b]"}`}>
