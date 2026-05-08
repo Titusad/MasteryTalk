@@ -390,31 +390,15 @@ export function PracticeSessionPage({
       return "pending";
     };
 
-    const fixed: SessionStepItem[] = [
-      { id: "s-intro",     label: "Introduction",   status: status(["intro"]) },
-      { id: "s-strategy",  label: "Strategy",       status: status(["strategy"]) },
-      { id: "s-context",   label: "Your Situation", status: status(["experience", "context", "generating"]) },
-    ];
+    const hasProfile = !!(userProfile?.cvSummary || (userProfile?.position && userProfile?.industry));
 
-    const qna: SessionStepItem[] = (interviewBriefing?.anticipatedQuestions ?? []).map((q, i) => {
-      let qStatus: SessionStepItem["status"] = "pending";
-      if (step === "practice-prep" && qaProgress) {
-        qStatus = qaProgress.completedSet.has(i) ? "done" : i === qaProgress.activeIdx ? "active" : "pending";
-      } else if (currentIdx > FLOW.indexOf("practice-prep")) {
-        qStatus = "done";
-      }
-      return {
-        id: String(q.id ?? i),
-        label: q.question.length > 38 ? q.question.slice(0, 38) + "…" : q.question,
-        status: qStatus,
-      };
-    });
-
-    const last: SessionStepItem[] = [
-      { id: "s-practice", label: "Live Practice", status: status(["interlocutor-intro", "practice"]) },
-    ];
-
-    setSessionSteps([...fixed, ...qna, ...last]);
+    setSessionSteps([
+      { id: "s-intro",     label: "Introduction",   status: status(["intro"]),                                   stepKey: "intro" },
+      { id: "s-strategy",  label: "Strategy",       status: status(["strategy"]),                                stepKey: "strategy" },
+      { id: "s-context",   label: "Your Situation", status: status(["experience", "context", "generating"]),     stepKey: hasProfile ? "context" : "experience" },
+      { id: "s-prep",      label: "Q&A Preparation",status: status(["practice-prep"]),                           stepKey: "practice-prep" },
+      { id: "s-practice",  label: "Live Practice",  status: status(["interlocutor-intro", "practice"]),          stepKey: "practice" },
+    ]);
   }, [step, progressionPathId, progressionLevelId, interviewBriefing, qaProgress]);
 
   /**
@@ -979,6 +963,7 @@ export function PracticeSessionPage({
             activeLevelId={progressionLevelId}
             onLevelSwitch={handleSideNavLevelSwitch}
             sessionSteps={sessionSteps.length > 0 ? sessionSteps : undefined}
+            onSessionStepClick={(key) => setStep(key as any)}
             isDrawerOpen={drawerOpen}
             onDrawerClose={() => setDrawerOpen(false)}
           />
@@ -995,12 +980,6 @@ export function PracticeSessionPage({
             exit={{ opacity: 0, filter: "blur(4px)" }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
           >
-            {/* Stepper — rendered once here, not inside each sub-screen (hidden on intro, context selector, full-screen loaders, and interlocutor intro) */}
-            {step !== "intro" && step !== "self-intro-context" && step !== "generating" && step !== "analyzing" && step !== "interlocutor-intro" && (
-              <div className="w-full max-w-md mx-auto px-6 pt-4">
-                <SessionProgressBar currentStep={step} />
-              </div>
-            )}
 
             {/* Global error banner */}
             {serviceError && (

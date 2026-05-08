@@ -64,6 +64,7 @@ export interface SessionStepItem {
   id: string;
   label: string;
   status: "pending" | "active" | "done";
+  stepKey?: string;
 }
 
 interface PracticeSideNavProps {
@@ -75,8 +76,9 @@ interface PracticeSideNavProps {
     levelId: string,
     interlocutor: string,
   ) => void;
-  /** Session Q&A steps to show under the active level */
+  /** Session flow steps to show under the active level */
   sessionSteps?: SessionStepItem[];
+  onSessionStepClick?: (stepKey: string) => void;
   /** Mobile drawer mode */
   isDrawerOpen?: boolean;
   onDrawerClose?: () => void;
@@ -87,6 +89,7 @@ export function PracticeSideNav({
   activeLevelId,
   onLevelSwitch,
   sessionSteps,
+  onSessionStepClick,
   isDrawerOpen = false,
   onDrawerClose,
 }: PracticeSideNavProps) {
@@ -259,31 +262,35 @@ export function PracticeSideNav({
                 {/* Session steps accordion — only under active level */}
                 {isActive && sessionSteps && sessionSteps.length > 0 && (
                   <div className="ml-[42px] mt-1 mb-2 space-y-0.5 overflow-hidden">
-                    {sessionSteps.map((s) => (
-                      <div
-                        key={s.id}
-                        className={`flex items-center gap-2 px-2 py-1.5 rounded-lg min-w-0 ${
-                          s.status === "active" ? "bg-[#eef2ff]" : ""
-                        }`}
-                      >
-                        {s.status === "done" ? (
-                          <CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" />
-                        ) : s.status === "active" ? (
-                          <div className="w-2 h-2 rounded-full bg-[#6366f1] shrink-0" />
-                        ) : (
-                          <div className="w-2 h-2 rounded-full border border-[#cbd5e1] shrink-0" />
-                        )}
-                        <span className={`text-[11px] truncate ${
-                          s.status === "active"
-                            ? "text-[#4338ca] font-medium"
-                            : s.status === "done"
-                              ? "text-[#62748e]"
-                              : "text-[#94a3b8]"
-                        }`}>
-                          {s.label}
-                        </span>
-                      </div>
-                    ))}
+                    {sessionSteps.map((s) => {
+                      const clickable = s.status === "done" && s.stepKey && onSessionStepClick;
+                      return (
+                        <div
+                          key={s.id}
+                          onClick={() => clickable && onSessionStepClick(s.stepKey!)}
+                          className={`flex items-center gap-2 px-2 py-1.5 rounded-lg min-w-0 transition-colors ${
+                            s.status === "active" ? "bg-[#eef2ff]"
+                            : clickable ? "hover:bg-[#f8fafc] cursor-pointer"
+                            : ""
+                          }`}
+                        >
+                          {s.status === "done" ? (
+                            <CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" />
+                          ) : s.status === "active" ? (
+                            <div className="w-2 h-2 rounded-full bg-[#6366f1] shrink-0" />
+                          ) : (
+                            <div className="w-2 h-2 rounded-full border border-[#cbd5e1] shrink-0" />
+                          )}
+                          <span className={`text-[11px] truncate ${
+                            s.status === "active" ? "text-[#4338ca] font-medium"
+                            : s.status === "done" ? "text-[#62748e]"
+                            : "text-[#94a3b8]"
+                          }`}>
+                            {s.label}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>

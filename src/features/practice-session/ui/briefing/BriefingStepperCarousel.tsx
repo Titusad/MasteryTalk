@@ -194,8 +194,43 @@ export function BriefingStepperCarousel({
         }, 1500);
     }, [activeQuestionIdx, totalQuestions, onAllComplete]);
 
+    const activeStepIdx = STEPS.indexOf(activeStep);
+
     return (
         <div className="space-y-6">
+            {/* Progress row — counter + step dots + mastered */}
+            <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                    <span className="text-xs text-[#62748e] shrink-0 font-medium">
+                        {cardLabel} {activeQuestionIdx + 1} of {totalQuestions}
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                        {STEPS.map((s, i) => (
+                            <div key={s} className="flex items-center gap-1.5">
+                                <div className={`w-1.5 h-1.5 rounded-full transition-all ${
+                                    s === activeStep ? "bg-[#6366f1] scale-150"
+                                    : i < activeStepIdx ? "bg-emerald-400"
+                                    : "bg-[#d1d5db]"
+                                }`} />
+                                {i < 3 && <div className={`w-6 h-[1px] ${i < activeStepIdx ? "bg-emerald-300" : "bg-[#e2e8f0]"}`} />}
+                            </div>
+                        ))}
+                    </div>
+                    <span className="text-xs text-[#62748e] shrink-0 font-medium">
+                        {completedQuestions.size}/{totalQuestions} {completedLabel}
+                    </span>
+                </div>
+                <div className="w-full h-2 bg-[#f1f5f9] rounded-full overflow-hidden">
+                    <motion.div
+                        className="h-full rounded-full"
+                        style={{ background: "linear-gradient(90deg, #6366f1, #14b8a6)" }}
+                        initial={{ width: 0 }}
+                        animate={{ width: `${progress}%` }}
+                        transition={{ duration: 0.5, ease: "easeOut" }}
+                    />
+                </div>
+            </div>
+
             {/* Card display */}
             <div className="relative">
                 {/* Micro-celebration overlay */}
