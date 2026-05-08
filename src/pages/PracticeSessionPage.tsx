@@ -1014,8 +1014,15 @@ export function PracticeSessionPage({
                   onContinue={(meta) => {
                     sessionFocusRef.current = meta.sessionFocus;
                     confidenceScoreRef.current = meta.confidenceScore;
-                    const hasProfileContext = userProfile?.cvSummary || (userProfile?.position && userProfile?.industry);
-                    setStep(hasProfileContext ? "context" : "experience");
+                    const levelDef = progressionPathId && progressionLevelId
+                      ? getLevelDefinition(progressionPathId, progressionLevelId)
+                      : null;
+                    if (levelDef?.methodology) {
+                      setStep("strategy");
+                    } else {
+                      const hasProfileContext = userProfile?.cvSummary || (userProfile?.position && userProfile?.industry);
+                      setStep(hasProfileContext ? "context" : "experience");
+                    }
                   }}
                 />
               ) : null;
@@ -1132,14 +1139,7 @@ export function PracticeSessionPage({
                           });
                       }
 
-                      // If in a path session with methodology, show pre-brief first
-                      if (progressionPathId && progressionLevelId) {
-                        const levelDef = getLevelDefinition(progressionPathId, progressionLevelId);
-                        if (levelDef?.methodology) {
-                          gateWithLesson("strategy");
-                          return;
-                        }
-                      }
+                      // Strategy already shown before context — go to lesson then practice-prep
                       gateWithLesson("practice-prep");
                       return;
                     }
@@ -1152,27 +1152,11 @@ export function PracticeSessionPage({
                       if (cachedToolkit) {
                         setPreparationToolkit(cachedToolkit);
                       }
-                      // If in a path session with methodology, show pre-brief first
-                      if (progressionPathId && progressionLevelId) {
-                        const levelDef = getLevelDefinition(progressionPathId, progressionLevelId);
-                        if (levelDef?.methodology) {
-                          gateWithLesson("strategy");
-                          return;
-                        }
-                      }
                       gateWithLesson("practice-prep");
                       return;
                     }
                   }
-                  // Fire script generation first so it runs during lesson/strategy display
-                  if (progressionPathId && progressionLevelId) {
-                    const levelDef = getLevelDefinition(progressionPathId, progressionLevelId);
-                    if (levelDef?.methodology) {
-                      fireScriptGeneration(enriched);
-                      gateWithLesson("strategy");
-                      return;
-                    }
-                  }
+                  // Fire script generation — runs in background during lesson
                   fireScriptGeneration(enriched);
                   gateWithLesson("generating");
                 }}
@@ -1251,18 +1235,12 @@ export function PracticeSessionPage({
                   patternLoading={patternLoading}
                   narratorUrl={progressionLevelId ? STRATEGY_URLS[progressionLevelId] : undefined}
                   onReady={() => {
-                    if (scriptGenStatus === "ready") {
-                      setStep("practice-prep");
-                    } else {
-                      setStep("generating");
-                    }
+                    const hasProfileContext = userProfile?.cvSummary || (userProfile?.position && userProfile?.industry);
+                    setStep(hasProfileContext ? "context" : "experience");
                   }}
                   onSkip={() => {
-                    if (scriptGenStatus === "ready") {
-                      setStep("practice-prep");
-                    } else {
-                      setStep("generating");
-                    }
+                    const hasProfileContext = userProfile?.cvSummary || (userProfile?.position && userProfile?.industry);
+                    setStep(hasProfileContext ? "context" : "experience");
                   }}
                 />
               );
