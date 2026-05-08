@@ -1245,6 +1245,7 @@ export function PracticeSessionPage({
                   levelTitle={levelDef.title}
                   methodology={levelDef.methodology}
                   anchorPhrases={levelDef.anchorPhrases}
+                  vocabularyBank={levelDef.vocabularyBank}
                   personalizedPattern={personalizedPattern}
                   patternLoading={patternLoading}
                   narratorUrl={progressionLevelId ? STRATEGY_URLS[progressionLevelId] : undefined}

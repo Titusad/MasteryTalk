@@ -26,10 +26,12 @@ import {
 import { FeedbackThumbs } from "@/shared/ui";
 import { useState, useCallback, useMemo } from "react";
 import DOMPurify from "dompurify";
+import { VocabularyDrillSection } from "./VocabularyDrillSection";
 import type {
   LevelMethodology,
   BriefLocale,
 } from "@/entities/session";
+import type { VocabularyTerm } from "@/features/dashboard/model/progression-paths";
 import { useBriefLocale } from "../hooks/useBriefLocale";
 import { useNarration } from "@/shared/lib/useNarration";
 
@@ -48,6 +50,7 @@ interface StrategyScreenProps {
   levelTitle: string;
   methodology: LevelMethodology;
   anchorPhrases?: string[];
+  vocabularyBank?: VocabularyTerm[];
   personalizedPattern?: { bad: { label: string; script: string }; good: { label: string; script: string } } | null;
   patternLoading?: boolean;
   onReady: () => void;
@@ -59,6 +62,7 @@ export function StrategyScreen({
   levelTitle,
   methodology,
   anchorPhrases,
+  vocabularyBank,
   personalizedPattern,
   patternLoading,
   onReady,
@@ -283,36 +287,42 @@ export function StrategyScreen({
           </div>
         </motion.div>
 
-        {/* Power phrases — always in English */}
+        {/* Vocabulary drill (when available) OR power phrases fallback */}
         <motion.div
-          className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden mb-6"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.35 }}
+          className="mb-6"
         >
-          <div className="px-6 py-3 bg-[#f8fafc] border-b border-[#f1f5f9] flex items-center gap-2">
-            <span className="text-xs text-[#62748e] font-semibold">
-              Power Phrases — use these during your session
-            </span>
-          </div>
-          <div className="px-6 py-4 space-y-2">
-            {displayPhrases.map((phrase, i) => (
-              <button
-                key={i}
-                onClick={() => handleCopy(phrase, i)}
-                className="w-full flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-[#f8fafc] border border-[#e2e8f0] hover:border-[#6366f1] hover:bg-indigo-50/30 transition-all group text-left"
-              >
-                <span className="text-sm text-[#334155] group-hover:text-[#0f172b] transition-colors font-medium">
-                  {phrase}
+          {vocabularyBank?.length ? (
+            <VocabularyDrillSection terms={vocabularyBank} />
+          ) : (
+            <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden">
+              <div className="px-6 py-3 bg-[#f8fafc] border-b border-[#f1f5f9] flex items-center gap-2">
+                <span className="text-xs text-[#62748e] font-semibold">
+                  Power Phrases — use these during your session
                 </span>
-                {copiedIdx === i ? (
-                  <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                ) : (
-                  <Copy className="w-3.5 h-3.5 text-[#94a3b8] group-hover:text-[#6366f1] flex-shrink-0 transition-colors" />
-                )}
-              </button>
-            ))}
-          </div>
+              </div>
+              <div className="px-6 py-4 space-y-2">
+                {displayPhrases.map((phrase, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleCopy(phrase, i)}
+                    className="w-full flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-[#f8fafc] border border-[#e2e8f0] hover:border-[#6366f1] hover:bg-indigo-50/30 transition-all group text-left"
+                  >
+                    <span className="text-sm text-[#334155] group-hover:text-[#0f172b] transition-colors font-medium">
+                      {phrase}
+                    </span>
+                    {copiedIdx === i ? (
+                      <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5 text-[#94a3b8] group-hover:text-[#6366f1] flex-shrink-0 transition-colors" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </motion.div>
 
         {/* Coach tip */}

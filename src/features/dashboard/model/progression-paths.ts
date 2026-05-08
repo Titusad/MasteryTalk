@@ -26,6 +26,12 @@ export { SELF_INTRO_CONTEXTS } from "@/shared/lib/self-intro-contexts";
 
 /* ── Level Definition ── */
 
+export interface VocabularyTerm {
+  term: string;
+  ipa: string;
+  definition: string;
+}
+
 export interface ProgressionLevel {
   id: string;
   level: number;
@@ -44,6 +50,8 @@ export interface ProgressionLevel {
   introHeadline?: string;
   /** Value proposition — why this level matters (1-2 sentences) */
   introValue?: string;
+  /** Level-specific vocabulary for pronunciation drill in Strategy step */
+  vocabularyBank?: VocabularyTerm[];
 }
 
 export interface ProgressionPath {
@@ -95,6 +103,14 @@ const INTERVIEW_LEVELS: ProgressionLevel[] = [
       ],
       coachTip: "Key rule: start with the present, not your history. The recruiter cares about what you do TODAY — your past is context, not the main story.",
     },
+    vocabularyBank: [
+      { term: "leverage",       ipa: "/ˈlev.ər.ɪdʒ/",         definition: "use something to maximum advantage" },
+      { term: "stakeholder",    ipa: "/ˈsteɪk.hoʊl.dər/",      definition: "person with interest in an outcome" },
+      { term: "deliverable",    ipa: "/dɪˈlɪv.ər.ə.bəl/",      definition: "a result or item produced as part of a project" },
+      { term: "scalable",       ipa: "/ˈskeɪ.lə.bəl/",          definition: "able to grow without losing performance" },
+      { term: "initiative",     ipa: "/ɪˈnɪʃ.ə.tɪv/",          definition: "a new plan or strategy to achieve a goal" },
+      { term: "accountability", ipa: "/əˌkaʊn.tə.ˈbɪl.ɪ.ti/",  definition: "taking responsibility for results" },
+    ],
   },
   {
     id: "int-2",
