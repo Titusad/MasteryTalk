@@ -713,12 +713,16 @@ export function PracticeSessionPage({
 
   /* Helper: gate transition from context with lesson step when applicable */
   const gateWithLesson = useCallback((nextStep: Step) => {
+    const levelDef = progressionPathId && progressionLevelId
+      ? getLevelDefinition(progressionPathId, progressionLevelId)
+      : null;
     const skipLesson =
       challengeModeRef.current ||
       startAtContext ||
       isSelfIntro ||
       !progressionPathId ||
-      !progressionLevelId;
+      !progressionLevelId ||
+      !!levelDef?.vocabularyBank?.length; // vocabulary drill in Strategy already covers this
     if (skipLesson) { setStep(nextStep); return; }
     const lesson = getPreSessionLesson(
       progressionPathId,

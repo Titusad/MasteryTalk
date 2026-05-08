@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { motion } from "motion/react";
 import { ArrowRight, Eye } from "lucide-react";
-import { SessionProgressBar } from "@/widgets/SessionProgressBar";
 import { PATH_LABELS } from "@/shared/lib/paths";
 import type { MicroLesson } from "@/services/microLessons";
 
@@ -24,7 +23,6 @@ export function PreSessionLessonScreen({
 
   return (
     <div className="min-h-screen bg-[#f0f4f8] flex flex-col">
-      <SessionProgressBar currentStep="lesson" />
 
       <div className="flex-1 flex items-start justify-center px-4 pt-8 pb-12">
         <motion.div
