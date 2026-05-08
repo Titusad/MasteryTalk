@@ -371,8 +371,51 @@ export function PracticeSessionPage({
     () => scenarioType === "interview" ? interviewBriefingCache.get(sKey) : null
   );
 
-  /* Session Q&A steps for side nav — populated when briefing is ready */
+  /* Side nav session steps — all flow steps + Q&A from briefing */
   const [sessionSteps, setSessionSteps] = useState<SessionStepItem[]>([]);
+  const [qaProgress, setQaProgress] = useState<{ activeIdx: number; completedSet: Set<number> } | null>(null);
+
+  /* Compute all session steps for side nav whenever step or briefing changes */
+  useEffect(() => {
+    if (!progressionPathId || !progressionLevelId) return;
+
+    const FLOW = ["intro", "strategy", "experience", "context", "generating", "practice-prep", "interlocutor-intro", "practice", "analyzing", "feedback"];
+    const currentIdx = FLOW.indexOf(step);
+
+    const status = (forSteps: string[]): SessionStepItem["status"] => {
+      const earliest = Math.min(...forSteps.map(s => FLOW.indexOf(s)).filter(i => i >= 0));
+      if (earliest < 0) return "pending";
+      if (currentIdx > earliest) return "done";
+      if (forSteps.includes(step)) return "active";
+      return "pending";
+    };
+
+    const fixed: SessionStepItem[] = [
+      { id: "s-intro",     label: "Introduction",   status: status(["intro"]) },
+      { id: "s-strategy",  label: "Strategy",       status: status(["strategy"]) },
+      { id: "s-context",   label: "Your Situation", status: status(["experience", "context", "generating"]) },
+    ];
+
+    const qna: SessionStepItem[] = (interviewBriefing?.anticipatedQuestions ?? []).map((q, i) => {
+      let qStatus: SessionStepItem["status"] = "pending";
+      if (step === "practice-prep" && qaProgress) {
+        qStatus = qaProgress.completedSet.has(i) ? "done" : i === qaProgress.activeIdx ? "active" : "pending";
+      } else if (currentIdx > FLOW.indexOf("practice-prep")) {
+        qStatus = "done";
+      }
+      return {
+        id: String(q.id ?? i),
+        label: q.question.length > 38 ? q.question.slice(0, 38) + "…" : q.question,
+        status: qStatus,
+      };
+    });
+
+    const last: SessionStepItem[] = [
+      { id: "s-practice", label: "Live Practice", status: status(["interlocutor-intro", "practice"]) },
+    ];
+
+    setSessionSteps([...fixed, ...qna, ...last]);
+  }, [step, progressionPathId, progressionLevelId, interviewBriefing, qaProgress]);
 
   /**
    * Briefing data packaged for the interviewer prompt (Gap A+B).
@@ -457,11 +500,6 @@ export function PracticeSessionPage({
           abortController.signal
         );
         setInterviewBriefing(briefing);
-        setSessionSteps(briefing.anticipatedQuestions.map((q, i) => ({
-          id: String(q.id ?? i),
-          label: q.question.length > 38 ? q.question.slice(0, 38) + "…" : q.question,
-          status: i === 0 ? "active" : "pending",
-        } as SessionStepItem)));
         // Content-aware cache key: same logic as the read path
         const fp = JSON.stringify(
           Object.entries(allFields).sort(([a], [b]) => a.localeCompare(b))
@@ -1278,10 +1316,7 @@ export function PracticeSessionPage({
                 briefingData={interviewBriefing}
                 narratorUrl={PREP_URLS["interview"]}
                 onProgressChange={(activeIdx, completedSet) => {
-                  setSessionSteps(prev => prev.map((s, i) => ({
-                    ...s,
-                    status: completedSet.has(i) ? "done" : i === activeIdx ? "active" : "pending",
-                  })));
+                  setQaProgress({ activeIdx, completedSet });
                 }}
                 onStartSimulation={(userDrafts) => {
                   const briefingPayload: SessionConfig["interviewBriefing"] = {
