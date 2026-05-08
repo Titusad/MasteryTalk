@@ -713,19 +713,8 @@ export function PracticeSessionPage({
 
   /* Helper: gate transition from context with lesson step when applicable */
   const gateWithLesson = useCallback((nextStep: Step) => {
-    const skipLesson = true; // lesson step removed — vocabulary drill in StrategyScreen covers all levels
-    if (skipLesson) { setStep(nextStep); return; }
-    const lesson = getPreSessionLesson(
-      progressionPathId,
-      progressionLevelId,
-      (userProfile as any)?.last_pre_session_lesson_id ?? null,
-      (userProfile?.stats?.pillarScores as Record<string, number>) ?? null
-    );
-    if (!lesson) { setStep(nextStep); return; }
-    setPreSessionLesson(lesson);
-    postLessonStepRef.current = nextStep;
-    setStep("lesson");
-  }, [startAtContext, isSelfIntro, progressionPathId, progressionLevelId, userProfile]);
+    setStep(nextStep);
+  }, []);
 
   /* ── Auto-transition for feedback: when BOTH animation AND API are done ── */
   useEffect(() => {
