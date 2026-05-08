@@ -15,7 +15,7 @@
  * ==============================================================
  */
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { PartyPopper } from "lucide-react";
 import type { InterviewQuestionCard, AzurePronunciationAssessment } from "@/services/types";
@@ -48,9 +48,50 @@ export function BriefingStepperCarousel({
     cardLabel = "Question",
     completedLabel = "mastered",
 }: BriefingStepperCarouselProps) {
+    const STEPS: BriefingStep[] = ["question", "strategy", "answer", "feedback"];
+
+    /* ── Audio context (created once, reused) ── */
+    const audioCtxRef = useRef<AudioContext | null>(null);
+    useEffect(() => () => { audioCtxRef.current?.close(); }, []);
+
+    const playFlipSound = useCallback(() => {
+        try {
+            if (!audioCtxRef.current || audioCtxRef.current.state === "closed") {
+                audioCtxRef.current = new AudioContext();
+            }
+            const ctx = audioCtxRef.current;
+            const duration = 0.08;
+            const bufferSize = Math.floor(ctx.sampleRate * duration);
+            const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+            const data = buffer.getChannelData(0);
+
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 2.5);
+            }
+
+            const source = ctx.createBufferSource();
+            source.buffer = buffer;
+
+            const filter = ctx.createBiquadFilter();
+            filter.type = "lowpass";
+            filter.frequency.value = 2800;
+
+            const gain = ctx.createGain();
+            gain.gain.value = 0.22;
+
+            source.connect(filter);
+            filter.connect(gain);
+            gain.connect(ctx.destination);
+            source.start();
+        } catch {
+            // Silently fail — non-critical UI effect
+        }
+    }, []);
+
     /* ── State ── */
     const [activeQuestionIdx, setActiveQuestionIdx] = useState(0);
     const [activeStep, setActiveStep] = useState<BriefingStep>("question");
+    const [flipDirection, setFlipDirection] = useState(1);
     const [completedQuestions, setCompletedQuestions] = useState<Set<number>>(new Set());
     const [showCelebration, setShowCelebration] = useState(false);
 
@@ -67,11 +108,36 @@ export function BriefingStepperCarousel({
     const progress = totalQuestions > 0 ? (completedQuestions.size / totalQuestions) * 100 : 0;
     const canSkip = completedQuestions.size >= MIN_TO_SKIP && completedQuestions.size < totalQuestions;
 
+    /* ── Flipbook variants ── */
+    const FLIP_VARIANTS = {
+        enter: (dir: number) => ({
+            rotateY: dir > 0 ? -90 : 90,
+            opacity: 0,
+            transformPerspective: 900,
+            transformOrigin: "center center",
+        }),
+        center: {
+            rotateY: 0,
+            opacity: 1,
+            transformPerspective: 900,
+            transformOrigin: "center center",
+        },
+        exit: (dir: number) => ({
+            rotateY: dir > 0 ? 90 : -90,
+            opacity: 0,
+            transformPerspective: 900,
+            transformOrigin: "center center",
+        }),
+    };
+
     /* ── Step navigation ── */
     const goToStep = useCallback((step: BriefingStep) => {
+        const currentIdx = STEPS.indexOf(activeStep);
+        const nextIdx = STEPS.indexOf(step);
+        setFlipDirection(nextIdx >= currentIdx ? 1 : -1);
+        playFlipSound();
         setActiveStep(step);
-        window.scrollTo({ top: 200, behavior: "smooth" });
-    }, []);
+    }, [activeStep, playFlipSound]);
 
     /* ── Answer submission → stores draft, advances to feedback ── */
     const handleAnswerSubmit = useCallback((draft: string, pronAssessment?: AzurePronunciationAssessment) => {
@@ -121,7 +187,6 @@ export function BriefingStepperCarousel({
         }, 1500);
     }, [activeQuestionIdx, totalQuestions, onAllComplete]);
 
-    const STEPS: BriefingStep[] = ["question", "strategy", "answer", "feedback"];
     const activeStepIdx = STEPS.indexOf(activeStep);
 
     return (
@@ -202,67 +267,103 @@ export function BriefingStepperCarousel({
                 </AnimatePresence>
 
                 {/* Active card — render based on current step */}
-                <AnimatePresence mode="wait">
+                <AnimatePresence mode="wait" custom={flipDirection}>
                     {activeStep === "question" && (
-                        <QuestionCard
+                        <motion.div
                             key={`q-${activeQuestionIdx}-question`}
-                            question={currentCard.question}
-                            questionNumber={activeQuestionIdx + 1}
-                            totalQuestions={totalQuestions}
-                            scenarioType={scenarioType}
-                            onNext={() => goToStep("strategy")}
-                        />
+                            custom={flipDirection}
+                            variants={FLIP_VARIANTS}
+                            initial="enter"
+                            animate="center"
+                            exit="exit"
+                            transition={{ duration: 0.38, ease: [0.25, 0.46, 0.45, 0.94] }}
+                        >
+                            <QuestionCard
+                                question={currentCard.question}
+                                questionNumber={activeQuestionIdx + 1}
+                                totalQuestions={totalQuestions}
+                                scenarioType={scenarioType}
+                                onNext={() => goToStep("strategy")}
+                            />
+                        </motion.div>
                     )}
 
                     {activeStep === "strategy" && (
-                        <StrategyCard
+                        <motion.div
                             key={`q-${activeQuestionIdx}-strategy`}
-                            question={currentCard.question}
-                            why={currentCard.why}
-                            approach={currentCard.approach}
-                            suggestedOpener={currentCard.suggestedOpener}
-                            exampleAnswer={currentCard.exampleAnswer}
-                            framework={currentCard.framework}
-                            pivot={currentCard.pivot}
-                            scenarioType={scenarioType}
-                            responseSteps={currentCard.responseSteps}
-                            onNext={(assembled) => {
-                                if (assembled) {
-                                    setAssembledResponses(prev => ({ ...prev, [activeQuestionIdx]: assembled }));
-                                }
-                                goToStep("answer");
-                            }}
-                            onBack={() => goToStep("question")}
-                        />
+                            custom={flipDirection}
+                            variants={FLIP_VARIANTS}
+                            initial="enter"
+                            animate="center"
+                            exit="exit"
+                            transition={{ duration: 0.38, ease: [0.25, 0.46, 0.45, 0.94] }}
+                        >
+                            <StrategyCard
+                                question={currentCard.question}
+                                why={currentCard.why}
+                                approach={currentCard.approach}
+                                suggestedOpener={currentCard.suggestedOpener}
+                                exampleAnswer={currentCard.exampleAnswer}
+                                framework={currentCard.framework}
+                                pivot={currentCard.pivot}
+                                scenarioType={scenarioType}
+                                responseSteps={currentCard.responseSteps}
+                                onNext={(assembled) => {
+                                    if (assembled) {
+                                        setAssembledResponses(prev => ({ ...prev, [activeQuestionIdx]: assembled }));
+                                    }
+                                    goToStep("answer");
+                                }}
+                                onBack={() => goToStep("question")}
+                            />
+                        </motion.div>
                     )}
 
                     {activeStep === "answer" && (
-                        <AnswerCard
+                        <motion.div
                             key={`q-${activeQuestionIdx}-answer`}
-                            question={currentCard.question}
-                            scenarioType={scenarioType}
-                            preparedResponse={assembledResponses[activeQuestionIdx]}
-                            onNext={(draft, pron) => handleAnswerSubmit(draft, pron)}
-                            onBack={() => goToStep("strategy")}
-                        />
+                            custom={flipDirection}
+                            variants={FLIP_VARIANTS}
+                            initial="enter"
+                            animate="center"
+                            exit="exit"
+                            transition={{ duration: 0.38, ease: [0.25, 0.46, 0.45, 0.94] }}
+                        >
+                            <AnswerCard
+                                question={currentCard.question}
+                                scenarioType={scenarioType}
+                                preparedResponse={assembledResponses[activeQuestionIdx]}
+                                onNext={(draft, pron) => handleAnswerSubmit(draft, pron)}
+                                onBack={() => goToStep("strategy")}
+                            />
+                        </motion.div>
                     )}
 
                     {activeStep === "feedback" && (
-                        <FeedbackCard
+                        <motion.div
                             key={`q-${activeQuestionIdx}-feedback`}
-                            question={currentCard.question}
-                            userDraft={userDraftsRef.current[activeQuestionIdx] || ""}
-                            strategy={currentCard.approach}
-                            framework={currentCard.framework}
-                            suggestedOpener={currentCard.suggestedOpener}
-                            preparedResponse={assembledResponses[activeQuestionIdx]}
-                            pronAssessment={pronDataRef.current[activeQuestionIdx]}
-                            scenarioType={scenarioType}
-                            interlocutor={interlocutor}
-                            onComplete={handleQuestionComplete}
-                            onBack={() => goToStep("answer")}
-                            isLastQuestion={activeQuestionIdx === totalQuestions - 1}
-                        />
+                            custom={flipDirection}
+                            variants={FLIP_VARIANTS}
+                            initial="enter"
+                            animate="center"
+                            exit="exit"
+                            transition={{ duration: 0.38, ease: [0.25, 0.46, 0.45, 0.94] }}
+                        >
+                            <FeedbackCard
+                                question={currentCard.question}
+                                userDraft={userDraftsRef.current[activeQuestionIdx] || ""}
+                                strategy={currentCard.approach}
+                                framework={currentCard.framework}
+                                suggestedOpener={currentCard.suggestedOpener}
+                                preparedResponse={assembledResponses[activeQuestionIdx]}
+                                pronAssessment={pronDataRef.current[activeQuestionIdx]}
+                                scenarioType={scenarioType}
+                                interlocutor={interlocutor}
+                                onComplete={handleQuestionComplete}
+                                onBack={() => goToStep("answer")}
+                                isLastQuestion={activeQuestionIdx === totalQuestions - 1}
+                            />
+                        </motion.div>
                     )}
                 </AnimatePresence>
             </div>

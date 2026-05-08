@@ -18,6 +18,7 @@
 | UI / componentes / diseño | `docs/product/DESIGN_SYSTEM.md` · `.agent/skills/frontend-design/SKILL.md` |
 | Copy / comunicación | `docs/business/BRAND_VOICE.md` · `docs/copy/` |
 | Sistema de prompts de IA | `docs/engineering/SYSTEM_PROMPTS.md` · `docs/engineering/LEARNING_METHODOLOGY.md` |
+| Flujo de práctica / pedagogía | `docs/engineering/LEARNING_METHODOLOGY.md` · `docs/product/ROADMAP.md §Sprint D/E` |
 | Feedback / niveles CEFR | `docs/engineering/CEFR_CALIBRATION.md` |
 | UX / flujos de usuario | `docs/product/UX_POLISH.md` · `docs/product/JOURNEY.md` |
 | Edge Functions / API | `.agent/skills/api-patterns/SKILL.md` |
@@ -250,6 +251,29 @@ Editar SOLO los archivos del plan confirmado. Sin refactorizar adyacente ni reno
 ### Regla #4 — Ambigüedad
 
 Si hay más de una interpretación válida → PREGUNTAR antes de asumir.
+
+### Regla #5 — Radar pedagógico (PROACTIVO)
+
+**Al trabajar en cualquier archivo del flujo de práctica, emitir una nota `🎓 PEDAGOGY NOTE` cuando se detecte una oportunidad de mejora pedagógica — sin esperar a que se pregunte.**
+
+**Archivos que activan el radar:**
+- `PracticeSessionPage.tsx` (orden de steps, lógica de flujo)
+- `BriefingStepperCarousel`, `StrategyCard`, `AnswerCard`, `FeedbackCard` (estructura de la sesión de práctica)
+- `StrategyScreen`, `PreSessionLessonScreen`, `IntroductionScreen` (preparación antes de la práctica)
+- `progression-paths.ts` (definiciones de nivel, metodología)
+- `FeedbackScreen` y cualquier componente de scoring/evaluación
+- Cualquier archivo en `docs/engineering/LEARNING_METHODOLOGY.md` o `CEFR_CALIBRATION.md`
+
+**Formato de la nota:**
+```
+🎓 PEDAGOGY NOTE
+Observación: [qué patrón o estructura se detectó]
+Principio:   [qué principio de aprendizaje aplica — ej: Retrieval Practice, WTC, Deliberate Practice]
+Referencia:  [sección en LEARNING_METHODOLOGY.md si aplica]
+Recomendación: [cambio concreto sugerido, en 1-2 oraciones]
+```
+
+La nota se emite ANTES del plan de código — es información, no un bloqueo. El usuario decide si actuar sobre ella.
 
 ---
 

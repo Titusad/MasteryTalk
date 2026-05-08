@@ -14,7 +14,7 @@ import type { AzurePronunciationAssessment } from "@/services/types";
  */
 
 import { useState, useEffect, useMemo } from "react";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import {
     ArrowLeft,
     ArrowRight,
@@ -195,48 +195,7 @@ export function FeedbackCard({
         });
     }, [feedback]);
 
-    /* ── Loading state ── */
-    if (loading) {
-        return (
-            <motion.div aria-label="FeedbackCard"
-                className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden"
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-            >
-                <div className="flex flex-col items-center justify-center py-14 px-6">
-                    <Loader2 className="w-10 h-10 text-[#6366f1] animate-spin mb-4" />
-                    <p className="text-sm text-[#45556c] font-medium" >
-                        Analyzing your answer...
-                    </p>
-                    <p className="text-xs text-[#94a3b8] mt-1">
-                        Getting an improved version based on the strategy
-                    </p>
-                </div>
-            </motion.div>
-        );
-    }
-
-    /* ── Error state ── */
-    if (error) {
-        return (
-            <motion.div
-                className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden"
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-            >
-                <div className="flex flex-col items-center justify-center py-14 px-6">
-                    <p className="text-sm text-red-600 mb-3">Feedback generation failed</p>
-                    <p className="text-xs text-[#94a3b8] mb-4">{error}</p>
-                    <button
-                        onClick={onComplete}
-                        className="px-5 py-2 rounded-full text-sm bg-[#0f172b] text-white hover:bg-[#1d293d] transition-colors font-medium"
-                    >
-                        Skip to Next Question
-                    </button>
-                </div>
-            </motion.div>
-        );
-    }
+    const fadeTransition = { duration: 0.75, ease: "easeInOut" as const };
 
     /* ── Pronunciation feedback mode (when Azure assessment is available) ── */
     if (pronAssessment) {
@@ -279,10 +238,9 @@ export function FeedbackCard({
             <>
                 <motion.div
                     className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden"
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -12 }}
-                    transition={{ duration: 0.35 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.35, ease: "easeIn" }}
                 >
                     <div className="px-6 py-6 md:px-8 space-y-5">
                         {/* Score overview */}
@@ -382,16 +340,56 @@ export function FeedbackCard({
         );
     }
 
-    if (!feedback) return null;
-
     return (
         <>
+            <div aria-label="FeedbackCard" className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden">
+            <AnimatePresence mode="wait">
+
+            {/* ── Loading ── */}
+            {loading && (
+                <motion.div
+                    key="loading"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={fadeTransition}
+                    className="flex flex-col items-center justify-center py-14 px-6"
+                >
+                    <Loader2 className="w-10 h-10 text-[#6366f1] animate-spin mb-4" />
+                    <p className="text-sm text-[#45556c] font-medium">Analyzing your answer...</p>
+                    <p className="text-xs text-[#94a3b8] mt-1">Getting an improved version based on the strategy</p>
+                </motion.div>
+            )}
+
+            {/* ── Error ── */}
+            {!loading && error && (
+                <motion.div
+                    key="error"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={fadeTransition}
+                    className="flex flex-col items-center justify-center py-14 px-6"
+                >
+                    <p className="text-sm text-red-600 mb-3">Feedback generation failed</p>
+                    <p className="text-xs text-[#94a3b8] mb-4">{error}</p>
+                    <button
+                        onClick={onComplete}
+                        className="px-5 py-2 rounded-full text-sm bg-[#0f172b] text-white hover:bg-[#1d293d] transition-colors font-medium"
+                    >
+                        Skip to Next Question
+                    </button>
+                </motion.div>
+            )}
+
+            {/* ── Feedback content ── */}
+            {!loading && !error && feedback && (
             <motion.div
-                className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden"
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
-                transition={{ duration: 0.35 }}
+                key="feedback"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={fadeTransition}
             >
 
                 <div className="px-6 py-6 md:px-8 space-y-5">
@@ -499,6 +497,10 @@ export function FeedbackCard({
                     </button>
                 </div>
             </motion.div>
+            )}
+
+            </AnimatePresence>
+            </div>
 
             {/* Shadowing Modal */}
             {showShadowingModal && shadowingPhrases.length > 0 && (
