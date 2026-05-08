@@ -31,6 +31,7 @@ import type {
   LevelMethodology,
   BriefLocale,
 } from "@/entities/session";
+import { getVocabularyForProfile } from "@/features/dashboard/model/progression-paths";
 import type { VocabularyTerm } from "@/features/dashboard/model/progression-paths";
 import { useBriefLocale } from "../hooks/useBriefLocale";
 import { useNarration } from "@/shared/lib/useNarration";
@@ -51,6 +52,7 @@ interface StrategyScreenProps {
   methodology: LevelMethodology;
   anchorPhrases?: string[];
   vocabularyBank?: VocabularyTerm[];
+  userProfile?: { industry?: string; position?: string } | null;
   personalizedPattern?: { bad: { label: string; script: string }; good: { label: string; script: string } } | null;
   patternLoading?: boolean;
   onReady: () => void;
@@ -63,6 +65,7 @@ export function StrategyScreen({
   methodology,
   anchorPhrases,
   vocabularyBank,
+  userProfile,
   personalizedPattern,
   patternLoading,
   onReady,
@@ -295,7 +298,9 @@ export function StrategyScreen({
           className="mb-6"
         >
           {vocabularyBank?.length ? (
-            <VocabularyDrillSection terms={vocabularyBank} />
+            <VocabularyDrillSection
+              terms={getVocabularyForProfile(vocabularyBank, userProfile)}
+            />
           ) : (
             <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden">
               <div className="px-6 py-3 bg-[#f8fafc] border-b border-[#f1f5f9] flex items-center gap-2">

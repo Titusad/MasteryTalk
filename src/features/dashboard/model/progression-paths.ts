@@ -30,6 +30,31 @@ export interface VocabularyTerm {
   term: string;
   ipa: string;
   definition: string;
+  /** Industry/role keywords — empty or absent = universal */
+  tags?: string[];
+}
+
+/**
+ * Selects the most relevant vocabulary terms for the user's profile.
+ * Tagged terms that match industry/position are prioritized; universal terms fill remaining slots.
+ */
+export function getVocabularyForProfile(
+  bank: VocabularyTerm[],
+  profile: { industry?: string; position?: string } | null | undefined,
+  maxTerms = 6,
+): VocabularyTerm[] {
+  if (!bank.length) return [];
+  const profileText = [profile?.industry || "", profile?.position || ""]
+    .join(" ")
+    .toLowerCase();
+  const scored = bank.map((term) => ({
+    term,
+    score: term.tags
+      ? term.tags.filter((tag) => profileText.includes(tag.toLowerCase())).length
+      : 0,
+  }));
+  scored.sort((a, b) => b.score - a.score);
+  return scored.slice(0, maxTerms).map((s) => s.term);
 }
 
 export interface ProgressionLevel {
@@ -104,12 +129,31 @@ const INTERVIEW_LEVELS: ProgressionLevel[] = [
       coachTip: "Key rule: start with the present, not your history. The recruiter cares about what you do TODAY — your past is context, not the main story.",
     },
     vocabularyBank: [
-      { term: "leverage",       ipa: "/ˈlev.ər.ɪdʒ/",         definition: "use something to maximum advantage" },
-      { term: "stakeholder",    ipa: "/ˈsteɪk.hoʊl.dər/",      definition: "person with interest in an outcome" },
-      { term: "deliverable",    ipa: "/dɪˈlɪv.ər.ə.bəl/",      definition: "a result or item produced as part of a project" },
-      { term: "scalable",       ipa: "/ˈskeɪ.lə.bəl/",          definition: "able to grow without losing performance" },
-      { term: "initiative",     ipa: "/ɪˈnɪʃ.ə.tɪv/",          definition: "a new plan or strategy to achieve a goal" },
+      // Universal — shown to everyone
+      { term: "background",     ipa: "/ˈbæk.ɡraʊnd/",          definition: "professional history and experience" },
+      { term: "relevant",       ipa: "/ˈrel.ə.vənt/",           definition: "directly connected to the topic at hand" },
+      { term: "initiative",     ipa: "/ɪˈnɪʃ.ə.tɪv/",          definition: "a plan or action taken to achieve a goal" },
       { term: "accountability", ipa: "/əˌkaʊn.tə.ˈbɪl.ɪ.ti/",  definition: "taking responsibility for results" },
+      { term: "leverage",       ipa: "/ˈlev.ər.ɪdʒ/",           definition: "use something to maximum advantage" },
+      { term: "stakeholder",    ipa: "/ˈsteɪk.hoʊl.dər/",       definition: "anyone with interest in an outcome" },
+      { term: "achievement",    ipa: "/əˈtʃiːv.mənt/",          definition: "something accomplished successfully" },
+      { term: "opportunity",    ipa: "/ˌɒp.əˈtjuː.nɪ.ti/",     definition: "a favorable situation to act on" },
+      // Tech / Engineering
+      { term: "scalable",       ipa: "/ˈskeɪ.lə.bəl/",          definition: "able to grow without losing performance",          tags: ["tech", "saas", "software", "engineer", "engineering"] },
+      { term: "deployment",     ipa: "/dɪˈplɔɪ.mənt/",          definition: "releasing software or resources into production",   tags: ["tech", "saas", "software", "engineer", "engineering"] },
+      { term: "deliverable",    ipa: "/dɪˈlɪv.ər.ə.bəl/",       definition: "a specific result to be produced by a deadline",   tags: ["tech", "consulting", "project", "manager"] },
+      // Finance
+      { term: "compliance",     ipa: "/kəmˈplaɪ.əns/",          definition: "meeting required rules and regulations",           tags: ["finance", "fintech", "banking", "legal"] },
+      { term: "revenue",        ipa: "/ˈrev.ə.njuː/",           definition: "income generated from business activities",        tags: ["finance", "fintech", "sales", "business"] },
+      // Sales / Marketing
+      { term: "pipeline",       ipa: "/ˈpaɪp.laɪn/",            definition: "the stages a prospect moves through to close",     tags: ["sales", "marketing", "business development"] },
+      { term: "conversion",     ipa: "/kənˈvɜː.ʒən/",           definition: "turning a prospect into a paying customer",        tags: ["sales", "marketing", "growth"] },
+      // Design
+      { term: "iteration",      ipa: "/ˌɪt.əˈreɪ.ʃən/",         definition: "repeating a process to progressively improve it",  tags: ["design", "designer", "product", "ux"] },
+      { term: "accessibility",  ipa: "/əkˌses.əˈbɪl.ɪ.ti/",     definition: "usability for all users, including those with disabilities", tags: ["design", "designer", "ux"] },
+      // HR / People
+      { term: "retention",      ipa: "/rɪˈten.ʃən/",            definition: "keeping employees or customers long-term",         tags: ["hr", "human resources", "people"] },
+      { term: "engagement",     ipa: "/ɪnˈɡeɪdʒ.mənt/",         definition: "level of involvement and commitment",              tags: ["hr", "human resources", "marketing"] },
     ],
   },
   {
