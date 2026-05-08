@@ -524,16 +524,14 @@
 > **Goal:** Restructure the in-session learning flow into a proper curriculum experience — course-like navigation, richer preparation, and language-first approach. Unblocks multi-path scale.
 > **Priority:** High — these changes define the product quality bar for launch.
 
-#### D.1 — Multi-path briefing support (Prerequisite for D.2–D.4)
+#### D.1 — Multi-path briefing support ✅ (Code complete — audio pending → Backlog)
 
-> **Why:** `BriefingStepperCarousel`, `STRATEGY_URLS`, `INTRO_URLS`, and all pre-session content currently only cover `interview` and `sales`. All other paths run the flow but with no level-specific preparation content.
+> **Audit result (2026-05-07):** All 7 paths already have complete `methodology` objects (6 levels each). `BriefingStepperCarousel` already supports all paths via `scenarioType` prop. The flow works end-to-end for any path. **Only narration audio files are missing** for meeting/presentation/culture/client/csuite — this is a content production task, not a code task.
 
-- [ ] Audit all paths: identify which have `methodology` defined in `progression-paths.ts` (interview ✅, sales ✅, meeting ⚠️, presentation ⚠️, culture ⚠️)
-- [ ] Write `methodology` objects for `meeting`, `presentation`, `culture` paths — all 6 levels each (name, tagline, explanation, pattern bad/good, anchorPhrases, coachTip)
-- [ ] Write interlocutor intro scripts for all missing level/interlocutor combos → generate audio → add to `INTRO_URLS`
-- [ ] Write strategy narration scripts for all missing levels → generate audio → add to `STRATEGY_URLS`
-- [ ] Write feedback narration scripts for meeting/presentation/culture → add to `FEEDBACK_URLS`
-- [ ] **Acceptance:** Any path's Level 1 session runs the full flow (intro narration → lesson → strategy with narration → briefing cards → practice → feedback narration) without any missing step or empty content
+- [x] `methodology` defined for all 6 levels of all 7 paths in `progression-paths.ts`
+- [x] `BriefingStepperCarousel` receives `scenarioType`, `cardLabel` and `completedLabel` adapted per scenario via `SCENARIO_PREP_CONFIG`
+- [x] Non-interview paths flow through `PracticePrepScreen` → `BriefingStepperCarousel` correctly
+- [ ] **Backlog — Content sprint:** Write narration scripts + generate ElevenLabs audio + upload to R2 for: `STRATEGY_URLS` (meet/pres/cul/cli/cs × 6), `INTRO_URLS` (same), `FEEDBACK_URLS` (culture/client/csuite), `PREP_URLS` (culture/client/csuite)
 
 #### D.2 — Revised practice flow: Introduction-first
 
