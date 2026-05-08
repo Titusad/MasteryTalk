@@ -77,9 +77,8 @@ import { WhatsAppActivationCard } from "@/features/dashboard/ui/WhatsAppActivati
 import { DeepDiveCard } from "@/features/practice-session/ui/DeepDiveCard";
 import { ScenarioDeltaCard } from "@/features/practice-session/ui/ScenarioDeltaCard";
 import { LevelMilestoneModal } from "@/features/practice-session/ui/LevelMilestoneModal";
-import { getRecommendedLessons, getPreSessionLesson } from "@/services/microLessons";
+import { getRecommendedLessons } from "@/services/microLessons";
 import type { MicroLesson } from "@/services/microLessons";
-import { PreSessionLessonScreen } from "@/features/practice-session/ui/PreSessionLessonScreen";
 import { LessonModal } from "@/widgets/LessonModal";
 
 /* ═══════════════════════════════════════════════════════════
@@ -133,7 +132,7 @@ import type { PersonalizedPatterns } from "@/features/practice-session/model/ses
    practice-prep → practice → analyzing → feedback → Dashboard
    ═══════════════════════════════════════════════════════════ */
 /** Steps where switching level is safe (no AI-generated data to lose) */
-const SAFE_STEPS: Step[] = ["intro", "experience", "context", "self-intro-context", "lesson", "interlocutor-intro"];
+const SAFE_STEPS: Step[] = ["intro", "experience", "context", "self-intro-context", "interlocutor-intro"];
 
 export function PracticeSessionPage({
   scenario,
@@ -708,10 +707,6 @@ export function PracticeSessionPage({
   const [levelMilestoneOpen, setLevelMilestoneOpen] = useState(false);
 
   /* ── Pre-session lesson ── */
-  const [preSessionLesson, setPreSessionLesson] = useState<MicroLesson | null>(null);
-  const postLessonStepRef = useRef<Step>("strategy");
-
-  /* Helper: gate transition from context with lesson step when applicable */
   const gateWithLesson = useCallback((nextStep: Step) => {
     setStep(nextStep);
   }, []);
@@ -1166,26 +1161,6 @@ export function PracticeSessionPage({
             )}
 
             {/* Pre-Session Lesson — curriculum primer between context and strategy */}
-            {step === "lesson" && preSessionLesson && progressionLevelDef && progressionPathId && (
-              <PreSessionLessonScreen
-                lesson={preSessionLesson}
-                pathId={progressionPathId}
-                levelNumber={progressionLevelDef.level}
-                onContinue={() => {
-                  // Persist last lesson ID so next session gets a different one
-                  getAuthToken().then((token) => {
-                    fetch(`https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/profile`, {
-                      method: "PUT",
-                      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, apikey: publicAnonKey },
-                      body: JSON.stringify({ last_pre_session_lesson_id: preSessionLesson.id }),
-                    }).catch(() => {});
-                  }).catch(() => {});
-                  onProfileUpdate?.({ ...(userProfile as any), last_pre_session_lesson_id: preSessionLesson.id });
-                  setStep(postLessonStepRef.current);
-                }}
-              />
-            )}
-
             {/* Pre-Session Brief — methodology/framework step */}
             {step === "strategy" && (() => {
               // Self-intro: use methodology from selected context
