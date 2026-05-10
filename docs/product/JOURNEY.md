@@ -5,7 +5,7 @@
 > oportunidades de mejora alineadas con la **formación del hábito de uso**.
 >
 > **Audiencia:** Producto, diseño, growth.
-> **Actualizado:** 2026-05-04 (Beta v14.6)
+> **Actualizado:** 2026-05-10 (Beta v14.9)
 
 ---
 
@@ -30,9 +30,9 @@ Los touchpoints están agrupados en **5 fases** del arco del usuario.
 
 ```
 Fase 0 — Descubrimiento     → Landing Page
-Fase 1 — Primera sesión     → Onboarding → Warm-Up → Feedback
+Fase 1 — Primera sesión     → Onboarding (2 pasos) → Warm-Up → Feedback
 Fase 2 — Decisión           → Upsell → Pago → Confirmación
-Fase 3 — Primera sesión paga → Dashboard → Sesión completa (con micro-lección) → Feedback
+Fase 3 — Primera sesión paga → Dashboard → Sesión completa → Feedback
 Fase 4 — Retención / Hábito → Dashboard recurrente → WhatsApp SR → Emails
 Fase 5 — Riesgo de churn    → Nudge de inactividad → Renovación
 ```
@@ -117,30 +117,33 @@ Fase 5 — Riesgo de churn    → Nudge de inactividad → Renovación
 
 ---
 
-### TP-03 · IntroductionScreen (briefing del nivel)
+### TP-03 · IntroductionScreen (briefing del nivel + check-in inicial)
 
-**Contexto:** Primera pantalla dentro de la sesión. El usuario ya está autenticado y adentro de la app.
+**Contexto:** Primera pantalla dentro de la sesión. El usuario ya está autenticado. Para path sessions (no self-intro), esta pantalla incluye el check-in de foco y confianza antes de avanzar.
 
 | | |
 |---|---|
-| **Acción** | Lee la pantalla de introducción del nivel. Ve los 3 pasos de la sesión. Hace clic en "Let's Go". |
-| **Pensando** | "¿Qué voy a hacer exactamente? ¿Cuánto tiempo tarda? ¿Me van a juzgar?" |
-| **Siente** | Anticipación nerviosa. Curiosidad sobre cómo funciona el producto. |
-| **Queremos que sienta** | Seguridad de saber exactamente qué sigue. Ligereza. *"15 minutos. Puedo hacerlo."* |
+| **Acción** | Lee el greeting y el introHeadline del nivel. Ve los 3 pasos. Selecciona su focus area (opcional) y reporta su nivel de confianza (1-5, requerido). Hace clic en "Let's Go" (bloqueado hasta seleccionar confianza). |
+| **Pensando** | "¿Qué voy a hacer exactamente? ¿Cuánto tiempo tarda? ¿Cómo me siento hoy?" |
+| **Siente** | Anticipación nerviosa. Ligera sorpresa positiva al ser preguntado sobre su estado de ánimo. |
+| **Queremos que sienta** | Seguridad de saber exactamente qué sigue. Agency sobre la sesión. *"Esto se adapta a cómo llego hoy."* |
 
 **Sistema interviene:**
 
 | Elemento | Tipo | Descripción |
 |----------|------|-------------|
 | Greeting personalizado | Texto dinámico (Supabase `getUser`) | "Hey [first name]" — nombre real del usuario |
-| Headline con habilidad | Texto estático + acento indigo | Nombra exactamente qué se va a dominar |
-| 3 Steps cards | Texto estático + animación escalonada (`delay 0.15 * i`) | Revelado progresivo: Set the Scene → Strategize → Live Practice |
-| Time estimate | Texto estático + icono Clock | "~15-20 min" — reduce la ansiedad de tiempo |
-| Narración de audio | TTS estático (ElevenLabs / Sarah) | `useNarration` — se reproduce al montar el componente |
-| Scenario pill | UI estática | Etiqueta "Self-Introduction · Level" — contextualiza |
-| CTA "Let's Go" | Botón animado (`whileTap scale 0.97`) | `rounded-full` — consistente con el sistema |
+| Headline con habilidad | Texto estático + acento indigo | `introHeadline` del nivel — nombra exactamente qué se va a dominar |
+| 3 Steps cards | Texto estático + animación escalonada | Revelado progresivo: Set the Scene → Strategize → Live Practice |
+| Focus area selector | UI interactiva | 6 pillar chips (Vocabulary / Grammar / Fluency / Pronunciation / Professional Tone / Persuasion); opcional |
+| Confidence check-in | UI interactiva | Escala 1–5 (Nervous → Confident); **requerido** para activar CTA |
+| CTA "Let's Go" (gateado) | Botón animado | Deshabilitado hasta que `confidenceScore !== null`; activa con color al seleccionar |
+| Narración de audio | TTS estático (ElevenLabs) | `useNarration` — se reproduce al montar (solo path sessions) |
+| Scenario pill | UI estática | Etiqueta "Interview · Level 1: Phone Screen" — contextualiza |
 
-**Oportunidad:** El audio de narración se reproduce automáticamente y puede estar bloqueado por el navegador. Si el usuario no lo escucha, pierde la voz de coaching que establece el tono. Solución: mostrar el `NarrationToggle` de manera más prominente en esta pantalla específica + una indicación visual de que hay audio disponible.
+> **Nota:** Para self-intro warm-up, la pantalla usa `minimal={true}` — no muestra focus/confidence, solo el greeting y los 3 steps.
+
+**Oportunidad:** Los campos de focus/confidence no tienen feedback visible de que el AI los usa. Una micro-confirmación post-selección ("Got it — I'll prioritize your Fluency coaching today") antes del CTA reforzaría la causalidad percibida.
 
 ---
 
@@ -168,29 +171,32 @@ Fase 5 — Riesgo de churn    → Nudge de inactividad → Renovación
 
 ---
 
-### TP-05 · StrategyScreen (metodología del nivel)
+### TP-05 · StrategyScreen (metodología + vocabulario de pronunciación)
 
-**Contexto:** El usuario ve el framework que deberá aplicar en la práctica. Puede saltarlo.
+**Contexto:** Aparece inmediatamente después del IntroductionScreen — ANTES de que el usuario añada su contexto (job description). El usuario aprende el framework primero, luego lo contextualiza.
 
 | | |
 |---|---|
-| **Acción** | Lee el framework (e.g., "Who you are / What you do / Why this role"). Puede copiar anchor phrases. Hace clic en "I'm Ready" o "Skip". |
-| **Pensando** | "¿Esto me va a servir de algo o es teoría? ¿Debo memorizarlo?" |
-| **Siente** | Ambivalencia. Puede sentir que la práctica es lo que importa, no leer. |
-| **Queremos que sienta** | Preparación específica. *"Tengo una estructura concreta para usar en 2 minutos."* |
+| **Acción** | Lee el framework y el ejemplo bad/good. Practica los términos de vocabulario (escucha + graba + recibe score). Hace clic en "I'm Ready" o "Skip". |
+| **Pensando** | "¿Esto me va a servir? ¿Estos términos los voy a usar en la práctica?" |
+| **Siente** | Preparación activa. El vocabulario drill hace que no sea lectura pasiva. |
+| **Queremos que sienta** | *"Tengo la estructura Y las palabras exactas para la próxima conversación."* |
 
 **Sistema interviene:**
 
 | Elemento | Tipo | Descripción |
 |----------|------|-------------|
-| Framework display | Texto estático + iconos | Estructura metodológica del nivel |
-| Anchor phrases | Texto estático + Copy button | Power phrases copiables con un clic |
-| Personalized pattern | Texto generado por IA (GPT-4o) | "A Strong Answer Looks Like" con datos del perfil del usuario |
+| Framework display | Texto estático + iconos | Estructura metodológica del nivel (name, tagline, explanation) |
+| Pattern bad/good | Texto estático + UI | Ejemplo de respuesta débil vs. fuerte |
+| Personalized pattern | Texto generado por IA (GPT-4o) | "A Strong Answer Looks Like" con datos del perfil |
 | Language toggle | UI interactiva (EN/ES/PT) | Permite leer el coaching en el idioma nativo |
-| Narración de audio | TTS estático (ElevenLabs) | Se reproduce automáticamente; `useNarration` |
+| **VocabularyDrillSection** | UI interactiva (nuevo) | Términos clave del nivel con IPA + definición + Listen (Web Speech TTS) + "Say it" (graba → Azure pronunciation score) |
+| Narración de audio | TTS estático (ElevenLabs) | `useNarration` — se reproduce automáticamente |
 | Skip button | UI | "I already know this" — respeta al usuario avanzado |
 
-**Oportunidad:** El "personalized pattern" (ejemplo de respuesta generado con datos del perfil) es el elemento más valioso de esta pantalla, pero visualmente compite con el resto del contenido. Debería ser el elemento protagonista — con el formato "Bad example → Good example" más prominente y con el nombre del usuario incluido en el ejemplo.
+> **Vocabulario profile-aware:** `getVocabularyForProfile()` selecciona los 6 términos más relevantes del `vocabularyBank` del nivel según `industry` y `position` del perfil. Un software engineer ve `scalable/deployment`; un designer ve `iteration/accessibility`. Actualmente implementado para Interview Level 1.
+
+**Oportunidad:** El "personalized pattern" es el elemento más valioso. Debería ser el elemento protagonista — con el formato Bad → Good más prominente y con el nombre del usuario incluido en el ejemplo.
 
 ---
 
@@ -434,18 +440,27 @@ Fase 5 — Riesgo de churn    → Nudge de inactividad → Renovación
 
 | Elemento | Tipo | Descripción |
 |----------|------|-------------|
-| HeroCard | UI dinámica | Context-aware: saludo + estado del usuario; CEFR badge dinámico (B1/B2/C1) con gate pills por pilar; "Day X of 90" counter desde `subscription_start_date`; streak 7-day grid |
-| GoalAnchorCard | UI dinámica | Ideal Self del usuario (englishGoal) — ancla motivacional visible en cada retorno; editable desde Account |
-| ProgressChartCard | UI dinámica (recharts) | Línea de evolución del avg score en las últimas 10 sesiones; líneas de referencia CEFR en 60 (B1→B2) y 78 (B2→C1) |
-| SinceYouStartedCard | UI dinámica | Delta por pillar entre primera sesión y última — muestra el progreso total acumulado. Visible con ≥ 2 sesiones con pillarScores |
-| PracticePathsModule | UI dinámica | ProgressionTree con Primary Path desbloqueado + paths bloqueados; `ChooseNextPathModal` cuando path completado (confetti + LinkedIn share) |
-| CrossPathCard | UI dinámica | Progreso comparado entre paths (sesiones + avg score) |
-| RecommendedLessonsCard | UI dinámica | Micro-lecciones recomendadas entre sesiones según pillar más débil |
-| StreakCard (en HeroCard) | UI dinámica (7-day grid) | Cuadros de los últimos 7 días — visual de racha |
-| WhatsAppActivationCard | UI estática | Banner superior cuando WhatsApp no está verificado |
-| PlatformNewsCard | UI estática | Noticias del producto; relevante para early adopters |
+| **HeroCard** | UI dinámica | Context-aware: saludo + diagnosis + estado del usuario. Integra el `englishGoal` del usuario como pill ("Goal: Job Interview") con botón de edición. CEFR badge + gate pills; "Day X of 90"; streak 7-day grid |
+| **Quick Session** (AppHeader) | Botón en header | Ex-War Room — acceso inmediato a sesión libre. Deshabilitado para usuarios free y para usuarios pago sin sesiones completadas |
+| **Row 2 — 4 widgets informativos** | Grid 4 columnas | SRDashboardCard · ProgressChartCard · RecommendedLessonsCard · PlatformNewsCard — todos con empty states educativos |
+| SRDashboardCard | UI dinámica | Pronunciación diaria con sistema Leitner. Empty state: explica el sistema y CTA a primera sesión |
+| ProgressChartCard | UI dinámica (recharts) | Evolución del avg score últimas 10 sesiones; CEFR milestones. Empty state: explica los 5 pilares evaluados |
+| RecommendedLessonsCard | UI dinámica | Micro-lecciones según pilar más débil. Empty state: explica qué aparecerá aquí post-sesión |
+| PlatformNewsCard | UI estática | Noticias del producto |
+| **PracticePathsModule** | UI dinámica | ProgressionTree: primary path activo + otros paths con overlay de suscripción. Muestra banner "Complete your warm-up first" si 0 sesiones. `ChooseNextPathModal` al completar path |
+| CrossPathCard | UI dinámica (columna izquierda de Row 3) | Progreso comparado entre paths; empty state con barras placeholder |
+| SinceYouStartedCard | UI dinámica | Delta por pillar; visible con ≥ 2 sesiones |
+| WhatsApp banner | Banner superior condicional | Solo cuando WhatsApp no está verificado |
 
-**Oportunidad:** El dashboard muestra demasiado al mismo tiempo para un usuario nuevo. El `RecommendedNextCard` debería ser el elemento más prominente en la primera visita post-pago — con un mensaje como "Start here. Your first real session is ready." Los demás módulos (StreakCard, WhatsApp, CrossPath) pueden esperar a la segunda visita.
+**Layout dashboard:**
+```
+Row 0: WhatsApp banner (condicional)
+Row 1: HeroCard (con englishGoal integrado)
+Row 2: [SRDashboard] [ProgressChart] [RecommendedLessons] [PlatformNews]
+Row 3: [CrossPathCard + SinceYouStarted] [PracticePathsModule]
+```
+
+**Oportunidad:** El dashboard muestra demasiado para un usuario nuevo. El `HeroCard` con la acción "Start Warm-Up" debería ser el único foco en la primera visita — los módulos de la columna izquierda de Row 3 son irrelevantes hasta la 2da sesión.
 
 ---
 
@@ -456,118 +471,77 @@ Fase 5 — Riesgo de churn    → Nudge de inactividad → Renovación
 **Flujo de pasos:**
 
 ```
-IntroductionScreen
+IntroductionScreen (greeting + confidence/focus check-in)
+  → StrategyScreen (metodología + vocabulary drill)
   → ContextScreen (situación + job description + presets)
-  → PreSessionLessonScreen (micro-lección 90s — primado de vocabulario y recall)  ← NUEVO §7.9
-  → StrategyScreen (metodología + examples personalizados)
-  → PracticePrepScreen (briefing de preguntas con stepper)
+  → [generating — IA prepara el briefing de preguntas en background]
+  → PracticePrepScreen (briefing de preguntas con stepper — BriefingStepperCarousel)
   → InterlocutorIntroScreen (presentación inmersiva)
   → VoicePractice (conversación real)
   → AnalyzingScreen (espera)
   → FeedbackScreen (resultados + shadowing + ScenarioDeltaCard + progresión)
 
-Pasos omitidos en Challenge Mode: lesson + strategy + practice-prep
-Pasos omitidos en War Room: lesson + (experience)
+Pasos omitidos en Challenge Mode: strategy + practice-prep
+Pasos omitidos en War Room: intro + strategy (va directo a context)
 ```
+
+> **Navegación lateral:** El `PracticeSideNav` muestra en tiempo real: Introduction ✓ → Strategy ✓ → Your Situation ✓ → Q&A Preparation ● → Live Practice ○. Los pasos completados son clickeables (navegación hacia atrás).
+> **Pre-session lesson eliminado:** El `PreSessionLessonScreen` fue reemplazado por el `VocabularyDrillSection` dentro de `StrategyScreen`. Ya no existe como paso separado del flujo.
 
 **Touchpoints nuevos vs. warm-up:**
 
 #### TP-15a · ContextScreen (setup de la situación)
 
+**Contexto:** Aparece DESPUÉS de StrategyScreen. El usuario ya tiene el framework — ahora lo aplica a su situación real.
+
 | | |
 |---|---|
-| **Acción** | Ingresa el Job Description (o elige un preset). Opcionalmente llena el formulario de contexto. |
+| **Acción** | Ingresa el Job Description (o elige un preset situacional). Hace clic en Continue. |
 | **Pensando** | "¿Qué tanto contexto necesito dar? ¿Más contexto = mejor práctica?" |
 | **Siente** | Ligera fricción cognitiva. Pero también: *"Esto se va a personalizar para mí."* |
-| **Queremos que sienta** | Que cada campo que llena hace la sesión más precisa. Inversión percibida. |
+| **Queremos que sienta** | Que el framework que acaba de aprender se va a aplicar a SU situación específica. |
 
 **Sistema interviene:**
 
 | Elemento | Tipo | Descripción |
 |----------|------|-------------|
-| Job Description textarea | UI estática | Pre-llenado con el último JD del perfil (`cvSummary`) si existe |
-| Situation presets (3 por escenario) | Texto estático + UI interactiva | Cards de contexto situacional — la empresa, los stakes — sin asumir el rol del usuario |
+| Job Description textarea | UI estática | Pre-llenado con el último JD del perfil (`lastJobDescription`) si existe |
+| Situation presets (3 por escenario) | Texto estático + UI interactiva | Cards de contexto situacional — empresa, stakes — sin asumir el rol del usuario |
+| Challenge Mode toggle | UI interactiva | "No hints, no prep. Exactly like the real thing." — salta el briefing completo |
 | Preset injection | Lógica de backend | `processGuidedFields()` combina preset + cvSummary → `userArsenal` del prompt |
-| Skip button | UI | Siempre visible — respeta al usuario con prisa |
 
-**Oportunidad:** La persistencia del JD en el perfil (`cvSummary`) es invisible para el usuario. Una señal explícita de "Usando tu perfil de: [extracto de JD]" haría que el usuario perciba que la app lo recuerda — clave para el hábito de retorno.
+> **Nota:** Focus area y confidence score ya fueron recolectados en `IntroductionScreen`. No aparecen en esta pantalla.
 
-#### TP-15a.1 · Focus Area + Confidence Check-in (ContextScreen — sección inferior)
-
-**Contexto:** Inmediatamente después de seleccionar el preset o ingresar el JD, el usuario ve dos selectores opcionales antes del botón Continue.
-
-| | |
-|---|---|
-| **Acción** | Opcionalmente selecciona un pilar de foco (1 de 6) y/o reporta su nivel de confianza (1–5). Hace clic en Continue. |
-| **Pensando** | "¿Estos campos cambian algo de verdad? ¿Vale la pena llenarlo?" |
-| **Siente** | Ligera sorpresa positiva. *"Me están preguntando cómo me siento — esto no es un app genérico."* |
-| **Queremos que sienta** | Agency sobre su propio proceso de aprendizaje. El usuario dirige la sesión, no solo la ejecuta. |
-
-**Sistema interviene:**
-
-| Elemento | Tipo | Descripción |
-|----------|------|-------------|
-| Focus Area selector | UI interactiva | 6 pillar chips (Vocabulary / Grammar / Fluency / Pronunciation / Professional Tone / Persuasion); toggle — solo uno activo; estado visual activo: `bg-[#0f172b] text-white` |
-| Confidence slider | UI interactiva | Escala 1–5 con etiquetas; persiste como `confidenceScore` en `SessionConfig` |
-| Sección marcada "optional" | Texto estático + label | Deja claro que ambos campos son opcionales — reduce la fricción |
-| Datos → `SessionConfig` | Lógica de frontend | `sessionFocus` y `confidenceScore` pasan via `ContextScreenMeta` al assembler |
-| Block 4.6 en system prompt | Lógica de assembler | `buildSessionFocusBlock()` inyecta instrucciones de foco y tono al interlocutor |
-
-**Oportunidad:** Los campos son optativos, pero no hay feedback visible de que el AI los está usando. Una micro-confirmación post-selección ("Got it — I'll prioritize your Fluency coaching today") antes del Continue reforzaría la causalidad percibida y aumentaría la tasa de uso de esta feature.
-
-#### TP-15a.2 · PreSessionLessonScreen (micro-lección pre-sesión) — NUEVO §7.9
-
-**Contexto:** Aparece entre el ContextScreen y el StrategyScreen en sesiones de path (no Challenge Mode, no War Room, no self-intro). Dura ~90 segundos.
-
-| | |
-|---|---|
-| **Acción** | Lee el concepto clave (2 frases). Ve la power phrase destacada. Responde la pregunta de recall tapando "Reveal answer". Hace clic en "Start session". |
-| **Pensando** | "¿Esto tiene que ver con lo que voy a practicar ahora?" |
-| **Siente** | Ligeramente sorprendido. Percepción de que el sistema lo prepara de forma específica — no genérica. |
-| **Queremos que sienta** | Preparación concreta. *"Tengo el vocabulario exacto que voy a necesitar en los próximos 8 minutos."* |
-
-**Sistema interviene:**
-
-| Elemento | Tipo | Descripción |
-|----------|------|-------------|
-| Badge path + level | UI estática | e.g., "Interview Mastery · Level 2" — contextualiza la lección |
-| Título de lección | Texto estático (microLessonsData) | Título de la lección seleccionada para este path/level |
-| Core concept | Texto estático | `lesson.content.keyConcept` — máximo 2 frases |
-| Power phrase | Texto destacado en card oscura | `lesson.content.example.text` en itálica — la frase exacta a usar |
-| Recall question gateada | UI interactiva | `lesson.recallQuestions[0]` — respuesta oculta hasta que el usuario tapa "Reveal answer" |
-| CTA bloqueado → activo | Lógica de UI | Botón deshabilitado hasta que se revela la respuesta; evita lectura pasiva |
-| `last_pre_session_lesson_id` | Persistencia KV | Se guarda al avanzar — la siguiente sesión recibe una lección diferente |
-
-**Selección de lección:**
-- Prioridad 1: lecciones cuyo `levelIds` + `pathIds` coincidan con la sesión actual (específicas del nivel)
-- Prioridad 2: lección del pilar más débil según `pillarScores` histórico
-- Si ninguna aplica: el paso se omite silenciosamente
-
-**Oportunidad:** La power phrase en la card oscura es el elemento más memorable de la pantalla. Si el usuario la ve justo antes de la conversación y el interlocutor le da oportunidad de usarla, el loop de aprendizaje se cierra en tiempo real. Una micro-señal post-sesión ("Did you use the phrase from your lesson?") en el FeedbackScreen reforzaría la conexión.
+**Oportunidad:** La persistencia del JD en el perfil (`lastJobDescription`) es invisible para el usuario. Una señal explícita de "Usando tu perfil de: [extracto de JD]" haría que el usuario perciba que la app lo recuerda.
 
 ---
 
-#### TP-15b · PracticePrepScreen (briefing por pregunta con stepper)
+#### TP-15b · PracticePrepScreen (briefing por pregunta)
+
+**Contexto:** La IA ya generó las preguntas en background (durante el paso "generating"). El usuario llega con el framework aprendido y su contexto cargado.
 
 | | |
 |---|---|
-| **Acción** | Va pregunta por pregunta. Para cada una: lee la pregunta → entiende la estrategia → graba su respuesta → recibe feedback por pregunta. |
+| **Acción** | Va pregunta por pregunta. Para cada una: lee la pregunta → entiende la estrategia → graba su respuesta → ve su transcripción + la respuesta mejorada. |
 | **Pensando** | "¿Esta pregunta me la van a hacer de verdad? ¿Qué tan convincente estoy sonando?" |
-| **Siente** | Alta concentración. La grabación por pregunta crea un micro-loop de aprendizaje. |
+| **Siente** | Alta concentración. El micro-loop (grabo → veo qué dije → veo cómo debería sonar) crea aprendizaje acelerado. |
 | **Queremos que sienta** | Preparación real. *"Cuando entre a la conversación, ya practiqué lo más difícil."* |
 
 **Sistema interviene:**
 
 | Elemento | Tipo | Descripción |
 |----------|------|-------------|
-| BriefingStepperCarousel | UI interactiva + stepper | 4 sub-pasos por pregunta: see → strategize → record → feedback |
-| `exampleAnswer` por pregunta | Texto generado por GPT-4o | Respuesta de ejemplo personalizada con datos del perfil del usuario |
-| RecordButton + STT Azure | Audio en tiempo real | Grabación y transcripción por pregunta individual |
-| Feedback por pregunta | Texto generado por AI (Gemini Flash o local) | Evaluación específica de esa respuesta |
-| ReadinessScore | UI dinámica | Score de preparación que sube al completar más preguntas |
-| Narración de audio | TTS estático (ElevenLabs) | `useNarration(READINESS_URLS[...])` — acompaña la pantalla de preparación |
+| BriefingStepperCarousel | UI interactiva | 4 sub-pasos por pregunta (flipbook animation): QuestionCard → StrategyCard → AnswerCard → FeedbackCard |
+| Progress row | UI estática | "Question X of N · dots · X/N mastered" — progreso dentro del briefing |
+| `exampleAnswer` por pregunta | Texto generado por GPT-4o | Respuesta de ejemplo personalizada con datos del perfil |
+| RecordButton + STT Azure | Audio en tiempo real | Grabación y transcripción por pregunta |
+| **"Your Answer"** | Texto dinámico (nuevo) | Transcripción literal de lo que el usuario dijo — visible en FeedbackCard antes del Improved Response |
+| Improved Response + key changes | Texto generado por IA | Evaluación + versión mejorada de la respuesta |
+| Practice Saying It (shadowing) | UI interactiva | El usuario puede grabar la respuesta mejorada y comparar pronunciación |
+| **PracticeSideNav** | UI dinámica lateral | Muestra: Introduction ✓ → Strategy ✓ → Your Situation ✓ → Q&A Preparation ● → Live Practice ○; pasos completados son clickeables |
+| Narración de audio | TTS estático (ElevenLabs) | `useNarration(READINESS_URLS[...])` — acompaña la pantalla |
 
-**Oportunidad:** El stepper de 4 sub-pasos (see/strategize/record/feedback) es poderoso pero largo. Para usuarios con experiencia (>3 sesiones completadas), considerar un modo "rápido" que omita el paso de "strategize" y vaya directo a grabar — respetando el tiempo del usuario habitual.
+**Oportunidad:** El stepper de 4 sub-pasos es poderoso pero largo. Para usuarios con experiencia (>3 sesiones), considerar un modo "rápido" que omita el StrategyCard y vaya directo a grabar.
 
 ---
 
@@ -712,6 +686,9 @@ Los siguientes son los 5 touchpoints con mayor impacto en la formación del háb
 | 5 | **TP-20 Renewal email** | Momento de mayor riesgo de churn — oportunidad de reforzar ROI | Incluir resumen de progreso del mes en el email de renovación. |
 
 ---
+
+*v1.2 — 2026-05-10*
+*Cambios: (1) TP-03 IntroductionScreen: añadido confidence check-in + focus selector (movidos desde ContextScreen); CTA gateado. (2) TP-05 StrategyScreen: documenta VocabularyDrillSection (IPA + TTS + Azure scoring, profile-aware) en reemplazo de anchor phrases pasivas. (3) Flujo de Fase 3 reordenado: intro → strategy → context → practice-prep (strategy antes de context). (4) TP-15a.1 eliminado (Focus/Confidence movidos a TP-03). (5) TP-15a.2 PreSessionLessonScreen eliminado — reemplazado por VocabularyDrillSection en StrategyScreen. (6) TP-14 Dashboard actualizado: GoalAnchorCard integrado en HeroCard, War Room → Quick Session en header, Row 2 con 4 widgets + empty states, layout documentado. (7) TP-15b PracticePrepScreen: documenta "Your Answer" (transcripción visible), flipbook animation, PracticeSideNav con flow steps.*
 
 *v1.1 — 2026-05-01*
 *Cambios: Añadido TP-15a.1 (Focus Area + Confidence Check-in) en Fase 3 › ContextScreen — documenta Sprint A.1 + A.2 de Phase 2.5 Pedagogical Depth.*
