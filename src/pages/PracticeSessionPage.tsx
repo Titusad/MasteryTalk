@@ -68,6 +68,7 @@ import { setNarrationMuted } from "@/shared/lib/useNarrationPreference";
 import type { InterlocutorKey } from "@/features/practice-session/model/narrator-audio";
 import { StrategyScreen } from "@/features/practice-session/ui/StrategyScreen";
 import { IntroductionScreen } from "@/features/practice-session/ui/IntroductionScreen";
+import { VocabularyScreen } from "@/features/practice-session/ui/VocabularyScreen";
 import { SelfIntroContextScreen } from "@/features/practice-session/ui/SelfIntroContextScreen";
 import { scriptSectionsToBriefingData } from "@/features/practice-session/ui/briefing/salesAdapter";
 import type { SelfIntroContext } from "@/entities/session";
@@ -379,7 +380,7 @@ export function PracticeSessionPage({
   useEffect(() => {
     if (!progressionPathId || !progressionLevelId) return;
 
-    const FLOW = ["intro", "strategy", "experience", "context", "generating", "practice-prep", "interlocutor-intro", "practice", "analyzing", "feedback"];
+    const FLOW = ["intro", "strategy", "experience", "context", "vocabulary", "generating", "practice-prep", "interlocutor-intro", "practice", "analyzing", "feedback"];
     const currentIdx = FLOW.indexOf(step);
 
     const status = (forSteps: string[]): SessionStepItem["status"] => {
@@ -434,6 +435,8 @@ export function PracticeSessionPage({
 
   /* Ref-based AbortController to cancel previous generation when a new one starts */
   const briefingAbortRef = useRef<AbortController | null>(null);
+  /** Where vocabulary step should navigate on continue/skip */
+  const nextStepAfterVocabularyRef = useRef<"generating" | "practice-prep">("generating");
 
   /* ── Script / Briefing generation: call Edge Function ── */
   const fireScriptGeneration = useCallback(async (extraData?: Record<string, string>) => {
@@ -734,6 +737,21 @@ export function PracticeSessionPage({
   const [levelMilestoneOpen, setLevelMilestoneOpen] = useState(false);
 
   /* ── Pre-session lesson ── */
+  /** Navigate through vocabulary step when available, or directly to nextStep */
+  const gateWithVocabulary = useCallback((nextStep: "generating" | "practice-prep") => {
+    const levelDef = progressionPathId && progressionLevelId
+      ? getLevelDefinition(progressionPathId, progressionLevelId)
+      : null;
+    const hasVocab = !!(levelDef?.vocabularyBank?.length);
+    const showVocab = hasVocab && !challengeModeRef.current && !startAtContext && !isSelfIntro;
+    if (showVocab) {
+      nextStepAfterVocabularyRef.current = nextStep;
+      setStep("vocabulary");
+    } else {
+      setStep(nextStep);
+    }
+  }, [progressionPathId, progressionLevelId, startAtContext, isSelfIntro]);
+
   const gateWithLesson = useCallback((nextStep: Step) => {
     setStep(nextStep);
   }, []);
@@ -1152,8 +1170,8 @@ export function PracticeSessionPage({
                           });
                       }
 
-                      // Strategy already shown before context — go to lesson then practice-prep
-                      gateWithLesson("practice-prep");
+                      // Strategy already shown before context — go to vocabulary/practice-prep
+                      gateWithVocabulary("practice-prep");
                       return;
                     }
                   } else {
@@ -1165,13 +1183,13 @@ export function PracticeSessionPage({
                       if (cachedToolkit) {
                         setPreparationToolkit(cachedToolkit);
                       }
-                      gateWithLesson("practice-prep");
+                      gateWithVocabulary("practice-prep");
                       return;
                     }
                   }
-                  // Fire script generation — runs in background during lesson
+                  // Fire script generation — runs in background during vocabulary/generating
                   fireScriptGeneration(enriched);
-                  gateWithLesson("generating");
+                  gateWithVocabulary("generating");
                 }}
                 onBack={() => {
                   const hasProfileContext = userProfile?.cvSummary || (userProfile?.position && userProfile?.industry);
@@ -1236,6 +1254,26 @@ export function PracticeSessionPage({
                     const hasProfileContext = userProfile?.cvSummary || (userProfile?.position && userProfile?.industry);
                     setStep(hasProfileContext ? "context" : "experience");
                   }}
+                />
+              );
+            })()}
+
+            {step === "vocabulary" && (() => {
+              const levelDef = progressionPathId && progressionLevelId
+                ? getLevelDefinition(progressionPathId, progressionLevelId)
+                : null;
+              if (!levelDef?.vocabularyBank?.length) {
+                setStep(nextStepAfterVocabularyRef.current);
+                return null;
+              }
+              return (
+                <VocabularyScreen
+                  levelTitle={levelDef.title}
+                  scenarioType={scenarioType}
+                  vocabularyBank={levelDef.vocabularyBank}
+                  userProfile={userProfile}
+                  onContinue={() => setStep(nextStepAfterVocabularyRef.current)}
+                  onSkip={() => setStep(nextStepAfterVocabularyRef.current)}
                 />
               );
             })()}

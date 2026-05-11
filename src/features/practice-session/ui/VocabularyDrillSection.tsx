@@ -53,6 +53,9 @@ function TermCard({
             <span className="text-xs text-[#6366f1] font-mono">{term.ipa}</span>
           </div>
           <p className="text-xs text-[#62748e] mt-0.5 leading-relaxed">{term.definition}</p>
+          {term.example && (
+            <p className="text-xs text-[#94a3b8] mt-1 italic leading-relaxed">"{term.example}"</p>
+          )}
         </div>
 
         {/* Score badge */}

@@ -30,6 +30,8 @@ export interface VocabularyTerm {
   term: string;
   ipa: string;
   definition: string;
+  /** Short example sentence showing the word in professional context */
+  example?: string;
   /** Industry/role keywords — empty or absent = universal */
   tags?: string[];
 }
@@ -133,14 +135,14 @@ const INTERVIEW_LEVELS: ProgressionLevel[] = [
     },
     vocabularyBank: [
       // Universal — shown to everyone
-      { term: "background",     ipa: "/ˈbæk.ɡraʊnd/",          definition: "professional history and experience" },
-      { term: "relevant",       ipa: "/ˈrel.ə.vənt/",           definition: "directly connected to the topic at hand" },
-      { term: "initiative",     ipa: "/ɪˈnɪʃ.ə.tɪv/",          definition: "a plan or action taken to achieve a goal" },
-      { term: "accountability", ipa: "/əˌkaʊn.tə.ˈbɪl.ɪ.ti/",  definition: "taking responsibility for results" },
-      { term: "leverage",       ipa: "/ˈlev.ər.ɪdʒ/",           definition: "use something to maximum advantage" },
-      { term: "stakeholder",    ipa: "/ˈsteɪk.hoʊl.dər/",       definition: "anyone with interest in an outcome" },
-      { term: "achievement",    ipa: "/əˈtʃiːv.mənt/",          definition: "something accomplished successfully" },
-      { term: "opportunity",    ipa: "/ˌɒp.əˈtjuː.nɪ.ti/",     definition: "a favorable situation to act on" },
+      { term: "background",     ipa: "/ˈbæk.ɡraʊnd/",          definition: "professional history and experience",                    example: "She has a strong background in financial services." },
+      { term: "relevant",       ipa: "/ˈrel.ə.vənt/",           definition: "directly connected to the topic at hand",                example: "That experience is highly relevant to this role." },
+      { term: "initiative",     ipa: "/ɪˈnɪʃ.ə.tɪv/",          definition: "a plan or action taken to achieve a goal",              example: "I took the initiative to redesign the onboarding process." },
+      { term: "accountability", ipa: "/əˌkaʊn.tə.ˈbɪl.ɪ.ti/",  definition: "taking responsibility for results",                     example: "There's a strong culture of accountability on our team." },
+      { term: "leverage",       ipa: "/ˈlev.ər.ɪdʒ/",           definition: "use something to maximum advantage",                    example: "We can leverage your technical background in this role." },
+      { term: "stakeholder",    ipa: "/ˈsteɪk.hoʊl.dər/",       definition: "anyone with interest in an outcome",                    example: "I presented the roadmap to all key stakeholders." },
+      { term: "achievement",    ipa: "/əˈtʃiːv.mənt/",          definition: "something accomplished successfully",                   example: "My greatest achievement was reducing churn by 30%." },
+      { term: "opportunity",    ipa: "/ˌɒp.əˈtjuː.nɪ.ti/",     definition: "a favorable situation to act on",                       example: "This role is a great opportunity to grow into leadership." },
       // Tech / Engineering
       { term: "scalable",       ipa: "/ˈskeɪ.lə.bəl/",          definition: "able to grow without losing performance",          tags: ["tech", "saas", "software", "engineer", "engineering"] },
       { term: "deployment",     ipa: "/dɪˈplɔɪ.mənt/",          definition: "releasing software or resources into production",   tags: ["tech", "saas", "software", "engineer", "engineering"] },
@@ -198,6 +200,15 @@ const INTERVIEW_LEVELS: ProgressionLevel[] = [
       ],
       coachTip: "Before answering any behavioral question, run this mental check: 'Situation in 1-2 sentences → My specific task → The exact actions I took and why → The concrete result, ideally with a number.' If your answer doesn't have a number at the end, pause and find it before finishing.",
     },
+    vocabularyBank: [
+      { term: "situation",      ipa: "/ˌsɪtʃ.uˈeɪ.ʃən/",       definition: "the context or circumstances at the time",              example: "The situation was that we had two conflicting deadlines." },
+      { term: "demonstrate",    ipa: "/ˈdem.ən.streɪt/",         definition: "to show clearly through action or evidence",            example: "This example demonstrates my ability to lead under pressure." },
+      { term: "collaborate",    ipa: "/kəˈlæb.ə.reɪt/",         definition: "to work jointly toward a shared goal",                  example: "I collaborated with the product team to prioritize the backlog." },
+      { term: "outcome",        ipa: "/ˈaʊt.kʌm/",              definition: "the final result of an action or process",              example: "The outcome was a 40% reduction in support tickets." },
+      { term: "challenge",      ipa: "/ˈtʃæl.ɪndʒ/",            definition: "a difficult situation that requires effort to overcome", example: "The main challenge was aligning three different teams." },
+      { term: "resolve",        ipa: "/rɪˈzɒlv/",               definition: "to find a solution to a problem",                       example: "I resolved the conflict by facilitating a structured meeting." },
+      { term: "quantifiable",   ipa: "/ˈkwɒn.tɪ.faɪ.ə.bəl/",   definition: "measurable in numbers or concrete terms",               example: "I always try to quantify the impact of my work." },
+    ],
   },
   {
     id: "int-3",
@@ -238,6 +249,15 @@ const INTERVIEW_LEVELS: ProgressionLevel[] = [
       ],
       coachTip: "After every STAR answer, ask yourself two questions before finishing: 'What did this result make possible for the organization that wouldn't have happened otherwise?' and 'What do I know now that I didn't know before — and how did it change the way I work?' If you can't answer them, the story isn't ready.",
     },
+    vocabularyBank: [
+      { term: "compelling",     ipa: "/kəmˈpel.ɪŋ/",            definition: "strongly persuasive; hard to doubt or ignore",          example: "She made a compelling case for the new approach." },
+      { term: "articulate",     ipa: "/ɑːˈtɪk.jʊ.lɪt/",         definition: "able to express ideas clearly and effectively",         example: "He was articulate about the tradeoffs involved." },
+      { term: "impact",         ipa: "/ˈɪm.pækt/",              definition: "a measurable effect or consequence",                    example: "The decision had a significant impact on team velocity." },
+      { term: "self-awareness", ipa: "/ˌself əˈweə.nəs/",       definition: "understanding of one's own strengths and limitations",  example: "She showed real self-awareness by owning her mistake." },
+      { term: "retrospective",  ipa: "/ˌret.rəˈspek.tɪv/",      definition: "a review of past events to extract lessons",            example: "We ran a retrospective after the launch to capture learnings." },
+      { term: "nuanced",        ipa: "/ˈnjuː.ɑːnst/",           definition: "showing subtle distinctions; not oversimplified",        example: "His answer was nuanced — he acknowledged both sides." },
+      { term: "strategic",      ipa: "/strəˈtiː.dʒɪk/",         definition: "designed to achieve a long-term goal",                  example: "That was a strategic decision to pause and regroup." },
+    ],
   },
   {
     id: "int-4",
