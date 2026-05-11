@@ -7,6 +7,7 @@
 
 import { useState, useEffect } from "react";
 import { useNarration } from "@/shared/lib/useNarration";
+import { NarrationCaption } from "@/shared/ui";
 import { motion } from "motion/react";
 import { ArrowRight, Clock } from "lucide-react";
 import { getSupabaseClient } from "@/services/supabase";
@@ -65,6 +66,7 @@ interface IntroductionScreenProps {
   scenarioContext?: string;
   onContinue: (meta: IntroMeta) => void;
   narratorUrl?: string;
+  narratorScript?: string;
   /** When true, hides focus/confidence — used for self-intro warm-up */
   minimal?: boolean;
 }
@@ -76,9 +78,10 @@ export function IntroductionScreen({
   scenarioContext,
   onContinue,
   narratorUrl,
+  narratorScript,
   minimal = false,
 }: IntroductionScreenProps) {
-  useNarration(narratorUrl || null);
+  const { isScriptVisible, dismissCaption } = useNarration(narratorUrl || null, narratorScript);
   const [firstName, setFirstName] = useState("there");
   const [sessionFocus, setSessionFocus] = useState<string | null>(null);
   const [confidenceScore, setConfidenceScore] = useState<number | null>(null);
@@ -246,6 +249,9 @@ export function IntroductionScreen({
         Let's Go
         <ArrowRight className="w-4 h-4" />
       </motion.button>
+      {narratorScript && (
+        <NarrationCaption script={narratorScript} isVisible={isScriptVisible} onDismiss={dismissCaption} />
+      )}
     </motion.div>
   );
 }

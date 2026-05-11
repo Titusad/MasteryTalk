@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { ArrowRight, Sparkles } from "lucide-react";
-import { FeedbackThumbs } from "@/shared/ui";
+import { FeedbackThumbs, NarrationCaption } from "@/shared/ui";
 import { useNarration } from "@/shared/lib/useNarration";
 import type { InterlocutorKey } from "@/features/practice-session/model/narrator-audio";
 
@@ -138,14 +138,16 @@ function Waveform({ active }: { active: boolean }) {
 export function InterlocutorIntroScreen({
   interlocutor,
   narratorUrl,
+  narratorScript,
   onReady,
 }: {
   interlocutor: string;
   narratorUrl?: string;
+  narratorScript?: string;
   onReady: () => void;
 }) {
   const meta = INTERLOCUTOR_META[interlocutor] ?? INTERLOCUTOR_META.recruiter;
-  const { isPlaying, isDone } = useNarration(narratorUrl || null);
+  const { isPlaying, isDone, isScriptVisible, dismissCaption } = useNarration(narratorUrl || null, narratorScript);
 
   // Allow proceeding after 3s even if audio hasn't started (autoplay blocked)
   const [canProceed, setCanProceed] = useState(false);
@@ -284,6 +286,9 @@ export function InterlocutorIntroScreen({
           </motion.p>
         )}
       </motion.div>
+      {narratorScript && (
+        <NarrationCaption script={narratorScript} isVisible={isScriptVisible} onDismiss={dismissCaption} />
+      )}
     </div>
   );
 }

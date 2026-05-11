@@ -49,3 +49,4 @@ export { ScoreRing } from "./ScoreRing";
 export { PhraseCard } from "./PhraseCard";
 export { GoalPickerStep, GOAL_LABELS } from "./GoalPickerStep";
 export { NarrationToggle } from "./NarrationToggle";
+export { NarrationCaption } from "./NarrationCaption";

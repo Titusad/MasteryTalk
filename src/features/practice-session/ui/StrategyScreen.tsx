@@ -23,7 +23,7 @@ import {
   Globe,
   Sparkles,
 } from "lucide-react";
-import { FeedbackThumbs } from "@/shared/ui";
+import { FeedbackThumbs, NarrationCaption } from "@/shared/ui";
 import { useState, useCallback, useMemo } from "react";
 import DOMPurify from "dompurify";
 import { VocabularyDrillSection } from "./VocabularyDrillSection";
@@ -58,6 +58,7 @@ interface StrategyScreenProps {
   onReady: () => void;
   onSkip: () => void;
   narratorUrl?: string;
+  narratorScript?: string;
 }
 
 export function StrategyScreen({
@@ -71,8 +72,9 @@ export function StrategyScreen({
   onReady,
   onSkip,
   narratorUrl,
+  narratorScript,
 }: StrategyScreenProps) {
-  useNarration(narratorUrl || null);
+  const { isScriptVisible, dismissCaption } = useNarration(narratorUrl || null, narratorScript);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const [briefLocale, setBriefLocale] = useBriefLocale();
   const [showLocalePicker, setShowLocalePicker] = useState(false);
@@ -366,6 +368,9 @@ export function StrategyScreen({
           </button>
         </motion.div>
       </main>
+      {narratorScript && (
+        <NarrationCaption script={narratorScript} isVisible={isScriptVisible} onDismiss={dismissCaption} />
+      )}
     </div>
   );
 }

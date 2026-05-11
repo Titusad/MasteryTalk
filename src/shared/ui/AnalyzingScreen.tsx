@@ -15,6 +15,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { CheckCircle2 } from "lucide-react";
 import { BrandLogo } from "./BrandLogo";
+import { NarrationCaption } from "./NarrationCaption";
 import { COLORS } from "./design-tokens";
 import { useNarration } from "@/shared/lib/useNarration";
 
@@ -96,13 +97,15 @@ export function AnalyzingScreen({
     onComplete,
     canComplete = true,
     narratorUrl,
+    narratorScript,
 }: {
     variant?: "feedback" | "script" | "results" | "generating";
     onComplete: () => void;
     canComplete?: boolean;
     narratorUrl?: string;
+    narratorScript?: string;
 }) {
-    useNarration(narratorUrl || null);
+    const { isScriptVisible, dismissCaption } = useNarration(narratorUrl || null, narratorScript);
     const config = ANALYSIS_CONFIGS[variant];
     const [activeStep, setActiveStep] = useState(0);
     const [progress, setProgress] = useState(0);
@@ -335,6 +338,9 @@ export function AnalyzingScreen({
 
 
             </motion.div>
+            {narratorScript && (
+                <NarrationCaption script={narratorScript} isVisible={isScriptVisible} onDismiss={dismissCaption} />
+            )}
         </div>
     );
 }

@@ -63,7 +63,7 @@ const _detectedLocale = detectLanguageBackground();
 import { ExperienceScreen } from "@/features/practice-session/ui/ExperienceScreen";
 import { ContextScreen, type ContextScreenMeta } from "@/features/practice-session/ui/ContextScreen";
 import { InterlocutorIntroScreen } from "@/features/practice-session/ui/InterlocutorIntroScreen";
-import { NARRATOR_URLS, INTRO_URLS, STRATEGY_URLS, PREP_URLS, FEEDBACK_URLS } from "@/features/practice-session/model/narrator-audio";
+import { NARRATOR_URLS, INTRO_URLS, STRATEGY_URLS, PREP_URLS, FEEDBACK_URLS, NARRATOR_SCRIPTS } from "@/features/practice-session/model/narrator-audio";
 import { setNarrationMuted } from "@/shared/lib/useNarrationPreference";
 import type { InterlocutorKey } from "@/features/practice-session/model/narrator-audio";
 import { StrategyScreen } from "@/features/practice-session/ui/StrategyScreen";
@@ -1023,6 +1023,7 @@ export function PracticeSessionPage({
                   introHeadline={levelDef.introHeadline}
                   scenarioContext={levelDef.scenarioContext}
                   narratorUrl={progressionLevelId ? INTRO_URLS[progressionLevelId] : undefined}
+                  narratorScript={progressionLevelId ? NARRATOR_SCRIPTS.intro[progressionLevelId as keyof typeof NARRATOR_SCRIPTS.intro] : undefined}
                   onContinue={(meta) => {
                     sessionFocusRef.current = meta.sessionFocus;
                     confidenceScoreRef.current = meta.confidenceScore;
@@ -1226,6 +1227,7 @@ export function PracticeSessionPage({
                   personalizedPattern={personalizedPattern}
                   patternLoading={patternLoading}
                   narratorUrl={progressionLevelId ? STRATEGY_URLS[progressionLevelId] : undefined}
+                  narratorScript={progressionLevelId ? NARRATOR_SCRIPTS.strategy[progressionLevelId as keyof typeof NARRATOR_SCRIPTS.strategy] : undefined}
                   onReady={() => {
                     const hasProfileContext = userProfile?.cvSummary || (userProfile?.position && userProfile?.industry);
                     setStep(hasProfileContext ? "context" : "experience");
@@ -1247,6 +1249,7 @@ export function PracticeSessionPage({
                     canComplete={scriptGenStatus === "ready"}
                     onComplete={() => setAnimationDone(true)}
                     narratorUrl={NARRATOR_URLS.generating}
+                    narratorScript={NARRATOR_SCRIPTS.generating}
                   />
                 )}
 
@@ -1300,6 +1303,7 @@ export function PracticeSessionPage({
                 interlocutor={interlocutor}
                 briefingData={interviewBriefing}
                 narratorUrl={PREP_URLS["interview"]}
+                narratorScript={NARRATOR_SCRIPTS.prep.interview}
                 levelTitle={progressionPathId && progressionLevelId ? getLevelDefinition(progressionPathId, progressionLevelId)?.title : undefined}
                 onProgressChange={(activeIdx, completedSet) => {
                   setQaProgress({ activeIdx, completedSet });
@@ -1333,6 +1337,7 @@ export function PracticeSessionPage({
               <InterlocutorIntroScreen
                 interlocutor={effectiveInterlocutor}
                 narratorUrl={NARRATOR_URLS.interlocutor[effectiveInterlocutor as InterlocutorKey] || ""}
+                narratorScript={NARRATOR_SCRIPTS.interlocutor[effectiveInterlocutor as keyof typeof NARRATOR_SCRIPTS.interlocutor]}
                 onReady={() => setStep("practice")}
               />
             )}
@@ -1341,6 +1346,7 @@ export function PracticeSessionPage({
                 interlocutor={interlocutor}
                 briefingData={scriptSectionsToBriefingData(generatedScript)}
                 narratorUrl={PREP_URLS[scenarioType ?? "interview"]}
+                narratorScript={NARRATOR_SCRIPTS.prep[scenarioType as keyof typeof NARRATOR_SCRIPTS.prep]}
                 levelTitle={progressionPathId && progressionLevelId ? getLevelDefinition(progressionPathId, progressionLevelId)?.title : undefined}
                 onStartSimulation={(userDrafts, personalizedResponses) => {
                   // Package sales/meeting/presentation briefing data for session
@@ -1413,6 +1419,7 @@ export function PracticeSessionPage({
                 canComplete={feedbackStatus === "ready" || feedbackStatus === "error"}
                 onComplete={() => setFeedbackAnimDone(true)}
                 narratorUrl={NARRATOR_URLS.analyzing}
+                narratorScript={NARRATOR_SCRIPTS.analyzing}
               />
             )}
             {step === "feedback" && (() => {

@@ -24,6 +24,7 @@ import {
 import {
     PageTitleBlock,
     FeedbackThumbs,
+    NarrationCaption,
 } from "@/shared/ui";
 import type { InterviewBriefingData } from "@/services/types";
 import type { ScenarioType } from "@/services/types";
@@ -93,6 +94,7 @@ interface PracticePrepScreenProps {
     scenarioType?: ScenarioType;
     /** Level title for level-specific coach message (e.g. "Phone Screen") */
     levelTitle?: string;
+    narratorScript?: string;
     narratorUrl?: string;
     onProgressChange?: (activeIdx: number, completedSet: Set<number>) => void;
 }
@@ -107,9 +109,10 @@ export function PracticePrepScreen({
     scenarioType,
     levelTitle,
     narratorUrl,
+    narratorScript,
     onProgressChange,
 }: PracticePrepScreenProps) {
-    useNarration(narratorUrl || null);
+    const { isScriptVisible, dismissCaption } = useNarration(narratorUrl || null, narratorScript);
     const [allDone, setAllDone] = useState(false);
     const [actualCompleted, setActualCompleted] = useState(0);
 
@@ -199,6 +202,9 @@ export function PracticePrepScreen({
                     </button>
                 </motion.div>
             </main>
+            {narratorScript && (
+                <NarrationCaption script={narratorScript} isVisible={isScriptVisible} onDismiss={dismissCaption} />
+            )}
         </div>
     );
 }
