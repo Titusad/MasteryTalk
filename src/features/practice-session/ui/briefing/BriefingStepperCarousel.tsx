@@ -33,6 +33,7 @@ interface BriefingStepperCarouselProps {
     cards: InterviewQuestionCard[];
     onAllComplete: (completedCount: number) => void;
     onDraftChange?: (questionId: number, text: string) => void;
+    onPersonalizeChange?: (questionId: number, text: string) => void;
     onProgressChange?: (activeIdx: number, completedSet: Set<number>) => void;
     scenarioType?: string;
     interlocutor?: string;
@@ -44,6 +45,7 @@ export function BriefingStepperCarousel({
     cards,
     onAllComplete,
     onDraftChange,
+    onPersonalizeChange,
     onProgressChange,
     scenarioType,
     interlocutor,
@@ -356,6 +358,7 @@ export function BriefingStepperCarousel({
                                 onComplete={handleQuestionComplete}
                                 onBack={() => goToStep("answer")}
                                 isLastQuestion={activeQuestionIdx === totalQuestions - 1}
+                                onPersonalize={(text) => onPersonalizeChange?.(currentCard.id, text)}
                             />
                         </motion.div>
                     )}

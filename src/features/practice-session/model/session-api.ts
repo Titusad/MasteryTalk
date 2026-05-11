@@ -342,6 +342,7 @@ export interface SaveSessionPayload {
   } | null;
   improvedScript: ScriptSection[] | null;
   practiceSessionId: string;
+  briefingPersonalizations?: Record<string, string>;
   interviewBriefing: {
     anticipatedQuestions: Array<{ id: string; question: string; approach: string }>;
     questionsToAsk: Array<{ question: string }>;

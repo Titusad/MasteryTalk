@@ -13,7 +13,7 @@ import type { AzurePronunciationAssessment } from "@/services/types";
  * ==============================================================
  */
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
     ArrowLeft,
@@ -24,6 +24,9 @@ import {
     Mic,
     CheckCircle2,
     AlertCircle,
+    Pencil,
+    Check,
+    X,
 } from "lucide-react";
 import { projectId } from "@/../utils/supabase/info";
 import { getAuthToken } from "@/services/supabase";
@@ -70,6 +73,7 @@ interface FeedbackCardProps {
     onComplete: () => void;
     onBack: () => void;
     isLastQuestion?: boolean;
+    onPersonalize?: (text: string) => void;
 }
 
 export function FeedbackCard({
@@ -85,11 +89,16 @@ export function FeedbackCard({
     onComplete,
     onBack,
     isLastQuestion,
+    onPersonalize,
 }: FeedbackCardProps) {
     const [loading, setLoading] = useState(!pronAssessment); // skip loading when we have pron data
     const [feedback, setFeedback] = useState<FeedbackResult | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [showShadowingModal, setShowShadowingModal] = useState(false);
+    const [editMode, setEditMode] = useState(false);
+    const [editedText, setEditedText] = useState("");
+    const [savedPersonalized, setSavedPersonalized] = useState<string | null>(null);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     /* Fetch AI text feedback — only when no pronunciation assessment is available */
     useEffect(() => {
@@ -196,6 +205,24 @@ export function FeedbackCard({
     }, [feedback]);
 
     const fadeTransition = { duration: 0.75, ease: "easeInOut" as const };
+
+    const handleStartEdit = () => {
+        setEditedText(savedPersonalized ?? feedback?.improvedResponse ?? "");
+        setEditMode(true);
+        setTimeout(() => textareaRef.current?.focus(), 50);
+    };
+
+    const handleSaveEdit = () => {
+        const trimmed = editedText.trim();
+        if (!trimmed) return;
+        setSavedPersonalized(trimmed);
+        onPersonalize?.(trimmed);
+        setEditMode(false);
+    };
+
+    const handleCancelEdit = () => {
+        setEditMode(false);
+    };
 
     /* ── Pronunciation feedback mode (when Azure assessment is available) ── */
     if (pronAssessment) {
@@ -425,19 +452,64 @@ export function FeedbackCard({
 
                     {/* ── Improved Response ── */}
                     <div>
-                        <div className="flex items-center gap-2 mb-2">
-                            <Sparkles className="w-4 h-4 text-[#6366f1]" />
-                            <h3 className="text-sm text-[#0f172b] font-semibold" >
-                                Improved Response
-                            </h3>
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                                <Sparkles className="w-4 h-4 text-[#6366f1]" />
+                                <h3 className="text-sm text-[#0f172b] font-semibold">
+                                    Improved Response
+                                </h3>
+                            </div>
+                            {!editMode && (
+                                <button
+                                    onClick={handleStartEdit}
+                                    className="flex items-center gap-1 text-[11px] text-[#6366f1] hover:text-[#4f46e5] transition-colors font-semibold cursor-pointer"
+                                >
+                                    <Pencil className="w-3 h-3" />
+                                    {savedPersonalized ? "Edit" : "Personalize"}
+                                </button>
+                            )}
                         </div>
-                        <div className="bg-gradient-to-br from-[#eef2ff] to-[#f0f9ff] rounded-xl border border-[#c7d2fe]/30 p-4">
-                            <p
-                                className="text-sm text-[#0f172b] leading-relaxed font-medium"
-                            >
-                                "{feedback.improvedResponse}"
-                            </p>
-                        </div>
+
+                        {editMode ? (
+                            <div className="space-y-2">
+                                <textarea
+                                    ref={textareaRef}
+                                    value={editedText}
+                                    onChange={(e) => setEditedText(e.target.value)}
+                                    rows={4}
+                                    className="w-full text-sm text-[#0f172b] leading-relaxed bg-[#f8faff] border border-[#c7d2fe] rounded-xl p-4 resize-none focus:outline-none focus:ring-2 focus:ring-[#6366f1]/30"
+                                />
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={handleSaveEdit}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#6366f1] text-white text-xs font-semibold hover:bg-[#4f46e5] transition-colors cursor-pointer"
+                                    >
+                                        <Check className="w-3 h-3" />
+                                        Save
+                                    </button>
+                                    <button
+                                        onClick={handleCancelEdit}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#e2e8f0] text-[#62748e] text-xs font-semibold hover:bg-[#f1f5f9] transition-colors cursor-pointer"
+                                    >
+                                        <X className="w-3 h-3" />
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="bg-gradient-to-br from-[#eef2ff] to-[#f0f9ff] rounded-xl border border-[#c7d2fe]/30 p-4">
+                                {savedPersonalized && (
+                                    <div className="flex items-center gap-1.5 mb-2">
+                                        <Check className="w-3 h-3 text-emerald-500" />
+                                        <span className="text-[10px] text-emerald-600 font-semibold uppercase tracking-wider">Personalized</span>
+                                    </div>
+                                )}
+                                <p className="text-sm text-[#0f172b] leading-relaxed font-medium">
+                                    "{savedPersonalized ?? feedback.improvedResponse}"
+                                </p>
+                            </div>
+                        )}
+
                         <p className="text-xs text-[#62748e] mt-2 leading-relaxed">
                             {feedback.explanation}
                         </p>

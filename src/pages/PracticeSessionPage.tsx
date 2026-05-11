@@ -410,6 +410,8 @@ export function PracticeSessionPage({
 
   /** User drafts from "Your Response" tab — persisted for PDF generation */
   const [userDrafts, setUserDrafts] = useState<Record<number, string>>({});
+  /** Personalized improved responses from briefing prep — persisted for PDF generation */
+  const [briefingPersonalizations, setBriefingPersonalizations] = useState<Record<number, string>>({});
 
 
 
@@ -662,6 +664,9 @@ export function PracticeSessionPage({
           question: q.question,
         })),
       } : null,
+      briefingPersonalizations: Object.keys(briefingPersonalizations).length > 0
+        ? Object.fromEntries(Object.entries(briefingPersonalizations).map(([k, v]) => [String(k), v]))
+        : undefined,
     };
 
     saveSession(payload).catch((err) => {
@@ -1297,7 +1302,7 @@ export function PracticeSessionPage({
                 onProgressChange={(activeIdx, completedSet) => {
                   setQaProgress({ activeIdx, completedSet });
                 }}
-                onStartSimulation={(userDrafts) => {
+                onStartSimulation={(userDrafts, personalizedResponses) => {
                   const briefingPayload: SessionConfig["interviewBriefing"] = {
                     anticipatedQuestions: interviewBriefing.anticipatedQuestions.map((q) => ({
                       id: q.id,
@@ -1312,6 +1317,9 @@ export function PracticeSessionPage({
                   setBriefingForSession(briefingPayload);
                   if (Object.keys(userDrafts).length > 0) {
                     setUserDrafts(userDrafts);
+                  }
+                  if (Object.keys(personalizedResponses).length > 0) {
+                    setBriefingPersonalizations(personalizedResponses);
                   }
                   setStep("interlocutor-intro");
                 }}
@@ -1331,7 +1339,7 @@ export function PracticeSessionPage({
                 interlocutor={interlocutor}
                 briefingData={scriptSectionsToBriefingData(generatedScript)}
                 narratorUrl={PREP_URLS[scenarioType ?? "interview"]}
-                onStartSimulation={(userDrafts) => {
+                onStartSimulation={(userDrafts, personalizedResponses) => {
                   // Package sales/meeting/presentation briefing data for session
                   const genericBriefing = scriptSectionsToBriefingData(generatedScript);
                   const briefingPayload: SessionConfig["interviewBriefing"] = {
@@ -1348,6 +1356,9 @@ export function PracticeSessionPage({
                   setBriefingForSession(briefingPayload);
                   if (Object.keys(userDrafts).length > 0) {
                     setUserDrafts(userDrafts);
+                  }
+                  if (Object.keys(personalizedResponses).length > 0) {
+                    setBriefingPersonalizations(personalizedResponses);
                   }
                   setStep("practice");
                 }}

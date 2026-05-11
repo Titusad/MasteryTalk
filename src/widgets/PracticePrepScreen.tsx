@@ -79,8 +79,7 @@ const SCENARIO_PREP_CONFIG: Record<string, {
 interface PracticePrepScreenProps {
     interlocutor: string;
     briefingData: InterviewBriefingData;
-    /** Now receives user drafts keyed by question id */
-    onStartSimulation: (userDrafts: Record<number, string>) => void;
+    onStartSimulation: (userDrafts: Record<number, string>, personalizedResponses: Record<number, string>) => void;
     onBack: () => void;
     scenario?: string;
     scenarioType?: ScenarioType;
@@ -103,11 +102,17 @@ export function PracticePrepScreen({
     const [allDone, setAllDone] = useState(false);
     const [actualCompleted, setActualCompleted] = useState(0);
 
-    /** Accumulated user drafts keyed by question id (Gap B) */
+    /** Accumulated user drafts keyed by question id */
     const draftsRef = useRef<Record<number, string>>({});
+    /** Accumulated personalized responses keyed by question id */
+    const personalizedRef = useRef<Record<number, string>>({});
 
     const handleDraftChange = useCallback((questionId: number, text: string) => {
         draftsRef.current[questionId] = text;
+    }, []);
+
+    const handlePersonalizeChange = useCallback((questionId: number, text: string) => {
+        personalizedRef.current[questionId] = text;
     }, []);
 
     const interlocutorInfo = INTERLOCUTOR_LABELS[interlocutor] ?? {
@@ -120,7 +125,7 @@ export function PracticePrepScreen({
     }, []);
 
     const handleStartPractice = useCallback(() => {
-        onStartSimulation(draftsRef.current);
+        onStartSimulation(draftsRef.current, personalizedRef.current);
     }, [onStartSimulation]);
 
     return (
@@ -155,6 +160,7 @@ export function PracticePrepScreen({
                         cards={briefingData.anticipatedQuestions}
                         onAllComplete={handleAllComplete}
                         onDraftChange={handleDraftChange}
+                        onPersonalizeChange={handlePersonalizeChange}
                         onProgressChange={onProgressChange}
                         scenarioType={scenarioType}
                         cardLabel={(SCENARIO_PREP_CONFIG[scenarioType ?? "interview"] ?? SCENARIO_PREP_CONFIG.interview).cardLabel}
