@@ -1021,6 +1021,7 @@ export function PracticeSessionPage({
                   scenarioType={scenarioType || "interview"}
                   levelTitle={levelDef.title}
                   introHeadline={levelDef.introHeadline}
+                  scenarioContext={levelDef.scenarioContext}
                   narratorUrl={progressionLevelId ? INTRO_URLS[progressionLevelId] : undefined}
                   onContinue={(meta) => {
                     sessionFocusRef.current = meta.sessionFocus;
@@ -1299,6 +1300,7 @@ export function PracticeSessionPage({
                 interlocutor={interlocutor}
                 briefingData={interviewBriefing}
                 narratorUrl={PREP_URLS["interview"]}
+                levelTitle={progressionPathId && progressionLevelId ? getLevelDefinition(progressionPathId, progressionLevelId)?.title : undefined}
                 onProgressChange={(activeIdx, completedSet) => {
                   setQaProgress({ activeIdx, completedSet });
                 }}
@@ -1339,6 +1341,7 @@ export function PracticeSessionPage({
                 interlocutor={interlocutor}
                 briefingData={scriptSectionsToBriefingData(generatedScript)}
                 narratorUrl={PREP_URLS[scenarioType ?? "interview"]}
+                levelTitle={progressionPathId && progressionLevelId ? getLevelDefinition(progressionPathId, progressionLevelId)?.title : undefined}
                 onStartSimulation={(userDrafts, personalizedResponses) => {
                   // Package sales/meeting/presentation briefing data for session
                   const genericBriefing = scriptSectionsToBriefingData(generatedScript);

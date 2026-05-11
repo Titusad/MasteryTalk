@@ -48,31 +48,39 @@ const SCENARIO_PREP_CONFIG: Record<string, {
     title: string;
     cardLabel: string;
     completedLabel: string;
-    subtitle: (n: number, interlocutor?: string) => string;
+    subtitle: (n: number, interlocutor?: string, levelTitle?: string) => string;
 }> = {
     interview: {
         title: "Interview Preparation",
         cardLabel: "Question",
         completedLabel: "mastered",
-        subtitle: (n, il) => `${n} questions your ${il || "interviewer"} will likely ask — master each one.`,
+        subtitle: (n, il, level) => level
+            ? `Let's review your ${level} — ${n} questions your ${il || "interviewer"} will likely ask. Master each one.`
+            : `${n} questions your ${il || "interviewer"} will likely ask — master each one.`,
     },
     sales: {
         title: "Sales Preparation",
         cardLabel: "Section",
         completedLabel: "practiced",
-        subtitle: (n) => `${n} sections — master each one step by step.`,
+        subtitle: (n, _il, level) => level
+            ? `Let's review your ${level} session — ${n} sections to master step by step.`
+            : `${n} sections — master each one step by step.`,
     },
     meeting: {
         title: "Meeting Preparation",
         cardLabel: "Key moment",
         completedLabel: "prepared",
-        subtitle: (n) => `${n} key moments where your communication will define the outcome.`,
+        subtitle: (n, _il, level) => level
+            ? `Let's review your ${level} session — ${n} key moments where your communication will define the outcome.`
+            : `${n} key moments where your communication will define the outcome.`,
     },
     presentation: {
         title: "Presentation Preparation",
         cardLabel: "Key challenge",
         completedLabel: "prepared",
-        subtitle: (n) => `${n} questions your audience will likely challenge you with.`,
+        subtitle: (n, _il, level) => level
+            ? `Let's review your ${level} session — ${n} challenges to prepare for.`
+            : `${n} questions your audience will likely challenge you with.`,
     },
 };
 
@@ -83,6 +91,8 @@ interface PracticePrepScreenProps {
     onBack: () => void;
     scenario?: string;
     scenarioType?: ScenarioType;
+    /** Level title for level-specific coach message (e.g. "Phone Screen") */
+    levelTitle?: string;
     narratorUrl?: string;
     onProgressChange?: (activeIdx: number, completedSet: Set<number>) => void;
 }
@@ -95,6 +105,7 @@ export function PracticePrepScreen({
     onBack,
     scenario,
     scenarioType,
+    levelTitle,
     narratorUrl,
     onProgressChange,
 }: PracticePrepScreenProps) {
@@ -144,6 +155,7 @@ export function PracticePrepScreen({
                     subtitle={(SCENARIO_PREP_CONFIG[scenarioType ?? "interview"] ?? SCENARIO_PREP_CONFIG.interview).subtitle(
                         briefingData.anticipatedQuestions.length,
                         interlocutorInfo.label,
+                        levelTitle,
                     )}
                 />
 

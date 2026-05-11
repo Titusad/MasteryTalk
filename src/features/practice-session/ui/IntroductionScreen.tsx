@@ -61,6 +61,8 @@ interface IntroductionScreenProps {
   scenarioType: ScenarioType;
   levelTitle: string;
   introHeadline: string;
+  /** User-facing description of what this scenario IS — rendered as a callout block */
+  scenarioContext?: string;
   onContinue: (meta: IntroMeta) => void;
   narratorUrl?: string;
   /** When true, hides focus/confidence — used for self-intro warm-up */
@@ -71,6 +73,7 @@ export function IntroductionScreen({
   scenarioType,
   levelTitle,
   introHeadline,
+  scenarioContext,
   onContinue,
   narratorUrl,
   minimal = false,
@@ -114,6 +117,20 @@ export function IntroductionScreen({
         in this practice you'll master how to{" "}
         <span style={{ color: "#6366f1" }}>{introHeadline}</span>.
       </h1>
+
+      {/* Scenario context callout */}
+      {scenarioContext && (
+        <motion.div
+          className="w-full bg-[#0f172b] rounded-2xl p-4 mb-6"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.1 }}
+        >
+          <p className="text-sm text-[#94a3b8] leading-relaxed">
+            {scenarioContext}
+          </p>
+        </motion.div>
+      )}
 
       {/* Transition text */}
       <p className="text-sm text-[#62748e] text-center mb-8 mt-2 font-medium" >
