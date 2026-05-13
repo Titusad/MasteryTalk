@@ -633,7 +633,7 @@ export default function App() {
   };
 
   const handleStartNewPractice = (scenario: string, scenarioType?: string, levelId?: string, interlocutor?: string, startAtContext?: boolean) => {
-    const validPaths = new Set<string>(["interview", "sales", "meeting", "presentation", "client", "csuite", "self-intro"]);
+    const validPaths = new Set<string>(["interview", "sales", "meeting", "presentation", "client", "csuite", "self-intro", "introductions"]);
     if (scenarioType && validPaths.has(scenarioType)) {
       // Dashboard → direct to practice-session (skip widget)
       const interlocutorDefaults: Record<string, string> = {
@@ -643,14 +643,17 @@ export default function App() {
         presentation: "senior_stakeholder",
         client: "senior_stakeholder",
         csuite: "senior_stakeholder",
+        introductions: "senior_stakeholder",
       };
       const defaultInterlocutor = interlocutor || interlocutorDefaults[scenarioType] || "senior_stakeholder";
+      // "introductions" path uses self-intro session type
+      const sessionScenarioType = scenarioType === "introductions" ? "self-intro" : scenarioType;
       const resolvedLevelId = levelId ?? (scenarioType === "self-intro" ? "si-0" : undefined);
       const resolvedPathId = resolvedLevelId ? (scenarioType as PathId) : undefined;
       setFlowState({
         scenario,
         interlocutor: defaultInterlocutor,
-        scenarioType: scenarioType as ScenarioType,
+        scenarioType: sessionScenarioType as ScenarioType,
         progressionLevelId: resolvedLevelId,
         progressionPathId: resolvedPathId,
         startAtContext,
