@@ -17,6 +17,7 @@ import {
   AudioLines,
   ArrowRight,
   Mic,
+  ArrowLeftRight,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -252,6 +253,10 @@ function ConversationFeedback({
     : [];
   const languageInsights = realFeedback?.languageInsights ?? [];
   const allInsights = [...languageInsights, ...contentInsights];
+  const imScore = typeof realFeedback?.interactionManagementScore === "number"
+    ? Math.round(realFeedback.interactionManagementScore)
+    : null;
+  const imObservations = realFeedback?.interactionObservations ?? [];
 
   return (
     <div aria-label="ConversationFeedback"
@@ -1062,6 +1067,70 @@ function ConversationFeedback({
             </div>
           )}
         </FeedbackAccordion>
+
+        {/* ═══ COLLAPSIBLE: Interaction Management ═══ */}
+        {(imScore !== null || imObservations.length > 0) && (
+          <FeedbackAccordion
+            icon={<ArrowLeftRight className="w-5 h-5 text-white" />}
+            title="Conversation Flow"
+            isOpen={activeAccordion === "interaction"}
+            onToggle={() => handleAccordionToggle("interaction")}
+            badge={
+              imScore !== null ? (
+                <span className="text-[10px] bg-[#ccfbf1] text-[#0d9488] px-2.5 py-0.5 rounded-full font-medium">
+                  {imScore}/100
+                </span>
+              ) : null
+            }
+            delay={0.22}
+          >
+            {/* Score label */}
+            {imScore !== null && (
+              <div className="flex items-center gap-3 mb-4 p-3 bg-[#f0fdfa] rounded-xl border border-[#99f6e4]">
+                <div className="w-10 h-10 rounded-full bg-[#0d9488]/10 flex items-center justify-center shrink-0">
+                  <ArrowLeftRight className="w-4 h-4 text-[#0d9488]" />
+                </div>
+                <div>
+                  <p className="text-sm text-[#0f172b] font-medium">
+                    {imScore >= 80 ? "Smooth — the conversation flowed naturally."
+                      : imScore >= 60 ? "Mostly smooth — a few rough edges to iron out."
+                      : imScore >= 40 ? "Some friction — turn-taking mechanics need attention."
+                      : "Conversation mechanics broke down — priority area."}
+                  </p>
+                  <p className="text-xs text-[#62748e] mt-0.5">Turn-taking · Self-repair · Backchanneling · Topic control</p>
+                </div>
+              </div>
+            )}
+
+            {/* Observation cards */}
+            {imObservations.length > 0 && (
+              <div className="space-y-3">
+                {imObservations.map((obs, i) => (
+                  <motion.div
+                    key={i}
+                    className="rounded-xl border border-[#e2e8f0] p-4"
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.26 + i * 0.06 }}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <span
+                        className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-[#ccfbf1] text-[#0d9488]"
+                      >
+                        {obs.dimension}
+                      </span>
+                    </div>
+                    <p className="text-sm text-[#314158] mb-1.5">{obs.observation}</p>
+                    <p className="text-xs text-[#45556c] bg-[#f8fafc] rounded-lg px-3 py-2 border border-[#e2e8f0]">
+                      <span className="text-[#0d9488] font-semibold">Tip:</span>{" "}
+                      {obs.tip}
+                    </p>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </FeedbackAccordion>
+        )}
 
         {/* ═══ PRACTICE AGAIN / PAYWALL ═══ */}
         {onPracticeAgain && repeatInfo && (

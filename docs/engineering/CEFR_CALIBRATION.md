@@ -34,6 +34,10 @@ Los 6 pilares evaluados son: **Vocabulary**, **Grammar**, **Fluency**, **Pronunc
 **Professional Tone** y **Persuasion**. Cada uno se puntúa en una escala de 0–100
 por el modelo de análisis (Gemini / GPT-4o) tras cada sesión de práctica.
 
+Existe un **7º pilar implícito — Interaction Management** — que se evalúa de forma
+narrativa (score 0–100 + observaciones por sub-dimensión) pero no entra en el radar
+de pillarScores ni en el cálculo de nivel CEFR. Ver §7 para la definición completa.
+
 ---
 
 ## Prompt de calibración
@@ -135,6 +139,42 @@ el dominio uniforme de todas las dimensiones.
 
 **Pilar de desempate:** si el usuario cumple exactamente 3 de 6, el nivel se asigna
 conservadoramente al nivel inferior hasta que cruce el umbral en un cuarto pilar.
+
+---
+
+## §7 — Pilar implícito: Interaction Management (C.2)
+
+> Añadido en Sprint C.2. No forma parte del radar de pillarScores ni del cálculo CEFR.
+> Se evalúa y muestra en la sección "Conversation Flow" del FeedbackScreen.
+
+**Definición:** Interaction Management mide la calidad de los mecanismos conversacionales —
+cómo el usuario gestiona el flujo de la conversación, independiente del contenido o la
+calidad lingüística.
+
+### Sub-dimensiones evaluadas
+
+| Dimensión | Descriptor |
+|---|---|
+| **Turn Initiation** | ¿El usuario abre turnos con propósito y confianza? ¿Usa openers proactivos? |
+| **Turn Yielding** | ¿Señala claramente cuándo termina? ¿O deja al interlocutor en incertidumbre? |
+| **Self-Repair** | ¿Se recupera fluidamente de tropiezos? ¿Usa marcadores como 'What I mean is...'? |
+| **Backchanneling** | ¿Usa señales de escucha activa ('I see', 'Right', 'Exactly') cuando corresponde? |
+| **Topic Management** | ¿Introduce, redirige o cierra temas con claridad? ¿O los temas se disuelven sin resolución? |
+
+### Umbrales orientativos (CEFR adaptado)
+
+| Nivel | Score IM |
+|---|---|
+| A2 | < 40 |
+| B1 | 40–59 |
+| B2 | 60–79 |
+| C1 | 80+ |
+
+### Implementación
+
+- **Backend:** `analyst-prompt.ts` → bloque PILLAR 5 + campos `interactionManagementScore` / `interactionObservations` en JSON output
+- **Frontend:** `entities/feedback/index.ts` → `RealFeedbackData` + `ConversationFeedback.tsx` → acordeón "Conversation Flow"
+- **Nota:** el campo no entra en `pillarScores` para no romper el radar de 6 ejes ni la lógica de clasificación CEFR existente
 
 ---
 

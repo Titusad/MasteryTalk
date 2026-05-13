@@ -102,6 +102,21 @@ When you detect any of these patterns, tag the feedback with the ${pillarTags.p3
 - Did they use frameworks or structure?
 - Could a busy executive follow their argument in 30 seconds?
 
+**PILLAR 5: Interaction Management** (evaluated separately — not in pillarScores radar)
+Assess how the user managed the CONVERSATIONAL MECHANICS — independent of content quality:
+
+- **Turn Initiation:** Did they open turns with purpose and confidence, or did they wait passively? Did they use proactive openers ('I'd like to address...', 'Let me add something here...')?
+- **Turn Yielding:** Did they signal clearly when they were done speaking? Or did they trail off leaving the counterpart uncertain? Watch for: incomplete sentences, unresolved pauses, abrupt stops.
+- **Self-Repair:** When they stumbled or misspoke, did they recover smoothly ('What I mean is...', 'Let me rephrase that...')? Or did they abandon the thought entirely or repeat the error?
+- **Backchanneling:** Did they use appropriate listening signals when the counterpart was speaking ('I see', 'Right', 'Exactly', 'That makes sense')? Missing backchannels create social awkwardness in U.S. business culture.
+- **Topic Management:** Did they introduce, redirect, or close topics cleanly? Or did topics drift without resolution? Watch for abrupt topic shifts with no bridge phrase.
+
+Score Interaction Management 0-100:
+- 80+: All mechanics are smooth — the conversation flows naturally, with clear turn signals and confident self-repair
+- 60-79: Mostly smooth — minor awkwardness in 1-2 dimensions, but the conversation stays on track
+- 40-59: Noticeable gaps — passive turn-taking, weak backchanneling, or frequent failed self-repairs
+- Below 40: Conversation mechanics break down — significant impact on professional impression
+
 === PERFORMANCE ARC ANALYSIS ===
 Don't just assess individual turns — analyze the TRAJECTORY:
 - Did the user START strong and FADE under pressure?
@@ -160,8 +175,19 @@ Respond with ONLY a JSON object. No markdown, no code fences, no commentary.
       "tip": "Actionable coaching tip in English (1-2 sentences). Include an English example phrase in single quotes if applicable."
     }
   ],
-  "professionalProficiency": 0-100${isInterview ? INTERVIEW_OUTPUT_FIELDS : ''}${isSales ? SALES_OUTPUT_FIELDS : ''}${isMeeting ? MEETING_OUTPUT_FIELDS : ''}${isPresentation ? PRESENTATION_OUTPUT_FIELDS : ''}${isCulture ? CULTURE_OUTPUT_FIELDS : ''}${isSelfIntro ? SELF_INTRO_OUTPUT_FIELDS : ''}
+  "professionalProficiency": 0-100,
+  "interactionManagementScore": 0-100,
+  "interactionObservations": [
+    {
+      "dimension": "Turn Initiation | Turn Yielding | Self-Repair | Backchanneling | Topic Management",
+      "observation": "What you noticed (1 sentence in English)",
+      "tip": "Actionable coaching tip (1-2 sentences in English). Include an example phrase in single quotes if applicable."
+    }
+  ]${isInterview ? INTERVIEW_OUTPUT_FIELDS : ''}${isSales ? SALES_OUTPUT_FIELDS : ''}${isMeeting ? MEETING_OUTPUT_FIELDS : ''}${isPresentation ? PRESENTATION_OUTPUT_FIELDS : ''}${isCulture ? CULTURE_OUTPUT_FIELDS : ''}${isSelfIntro ? SELF_INTRO_OUTPUT_FIELDS : ''}
 }
+
+=== INTERACTION MANAGEMENT GUIDE ===
+For "interactionObservations": include 2-3 entries — focus on the dimensions where you observed the most notable behavior (positive or negative). Skip dimensions where the conversation was too short to assess. Each observation should be specific to what the user actually did, not generic.
 
 === PILLAR SCORES GUIDE ===
 Rate each of the 5 communication dimensions (0-100) based on the conversation:

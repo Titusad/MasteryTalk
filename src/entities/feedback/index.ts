@@ -134,6 +134,12 @@ export interface RealFeedbackData {
     observation: string;
     tip: string;
   }> | null;
+  interactionManagementScore?: number | null;
+  interactionObservations?: Array<{
+    dimension: string;
+    observation: string;
+    tip: string;
+  }> | null;
 }
 
 
