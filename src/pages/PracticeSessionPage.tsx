@@ -1256,10 +1256,28 @@ export function PracticeSessionPage({
                   narratorUrl={progressionLevelId ? STRATEGY_URLS[progressionLevelId] : undefined}
                   narratorScript={progressionLevelId ? NARRATOR_SCRIPTS.strategy[progressionLevelId as keyof typeof NARRATOR_SCRIPTS.strategy] : undefined}
                   onReady={() => {
+                    if (isSelfIntro) {
+                      const profileFields: Record<string, string> = {};
+                      if (userProfile?.cvSummary) profileFields.cvSummary = userProfile.cvSummary;
+                      if (userProfile?.position) profileFields.manualExperience = `${userProfile.position} in ${userProfile.industry || "tech"}, ${userProfile.seniority || "mid-level"}.`.trim();
+                      setExtraContext(profileFields);
+                      fireScriptGeneration(profileFields);
+                      setStep(scriptGenStatus === "ready" ? "practice-prep" : "generating");
+                      return;
+                    }
                     const hasProfileContext = userProfile?.cvSummary || (userProfile?.position && userProfile?.industry);
                     setStep(hasProfileContext ? "context" : "experience");
                   }}
                   onSkip={() => {
+                    if (isSelfIntro) {
+                      const profileFields: Record<string, string> = {};
+                      if (userProfile?.cvSummary) profileFields.cvSummary = userProfile.cvSummary;
+                      if (userProfile?.position) profileFields.manualExperience = `${userProfile.position} in ${userProfile.industry || "tech"}, ${userProfile.seniority || "mid-level"}.`.trim();
+                      setExtraContext(profileFields);
+                      fireScriptGeneration(profileFields);
+                      setStep(scriptGenStatus === "ready" ? "practice-prep" : "generating");
+                      return;
+                    }
                     const hasProfileContext = userProfile?.cvSummary || (userProfile?.position && userProfile?.industry);
                     setStep(hasProfileContext ? "context" : "experience");
                   }}
