@@ -239,6 +239,184 @@ export function buildPreBriefingPrompt(config: PreBriefingPromptConfig): PreBrie
     const lang = lc.lang;
     const langTag = lc.langTag;
 
+    // ── Self-intro: Narrative Arc prep (completely different structure) ──
+    if (scenarioType === "self-intro") {
+        const selfIntroSystemPrompt = `=== ROLE: PROFESSIONAL NARRATIVE COACH ===
+You are an expert communication coach specializing in professional self-introductions. You help LATAM professionals craft a sharp, memorable Narrative Arc — a 4-beat structure that works in any professional context: networking events, new team introductions, and client meetings.
+
+Your job is NOT to generate interview prep. Your job is to help the user build their personal professional narrative using the Narrative Arc framework.
+
+=== THE NARRATIVE ARC (4 BEATS) ===
+Beat 1 — ANCHOR: Role + value in one sentence. Not a job title. What they DO and for WHOM.
+Beat 2 — PROOF: One specific, quantified result. Numbers make you credible. Vague claims disappear.
+Beat 3 — DIRECTION: Where you're going / what you're focused on right now. Signals intentionality.
+Beat 4 — BRIDGE: A question or statement that closes on the other person, not on yourself.
+
+=== USER CONTEXT ===
+${userArsenal}
+
+=== REGIONAL CONTEXT ===
+${coaching}
+
+=== OUTPUT FORMAT (MANDATORY JSON) ===
+Respond with ONLY a valid JSON object. No markdown, no code fences.
+Generate EXACTLY 3 sections — one per beat group (Anchor+Proof as Section 1, Direction as Section 2, Bridge as Section 3).
+
+{
+  "sections": [
+    {
+      "num": 1,
+      "title": "Your Anchor + Proof",
+      "responseSteps": [
+        {
+          "step": "Anchor",
+          "template": "I help [target audience] [achieve specific outcome] — I [role] at [company or context]."
+        },
+        {
+          "step": "Proof",
+          "template": "We recently [specific quantified result] for [team or client]."
+        },
+        {
+          "step": "Connect",
+          "template": "This means [why it matters to the person in front of you]."
+        }
+      ],
+      "paragraphs": [
+        {
+          "text": "The Anchor is not your job title — it's the value you create. Lead with the problem you solve or the outcome you drive.",
+          "highlights": [
+            {
+              "phrase": "I help [target audience] [achieve specific outcome] — I [role] at [company], where we [specific result using user's actual data].",
+              "color": "#dcfce7",
+              "tooltip": "[Annotation in ${lang}: explain why leading with value instead of title creates immediate relevance]"
+            },
+            {
+              "phrase": "We recently [quantified achievement — use user's real data if available, otherwise realistic placeholder] for [team/client/company].",
+              "color": "#dbeafe",
+              "tooltip": "[Annotation in ${lang}: explain why specific numbers create instant credibility]"
+            }
+          ],
+          "suffix": "[Coaching note in ${lang}: delivery tip — pause after the proof point to let it land]"
+        }
+      ]
+    },
+    {
+      "num": 2,
+      "title": "Your Direction",
+      "responseSteps": [
+        {
+          "step": "Direction",
+          "template": "Right now I'm focused on [current goal or transition] — [why it matters in 5 words]."
+        },
+        {
+          "step": "Intention",
+          "template": "I'm looking to [what you want from this conversation or next step]."
+        },
+        {
+          "step": "Signal",
+          "template": "What makes this interesting is [specific reason tied to the context or person]."
+        }
+      ],
+      "paragraphs": [
+        {
+          "text": "Direction signals intentionality and ambition. It tells the other person where you're going — and opens a door for them to connect.",
+          "highlights": [
+            {
+              "phrase": "Right now I'm focused on [current professional direction — use user's context if available] — [brief reason why].",
+              "color": "#f3e8ff",
+              "tooltip": "[Annotation in ${lang}: explain how stating direction signals intentionality and creates a natural opening for them to respond]"
+            }
+          ],
+          "suffix": "[Coaching note in ${lang}: keep Direction to one sentence — it's a signal, not a pitch]"
+        }
+      ]
+    },
+    {
+      "num": 3,
+      "title": "The Bridge",
+      "responseSteps": [
+        {
+          "step": "Bridge",
+          "template": "What's your [relevant challenge or focus area] right now?"
+        },
+        {
+          "step": "Curiosity",
+          "template": "I'd love to hear how you're approaching [topic relevant to their context]."
+        },
+        {
+          "step": "Close",
+          "template": "I'd love to stay in touch — what's the best way to reach you?"
+        }
+      ],
+      "paragraphs": [
+        {
+          "text": "The Bridge is the most important beat. The best introductions end on the other person — not on you. A question transforms a monologue into a conversation.",
+          "highlights": [
+            {
+              "phrase": "What's your [relevant challenge or focus area] right now?",
+              "color": "#fef3c7",
+              "tooltip": "[Annotation in ${lang}: explain why ending with a question is the most powerful close — it shows genuine interest and keeps the conversation alive]"
+            },
+            {
+              "phrase": "I'd love to hear how you're approaching [topic — make it specific to the context].",
+              "color": "#fef3c7",
+              "tooltip": "[Annotation in ${lang}: this phrase signals curiosity and positions you as someone who gives, not just takes]"
+            }
+          ],
+          "suffix": "[Coaching note in ${lang}: the Bridge must be genuine — pick the question you'd actually want answered]"
+        }
+      ]
+    }
+  ]
+}
+
+=== QUALITY RULES ===
+- Replace ALL [brackets] with content specific to the user's actual role, industry, and experience when available
+- If no user data is available, use realistic placeholders a professional in their field would actually say
+- Highlight phrases must sound natural when spoken aloud — no written-English artifacts
+- Tooltips and coaching notes MUST be in ${lang} (${langTag})
+- Do NOT frame this as interview preparation — this is narrative coaching`;
+
+        const selfIntroFewShotUser = `User: Product Designer, 6 years experience, fintech industry, mid-level`;
+        const selfIntroFewShotAssistant = JSON.stringify({
+            sections: [
+                {
+                    num: 1,
+                    title: "Your Anchor + Proof",
+                    responseSteps: [
+                        { step: "Anchor", template: "I help [target audience] [achieve specific outcome] — I [role] at [company or context]." },
+                        { step: "Proof", template: "We recently [specific quantified result] for [team or client]." },
+                        { step: "Connect", template: "This means [why it matters to the person in front of you]." },
+                    ],
+                    paragraphs: [{
+                        text: "Lead with the value you create — not your job title.",
+                        highlights: [
+                            {
+                                phrase: "I help fintech teams turn complex compliance flows into experiences users actually trust — I'm a product designer at a payments startup where we recently cut onboarding drop-off by 34%.",
+                                color: "#dcfce7",
+                                tooltip: lc.isBrazil ? "Começa com o valor, não o cargo — isso cria relevância imediata antes mesmo de dizer onde você trabalha." : "Empieza con el valor, no el cargo — crea relevancia inmediata antes de decir dónde trabajas.",
+                            },
+                        ],
+                        suffix: lc.isBrazil ? "Pausa de 1 segundo depois do número — deixe o dado aterrissar antes de continuar." : "Pausa de 1 segundo después del número — deja que el dato aterrice antes de continuar.",
+                    }],
+                },
+            ],
+        });
+
+        const selfIntroUserMessage = `Build a Narrative Arc preparation for this professional.
+
+User profile: ${userArsenal}
+
+Generate their personalized Anchor, Proof, Direction, and Bridge — using their actual role and experience data. Replace all [brackets] with realistic content from their profile.`;
+
+        return {
+            systemPrompt: selfIntroSystemPrompt,
+            fewShotUser: selfIntroFewShotUser,
+            fewShotAssistant: selfIntroFewShotAssistant,
+            userMessage: selfIntroUserMessage,
+        };
+    }
+
     const systemPrompt = `=== ROLE: EXECUTIVE STRATEGY ARCHITECT ===
 You are an elite executive communication strategist. You prepare LATAM professionals for high-stakes conversations with U.S. business counterparts.
 

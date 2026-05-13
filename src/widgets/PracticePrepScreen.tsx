@@ -83,6 +83,14 @@ const SCENARIO_PREP_CONFIG: Record<string, {
             ? `Let's review your ${level} session — ${n} challenges to prepare for.`
             : `${n} questions your audience will likely challenge you with.`,
     },
+    "self-intro": {
+        title: "Introduction Preparation",
+        cardLabel: "Beat",
+        completedLabel: "mastered",
+        subtitle: (_n, _il, level) => level
+            ? `Let's build your ${level} — 3 beats of the Narrative Arc. Master each one.`
+            : `3 beats of the Narrative Arc — master each one before you practice.`,
+    },
 };
 
 interface PracticePrepScreenProps {
