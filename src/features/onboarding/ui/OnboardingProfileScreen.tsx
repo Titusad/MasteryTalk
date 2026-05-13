@@ -26,7 +26,6 @@ import {
   ArrowRight,
   Briefcase,
   Building2,
-  Award,
   Clock,
   Check,
 } from "lucide-react";
@@ -214,7 +213,7 @@ export function OnboardingProfileScreen({
 }: OnboardingProfileScreenProps) {
   const firstName = userName?.split(" ")[0] ?? "";
   /* ── Step state ── */
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<0 | 1 | 2>(0);
   const [pendingProfile, setPendingProfile] = useState<OnboardingProfile | null>(null);
 
   /* ── Manual fields state ── */
@@ -222,10 +221,6 @@ export function OnboardingProfileScreen({
   const [customPosition, setCustomPosition] = useState("");
   const [industry, setIndustry] = useState(existingProfile?.industry ?? "");
   const [seniority, setSeniority] = useState(existingProfile?.seniority ?? "");
-  const [achievements, setAchievements] = useState(
-    existingProfile?.keyExperience ?? ""
-  );
-
   /* ── PDF Upload state ── */
   const [showCvSection, setShowCvSection] = useState(false);
   const [cvFileName, setCvFileName] = useState("");
@@ -355,10 +350,6 @@ export function OnboardingProfileScreen({
       profile.cvConsentGiven = true;
     }
 
-    if (achievements.trim()) {
-      profile.keyExperience = achievements.trim();
-    }
-
     setPendingProfile(profile);
     setStep(2);
   };
@@ -396,32 +387,56 @@ export function OnboardingProfileScreen({
             scrollbarColor: "#cbd5e1 transparent",
           }}
         >
-        {/* ── Step indicator ── */}
-        <div className="flex items-center justify-center gap-2 pt-6 pb-2 px-7">
-          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium transition-colors ${step >= 1 ? "bg-[#0f172b] text-white" : "bg-[#e2e8f0] text-[#94a3b8]"}`}>
-            {step > 1 ? <Check className="w-3 h-3" /> : "1"}
+        {/* ── Step indicator (hidden on welcome) ── */}
+        {step > 0 && (
+          <div className="flex items-center justify-center gap-2 pt-6 pb-2 px-7">
+            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium transition-colors ${step >= 1 ? "bg-[#0f172b] text-white" : "bg-[#e2e8f0] text-[#94a3b8]"}`}>
+              {step > 1 ? <Check className="w-3 h-3" /> : "1"}
+            </div>
+            <div className={`w-10 h-px transition-colors ${step === 2 ? "bg-[#0f172b]" : "bg-[#e2e8f0]"}`} />
+            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium transition-colors ${step === 2 ? "bg-[#0f172b] text-white" : "bg-[#e2e8f0] text-[#94a3b8]"}`}>
+              2
+            </div>
           </div>
-          <div className={`w-10 h-px transition-colors ${step === 2 ? "bg-[#0f172b]" : "bg-[#e2e8f0]"}`} />
-          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium transition-colors ${step === 2 ? "bg-[#0f172b] text-white" : "bg-[#e2e8f0] text-[#94a3b8]"}`}>
-            2
+        )}
+
+        {/* ── Step 0: Welcome ── */}
+        {step === 0 && (
+          <div className="px-7 pt-10 pb-10 flex flex-col items-center text-center">
+            <div className="w-12 h-12 rounded-2xl bg-[#0f172b] flex items-center justify-center mx-auto mb-6">
+              <Briefcase className="w-6 h-6 text-white" />
+            </div>
+            <h1 className="text-xl md:text-2xl font-700 text-[#0f172b] mb-3" style={{ lineHeight: 1.25 }}>
+              {firstName ? `Hi, ${firstName}.` : "Welcome."}
+            </h1>
+            <p className="text-[#62748e] text-sm leading-relaxed max-w-[300px] mb-2">
+              This is your path to real professional impact in English — and we're glad you're here.
+            </p>
+            <p className="text-[#62748e] text-sm leading-relaxed max-w-[300px] mb-8">
+              To give you the most personalized coaching, I need two quick things about your background.
+            </p>
+            <button
+              onClick={() => setStep(1)}
+              className="w-full max-w-[280px] bg-[#0f172b] text-white text-sm font-medium py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-[#1e293b] transition-colors"
+            >
+              Ready? Let's do this
+              <ArrowRight className="w-4 h-4" />
+            </button>
           </div>
-        </div>
+        )}
 
         {step === 1 && (
         <div className="px-7 pt-6 pb-8">
           {/* ── Header ── */}
           <div className="text-center mb-7">
-            <div className="w-12 h-12 rounded-2xl bg-[#0f172b] flex items-center justify-center mx-auto mb-4">
-              <Briefcase className="w-6 h-6 text-white" />
-            </div>
             <h1
               className="text-xl md:text-2xl text-[#0f172b] mb-1.5"
               style={{ lineHeight: 1.2 }}
             >
-            Nice to meet you {firstName ? `, ${firstName}` : ""}! 
+              Your professional profile
             </h1>
             <p className="text-[#62748e] text-sm mx-auto">
-              To personalize your experience, please complete your professional profile.
+              This helps us tailor every session to your real context.
             </p>
           </div>
 
@@ -471,23 +486,6 @@ export function OnboardingProfileScreen({
               label="Experience Level"
             />
 
-            {/* Key Achievements (optional) */}
-            <div>
-              <label className="flex items-center gap-1.5 text-xs text-[#45556c] mb-1.5">
-                <Award className="w-3 h-3" />
-                <span className="font-medium">
-                  Key Achievements{" "}
-                  <span className="text-[#94a3b8]">(optional)</span>
-                </span>
-              </label>
-              <textarea
-                value={achievements}
-                onChange={(e) => setAchievements(e.target.value)}
-                placeholder="e.g. Led a team of 12, launched 3 products with $2M+ ARR..."
-                className="w-full h-[80px] bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-3 text-sm text-[#0f172b] placeholder:text-[#94a3b8] focus:outline-none focus:border-[#0f172b] focus:bg-white transition-all resize-none"
-                style={{ lineHeight: "20px" }}
-              />
-            </div>
           </div>
 
           {/* ═══ SECTION 2: CV Upload (accordion, optional) ═══ */}

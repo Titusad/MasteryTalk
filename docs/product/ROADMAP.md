@@ -1,12 +1,12 @@
 # MasteryTalk PRO — Roadmap
 
-> **Last updated:** 2026-05-07 (Beta v14.8)
+> **Last updated:** 2026-05-13 (Beta v14.9)
 > **Spec reference:** [`PRODUCT_SPEC.md`](./PRODUCT_SPEC.md)
 > **Rule:** New items go here FIRST → spec update if needed → then code.
 
 ---
 
-## Current State (Beta v14.6 — 2026-05-04)
+## Current State (Beta v14.9 — 2026-05-13)
 
 ### ✅ What's Live
 
@@ -46,6 +46,9 @@
 - **TTS voices** — OpenAI `cedar` (interlocutor/coach) + `marin` (user lines) — recommended voices for quality
 - **Security audit** — XSS, prompt injection, dead code removal + design system compliance (commit 722a58a)
 
+- **Grammar Building Block (D.5)** — 24-structure grammar bank for Interview Mastery (6 levels × 4 structures); `GrammarContextScreen`: pattern, professional uses, AI-personalized examples (GPT-4o-mini via `POST /grammar-examples`, 5s timeout + static fallback); collapsed by default for L3+; rotation tracked in `grammarRotationIndex` on profile; skippable; skipped in Challenge Mode + War Room
+- **Path Setup Modal (D.6)** — one-time lazy context capture before first interview path session; captures targetRole (required), targetCompanyType + JD (optional); cannot be dismissed; `ContextScreen` path mode shows read-only profile preview; war room mode unchanged (manual input per session)
+- **Vocabulary + Pronunciation Module (D.4)** — new step `"vocabulary"` between lesson and generating; `VocabularyScreen` with term + definition + example + TTS audio + shadowing; skipped in Challenge Mode, War Room, self-intro, and when no vocabulary data for the level
 - **Hints tap-to-reveal** — Try Saying hints collapsed by default; reveal on tap; suppressed in Challenge arena phase and Challenge Mode (`challengeMode` prop wired from PracticeSessionPage)
 - **Scenario-aware turn limits** — `presentation` + `sales` max 10 turns; all others max 8 (min 4); enforced in `conversation.ts` + `templates.ts` via `getOutputFormatBlock(scenarioType)`
 - **Prompt caching** — OpenAI automatic caching on system prompt from turn 2 onward (~30% GPT-4o cost reduction + lower latency)
@@ -558,20 +561,53 @@
 - [ ] `PracticeSideNav` collapses other levels (accordion) to keep focus on current one
 - [ ] **Acceptance:** Side nav shows real-time step progress during session; user can jump to any completed question; dots removed from in-page header
 
-#### D.4 — Level vocabulary + pronunciation module
+#### D.4 — Level vocabulary + pronunciation module ✅
 
 > **Why:** Nearshoring professionals need to own the specific vocabulary of each level before practicing it under pressure. A vocabulary step before Q&A practice reduces cognitive load and directly targets pronunciation gaps.
 > **Placement:** New step between `lesson` (framework primer) and `generating` (Q&A generation).
 
-- [ ] Define `VocabularyBank` type: `{ term: string; definition: string; example: string; audioUrl?: string; ipa?: string }[]`
-- [ ] Add `vocabularyBank?: VocabularyBank` to `ProgressionLevel` in `progression-paths.ts`
-- [ ] Populate vocabulary banks for Interview Level 1–3 first (MVP: 5–8 terms per level)
-- [ ] Create `VocabularyScreen.tsx` — step screen: term card + definition + example sentence + "Tap to hear" TTS button + shadowing repeat input (optional)
-- [ ] Wire into `PracticeSessionPage.tsx` — new step `"vocabulary"` inserted between `lesson` and `generating`
-- [ ] Skip when: `challengeModeRef.current` OR `startAtContext` (War Room) OR `isSelfIntro` OR no vocabulary data for the level
-- [ ] Add `"vocabulary"` to `SessionProgressBar` phases
-- [ ] Generate TTS for all vocabulary terms via `POST /tts` → cache audio URLs
-- [ ] **Acceptance:** Interview Level 1 session shows vocabulary step with 5–8 terms; each has audio; user can shadow; step skippable; Challenge Mode and War Room bypass it
+- [x] Define `VocabularyBank` type: `{ term: string; definition: string; example: string; audioUrl?: string; ipa?: string }[]`
+- [x] Add `vocabularyBank?: VocabularyBank` to `ProgressionLevel` in `progression-paths.ts`
+- [x] Populate vocabulary banks for Interview Level 1–3 first (MVP: 5–8 terms per level)
+- [x] Create `VocabularyScreen.tsx` — step screen: term card + definition + example sentence + "Tap to hear" TTS button + shadowing repeat input (optional)
+- [x] Wire into `PracticeSessionPage.tsx` — new step `"vocabulary"` inserted between `lesson` and `generating`
+- [x] Skip when: `challengeModeRef.current` OR `startAtContext` (War Room) OR `isSelfIntro` OR no vocabulary data for the level
+- [x] Add `"vocabulary"` to `SessionProgressBar` phases
+- [x] Generate TTS for all vocabulary terms via `POST /tts` → cache audio URLs
+- [x] **Acceptance:** Interview Level 1 session shows vocabulary step with 5–8 terms; each has audio; user can shadow; step skippable; Challenge Mode and War Room bypass it. Commit cbc7c0d.
+
+#### D.5 — Grammar Building Block ✅
+
+> **Why:** Grammar as cognitive scaffolding for production — knowing the structure before practicing under pressure reduces cognitive load and builds confidence. Pre-task, not instruction-first. One structure per session, rotated.
+> **Placement:** New step between `lesson` (or `context` if lesson skipped) and `vocabulary`.
+> **Spec:** `PRODUCT_SPEC.md §7.13`
+
+- [x] Design grammar bank for Interview Mastery (6 levels × 4 structures = 24 total) — `src/services/prompts/grammar/interview.ts`
+- [x] `GrammarStructure` interface: id, levelId, title, pattern, professionalUses[], staticExamples[], warningNote?
+- [x] `getGrammarStructure(levelId, rotationIndex)` + `nextGrammarIndex(levelId, currentIndex)` helpers
+- [x] `GrammarContextScreen.tsx` — pattern (monospace), professional uses, AI-personalized examples, warningNote (amber); collapsed by default for L3+
+- [x] `POST /grammar-examples` backend route — GPT-4o-mini, 5s `Promise.race` timeout, static fallback on error
+- [x] Grammar route mounted in `index.ts`
+- [x] `"grammar"` step added to `Step` type + `SessionProgressBar`
+- [x] `gateWithGrammar()` in `PracticeSessionPage` — checks bank, inserts grammar step or falls through to `gateWithVocabulary`
+- [x] `grammarRotationIndex: Record<string, number>` added to `OnboardingProfile`; advances on continue and skip; persisted via `PUT /profile`
+- [x] Skip: Challenge Mode, War Room, self-intro, no bank for the path
+- [x] Always skippable — "Skip" button advances rotation and proceeds
+- [x] **Acceptance:** Interview path session shows grammar step with personalized examples; collapsed for L3+; rotation advances each session; Challenge Mode and War Room bypass it. Commits 39d7cb9.
+
+#### D.6 — Path Setup Modal + Path-Mode Context ✅
+
+> **Why:** Users were forced to re-enter their JD and target role at every session. Context should be captured once (with intent, right before the first session) and auto-injected from then on. War Room retains manual input for urgency use cases.
+> **Spec:** `PRODUCT_SPEC.md §7.14`
+
+- [x] `PathSetupModal.tsx` — triggered before first session when `targetRole` is null (interview path); cannot be dismissed; interview fields: targetRole (required text), targetCompanyType (select, optional), jobDescription (textarea, optional)
+- [x] Modal returns null for non-interview paths (pending field design for meeting/presentation/sales)
+- [x] `handlePathSetupComplete()` in `PracticeSessionPage` — merges profile updates + sets `pathSetupDone`
+- [x] `ContextScreen` path mode — read-only card preview (targetRole + JD snippet); auto-injects context on continue
+- [x] `ContextScreen` war room mode — original manual input form unchanged
+- [x] `OnboardingProfile` extended with path-specific context fields (interview + meeting + presentation + sales — see §4.1)
+- [x] New fields whitelisted in `PUT /profile`: `targetRole`, `targetCompanyType`, `jobDescription`, `grammarRotationIndex` + pending path fields
+- [x] **Acceptance:** First interview path session → PathSetupModal → fill targetRole → ContextScreen shows read-only preview → Continue auto-injects context. War Room → original form. Commit 39d7cb9.
 
 ---
 
@@ -830,4 +866,5 @@
 | 2026-05-04 | **Retention sprint (Beta v14.5):** SinceYouStartedCard (pillar delta first→latest), ScenarioDeltaCard (per-scenario comparison in FeedbackScreen), LevelMilestoneModal (confetti + score on level completion ≥75), ChooseNextPathModal path completion celebration + LinkedIn share. fetchSessions TTL cache (30s). PILLAR_COLORS consolidated. PATH_LABELS centralized. Security review: 0 vulnerabilities. 119/119 tests passing. COMMERCIAL_PITCH.md: full commercial document + EF EPI 2026 data + updated market numbers + arbitraje salarial. Commit 9cff182. |
 | 2026-05-04 | **Pre-session lesson step (Beta v14.6 — §7.9):** `"lesson"` step live between context and strategy. `getPreSessionLesson()` (level-specific → pillar fallback). `PreSessionLessonScreen` (badge, keyConcept, power phrase, recall gate, locked CTA). `gateWithLesson()` helper in PracticeSessionPage. `last_pre_session_lesson_id` persisted. Skip: Challenge Mode, War Room, self-intro. Script generation fires before lesson for zero added latency. Backend whitelist updated. Commit e777d2c. Current state → Beta v14.6. |
 | 2026-05-07 | **Practice Flow Evolution + Coach Experience (Beta v14.8 — planned):** Added Sprint D (D.1 multi-path briefing support, D.2 revised flow Introduction-first, D.3 side nav as course navigation, D.4 vocabulary + pronunciation module) and Sprint E (E.1 narration subtitle bubble, E.2 flipbook animation ✅ local). D.1 is prerequisite for all others. Priority: D.1 → D.2 → D.3 → E.1 → D.4. |
+| 2026-05-13 | **Grammar + Path Context sprint (Beta v14.9):** D.4 vocabulary module live (VocabularyScreen, gateWithVocabulary, vocabularyBank on ProgressionLevel, TTS audio). D.5 grammar building block live (24-structure Interview Mastery bank, GrammarContextScreen with AI-personalized examples via POST /grammar-examples, gateWithGrammar, grammarRotationIndex on profile). D.6 path-mode lazy context live (PathSetupModal one-time capture for interview, ContextScreen path mode read-only preview, war room mode unchanged). PRODUCT_SPEC v3.7. Commits: cbc7c0d (D.4) · 39d7cb9 (D.5+D.6). |
 | 2026-05-05 | **Billing transparency + competitive positioning sprint (Beta v14.7):** (1) Pricing: FM raised $49→$59/3mo ($19.67/mo) — eliminates same-number confusion with Monthly. Backend `/pricing` endpoint updated. All docs + PRODUCT_SPEC synced. (2) Landing pricing section rewritten: connected to `GET /pricing` API (no hardcoded prices), quarterly as hero card, price anchors (coach/tutor), `roiLine` ("Se paga solo con tu primer aumento"), `cancelLine` + scarcity co-located in Founding Member card. (3) AuthModal register subtitle → "Solo Google. Sin tarjeta de crédito." PracticeWidget `microcopy` now rendered with Check icon. (4) Transactional emails: subscription confirmation subject + secondary "Manage subscription" CTA + cancel footer; renewal Branch B cancel link on its own line; PaymentSuccessHandler footer → "Cancel anytime in one click. No penalties." (5) **pronunciationNotes live in FeedbackScreen:** Gemini Flash tips were generated but never rendered. `PronunciationCategory`/`PronunciationNote`/`ImprovementArea` moved to `entities/feedback`. `generateSummary()` now maps `pronunciationNotes`. New "Pronunciation Coach" section in FeedbackScreen: word + phonetic + category badge + tip. (6) SR Coach second message: after production Twilio template, sends free-form `weakPoint` context if `problem_word` exists. (7) Session summary email: `strongerPhrase` card ("Your phrase to own") with `beforeAfter[0].professionalVersion`, formatted for LinkedIn. (8) `WhatsAppActivationCard` feedback variant: shows `strongerPhrase` excerpt from session in card title area. (9) `CLAUDE.md` v2.3: new "Análisis profundo antes de proponer soluciones" protocol. Security: 0 new vulnerabilities (pre-existing HTML non-escaping in emails documented as known gap). Tests: 119/119 passing. |

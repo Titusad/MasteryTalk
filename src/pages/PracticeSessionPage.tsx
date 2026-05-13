@@ -69,9 +69,7 @@ import type { InterlocutorKey } from "@/features/practice-session/model/narrator
 import { StrategyScreen } from "@/features/practice-session/ui/StrategyScreen";
 import { IntroductionScreen } from "@/features/practice-session/ui/IntroductionScreen";
 import { VocabularyScreen } from "@/features/practice-session/ui/VocabularyScreen";
-import { SelfIntroContextScreen } from "@/features/practice-session/ui/SelfIntroContextScreen";
 import { scriptSectionsToBriefingData } from "@/features/practice-session/ui/briefing/salesAdapter";
-import type { SelfIntroContext } from "@/entities/session";
 import { recommendPath } from "@/features/dashboard/model/path-recommendation";
 import { PathRecommendationCard } from "@/features/practice-session/ui/PathRecommendationCard";
 import { WhatsAppActivationCard } from "@/features/dashboard/ui/WhatsAppActivationCard";
@@ -136,7 +134,7 @@ import type { PersonalizedPatterns } from "@/features/practice-session/model/ses
    practice-prep → practice → analyzing → feedback → Dashboard
    ═══════════════════════════════════════════════════════════ */
 /** Steps where switching level is safe (no AI-generated data to lose) */
-const SAFE_STEPS: Step[] = ["intro", "experience", "context", "self-intro-context", "interlocutor-intro"];
+const SAFE_STEPS: Step[] = ["intro", "experience", "context", "interlocutor-intro"];
 
 export function PracticeSessionPage({
   scenario,
@@ -167,8 +165,6 @@ export function PracticeSessionPage({
     interlocutor: string;
   } | null>(null);
 
-  /* ── Self-intro warm-up: selected context (networking / team / client) ── */
-  const [selfIntroCtx, setSelfIntroCtx] = useState<SelfIntroContext | null>(null);
   const [recommendedPathOverride, setRecommendedPathOverride] = useState<ScenarioType | null>(null);
   const [deepDiveLessonOpen, setDeepDiveLessonOpen] = useState(false);
   const [deepDiveLessons, setDeepDiveLessons] = useState<MicroLesson[]>([]);
@@ -230,9 +226,9 @@ export function PracticeSessionPage({
     return seed;
   }, [userProfile]);
 
-  /* ── Effective scenario/interlocutor (overridden by self-intro context selection) ── */
-  const effectiveScenario = selfIntroCtx?.scenario || scenario;
-  const effectiveInterlocutor = selfIntroCtx?.interlocutor || interlocutor;
+  /* ── Effective scenario/interlocutor ── */
+  const effectiveScenario = scenario;
+  const effectiveInterlocutor = interlocutor;
 
   /* ── Scenario cache key for pre-session data (script, toolkit) ── */
   const sKey = useMemo(
@@ -282,7 +278,7 @@ export function PracticeSessionPage({
   });
   // Derived after realFeedback — needed by PathPurchaseModal regardless of current step
   const selfIntroPrimaryPath = isSelfIntro
-    ? recommendPath(realFeedback?.pillarScores, selfIntroCtx?.id, userProfile)?.pathId ?? undefined
+    ? recommendPath(realFeedback?.pillarScores, null, userProfile)?.pathId ?? undefined
     : undefined;
   const [feedbackStatus, setFeedbackStatus] = useState<"idle" | "loading" | "ready" | "error">(() => {
     if (initialHistoryState?.step === "feedback") return "ready";
@@ -764,18 +760,18 @@ export function PracticeSessionPage({
       ? getLevelDefinition(progressionPathId, progressionLevelId)
       : null;
     const hasVocab = !!(levelDef?.vocabularyBank?.length);
-    const showVocab = hasVocab && !challengeModeRef.current && !startAtContext && !isSelfIntro;
+    const showVocab = hasVocab && !challengeModeRef.current && !startAtContext;
     if (showVocab) {
       nextStepAfterVocabularyRef.current = nextStep;
       setStep("vocabulary");
     } else {
       setStep(nextStep);
     }
-  }, [progressionPathId, progressionLevelId, startAtContext, isSelfIntro]);
+  }, [progressionPathId, progressionLevelId, startAtContext]);
 
   /** Navigate through grammar step (if bank exists), then through vocabulary, then to finalStep */
   const gateWithGrammar = useCallback((finalStep: "generating" | "practice-prep") => {
-    if (startAtContext || isSelfIntro || !progressionLevelId) {
+    if (startAtContext || !progressionLevelId) {
       gateWithVocabulary(finalStep);
       return;
     }
@@ -1066,12 +1062,22 @@ export function PracticeSessionPage({
             {step === "intro" && (() => {
               // Self-intro warm-up: use a generic intro headline
               if (isSelfIntro) {
+                const siLevelDef = progressionPathId && progressionLevelId
+                  ? getLevelDefinition(progressionPathId, progressionLevelId)
+                  : null;
                 return (
                   <IntroductionScreen
                     scenarioType="self-intro"
-                    levelTitle="Warm-Up"
-                    introHeadline="introduce yourself with clarity and confidence in any professional setting"
-                    onContinue={() => setStep("self-intro-context")}
+                    levelTitle={siLevelDef?.title ?? "Crafting Your Professional Narrative"}
+                    introHeadline={siLevelDef?.introHeadline ?? "craft a professional narrative that lands in any context"}
+                    onContinue={() => {
+                      if (siLevelDef?.methodology) {
+                        setStep("strategy");
+                      } else {
+                        const hasProfileContext = userProfile?.cvSummary || (userProfile?.position && userProfile?.industry);
+                        setStep(hasProfileContext ? "context" : "experience");
+                      }
+                    }}
                     minimal
                   />
                 );
@@ -1105,23 +1111,6 @@ export function PracticeSessionPage({
               ) : null;
             })()}
 
-            {/* Self-intro context selector (Networking / Team / Client) */}
-            {step === "self-intro-context" && (
-              <SelfIntroContextScreen
-                onSelect={(ctx) => {
-                  setSelfIntroCtx(ctx);
-                  // Auto-merge profile data into guided fields for the AI prompt
-                  const profileFields: Record<string, string> = {};
-                  if (userProfile?.cvSummary) profileFields.cvSummary = userProfile.cvSummary;
-                  if (userProfile?.position) {
-                    profileFields.manualExperience = `${userProfile.position} in ${userProfile.industry || "tech"}, ${userProfile.seniority || "mid-level"}. ${userProfile.keyExperience || ""}`.trim();
-                  }
-                  setExtraContext(profileFields);
-                  // Go to strategy (methodology from context)
-                  setStep("strategy");
-                }}
-              />
-            )}
             {step === "experience" && (
               <ExperienceScreen
                 scenarioType={scenarioType}
@@ -1251,33 +1240,7 @@ export function PracticeSessionPage({
             {/* Pre-Session Lesson — curriculum primer between context and strategy */}
             {/* Pre-Session Brief — methodology/framework step */}
             {step === "strategy" && (() => {
-              // Self-intro: use methodology from selected context
-              if (isSelfIntro && selfIntroCtx) {
-                return (
-                  <StrategyScreen
-                    levelTitle={selfIntroCtx.label}
-                    methodology={selfIntroCtx.methodology}
-                    onReady={() => {
-                      // Fire script generation with self-intro scenario + profile data
-                      fireScriptGeneration(extraContext);
-                      if (scriptGenStatus === "ready") {
-                        setStep("practice-prep");
-                      } else {
-                        setStep("generating");
-                      }
-                    }}
-                    onSkip={() => {
-                      fireScriptGeneration(extraContext);
-                      if (scriptGenStatus === "ready") {
-                        setStep("practice-prep");
-                      } else {
-                        setStep("generating");
-                      }
-                    }}
-                  />
-                );
-              }
-              // Normal path: use methodology from level definition
+              // Use methodology from level definition
               if (!progressionPathId || !progressionLevelId) return null;
               const levelDef = getLevelDefinition(progressionPathId, progressionLevelId);
               if (!levelDef?.methodology) return null;
@@ -1541,11 +1504,7 @@ export function PracticeSessionPage({
             {step === "feedback" && (() => {
               /* Path recommendation for self-intro warm-up */
               const recommendation = isSelfIntro
-                ? recommendPath(
-                    realFeedback?.pillarScores,
-                    selfIntroCtx?.id,
-                    userProfile,
-                  )
+                ? recommendPath(realFeedback?.pillarScores, null, userProfile)
                 : null;
 
               const recommendationSlot = recommendation ? (

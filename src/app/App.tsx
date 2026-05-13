@@ -283,7 +283,7 @@ export default function App() {
                   scenarioType: sType,
                   guidedFields: setup.guidedFields,
                   progressionPathId: sType as PathId,
-                  progressionLevelId: setup.progressionLevelId || (sType === "interview" ? "int-1" : "sal-1"),
+                  progressionLevelId: setup.progressionLevelId || (sType === "self-intro" ? "si-0" : sType === "interview" ? "int-1" : "sal-1"),
                 });
 
                 const savedLang = localStorage.getItem("masterytalk_lang") || "es";
@@ -645,12 +645,14 @@ export default function App() {
         csuite: "senior_stakeholder",
       };
       const defaultInterlocutor = interlocutor || interlocutorDefaults[scenarioType] || "senior_stakeholder";
+      const resolvedLevelId = levelId ?? (scenarioType === "self-intro" ? "si-0" : undefined);
+      const resolvedPathId = resolvedLevelId ? (scenarioType as PathId) : undefined;
       setFlowState({
         scenario,
         interlocutor: defaultInterlocutor,
         scenarioType: scenarioType as ScenarioType,
-        progressionLevelId: levelId,
-        progressionPathId: levelId ? (scenarioType as PathId) : undefined,
+        progressionLevelId: resolvedLevelId,
+        progressionPathId: resolvedPathId,
         startAtContext,
       });
       setPage("practice-session");

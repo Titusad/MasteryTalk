@@ -86,7 +86,7 @@ export function DashboardPage({
     handleStartSession(
       "Professional self-introduction warm-up",
       "self-intro",
-      undefined,
+      "si-0",
       "senior_stakeholder"
     );
   };

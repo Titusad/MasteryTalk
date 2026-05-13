@@ -4,7 +4,7 @@
 > Any code change MUST be consistent with this spec.
 > If the spec needs to change, update THIS FILE FIRST → get approval → then code.
 >
-> Last updated: 2026-05-13 (v3.6 — C.1 Progressive Difficulty Curve + C.2 Interaction Management. §8.4 new. §changelog updated.)
+> Last updated: 2026-05-13 (v3.7 — D.4 Vocabulary step, D.5 Grammar Building Block, D.6 Path Setup Modal + path-mode context. §7.1, §4.1, §7.12, §7.13, §10.1, §10.1.1 updated.)
 
 ---
 
@@ -180,6 +180,19 @@ interface KVProfile {
     self_intro_pillar_scores: Record<string, number> | null; // pillar scores from first self-intro session
     self_intro_context: "networking" | "team" | "client" | null; // context chosen in self-intro
     last_pre_session_lesson_id: string | null; // prevents same lesson in consecutive sessions
+    // Path-specific lazy context (captured once via PathSetupModal before first session per path)
+    targetRole?: string;               // interview — role being applied for
+    targetCompanyType?: string;        // interview — type of target company
+    jobDescription?: string;           // interview — job description (optional, recommended)
+    currentCompanyName?: string;       // meeting — user's company name
+    teamSize?: string;                 // meeting — team size context
+    typicalMeetingTypes?: string[];    // meeting — recurring meeting types
+    typicalAudience?: string;          // presentation — who user typically presents to
+    presentationContext?: string;      // presentation — internal/external, product/strategy, etc.
+    productOrService?: string;         // sales — what user sells
+    targetBuyer?: string;              // sales — ICP / target buyer profile
+    // Grammar building block
+    grammarRotationIndex?: Record<string, number>; // levelId → current rotation index (sequential per level)
 }
 ```
 
@@ -347,6 +360,8 @@ type Step =
     | "experience"        // Professional background
     | "context"           // Situation-specific context (JD, presets, agenda)
     | "lesson"            // Pre-session curriculum primer (skipped in Challenge Mode, War Room, self-intro)
+    | "grammar"           // Grammar building block — pre-task scaffolding (path sessions only, skippable)
+    | "vocabulary"        // Vocabulary + pronunciation module — level-specific terms (path sessions only, skippable)
     | "strategy"          // Methodology & framework preview
     | "interlocutor-intro" // Immersive interlocutor intro (interview only)
     | "generating"        // Dynamic loader (script generation)
@@ -356,6 +371,13 @@ type Step =
     | "feedback"          // Results & performance analysis
     | "upsell";           // Subscription CTA
 ```
+
+**Full path session step chain (standard):**
+```
+experience → context → [lesson] → [grammar] → [vocabulary] → generating → practice-prep → practice → analyzing → feedback
+```
+
+Steps in `[brackets]` are conditional — see individual specs for skip rules.
 
 ### §7.1.1 FeedbackScreen — post-session cards (bottom slot)
 
@@ -593,6 +615,127 @@ Each challenge consists of two outbound messages sent in sequence:
 
 ---
 
+### §7.12 Vocabulary + Pronunciation Module (Sprint D.4)
+
+A level-specific vocabulary step shown between `lesson` and `generating`. Purpose: own the exact terminology of the level before practicing it under pressure.
+
+**Placement in flow:** `lesson` → **`vocabulary`** → `generating`
+
+**Content per level:** 5–8 terms, each with:
+- Term + definition
+- Example sentence in context
+- "Tap to hear" TTS button (OpenAI gpt-4o-mini-tts, voice `cedar`)
+- Optional IPA transcription
+- Optional shadowing repeat input
+
+**Data structure:**
+```typescript
+interface VocabularyTerm {
+    term: string;
+    definition: string;
+    example: string;
+    audioUrl?: string; // cached R2 URL after first TTS generation
+    ipa?: string;
+}
+```
+
+**Skip rules:**
+
+| Condition | Behavior |
+|-----------|----------|
+| Challenge Mode active | Skipped |
+| War Room (`startAtContext === true`) | Skipped |
+| `scenarioType === "self-intro"` | Skipped |
+| No `vocabularyBank` defined for the level | Skipped |
+
+**Implementation:** `VocabularyScreen.tsx` · `gateWithVocabulary()` in `PracticeSessionPage.tsx` · step `"vocabulary"` in `SessionProgressBar`
+
+**Always skippable** via "Skip" button.
+
+---
+
+### §7.13 Grammar Building Block (Sprint D.5)
+
+A grammar scaffolding step shown between `lesson` (or `context` when lesson is skipped) and `vocabulary`. Pre-task scaffolding — not instruction-first teaching. The user has a reference, they don't study it. Analogous to vocabulary: a tool, not a gate.
+
+**Placement in flow:** `[lesson]` → **`grammar`** → `vocabulary`
+
+**Grammar banks:** One bank per path, per level. Each level has N structures rotated sequentially (one per session).
+
+**Interview Mastery bank (pilot — 24 structures):**
+
+| Level | Structures |
+|-------|-----------|
+| int-1 | Present Perfect for Current Role · Present Perfect Continuous for Ongoing Impact · Purpose Clauses · Aspiration Framing |
+| int-2 | Simple Past for Results · Past Perfect for Sequence · Result Clauses · Quantified Impact |
+| int-3 | Third Conditional for Learning · Passive for Outcomes · Nominalization · Concession + Claim |
+| int-4 | Hedging for Estimates · Conditional Reasoning · Concessive Contrast · Thinking Out Loud |
+| int-5 | Modal Verbs for Advocacy · Indirect Data Attribution · Conditional Proposal · Concession + Pivot |
+| int-6 | Embedded Questions · Declarative Confidence · Conditional Strategic · Given + New Framing |
+
+**Other paths:** Not yet designed — Interview Mastery is the pilot. Banks will be added iteratively.
+
+**Structure data shape:**
+```typescript
+interface GrammarStructure {
+    id: string;           // e.g. "int-1-present-perfect"
+    levelId: string;      // e.g. "int-1"
+    title: string;        // e.g. "Present Perfect for Current Role"
+    pattern: string;      // e.g. "I have + [past participle] + [time/result phrase]"
+    professionalUses: string[];     // 2–3 professional use cases (static)
+    staticExamples: string[];       // 3 fallback examples (static)
+    warningNote?: string; // optional contrast/warning (static)
+}
+```
+
+**Personalized examples:** On mount, `GrammarContextScreen` calls `POST /grammar-examples` (GPT-4o-mini) to replace `staticExamples` with 3 examples tailored to the user's `position`, `industry`, `seniority`, `targetRole`, `targetCompanyType`. 5-second timeout with static fallback.
+
+**Rotation:** `grammarRotationIndex[levelId]` tracked in KV profile. Sequential — advances by 1 on every continue or skip. Wraps around when exhausted.
+
+**Default state:** Expanded for L1–L2, collapsed (toggle) for L3+.
+
+**Skip rules:**
+
+| Condition | Behavior |
+|-----------|----------|
+| Challenge Mode active | Skipped |
+| War Room (`startAtContext === true`) | Skipped |
+| `scenarioType === "self-intro"` | Skipped |
+| No grammar bank for the path | Skipped |
+
+**Always skippable** via "Skip" button. Rotation advances on both continue and skip.
+
+**Implementation:** `GrammarContextScreen.tsx` · `src/services/prompts/grammar/interview.ts` · `POST /grammar-examples` · `gateWithGrammar()` in `PracticeSessionPage.tsx`
+
+---
+
+### §7.14 Path Setup Modal — Lazy Context Capture (Sprint D.6)
+
+A one-time modal shown before the user's **first session on a given path**. Captures scenario-specific context needed to pre-populate AI briefing — so the user never fills in the same JD or role twice.
+
+**Trigger:** First path session when `userProfile.targetRole` is null (interview) or equivalent path-specific field. NOT shown in War Room. NOT shown for self-intro.
+
+**Behavior:**
+- Cannot be dismissed — user must complete to start the session
+- Saves via `onProfileUpdate` → `PUT /profile`
+- Once completed, never shown again for that path (field is set)
+
+**Interview fields:**
+
+| Field | Type | Required |
+|-------|------|---------|
+| Role you're applying for | text input | ✅ Required |
+| Type of company targeting | select (9 options) | Optional |
+| Job Description | textarea | Optional (recommended) |
+
+**Other paths (pending):** Meeting, Presentation, Sales will have path-specific fields using the profile fields defined in §4.1.
+
+**Context screen after setup:** `ContextScreen` in **path mode** shows a read-only preview card of the captured context (targetRole + JD snippet). User does not need to re-enter anything. On "Continue", context is auto-injected into the session prompt. **War Room** keeps the original manual textarea input — user can load a different JD or modify context per-session.
+
+**Implementation:** `PathSetupModal.tsx` · `ContextScreen.tsx` (path vs war-room branching)
+
+---
+
 ### §7.8 Turn Limits (Session Length)
 
 Sessions are bounded to prevent cognitive fatigue and control API costs. Limits are scenario-aware:
@@ -755,6 +898,7 @@ Legal basis: `terms_accepted_at` (ToS acceptance at signup). Loops adds unsubscr
 | GET    | `/progression`              | ✅ JWT          | User progression state (auto-unlocks if subscribed)   |
 | POST   | `/marketing/track`          | ✅ JWT          | Proxy evento de negocio a Loops (planned — 3.1.3)     |
 | POST   | `/marketing/contact/update` | ✅ JWT          | Enriquecer propiedades de contacto en Loops (planned) |
+| POST   | `/grammar-examples`         | ✅ JWT          | Generate 3 AI-personalized grammar examples (GPT-4o-mini, 5s timeout, static fallback) |
 | GET    | `/admin/users`              | ✅ Admin        | List all users                                        |
 | GET    | `/admin/kpis`               | ✅ Admin        | Platform KPIs                                         |
 | GET    | `/admin/api-usage`          | ✅ Admin        | API cost tracking                                     |
@@ -772,7 +916,12 @@ wa_preferred_hour, wa_timezone,
 wa_dismissed_at_session_count, wa_card_permanently_dismissed,
 profession, audit_booked_at,
 war_room_monthly_count, war_room_month,
-self_intro_context, last_pre_session_lesson_id
+self_intro_context, last_pre_session_lesson_id,
+targetRole, targetCompanyType, jobDescription,
+currentCompanyName, teamSize, typicalMeetingTypes,
+typicalAudience, presentationContext,
+productOrService, targetBuyer,
+grammarRotationIndex
 ```
 
 > `primary_path`, `self_intro_completed`, `self_intro_pillar_scores` are **server-only** — written by Edge Functions (webhook on subscribe, Gemini feedback handler). Never in the frontend whitelist.
@@ -914,3 +1063,4 @@ A user sees the `MasteryAuditCard` in FeedbackScreen when ALL of:
 | v3.4    | 2026-05-04 | §7.11: new — WhatsApp SR Coach full spec: daily message structure (text + TTS audio reference), OpenAI gpt-4o-mini-tts voice cedar cached in R2, Azure Speech scoring, feedback format, mastery tracking, English-only policy. |
 | v3.5    | 2026-05-06 | §3.1: Founding Member price raised $49→$59/3mo ($19.67/mo effective; eliminates same-number confusion with Monthly $49/mo); gross margin updated 77%→81%. §3.5: pricing rationale updated. §3 prices canonical. pronunciationNotes now rendered in FeedbackScreen (PronunciationCategory/PronunciationNote/ImprovementArea moved to entities/feedback). SR Coach sends weakPoint follow-up after template. Session summary email includes strongerPhrase from beforeAfter[0]. |
 | v3.6    | 2026-05-13 | §8.4 new — C.1 Progressive Difficulty Curve: 6 tiers (Foundation → Mastery) injected as Block 4.8 in GPT-4o system prompt; modulates assertiveness, topic specificity, stakes framing, and formality per level. Implementation: `DIFFICULTY_TIERS` in progression-paths.ts, `buildDifficultyBlock()` in assembler.ts, `levelNumber` added to SessionConfig + AssemblyConfig. C.2 Interaction Management: `interactionManagementScore` + `interactionObservations` added to Gemini analyst output + FeedbackScreen "Conversation Flow" accordion; documented in CEFR_CALIBRATION §7. |
+| v3.7    | 2026-05-13 | §7.1: `"grammar"` + `"vocabulary"` steps added to Step type; full path session step chain documented. §4.1: path-specific lazy context fields added to KV profile (targetRole/targetCompanyType/jobDescription for interview; meeting/presentation/sales fields pending); `grammarRotationIndex: Record<string,number>` added. §7.12 new — Vocabulary + Pronunciation Module (D.4): VocabularyTerm shape, skip rules, TTS caching. §7.13 new — Grammar Building Block (D.5): 24-structure Interview Mastery bank (6 levels × 4), GrammarStructure interface, AI-personalized examples via GPT-4o-mini (5s timeout + static fallback), rotation tracking, collapsed L3+ default. §7.14 new — Path Setup Modal (D.6): lazy one-time context capture before first path session, cannot be dismissed, interview fields (targetRole required, targetCompanyType+JD optional), ContextScreen path mode (read-only preview) vs war-room mode (manual input). §10.1: `POST /grammar-examples` added. §10.1.1: whitelist updated (targetRole, targetCompanyType, jobDescription, currentCompanyName, teamSize, typicalMeetingTypes, typicalAudience, presentationContext, productOrService, targetBuyer, grammarRotationIndex). |

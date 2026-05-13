@@ -1796,28 +1796,83 @@ const CULTURE_LEVELS: ProgressionLevel[] = [
 
 /* ── Exported Paths ── */
 
-/* ── Self-Introduction levels — one per context, always unlocked ── */
-const SELF_INTRO_LEVELS: ProgressionLevel[] = SELF_INTRO_CONTEXTS.map((ctx, i) => ({
-  id: `si-${i + 1}`,
-  level: i + 1,
-  title: ctx.label,
-  scenario: ctx.scenario,
-  interlocutorBehavior: ctx.interlocutorBehavior,
-  interlocutor: ctx.interlocutor,
+/* ── Self-Introduction — universal warm-up level ── */
+const SI_UNIVERSAL_LEVEL: ProgressionLevel = {
+  id: "si-0",
+  level: 0,
+  title: "Crafting Your Professional Narrative",
+  scenario: "Professional self-introduction in a universal context. The user must deliver a clear, structured narrative about their professional background that works in any setting — networking events, team introductions, or client meetings. Focus on the Narrative Arc: Anchor → Proof → Direction → Bridge.",
+  interlocutorBehavior: "A professional peer meeting the user for the first time. Friendly and open, but evaluating quickly whether the conversation is worth continuing. Responds well to specificity and genuine curiosity. Asks natural follow-up questions when the introduction sparks interest. Politely disengages from vague or generic answers.",
+  interlocutor: "senior_stakeholder",
   unlockRequirement: "Always open",
-  introHeadline: ctx.introHeadline,
-  introValue: ctx.description,
-  measurableObjective: `Deliver a confident self-introduction for a ${ctx.label.toLowerCase()} in under 90 seconds.`,
-  anchorPhrases: ctx.methodology.anchorPhrases,
+  introHeadline: "craft a professional narrative that lands in any context — networking, team, or client",
+  introValue: "Your professional introduction is the most-used communication tool in your career. This session teaches you to deliver it with clarity, specificity, and confidence — in any context.",
+  measurableObjective: "Deliver a structured professional narrative using the Narrative Arc in under 90 seconds, with a clear Anchor, one quantified Proof point, a Direction, and a Bridge question.",
+  anchorPhrases: [
+    "I help [audience] [achieve outcome] — I [role] at [company].",
+    "We recently [specific result] for [team/client].",
+    "Right now I'm focused on [direction].",
+    "What's your [relevant challenge] right now?",
+  ],
   methodology: {
-    name: ctx.methodology.name,
-    tagline: ctx.methodology.tagline,
-    explanation: ctx.methodology.explanation,
-    pattern: ctx.methodology.pattern,
-    anchorPhrases: ctx.methodology.anchorPhrases,
-    coachTip: ctx.methodology.coachTip,
+    name: "The Narrative Arc",
+    tagline: "Four beats. Any room. One lasting impression.",
+    explanation: `Most professionals describe their career as a list of facts. Recruiters nod. Clients forget. Teammates don't connect.\n\nThe Narrative Arc turns your background into a story people remember — and repeat.\n\n**Beat 1 — Anchor.** State your role and area of expertise in one sentence. This is the "what I do" — not your title, but the value you create. Keep it under 15 words.\n\n**Beat 2 — Proof.** Back it up with one specific, quantified result. Numbers make you credible. A vague claim ("I have lots of experience") disappears; a concrete one ("we cut onboarding from 3 weeks to 5 days") sticks.\n\n**Beat 3 — Direction.** Tell them where you're going — what you're focused on now, or what you're looking for. This signals intentionality and ambition. It also opens a natural door for the other person to connect.\n\n**Beat 4 — Bridge.** Close with a question directed at them. This transforms a monologue into a conversation. The best introductions end on the other person, not on you.`,
+    pattern: {
+      bad: {
+        label: "The Resume Dump",
+        script: "Hi, I'm Sofia. I'm a Data Analyst at Bancolombia. I've been there for 3 years. Before that I worked at a startup. I have a degree in Statistics from Los Andes. I manage dashboards and reports for the retail division.",
+      },
+      good: {
+        label: "The Narrative Arc",
+        script: "I help financial teams stop guessing and start deciding — I lead data analytics at Bancolombia, where we recently cut reporting cycles from 2 weeks to 2 days for the retail division. Right now I'm focused on moving into data strategy at a more product-driven company. What does your data setup look like today?",
+      },
+    },
+    anchorPhrases: [
+      "I help [audience] [achieve outcome] — I [role] at [company].",
+      "We recently [specific result] for [team/client].",
+      "Right now I'm focused on [direction].",
+      "What's your [relevant challenge] right now?",
+    ],
+    coachTip: "Your narrative isn't your biography — it's the shortest path from 'who are you?' to 'I need to talk to this person.' One proof point beats ten job titles.",
   },
-}));
+  vocabularyBank: [
+    { term: "narrative",      ipa: "/ˈnær.ə.tɪv/",       definition: "a structured account of connected events or ideas",              example: "Her career narrative made the transition feel intentional." },
+    { term: "expertise",      ipa: "/ˌek.spɜːˈtiːz/",    definition: "deep skill or knowledge in a specific area",                    example: "He brings 10 years of expertise in supply chain optimization." },
+    { term: "specialize",     ipa: "/ˈspeʃ.ə.laɪz/",     definition: "to focus on a particular area of work",                        example: "I specialize in data-driven product decisions." },
+    { term: "outcome",        ipa: "/ˈaʊt.kʌm/",          definition: "the result produced by an action or process",                   example: "The outcome of the project exceeded our initial targets." },
+    { term: "background",     ipa: "/ˈbæk.ɡraʊnd/",      definition: "professional history and accumulated experience",               example: "Her background in fintech made her an ideal fit." },
+    { term: "transition",     ipa: "/trænˈzɪʃ.ən/",      definition: "a deliberate move from one role or phase to another",           example: "He made a successful transition from engineering to product." },
+    { term: "focused on",     ipa: "/ˈfoʊkəst ɒn/",      definition: "currently directing effort toward a specific goal",             example: "Right now I'm focused on scaling the LATAM team." },
+    { term: "contribute",     ipa: "/kənˈtrɪb.juːt/",    definition: "to add value or effort toward a shared goal",                   example: "I want to contribute to a team working on real user problems." },
+  ],
+};
+
+/* ── Self-Introduction levels — universal warm-up + one per context ── */
+const SELF_INTRO_LEVELS: ProgressionLevel[] = [
+  SI_UNIVERSAL_LEVEL,
+  ...SELF_INTRO_CONTEXTS.map((ctx, i) => ({
+    id: `si-${i + 1}`,
+    level: i + 1,
+    title: ctx.label,
+    scenario: ctx.scenario,
+    interlocutorBehavior: ctx.interlocutorBehavior,
+    interlocutor: ctx.interlocutor,
+    unlockRequirement: "Always open",
+    introHeadline: ctx.introHeadline,
+    introValue: ctx.description,
+    measurableObjective: `Deliver a confident self-introduction for a ${ctx.label.toLowerCase()} in under 90 seconds.`,
+    anchorPhrases: ctx.methodology.anchorPhrases,
+    methodology: {
+      name: ctx.methodology.name,
+      tagline: ctx.methodology.tagline,
+      explanation: ctx.methodology.explanation,
+      pattern: ctx.methodology.pattern,
+      anchorPhrases: ctx.methodology.anchorPhrases,
+      coachTip: ctx.methodology.coachTip,
+    },
+  })),
+];
 
 export const PROGRESSION_PATHS: ProgressionPath[] = [
   {
