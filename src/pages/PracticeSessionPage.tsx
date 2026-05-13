@@ -1070,6 +1070,12 @@ export function PracticeSessionPage({
                     scenarioType="self-intro"
                     levelTitle={siLevelDef?.title ?? "Crafting Your Professional Narrative"}
                     introHeadline={siLevelDef?.introHeadline ?? "craft a professional narrative that lands in any context"}
+                    practiceObjectives={[
+                      "Understand the 4-beat Narrative Arc and why it outperforms a resume summary",
+                      "Identify your strongest proof point and how to deliver it with confidence",
+                      "Practice your introduction in a live AI simulation with real-time feedback",
+                      "Walk away with a personal narrative you can use in any professional context",
+                    ]}
                     onContinue={() => {
                       if (siLevelDef?.methodology) {
                         setStep("strategy");

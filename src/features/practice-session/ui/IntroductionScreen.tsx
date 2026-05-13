@@ -69,6 +69,8 @@ interface IntroductionScreenProps {
   narratorScript?: string;
   /** When true, hides focus/confidence — used for self-intro warm-up */
   minimal?: boolean;
+  /** When provided, replaces the 3-step preview with a Practice Objectives list */
+  practiceObjectives?: string[];
 }
 
 export function IntroductionScreen({
@@ -80,6 +82,7 @@ export function IntroductionScreen({
   narratorUrl,
   narratorScript,
   minimal = false,
+  practiceObjectives,
 }: IntroductionScreenProps) {
   const { isScriptVisible, dismissCaption } = useNarration(narratorUrl || null, narratorScript);
   const [firstName, setFirstName] = useState("there");
@@ -135,37 +138,62 @@ export function IntroductionScreen({
         </motion.div>
       )}
 
-      {/* Transition text */}
-      <p className="text-sm text-[#62748e] text-center mb-8 mt-2 font-medium" >
-        To get there, we'll go through 3 steps:
-      </p>
-
-      {/* Steps */}
-      <div className="w-full space-y-3 mb-8">
-        {STEPS.map((step, i) => (
-          <motion.div
-            key={step.num}
-            className="flex items-start gap-4 p-4 rounded-xl border border-[#e2e8f0] bg-white"
-            initial={{ opacity: 0, x: -16 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.15 + i * 0.1, duration: 0.3 }}
-          >
-            {/* Number circle */}
-            <div
-              className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-sm font-bold"
-              style={{ background: step.bg, color: step.color }}
-            >
-              {step.num}
-            </div>
-
-            {/* Text */}
-            <div className="min-w-0">
-              <h3 className="text-sm font-bold text-[#0f172b] mb-0.5">{step.title}</h3>
-              <p className="text-xs text-[#62748e] leading-relaxed">{step.description}</p>
-            </div>
-          </motion.div>
-        ))}
-      </div>
+      {practiceObjectives ? (
+        /* Practice Objectives */
+        <motion.div
+          className="w-full mb-8 mt-2"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.1 }}
+        >
+          <p className="text-xs font-medium text-[#94a3b8] uppercase tracking-widest mb-3 text-center">
+            Practice Objectives
+          </p>
+          <div className="w-full bg-white rounded-2xl border border-[#e2e8f0] p-5 space-y-3">
+            {practiceObjectives.map((obj, i) => (
+              <motion.div
+                key={i}
+                className="flex items-start gap-3"
+                initial={{ opacity: 0, x: -12 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.15 + i * 0.08, duration: 0.3 }}
+              >
+                <div className="w-1.5 h-1.5 rounded-full bg-[#6366f1] mt-1.5 shrink-0" />
+                <p className="text-sm text-[#0f172b] leading-relaxed">{obj}</p>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      ) : (
+        /* Session steps (default) */
+        <>
+          <p className="text-sm text-[#62748e] text-center mb-8 mt-2 font-medium">
+            To get there, we'll go through 3 steps:
+          </p>
+          <div className="w-full space-y-3 mb-8">
+            {STEPS.map((step, i) => (
+              <motion.div
+                key={step.num}
+                className="flex items-start gap-4 p-4 rounded-xl border border-[#e2e8f0] bg-white"
+                initial={{ opacity: 0, x: -16 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.15 + i * 0.1, duration: 0.3 }}
+              >
+                <div
+                  className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-sm font-bold"
+                  style={{ background: step.bg, color: step.color }}
+                >
+                  {step.num}
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-sm font-bold text-[#0f172b] mb-0.5">{step.title}</h3>
+                  <p className="text-xs text-[#62748e] leading-relaxed">{step.description}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </>
+      )}
 
       {/* Time estimate */}
       <div className="flex items-center gap-1.5 text-xs text-[#94a3b8] mb-6 font-medium" >
