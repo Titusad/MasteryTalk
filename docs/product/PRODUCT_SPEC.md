@@ -4,7 +4,7 @@
 > Any code change MUST be consistent with this spec.
 > If the spec needs to change, update THIS FILE FIRST → get approval → then code.
 >
-> Last updated: 2026-05-06 (v3.5 — FM price $59/3mo, pronunciationNotes live, SR Coach weakPoint, email strongerPhrase. Full history in §changelog. removed legacy duplicate §3.3/§3.4/§3.5 sections; updated §2, §3.2, §4.3, §5.3, §5.4, §6.2, §8.3, §10.1.1 to reflect Primary Path model and new pricing; §7.10 moved to correct position after §7.9)
+> Last updated: 2026-05-13 (v3.6 — C.1 Progressive Difficulty Curve + C.2 Interaction Management. §8.4 new. §changelog updated.)
 
 ---
 
@@ -639,6 +639,28 @@ Within each unlocked path: Level 1 open on unlock, Levels 2–6 unlock sequentia
 - `GET /progression` persists state per user in KV: `progression:{userId}`
 - Skill Drill completion is the trigger for level unlock within a path
 
+### §8.4 Progressive Difficulty Curve (Sprint C.1)
+
+Each of the 6 levels within a path produces a measurably different simulation experience. The level number is injected into the AI system prompt as **Block 4.8 — Level Difficulty**, which overrides the interlocutor's default behavior on 4 dimensions:
+
+| Tier | Label | Assertiveness | Topic Specificity | Stakes | Formality |
+|------|-------|---------------|-------------------|--------|-----------|
+| 1 | Foundation | Patient, encouraging | Predictable, no curveballs | Low — supportive | Conversational professional |
+| 2 | Standard | Neutral, professional | One follow-up probe per topic | Normal workplace | Standard business register |
+| 3 | Developing | Moderately direct | Occasional curveballs | Moderate — decisions referenced | Hedge/filler noted as gaps |
+| 4 | Advanced | Direct, demanding | Probing — justify positions | High — accountability framing | Elevated register; LATAM patterns flagged |
+| 5 | Executive | High-pressure, skeptical | Expert-level, straight to substance | Very high — consequential framing | C-suite register required |
+| 6 | Mastery | Maximum — cold, no encouragement | Unpredictable, stress tests | Maximum — existential stakes | Over-qualifying is disqualifying |
+
+**Technical implementation:**
+- `progressionLevelDef.level` (1–6) → `SessionConfig.levelNumber` → `AssemblyConfig.levelNumber` → `buildDifficultyBlock(n)` → Block 4.8 in system prompt
+- Block 4.8 is injected after Block 4.7 (Briefing Questions) and before Block 5 (Extracted Context)
+- Block is optional — absent for War Room sessions and any session without a progression level
+- The difficulty block explicitly OVERRIDES default persona behavior when there is a conflict (e.g., a Tier 6 recruiter is cold and relentless, not warm and efficient)
+- `internalAnalysis` tracks difficulty adherence per turn
+
+**Acceptance:** Level 1 = patient interlocutor + predictable topics. Level 6 = maximum pressure + C-suite register + no tolerance for hedging.
+
 ### §8.3 Locked path UI
 
 Locked paths show in the ProgressionTree with:
@@ -891,3 +913,4 @@ A user sees the `MasteryAuditCard` in FeedbackScreen when ALL of:
 | v3.3    | 2026-05-04 | Full consistency audit — 10 issues fixed: removed legacy duplicate §3.3/§3.4/§3.5 (old prices $12.99/$19.99/$29.99/$47.99); §2 note updated (dynamic recommendation, not always culture); §3.2 updated (Primary Path not BC); §4.3 access rules reflect progressive model; §5.3 post-purchase copy corrected; §5.4 checkout metadata adds primary_path; §6.2 pricing section updated to new prices; §8.3 locked path copy generalized; §10.1.1 whitelist adds self_intro_context + last_pre_session_lesson_id, notes server-only fields; §7.10 moved to correct position after §7.9. |
 | v3.4    | 2026-05-04 | §7.11: new — WhatsApp SR Coach full spec: daily message structure (text + TTS audio reference), OpenAI gpt-4o-mini-tts voice cedar cached in R2, Azure Speech scoring, feedback format, mastery tracking, English-only policy. |
 | v3.5    | 2026-05-06 | §3.1: Founding Member price raised $49→$59/3mo ($19.67/mo effective; eliminates same-number confusion with Monthly $49/mo); gross margin updated 77%→81%. §3.5: pricing rationale updated. §3 prices canonical. pronunciationNotes now rendered in FeedbackScreen (PronunciationCategory/PronunciationNote/ImprovementArea moved to entities/feedback). SR Coach sends weakPoint follow-up after template. Session summary email includes strongerPhrase from beforeAfter[0]. |
+| v3.6    | 2026-05-13 | §8.4 new — C.1 Progressive Difficulty Curve: 6 tiers (Foundation → Mastery) injected as Block 4.8 in GPT-4o system prompt; modulates assertiveness, topic specificity, stakes framing, and formality per level. Implementation: `DIFFICULTY_TIERS` in progression-paths.ts, `buildDifficultyBlock()` in assembler.ts, `levelNumber` added to SessionConfig + AssemblyConfig. C.2 Interaction Management: `interactionManagementScore` + `interactionObservations` added to Gemini analyst output + FeedbackScreen "Conversation Flow" accordion; documented in CEFR_CALIBRATION §7. |

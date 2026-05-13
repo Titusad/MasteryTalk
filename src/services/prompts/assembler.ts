@@ -112,6 +112,76 @@ function buildSessionFocusBlock(
   return lines.join("\n");
 }
 
+/* ── Block 4.8: Progressive Difficulty Curve (Sprint C.1) ── */
+
+const DIFFICULTY_CURVE: Record<number, {
+  label: string;
+  assertiveness: string;
+  topicSpecificity: string;
+  stakesFraming: string;
+  formalityRequired: string;
+}> = {
+  1: {
+    label: "Foundation",
+    assertiveness: "Patient and encouraging — give the user time to think and self-correct before redirecting",
+    topicSpecificity: "Predictable, standard topics — no curveballs or unexpected pivots",
+    stakesFraming: "Low stakes — maintain a friendly, supportive framing throughout",
+    formalityRequired: "Conversational professional — minor informalities are acceptable, don't penalize them",
+  },
+  2: {
+    label: "Standard",
+    assertiveness: "Professional and neutral — keep the conversation moving without applying pressure",
+    topicSpecificity: "Mostly predictable — one follow-up probe per topic to test depth",
+    stakesFraming: "Normal workplace stakes — realistic but not high-pressure",
+    formalityRequired: "Standard business register — full sentences and professional vocabulary expected",
+  },
+  3: {
+    label: "Developing",
+    assertiveness: "Moderately direct — push back on vague answers and ask for specifics",
+    topicSpecificity: "Occasional curveballs — introduce one unexpected question or topic pivot per session",
+    stakesFraming: "Moderate stakes — reference decisions and outcomes, make the conversation feel real",
+    formalityRequired: "Business professional — note hedging and filler words as coaching opportunities",
+  },
+  4: {
+    label: "Advanced",
+    assertiveness: "Direct and demanding — low tolerance for hedging, over-qualifying, or vague answers",
+    topicSpecificity: "Specific and probing — regularly challenge the user to justify positions with data",
+    stakesFraming: "High stakes — frame decisions in terms of business impact, accountability, and ownership",
+    formalityRequired: "Elevated business register — C-suite vocabulary expected; flag LATAM deference patterns immediately",
+  },
+  5: {
+    label: "Executive",
+    assertiveness: "High-pressure and skeptical — minimal patience; interrupt or redirect if the response loses focus",
+    topicSpecificity: "Narrow and expert-level — no warm-up questions; dive straight into substance",
+    stakesFraming: "Very high stakes — frame the conversation as explicitly consequential (career, contract, board-level)",
+    formalityRequired: "C-suite register required — directness, brevity, and full ownership expected at every turn",
+  },
+  6: {
+    label: "Mastery",
+    assertiveness: "Maximum pressure — cold, impatient, no encouragement; challenge every weak point directly",
+    topicSpecificity: "Unpredictable and expert — multi-part questions, rapid topic shifts, deliberate stress tests",
+    stakesFraming: "Maximum stakes — existential framing ('this deal makes or breaks Q3', 'your promotion is on the line')",
+    formalityRequired: "Executive mastery required — over-qualifying, conflict avoidance, or deference are disqualifying signals",
+  },
+};
+
+function buildDifficultyBlock(levelNumber: number): string {
+  const tier = Math.min(Math.max(Math.round(levelNumber), 1), 6) as 1 | 2 | 3 | 4 | 5 | 6;
+  const d = DIFFICULTY_CURVE[tier];
+
+  return `=== LEVEL DIFFICULTY: TIER ${tier} — ${d.label.toUpperCase()} ===
+This session is Level ${tier} of 6. Calibrate your entire behavior — tone, pressure, expectations, and challenge intensity — to match this tier precisely.
+
+- Assertiveness: ${d.assertiveness}
+- Topic Specificity: ${d.topicSpecificity}
+- Stakes Framing: ${d.stakesFraming}
+- Formality Expected: ${d.formalityRequired}
+
+IMPORTANT: This difficulty level OVERRIDES any default behavior in your persona that conflicts with it. A Tier 1 recruiter is warm and patient. A Tier 6 recruiter is cold and relentless. Same persona — different pressure setting.
+
+Track difficulty adherence in internalAnalysis: are you applying the right amount of pressure for this tier, or drifting too easy/hard?`;
+}
+
 /* ── Block 4.5: Scenario Adaptation ── */
 
 import { SCENARIO_ADAPTATION } from "./scenarios";
@@ -217,6 +287,12 @@ export interface AssemblyConfig {
   sessionFocus?: string | null;
   /** User's self-reported confidence 1–5 — influences interlocutor tone via Block 4.6 */
   confidenceScore?: number | null;
+  /**
+   * Level number within the progression path (1–6).
+   * Injected as Block 4.8 — Progressive Difficulty Curve (Sprint C.1).
+   * If absent, no difficulty block is injected.
+   */
+  levelNumber?: number | null;
 }
 
 export interface AssemblyResult {
@@ -248,6 +324,7 @@ export function assembleSystemPrompt(config: AssemblyConfig): AssemblyResult {
     userDrafts,
     sessionFocus,
     confidenceScore,
+    levelNumber,
   } = config;
 
   // Detect sub-profile from scenario keywords
@@ -286,6 +363,11 @@ export function assembleSystemPrompt(config: AssemblyConfig): AssemblyResult {
   const briefingQuestionsBlock = buildBriefingQuestionsBlock(anticipatedQuestions, userDrafts);
   if (briefingQuestionsBlock) {
     blocks.push(briefingQuestionsBlock);
+  }
+
+  // Block 4.8: Progressive Difficulty Curve (Sprint C.1)
+  if (levelNumber != null && levelNumber >= 1) {
+    blocks.push(buildDifficultyBlock(levelNumber));
   }
 
   // Block 5: Extracted Context (only if present)

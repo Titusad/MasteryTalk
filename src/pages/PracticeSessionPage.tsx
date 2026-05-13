@@ -852,6 +852,8 @@ export function PracticeSessionPage({
         // Sprint A.1 + A.2: coaching parameters from ContextScreen
         sessionFocus: sessionFocusRef.current,
         confidenceScore: confidenceScoreRef.current,
+        // Sprint C.1: progressive difficulty curve — level number drives interlocutor pressure
+        levelNumber: progressionLevelDef?.level,
       })
       .then((prepared) => {
         if (!cancelled) {

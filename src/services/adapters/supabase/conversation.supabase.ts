@@ -153,6 +153,8 @@ export class SupabaseConversationService implements IConversationService {
                     // Sprint A.1 + A.2: session focus pillar + confidence level
                     sessionFocus: config.sessionFocus,
                     confidenceScore: config.confidenceScore,
+                    // Sprint C.1: progressive difficulty curve
+                    levelNumber: config.levelNumber,
                 });
 
             console.log(

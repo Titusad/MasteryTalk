@@ -61,6 +61,12 @@ export interface SessionConfig {
   sessionFocus?: string;
   /** User's self-reported confidence level 1–5 before the session — influences interlocutor tone */
   confidenceScore?: number;
+  /**
+   * The level number (1–6) within the progression path.
+   * Injected into the system prompt as Block 4.8 (Progressive Difficulty Curve — Sprint C.1).
+   * If absent, no difficulty block is injected (backward-compatible).
+   */
+  levelNumber?: number;
   /** Interview briefing data for coherence: anticipated questions + user drafts → injected into interviewer prompt (Gap A+B) */
   interviewBriefing?: {
     anticipatedQuestions: Array<{
