@@ -66,4 +66,35 @@ export interface OnboardingProfile {
     sessions_count?: number;
     [key: string]: unknown;
   };
+
+  // ── Path-specific context (captured via PathSetupModal, lazy per path) ──
+
+  /** Interview: role the user is actively applying for */
+  targetRole?: string;
+  /** Interview: type of company being targeted (e.g. "SaaS / Fintech startup") */
+  targetCompanyType?: string;
+  /** Interview: full job description text — replaces lastJobDescription */
+  jobDescription?: string;
+
+  /** Meeting / Presentation: user's current company name */
+  currentCompanyName?: string;
+  /** Meeting: approximate team size */
+  teamSize?: string;
+  /** Meeting: recurring meeting types (e.g. ["standup", "sprint review"]) */
+  typicalMeetingTypes?: string[];
+
+  /** Presentation: typical audience type (e.g. "leadership", "clients") */
+  typicalAudience?: string;
+  /** Presentation: typical presentation context */
+  presentationContext?: string;
+
+  /** Sales: product or service being sold */
+  productOrService?: string;
+  /** Sales: target buyer profile / ICP */
+  targetBuyer?: string;
+
+  // ── Grammar rotation tracking ──
+  /** Per-level index tracking which grammar structure to show next.
+   *  Key: level ID (e.g. "int-1"). Value: index into that level's bank array. */
+  grammarRotationIndex?: Record<string, number>;
 }

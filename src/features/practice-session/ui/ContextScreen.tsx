@@ -7,6 +7,8 @@ import {
     ChevronDown,
     ChevronUp,
     Check,
+    Briefcase,
+    FileText,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -268,7 +270,9 @@ function ContextScreen({
     };
 
     const hasCustomContent = Object.values(values).some((v) => v.trim().length > 0);
-    const canContinue = selectedPreset !== null || hasCustomContent;
+    // Path mode: context comes from profile — always ready to continue
+    const isPathMode = !warRoomMode;
+    const canContinue = isPathMode || selectedPreset !== null || hasCustomContent;
 
     const buildMeta = (): ContextScreenMeta | undefined => {
         if (challengeMode) return { challengeMode: true };
@@ -276,7 +280,16 @@ function ContextScreen({
     };
 
     const handleContinue = () => {
-        if (selectedPreset) {
+        if (isPathMode) {
+            // Inject profile context automatically — no manual input needed
+            const profileData: Record<string, string> = {};
+            if (userProfile?.jobDescription) profileData["Job Description"] = userProfile.jobDescription;
+            else if (userProfile?.lastJobDescription) profileData["Job Description"] = userProfile.lastJobDescription;
+            if (userProfile?.targetRole) profileData["Role you're applying for"] = userProfile.targetRole;
+            if (userProfile?.targetCompanyType) profileData["company"] = userProfile.targetCompanyType;
+            if (selectedPreset) profileData["situationContext"] = selectedPreset.context;
+            onContinue(profileData, buildMeta());
+        } else if (selectedPreset) {
             onContinue({ situationContext: selectedPreset.context }, buildMeta());
         } else {
             onContinue(values, buildMeta());
@@ -303,8 +316,47 @@ function ContextScreen({
                     <p className="text-[#45556c] text-sm md:text-base max-w-lg mx-auto">{subtitle}</p>
                 </motion.div>
 
-                {/* ── PRIMARY: Custom form (open by default) ── */}
-                {fields.length > 0 && (
+                {/* ── PATH MODE: Profile context preview (read-only) ── */}
+                {!warRoomMode && fields.length > 0 && (
+                    <motion.div
+                        className="mb-6"
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: 0.1 }}
+                    >
+                        <div className="bg-white rounded-2xl border border-[#e2e8f0] p-4 space-y-3">
+                            <p className="text-xs text-[#62748e] font-medium">Your session context</p>
+                            {userProfile?.targetRole && (
+                                <div className="flex items-start gap-2.5">
+                                    <Briefcase className="w-3.5 h-3.5 text-[#62748e] mt-0.5 shrink-0" />
+                                    <div>
+                                        <p className="text-xs text-[#94a3b8]">Target role</p>
+                                        <p className="text-sm text-[#0f172b]">{userProfile.targetRole}</p>
+                                    </div>
+                                </div>
+                            )}
+                            {(userProfile?.jobDescription || userProfile?.lastJobDescription) && (
+                                <div className="flex items-start gap-2.5">
+                                    <FileText className="w-3.5 h-3.5 text-[#62748e] mt-0.5 shrink-0" />
+                                    <div className="min-w-0">
+                                        <p className="text-xs text-[#94a3b8]">Job description</p>
+                                        <p className="text-sm text-[#314158] line-clamp-2">
+                                            {(userProfile.jobDescription || userProfile.lastJobDescription || "").slice(0, 120)}…
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+                            {!userProfile?.targetRole && !userProfile?.jobDescription && (
+                                <p className="text-sm text-[#94a3b8]">
+                                    Using your profile: {userProfile?.position} · {userProfile?.industry}
+                                </p>
+                            )}
+                        </div>
+                    </motion.div>
+                )}
+
+                {/* ── WAR ROOM: Custom form (open by default) ── */}
+                {warRoomMode && fields.length > 0 && (
                     <motion.div
                         className="mb-6"
                         initial={{ opacity: 0, y: 12 }}
@@ -334,10 +386,10 @@ function ContextScreen({
                                     <textarea
                                         value={currentValue}
                                         onChange={(e) => handleFieldChange(field.label, e.target.value)}
-                                        placeholder={warRoomMode && i === 0
+                                        placeholder={i === 0
                                             ? "Paste your meeting invite, agenda, or slides — I'll tailor the session."
                                             : field.placeholder}
-                                        autoFocus={warRoomMode && i === 0}
+                                        autoFocus={i === 0}
                                         className="w-full h-[110px] bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-4 text-[#0f172b] placeholder:text-[#94a3b8] focus:outline-none focus:border-[#0f172b] focus:bg-white transition-all resize-none"
                                         style={{ fontSize: "14px", lineHeight: "22px" }}
                                     />

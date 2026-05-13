@@ -25,6 +25,7 @@ import cronDailySr from "./routes/cron-daily-sr.ts";
 import whatsappVerify from "./routes/whatsapp-verify.ts";
 import waPractice from "./routes/wa-practice.ts";
 import marketing from "./routes/marketing.ts";
+import grammar from "./routes/grammar.ts";
 import { createRateLimiter } from "./kv_store.ts";
 import { getAuthUser } from "./_shared.ts";
 import { getEarlyBirdCount } from "./stripe.ts";
@@ -150,6 +151,7 @@ app.route("", cronDailySr);
 app.route("", whatsappVerify);
 app.route("", waPractice);
 app.route("", marketing);
+app.route("", grammar);
 
 // ── Start server — intercept OPTIONS before Hono ──
 Deno.serve({

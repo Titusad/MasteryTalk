@@ -78,6 +78,9 @@ import { WhatsAppActivationCard } from "@/features/dashboard/ui/WhatsAppActivati
 import { DeepDiveCard } from "@/features/practice-session/ui/DeepDiveCard";
 import { ScenarioDeltaCard } from "@/features/practice-session/ui/ScenarioDeltaCard";
 import { LevelMilestoneModal } from "@/features/practice-session/ui/LevelMilestoneModal";
+import { PathSetupModal } from "@/features/practice-session/ui/PathSetupModal";
+import { GrammarContextScreen } from "@/features/practice-session/ui/GrammarContextScreen";
+import { getGrammarStructure, nextGrammarIndex, INTERVIEW_GRAMMAR_BANK } from "@/services/prompts/grammar/interview";
 import { getRecommendedLessons } from "@/services/microLessons";
 import type { MicroLesson } from "@/services/microLessons";
 import { LessonModal } from "@/widgets/LessonModal";
@@ -171,6 +174,22 @@ export function PracticeSessionPage({
   const [deepDiveLessons, setDeepDiveLessons] = useState<MicroLesson[]>([]);
   const [deepDiveLessonIndex, setDeepDiveLessonIndex] = useState(0);
   const isSelfIntro = scenarioType === "self-intro";
+
+  /* ── Path Setup Modal — shown once before the first session of a path ── */
+  const needsPathSetup = useMemo(() => {
+    if (startAtContext) return false;          // War Room — never
+    if (isSelfIntro) return false;             // self-intro — no setup needed
+    if (!progressionPathId) return false;
+    if (progressionPathId === "interview") return !userProfile?.targetRole;
+    return false; // other paths: pending
+  }, [startAtContext, isSelfIntro, progressionPathId, userProfile?.targetRole]);
+
+  const [pathSetupDone, setPathSetupDone] = useState(!needsPathSetup);
+
+  function handlePathSetupComplete(updates: Partial<OnboardingProfile>) {
+    onProfileUpdate?.({ ...(userProfile ?? {} as OnboardingProfile), ...updates });
+    setPathSetupDone(true);
+  }
 
   /* Recover session state from browser history if navigating Back/Forward */
   const initialHistoryState = useMemo(() => {
@@ -437,6 +456,8 @@ export function PracticeSessionPage({
   const briefingAbortRef = useRef<AbortController | null>(null);
   /** Where vocabulary step should navigate on continue/skip */
   const nextStepAfterVocabularyRef = useRef<"generating" | "practice-prep">("generating");
+  /** Where grammar step should navigate on continue/skip */
+  const nextStepAfterGrammarRef = useRef<Step>("vocabulary");
 
   /* ── Script / Briefing generation: call Edge Function ── */
   const fireScriptGeneration = useCallback(async (extraData?: Record<string, string>) => {
@@ -752,6 +773,21 @@ export function PracticeSessionPage({
     }
   }, [progressionPathId, progressionLevelId, startAtContext, isSelfIntro]);
 
+  /** Navigate through grammar step (if bank exists), then through vocabulary, then to finalStep */
+  const gateWithGrammar = useCallback((finalStep: "generating" | "practice-prep") => {
+    if (startAtContext || isSelfIntro || !progressionLevelId) {
+      gateWithVocabulary(finalStep);
+      return;
+    }
+    const bank = INTERVIEW_GRAMMAR_BANK[progressionLevelId];
+    if (!bank?.length) {
+      gateWithVocabulary(finalStep);
+      return;
+    }
+    nextStepAfterGrammarRef.current = finalStep as Step;
+    setStep("grammar");
+  }, [startAtContext, isSelfIntro, progressionLevelId, gateWithVocabulary]);
+
   const gateWithLesson = useCallback((nextStep: Step) => {
     setStep(nextStep);
   }, []);
@@ -979,6 +1015,14 @@ export function PracticeSessionPage({
         </div>
       )}
 
+      {/* Path Setup Modal — shown once before first session of a path */}
+      <PathSetupModal
+        open={!pathSetupDone}
+        pathId={progressionPathId ?? ""}
+        userProfile={userProfile}
+        onComplete={handlePathSetupComplete}
+      />
+
       {/* Main layout: SideNav + Content */}
       <div className="flex-1 flex min-h-0">
         {/* SideNav */}
@@ -1172,8 +1216,8 @@ export function PracticeSessionPage({
                           });
                       }
 
-                      // Strategy already shown before context — go to vocabulary/practice-prep
-                      gateWithVocabulary("practice-prep");
+                      // Strategy already shown before context — go to grammar/vocabulary/practice-prep
+                      gateWithGrammar("practice-prep");
                       return;
                     }
                   } else {
@@ -1185,13 +1229,13 @@ export function PracticeSessionPage({
                       if (cachedToolkit) {
                         setPreparationToolkit(cachedToolkit);
                       }
-                      gateWithVocabulary("practice-prep");
+                      gateWithGrammar("practice-prep");
                       return;
                     }
                   }
-                  // Fire script generation — runs in background during vocabulary/generating
+                  // Fire script generation — runs in background during grammar/vocabulary/generating
                   fireScriptGeneration(enriched);
-                  gateWithVocabulary("generating");
+                  gateWithGrammar("generating");
                 }}
                 onBack={() => {
                   const hasProfileContext = userProfile?.cvSummary || (userProfile?.position && userProfile?.industry);
@@ -1256,6 +1300,38 @@ export function PracticeSessionPage({
                     const hasProfileContext = userProfile?.cvSummary || (userProfile?.position && userProfile?.industry);
                     setStep(hasProfileContext ? "context" : "experience");
                   }}
+                />
+              );
+            })()}
+
+            {step === "grammar" && (() => {
+              if (!progressionLevelId) { setStep(nextStepAfterGrammarRef.current); return null; }
+              const levelDef = progressionPathId && progressionLevelId
+                ? getLevelDefinition(progressionPathId, progressionLevelId)
+                : null;
+              const rotationIndex = userProfile?.grammarRotationIndex?.[progressionLevelId] ?? 0;
+              const structure = getGrammarStructure(progressionLevelId, rotationIndex);
+              if (!structure) { setStep(nextStepAfterGrammarRef.current); return null; }
+
+              function advanceAndGo() {
+                const nextIdx = nextGrammarIndex(progressionLevelId!, rotationIndex);
+                onProfileUpdate?.({
+                  ...(userProfile ?? {} as OnboardingProfile),
+                  grammarRotationIndex: {
+                    ...(userProfile?.grammarRotationIndex ?? {}),
+                    [progressionLevelId!]: nextIdx,
+                  },
+                });
+                gateWithVocabulary(nextStepAfterGrammarRef.current as "generating" | "practice-prep");
+              }
+
+              return (
+                <GrammarContextScreen
+                  structure={structure}
+                  levelNumber={levelDef?.level ?? 1}
+                  userProfile={userProfile}
+                  onContinue={advanceAndGo}
+                  onSkip={advanceAndGo}
                 />
               );
             })()}
