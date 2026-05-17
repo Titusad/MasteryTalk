@@ -441,7 +441,16 @@ export default function App() {
         const hasData = backendProfile.profile_completed ||
           backendProfile.position || backendProfile.industry ||
           backendProfile.keyExperience || backendProfile.cvSummary;
-        if (!hasData) return;
+        if (!hasData) {
+          // Clear any stale localStorage profile so it doesn't shadow the empty backend state
+          try { localStorage.removeItem("masterytalk_profile"); } catch { /* ignore */ }
+          // Show onboarding for returning users whose profile was reset
+          const hash = window.location.hash;
+          const isProtected = hash === "#dashboard" || hash === "#practice-session" ||
+            hash === "" || hash === "#" || hash === "#/";
+          if (isProtected) setShowOnboarding(true);
+          return;
+        }
         setUserProfile(prev => {
           const merged = { ...(prev ?? {}), ...backendProfile } as OnboardingProfile;
           try { localStorage.setItem("masterytalk_profile", JSON.stringify(merged)); } catch { /* ignore */ }

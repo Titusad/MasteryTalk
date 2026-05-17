@@ -131,9 +131,15 @@ function VoicePractice({
   const pendingPronPromisesRef = useRef<Promise<void>[]>([]);
   /** Actual audio duration (seconds) for calibrating typewriter speed */
   const ttsDurationRef = useRef<number>(0);
-  /** TTS queue for streaming path — sentences enqueued as they're detected */
-  const ttsQueueRef = useRef<string[]>([]);
+  /**
+   * Pre-fetch TTS queue — stores fetch Promises that start immediately when a
+   * sentence is detected during streaming. By the time the previous sentence
+   * finishes playing, the next one's audio is usually already buffered.
+   */
+  const ttsBufferQueueRef = useRef<Promise<ArrayBuffer | null>[]>([]);
   const ttsQueueRunningRef = useRef(false);
+  /** Guard: prevent playAiTts from being called twice for the same initial message */
+  const playedInitialTtsRef = useRef(false);
   /** Sentence accumulator for streaming SSE tokens */
   const sentenceBufferRef = useRef("");
   /** Accumulated full text during streaming (for final message update) */
@@ -162,7 +168,7 @@ function VoicePractice({
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ text, role: "user_line" }),
+          body: JSON.stringify({ text, role: "coach" }),
         });
 
         if (!res.ok) {
@@ -316,12 +322,14 @@ function VoicePractice({
               }
               return msgs;
             });
-            // Play TTS for the first AI message — typewriter runs in sync
+            // Play TTS for the first AI message — guarded against StrictMode double-fire
             const firstAiIdx = msgs.findIndex(
               (m) => m.role === "ai",
             );
-            if (firstAiIdx >= 0)
+            if (firstAiIdx >= 0 && !playedInitialTtsRef.current) {
+              playedInitialTtsRef.current = true;
               playAiTts(msgs[firstAiIdx].text, firstAiIdx);
+            }
           }
         }, 800);
       })
@@ -464,30 +472,79 @@ function VoicePractice({
   /* Handle recording start */
   const handleRecordingStart = useCallback(async () => {
     setVoiceError(null);
-    // Stop any TTS playing
+    // Stop any TTS playing and clear pending sentence queue
     if (ttsAudioRef.current) {
       ttsAudioRef.current.pause();
       ttsAudioRef.current = null;
       setIsTtsPlaying(false);
     }
+    ttsBufferQueueRef.current = [];
+    ttsQueueRunningRef.current = false;
     await recorder.start();
   }, [recorder]);
 
   /* ── Streaming helpers ── */
 
-  // Drain the TTS queue: play each sentence sequentially.
+  /**
+   * Fetch TTS audio for a sentence and return as ArrayBuffer.
+   * Called immediately when a sentence is detected — runs in parallel with playback.
+   */
+  const fetchSentenceTts = useCallback(async (text: string): Promise<ArrayBuffer | null> => {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch(
+        `${SUPABASE_URL}/functions/v1/make-server-08b8658d/tts`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ text, role: "coach" }),
+        }
+      );
+      if (!res.ok) return null;
+      return res.arrayBuffer();
+    } catch { return null; }
+  }, []);
+
+  /**
+   * Drain the pre-fetched TTS buffer queue.
+   * Each slot is a Promise<ArrayBuffer> that started fetching when the sentence
+   * was detected — by the time the previous sentence finishes, the next one's
+   * audio is usually already buffered, eliminating inter-sentence gaps.
+   */
   const drainTtsQueue = useCallback(async () => {
     if (ttsQueueRunningRef.current) return;
     ttsQueueRunningRef.current = true;
-    while (ttsQueueRef.current.length > 0) {
-      const sentence = ttsQueueRef.current.shift()!;
-      await playAiTts(sentence);
+    while (ttsBufferQueueRef.current.length > 0) {
+      const bufPromise = ttsBufferQueueRef.current.shift()!;
+      const buf = await bufPromise; // Likely already resolved by the time we get here
+      if (!buf) continue;
+      await new Promise<void>((resolve) => {
+        if (ttsAudioRef.current) {
+          ttsAudioRef.current.pause();
+          ttsAudioRef.current.onended = null;
+          ttsAudioRef.current.onerror = null;
+          ttsAudioRef.current = null;
+        }
+        setIsTtsPlaying(true);
+        const url = URL.createObjectURL(new Blob([buf], { type: "audio/mpeg" }));
+        const audio = new Audio(url);
+        ttsAudioRef.current = audio;
+        const done = () => {
+          setIsTtsPlaying(false);
+          URL.revokeObjectURL(url);
+          ttsAudioRef.current = null;
+          resolve();
+        };
+        audio.onended = done;
+        audio.onerror = done;
+        audio.play().catch(done);
+      });
     }
     ttsQueueRunningRef.current = false;
-  }, [playAiTts]);
+  }, []);
 
-  // Extract complete sentences from the streaming buffer.
-  // Returns extracted sentences and leaves the incomplete tail in the buffer.
+  // Extract complete sentences from the streaming buffer and immediately start
+  // pre-fetching their TTS audio (runs in parallel with current sentence playback).
   const flushSentences = useCallback((flush = false) => {
     const buf = sentenceBufferRef.current;
     const re = /[.!?](?=\s|$)/g;
@@ -499,7 +556,8 @@ function VoicePractice({
       const wordBefore = buf.slice(0, match.index).split(/\s+/).pop() ?? "";
       const isAbbrev = /^[A-Z]$|^(Mr|Dr|Ms|Mrs|Prof|Sr|Jr|vs|etc|Fig|Eq)$/i.test(wordBefore.replace(/\.$/, ""));
       if (!isAbbrev && sentence.length >= 6) {
-        ttsQueueRef.current.push(sentence);
+        // Start fetch immediately — don't wait for current sentence to finish
+        ttsBufferQueueRef.current.push(fetchSentenceTts(sentence));
         drainTtsQueue();
       }
       lastIdx = match.index + 1;
@@ -508,9 +566,12 @@ function VoicePractice({
     sentenceBufferRef.current = flush ? "" : buf.slice(lastIdx);
     if (flush && lastIdx < buf.length) {
       const tail = buf.slice(lastIdx).trim();
-      if (tail.length >= 3) { ttsQueueRef.current.push(tail); drainTtsQueue(); }
+      if (tail.length >= 3) {
+        ttsBufferQueueRef.current.push(fetchSentenceTts(tail));
+        drainTtsQueue();
+      }
     }
-  }, [drainTtsQueue]);
+  }, [drainTtsQueue, fetchSentenceTts]);
 
   /* Handle recording stop — REAL pipeline: record → Whisper → GPT-4o → TTS */
   const handleRecordingStop = useCallback(async () => {
@@ -626,7 +687,7 @@ function VoicePractice({
       // Reset streaming state
       sentenceBufferRef.current = "";
       streamingFullTextRef.current = "";
-      ttsQueueRef.current = [];
+      ttsBufferQueueRef.current = [];
       ttsQueueRunningRef.current = false;
       setTtsReady(true); // Typewriter not needed in streaming — text grows live
 
@@ -690,7 +751,7 @@ function VoicePractice({
               }
               // Wait for all queued sentences to finish playing, then unblock mic
               const waitForQueue = async () => {
-                while (ttsQueueRunningRef.current || ttsQueueRef.current.length > 0) {
+                while (ttsQueueRunningRef.current || ttsBufferQueueRef.current.length > 0) {
                   await new Promise(r => setTimeout(r, 80));
                 }
                 setIsAiTyping(false);
