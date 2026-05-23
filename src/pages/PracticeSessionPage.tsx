@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Menu, AlertTriangle } from "lucide-react";
+import { Menu } from "lucide-react";
 import { AppHeader, MiniFooter, NarrationToggle } from "@/shared/ui";
 import { AnalyzingScreen } from "@/shared/ui";
 import { PracticeSideNav } from "@/widgets/PracticeSideNav";
@@ -8,84 +8,69 @@ import type { SessionStepItem } from "@/widgets/PracticeSideNav";
 import { realConversationService } from "@/services";
 import { toServiceError } from "@/services/errors";
 import type { ServiceError } from "@/services/errors";
-import type { RemedialContent } from "@/services/types";
 
 import { getLevelDefinition } from "@/entities/progression";
 import type { PathId } from "@/entities/progression";
 import { ProgressionProvider } from "@/shared/lib/ProgressionContext";
 import { ServiceErrorBanner } from "@/shared/ui";
-import { getBeforeAfterForScenario, getStrengthsForScenario } from "@/services/scenario-data";
 import { useMediaRecorder } from "@/shared/hooks/useMediaRecorder";
 import { projectId, publicAnonKey } from "@/../utils/supabase/info";
 import { getAuthToken } from "@/services/supabase";
 import type {
   ScenarioType,
-  ScriptSection,
   UserPlan,
-  CreditPack,
-  SessionSummary,
-  TurnPronunciationData,
   SessionConfig,
 } from "@/services/types";
 import { SessionProgressBar } from "@/shared/ui";
 import { PracticePrepScreen } from "@/widgets/PracticePrepScreen";
 import type { Step } from "@/entities/session";
 import { VoicePractice } from "@/features/practice-session/ui/VoicePractice";
-import type { RealFeedbackData } from "@/entities/feedback";
-import type { RepeatInfo } from "@/features/practice-session/ui/ConversationFeedback";
-import { FeedbackScreen } from "@/features/practice-session/ui/FeedbackScreen";
 import { UpsellScreen } from "@/features/skill-drill/ui/UpsellScreen";
-import { PathPurchaseModal } from "@/widgets/PathPurchaseModal";
 import { useUsageGating } from "@/shared/hooks/useUsageGating";
 import type { PaywallReason } from "@/shared/hooks/useUsageGating";
-import { createSRPhrase, flagPhrasesForReview } from "@/shared/lib/spacedRepetition";
-import type { InterviewBriefingData, OnboardingProfile } from "@/services/types";
+import type { OnboardingProfile } from "@/services/types";
 import {
   scenarioKey,
   simpleHash,
+  interviewBriefingCache,
+  cvMatchCacheV2,
   scriptCache,
   toolkitCache,
-  cvMatchCacheV2,
-  interviewBriefingCache,
-  feedbackCache,
-  summaryCache,
-  improvedScriptCache,
-  pronDataCache,
   cleanupExpiredCache,
 } from "@/shared/lib/sessionCache";
-import { detectLanguageBackground } from "@/services/locale-detect";
-import { downloadSessionReportPdf } from "@/shared/lib/cheatSheetPdf";
-import { analyzeCvMatch, type CVMatchResult } from "@/services/cvMatchService";
+import { analyzeCvMatch } from "@/services/cvMatchService";
 
-/** Detect locale once at module level — stable across renders */
-const _detectedLocale = detectLanguageBackground();
-
-/* ── Sub-screens extracted to session/ ── */
+/* ── Sub-screens ── */
 import { ExperienceScreen } from "@/features/practice-session/ui/ExperienceScreen";
 import { ContextScreen, type ContextScreenMeta } from "@/features/practice-session/ui/ContextScreen";
 import { InterlocutorIntroScreen } from "@/features/practice-session/ui/InterlocutorIntroScreen";
-import { NARRATOR_URLS, INTRO_URLS, STRATEGY_URLS, PREP_URLS, FEEDBACK_URLS, NARRATOR_SCRIPTS } from "@/features/practice-session/model/narrator-audio";
-import { setNarrationMuted } from "@/shared/lib/useNarrationPreference";
+import { NARRATOR_URLS, INTRO_URLS, STRATEGY_URLS, PREP_URLS, NARRATOR_SCRIPTS } from "@/features/practice-session/model/narrator-audio";
 import type { InterlocutorKey } from "@/features/practice-session/model/narrator-audio";
 import { StrategyScreen } from "@/features/practice-session/ui/StrategyScreen";
 import { IntroductionScreen } from "@/features/practice-session/ui/IntroductionScreen";
 import { VocabularyScreen } from "@/features/practice-session/ui/VocabularyScreen";
 import { scriptSectionsToBriefingData } from "@/features/practice-session/ui/briefing/salesAdapter";
 import { recommendPath } from "@/features/dashboard/model/path-recommendation";
-import { PathRecommendationCard } from "@/features/practice-session/ui/PathRecommendationCard";
-import { WhatsAppActivationCard } from "@/features/dashboard/ui/WhatsAppActivationCard";
-import { DeepDiveCard } from "@/features/practice-session/ui/DeepDiveCard";
-import { ScenarioDeltaCard } from "@/features/practice-session/ui/ScenarioDeltaCard";
-import { LevelMilestoneModal } from "@/features/practice-session/ui/LevelMilestoneModal";
-import { PathSetupModal } from "@/features/practice-session/ui/PathSetupModal";
 import { GrammarContextScreen } from "@/features/practice-session/ui/GrammarContextScreen";
-import { getGrammarStructure, nextGrammarIndex, INTERVIEW_GRAMMAR_BANK } from "@/services/prompts/grammar/interview";
-import { getRecommendedLessons } from "@/services/microLessons";
+import { getGrammarStructure, nextGrammarIndex } from "@/services/prompts/grammar/interview";
 import type { MicroLesson } from "@/services/microLessons";
-import { LessonModal } from "@/widgets/LessonModal";
+import { SessionModalLayer } from "@/features/practice-session/ui/SessionModalLayer";
+import { FeedbackStep } from "@/features/practice-session/ui/FeedbackStep";
+
+/* ── Orchestration hooks ── */
+import { useScriptGeneration } from "@/features/practice-session/model/useScriptGeneration";
+import { useFeedbackGeneration } from "@/features/practice-session/model/useFeedbackGeneration";
+import { useSessionSave } from "@/features/practice-session/model/useSessionSave";
+import { useStepGates } from "@/features/practice-session/model/useStepGates";
+
+import { MAX_REPEATS } from "@/features/practice-session/model/session.constants";
+import {
+  savePronunciationData,
+  completeProgressionLevel,
+} from "@/features/practice-session/model/session-api";
 
 /* ═══════════════════════════════════════════════════════════
-   TYPES & DATA (MVP-simplified)
+   TYPES
    ═══════════════════════════════════════════════════════════ */
 
 interface PracticeSessionPageProps {
@@ -98,46 +83,17 @@ interface PracticeSessionPageProps {
   marketFocus?: string | null;
   onFinish: () => void;
   onNewPractice?: () => void;
-  /** Switch to a different level within the same path (called from SideNav) */
   onSwitchLevel?: (scenario: string, scenarioType: ScenarioType, levelId: string, interlocutor: string) => void;
   userPlan?: UserPlan;
-  /** Paths already purchased — used for Mode A/B detection in PathPurchaseModal */
   ownedPaths?: string[];
-  /** User profile for persisting key experience, role, company */
   userProfile?: OnboardingProfile | null;
   onProfileUpdate?: (profile: OnboardingProfile) => void;
-
-  /** Callback to navigate to dashboard (session header) */
   onGoToDashboard?: () => void;
-  /** Skip intro/experience steps — jump straight to context (War Room mode) */
   startAtContext?: boolean;
 }
 
-import { MAX_REPEATS, SCENARIO_LABELS_MAP } from "@/features/practice-session/model/session.constants";
-import {
-  generateInterviewBriefing,
-  generateSelfIntroBriefing,
-  generateScript,
-  generatePreparationToolkit,
-  analyzeFeedback,
-  generateSummary,
-  generateImprovedScript,
-  saveSession,
-  savePronunciationData,
-  completeProgressionLevel,
-  completeRemedial,
-  personalizePatterns,
-} from "@/features/practice-session/model/session-api";
-import type { PersonalizedPatterns } from "@/features/practice-session/model/session-api";
-
-/* ═══════════════════════════════════════════════════════════
-   MAIN ORCHESTRATOR (MVP-simplified flow)
-   experience → context → generating → strategy →
-   practice-prep → practice → analyzing → feedback → Dashboard
-   ═══════════════════════════════════════════════════════════ */
 /** Steps where switching level is safe (no AI-generated data to lose) */
 const SAFE_STEPS: Step[] = ["intro", "experience", "context", "interlocutor-intro"];
-
 /** Steps that have AI narrator audio — NarrationToggle only shows here */
 const NARRATION_STEPS: Step[] = ["intro", "context", "strategy", "generating", "practice-prep", "interlocutor-intro", "analyzing"];
 
@@ -159,30 +115,29 @@ export function PracticeSessionPage({
   startAtContext,
 }: PracticeSessionPageProps) {
 
-
-  /* ── SideNav drawer (mobile) + confirmation modal state ── */
+  /* ── UI Shell state ── */
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [pendingSwitch, setPendingSwitch] = useState<{
-    scenario: string;
-    scenarioType: ScenarioType;
-    levelId: string;
-    interlocutor: string;
+    scenario: string; scenarioType: ScenarioType; levelId: string; interlocutor: string;
   } | null>(null);
-
-  const [recommendedPathOverride, setRecommendedPathOverride] = useState<ScenarioType | null>(null);
+  const [levelMilestoneOpen, setLevelMilestoneOpen] = useState(false);
+  const [paywallOpen, setPaywallOpen] = useState(false);
+  const [paywallReason, setPaywallReason] = useState<PaywallReason | null>(null);
   const [deepDiveLessonOpen, setDeepDiveLessonOpen] = useState(false);
   const [deepDiveLessons, setDeepDiveLessons] = useState<MicroLesson[]>([]);
   const [deepDiveLessonIndex, setDeepDiveLessonIndex] = useState(0);
+  const [recommendedPathOverride, setRecommendedPathOverride] = useState<ScenarioType | null>(null);
+
   const isSelfIntro = scenarioType === "self-intro";
 
-  /* ── Path Setup Modal — shown once before the first session of a path ── */
+  /* ── Path Setup Modal ── */
   const needsPathSetup = useMemo(() => {
-    if (startAtContext) return false;          // War Room — never
-    if (isSelfIntro) return false;             // self-intro — no setup needed
+    if (startAtContext) return false;
+    if (isSelfIntro) return false;
     if (!progressionPathId) return false;
     if (progressionPathId === "interview") return !userProfile?.targetRole;
-    return false; // other paths: pending
+    return false;
   }, [startAtContext, isSelfIntro, progressionPathId, userProfile?.targetRole]);
 
   const [pathSetupDone, setPathSetupDone] = useState(!needsPathSetup);
@@ -192,7 +147,7 @@ export function PracticeSessionPage({
     setPathSetupDone(true);
   }
 
-  /* Recover session state from browser history if navigating Back/Forward */
+  /* ── History recovery ── */
   const initialHistoryState = useMemo(() => {
     if (typeof window !== "undefined" && window.history.state?.influSession) {
       return window.history.state.influSession as { step: Step; sessionId: string };
@@ -200,29 +155,34 @@ export function PracticeSessionPage({
     return null;
   }, []);
 
+  /* ── Step state ── */
   const [step, setStep] = useState<Step>(() => {
     if (initialHistoryState?.step) return initialHistoryState.step;
-
-    // Self-intro warm-up always starts with intro
     if (scenarioType === "self-intro") return "intro";
-
-    // Always show intro if the level has one
     const levelDef = progressionPathId && progressionLevelId
       ? getLevelDefinition(progressionPathId, progressionLevelId)
       : null;
     if (levelDef?.introHeadline) return "intro";
-
-    // War Room mode — skip intro and experience, go directly to context
     if (startAtContext) return "context";
-
-    // Auto-skip "experience" if user already has profile data from onboarding
     const hasProfileContext = userProfile?.cvSummary || (userProfile?.position && userProfile?.industry);
     if (hasProfileContext) return "context";
-
     return "experience";
   });
 
-  /* ── Pre-seed extraContext from onboarding profile (skip experience step data) ── */
+  /* ── Session identity ── */
+  const [sessionId, setSessionId] = useState<string | null>(
+    () => initialHistoryState?.sessionId ?? null
+  );
+  const [sessionVersion, setSessionVersion] = useState(0);
+  const [repeatCount, setRepeatCount] = useState(0);
+  const sessionStartRef = useRef<number>(Date.now());
+
+  /* ── Coaching parameter refs ── */
+  const sessionFocusRef = useRef<string | undefined>(undefined);
+  const confidenceScoreRef = useRef<number | undefined>(undefined);
+  const challengeModeRef = useRef<boolean>(false);
+
+  /* ── Extra context from user input ── */
   const profileSeed = useMemo(() => {
     if (!userProfile) return {};
     const seed: Record<string, string> = {};
@@ -231,31 +191,6 @@ export function PracticeSessionPage({
     return seed;
   }, [userProfile]);
 
-  /* ── Effective scenario/interlocutor ── */
-  const effectiveScenario = scenario;
-  const effectiveInterlocutor = interlocutor;
-
-  /* ── Scenario cache key for pre-session data (script, toolkit) ── */
-  const sKey = useMemo(
-    () => scenarioKey(effectiveScenario, effectiveInterlocutor, scenarioType),
-    [effectiveScenario, effectiveInterlocutor, scenarioType]
-  );
-
-  /* ── Cleanup expired cache entries on mount ── */
-  useEffect(() => { cleanupExpiredCache(); }, []);
-
-  /* Refs for session coaching parameters (A.1 + A.2) — updated synchronously in
-     onContinue before setExtraContext fires, so the prepareSession effect reads
-     the correct values without needing them as deps. */
-  const sessionFocusRef = useRef<string | undefined>(undefined);
-  const confidenceScoreRef = useRef<number | undefined>(undefined);
-  const challengeModeRef = useRef<boolean>(false);
-
-  /* Merge setup guidedFields with ContextScreen data
-     IMPORTANT: useMemo with serialized deps prevents infinite re-render loop.
-     Without this, { ...guidedFields, ...extraContext } creates a NEW object
-     every render → useEffect sees mergedGuidedFields as "changed" → cancels
-     & restarts prepareSession endlessly → VoicePractice never loads messages. */
   const [extraContext, setExtraContext] = useState<Record<string, string>>(profileSeed);
   const guidedFieldsJSON = JSON.stringify(guidedFields);
   const extraContextJSON = JSON.stringify(extraContext);
@@ -265,593 +200,149 @@ export function PracticeSessionPage({
     [guidedFieldsJSON, extraContextJSON]
   );
 
-  /* Service data */
+  const effectiveScenario = scenario;
+  const effectiveInterlocutor = interlocutor;
+  const sKey = useMemo(
+    () => scenarioKey(effectiveScenario, effectiveInterlocutor, scenarioType),
+    [effectiveScenario, effectiveInterlocutor, scenarioType]
+  );
+
+  useEffect(() => { cleanupExpiredCache(); }, []);
+
+  /* ── Service error ── */
   const [serviceError, setServiceError] = useState<ServiceError | null>(null);
+  const handleRetry = useCallback(() => setServiceError(null), []);
+  const handleDismissError = useCallback(() => setServiceError(null), []);
 
-  /* Session initialization via conversationService (declared early so callbacks below can reference it) */
-  const [sessionId, setSessionId] = useState<string | null>(() => {
-    if (initialHistoryState?.sessionId) return initialHistoryState.sessionId;
-    return null;
-  });
+  /* ── Briefing session payload + user drafts ── */
+  const [briefingForSession, setBriefingForSession] = useState<SessionConfig["interviewBriefing"] | null>(null);
+  const [userDrafts, setUserDrafts] = useState<Record<number, string>>({});
+  const [briefingPersonalizations, setBriefingPersonalizations] = useState<Record<number, string>>({});
 
-  /* Real AI-generated feedback from /analyze-feedback */
-  const [realFeedback, setRealFeedback] = useState<RealFeedbackData | null>(() => {
-    if (initialHistoryState?.sessionId) {
-      return feedbackCache.get(initialHistoryState.sessionId) || null;
-    }
-    return null;
-  });
-  // Derived after realFeedback — needed by PathPurchaseModal regardless of current step
-  const selfIntroPrimaryPath = isSelfIntro
-    ? recommendPath(realFeedback?.pillarScores, undefined, userProfile)?.pathId ?? undefined
-    : undefined;
-  const [feedbackStatus, setFeedbackStatus] = useState<"idle" | "loading" | "ready" | "error">(() => {
-    if (initialHistoryState?.step === "feedback") return "ready";
-    return "idle";
-  });
-  const [feedbackAnimDone, setFeedbackAnimDone] = useState(() => {
-    if (initialHistoryState?.step === "feedback") return true;
-    return false;
-  });
-
-  /* Real AI-generated session summary from /generate-summary */
-  const [sessionSummary, setSessionSummary] = useState<SessionSummary | null>(() => {
-    if (initialHistoryState?.sessionId) {
-      return summaryCache.get(initialHistoryState.sessionId) || null;
-    }
-    return null;
-  });
-  const [summaryStatus, setSummaryStatus] = useState<"idle" | "loading" | "ready" | "error">(() => {
-    if (initialHistoryState?.step === "feedback") return "ready";
-    return "idle";
-  });
-
-  /* Real AI-generated Golden Master Script from /generate-improved-script */
-  const [improvedScript, setImprovedScript] = useState<ScriptSection[] | null>(() => {
-    if (initialHistoryState?.sessionId) {
-      return improvedScriptCache.get(initialHistoryState.sessionId) || null;
-    }
-    return null;
-  });
-  const [improvedScriptStatus, setImprovedScriptStatus] = useState<"idle" | "loading" | "ready" | "error">(() => {
-    if (initialHistoryState?.step === "feedback") return "ready";
-    return "idle";
-  });
-
-  /* Azure pronunciation assessment data accumulated during the session */
-  const [sessionPronData, setSessionPronData] = useState<TurnPronunciationData[]>(() => {
-    if (initialHistoryState?.sessionId) {
-      return pronDataCache.get(initialHistoryState.sessionId) || [];
-    }
-    return [];
-  });
-
-
-  /* Session start timestamp for duration calculation */
-  const sessionStartRef = useRef<number>(Date.now());
-
-  /* Sync relevant state to history for Back/Forward restoration */
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      window.history.replaceState(
-        { ...window.history.state, influSession: { step, sessionId } },
-        ""
-      );
-    }
-  }, [step, sessionId]);
-
-  /* ── Prevent accidental navigation and session loss during active practice ── */
-  useEffect(() => {
-    if (step === "practice" || step === "analyzing") {
-      const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-        e.preventDefault();
-        e.returnValue = "¿Seguro que quieres salir? Tu sesión en curso se perderá.";
-        return e.returnValue;
-      };
-
-      const handlePopState = (e: PopStateEvent) => {
-        if (!window.confirm("You have an active session. If you go back, your progress will be lost. Leave anyway?")) {
-          // Push state back to stay on the current screen
-          window.history.pushState(
-            { ...window.history.state, influSession: { step, sessionId } },
-            "",
-            window.location.href
-          );
-        }
-      };
-
-      // Push a dummy state when entering practice so the first "back" click is trapped
-      if (typeof window !== "undefined") {
-        window.history.pushState(
-          { ...window.history.state, influSession: { step, sessionId } },
-          "",
-          window.location.href
-        );
-      }
-
-      window.addEventListener("beforeunload", handleBeforeUnload);
-      window.addEventListener("popstate", handlePopState);
-
-      return () => {
-        window.removeEventListener("beforeunload", handleBeforeUnload);
-        window.removeEventListener("popstate", handlePopState);
-      };
-    }
-  }, [step, sessionId]);
-
-  /* AI-generated pre-briefing script (NO mock fallback — real AI or error+retry) */
-  const [generatedScript, setGeneratedScript] = useState<ScriptSection[] | null>(() => scriptCache.get(sKey));
-  const [scriptGenStatus, setScriptGenStatus] = useState<"idle" | "loading" | "ready" | "error">(() =>
-    (scenarioType === "interview" ? interviewBriefingCache.get(sKey) : scriptCache.get(sKey)) ? "ready" : "idle"
-  );
-  const [scriptGenError, setScriptGenError] = useState<string | null>(null);
-  const [animationDone, setAnimationDone] = useState(false);
-
-  /* AI-generated interview briefing (card-per-question format, interviews only) */
-  const [interviewBriefing, setInterviewBriefing] = useState<InterviewBriefingData | null>(
-    () => scenarioType === "interview" ? interviewBriefingCache.get(sKey) : null
-  );
-
-  /* Side nav session steps — all flow steps + Q&A from briefing */
+  /* ── Side nav step tracking ── */
   const [sessionSteps, setSessionSteps] = useState<SessionStepItem[]>([]);
   const [qaProgress, setQaProgress] = useState<{ activeIdx: number; completedSet: Set<number> } | null>(null);
   const handleQaProgressChange = useCallback((activeIdx: number, completedSet: Set<number>) => {
     setQaProgress({ activeIdx, completedSet });
   }, []);
 
-  /* Compute all session steps for side nav whenever step or briefing changes */
-  const STEP2_LABEL: Record<string, string> = {
-    interview: "Master Your Answers",
-    sales: "Master Your Sales Pitch",
-    meeting: "Master Your Talking Points",
-    presentation: "Master Your Presentation",
-    culture: "Master Your Approach",
-    "self-intro": "Master Your Introduction",
+  const BUILD_LABEL: Record<string, string> = {
+    interview:    "Build Your Answers",
+    sales:        "Build Your Pitch",
+    meeting:      "Build Your Points",
+    presentation: "Build Your Delivery",
+    culture:      "Build Your Approach",
+    "self-intro": "Build Your Narrative",
   };
 
   useEffect(() => {
     if (!progressionPathId || !progressionLevelId) return;
-
-    const FLOW = ["intro", "strategy", "experience", "context", "vocabulary", "generating", "practice-prep", "interlocutor-intro", "practice", "analyzing", "feedback"];
+    const FLOW = ["intro", "strategy", "experience", "context", "grammar", "vocabulary", "generating", "practice-prep", "interlocutor-intro", "practice", "analyzing", "feedback"];
     const currentIdx = FLOW.indexOf(step);
-
     const status = (forSteps: string[]): SessionStepItem["status"] => {
       const earliest = Math.min(...forSteps.map(s => FLOW.indexOf(s)).filter(i => i >= 0));
+      if (forSteps.includes(step)) return "active";
       if (earliest < 0) return "pending";
       if (currentIdx > earliest) return "done";
-      if (forSteps.includes(step)) return "active";
       return "pending";
     };
-
     setSessionSteps([
-      { id: "s-intro",    label: "Learn the Strategy",                                                          status: status(["intro", "strategy"]),                              stepKey: "intro" },
-      { id: "s-prep",     label: STEP2_LABEL[scenarioType ?? ""] ?? "Master Your Preparation",                  status: status(["practice-prep", "generating", "vocabulary"]),      stepKey: "practice-prep" },
-      { id: "s-practice", label: "Practice Live",                                                               status: status(["interlocutor-intro", "practice"]),                 stepKey: "practice" },
+      { id: "s-intro",    label: "Success Strategy",                                              status: status(["intro", "strategy"]),                           stepKey: "intro" },
+      { id: "s-vocab",    label: "Powerful Vocabulary",                                           status: status(["grammar", "vocabulary"]),                       stepKey: "vocabulary" },
+      { id: "s-prep",     label: BUILD_LABEL[scenarioType ?? ""] ?? "Build Your Preparation",     status: status(["generating", "practice-prep"]),                 stepKey: "practice-prep" },
+      { id: "s-practice", label: "Practice Live",                                                 status: status(["interlocutor-intro", "practice"]),              stepKey: "practice" },
+      { id: "s-feedback", label: "Your Mastery Report",                                           status: status(["analyzing", "feedback"]),                       stepKey: "feedback" },
     ]);
-  }, [step, progressionPathId, progressionLevelId, scenarioType, interviewBriefing, qaProgress]);
+  }, [step, progressionPathId, progressionLevelId, scenarioType, qaProgress]);
 
-  /**
-   * Briefing data packaged for the interviewer prompt (Gap A+B).
-   * Populated when user clicks "Practice Interview" — null until then.
-   * For interview scenarios, prepareSession is deferred until this is set.
-   */
-  const [briefingForSession, setBriefingForSession] = useState<SessionConfig["interviewBriefing"] | null>(null);
+  /* ── Script generation ── */
+  const {
+    generatedScript, scriptGenStatus, scriptGenError,
+    interviewBriefing, preparationToolkit, personalizedPattern, patternLoading,
+    cvMatchData, cvMatchStatus,
+    fireScriptGeneration, setScriptGenStatus, setInterviewBriefing,
+    setGeneratedScript, setPreparationToolkit, setCvMatchData, setCvMatchStatus,
+  } = useScriptGeneration({
+    effectiveScenario, effectiveInterlocutor, scenarioType,
+    guidedFields, extraContext, sKey,
+    progressionPathId, progressionLevelId, startAtContext,
+    userProfile, step, setStep, setExtraContext, challengeModeRef,
+  });
 
-  /** User drafts from "Your Response" tab — persisted for PDF generation */
-  const [userDrafts, setUserDrafts] = useState<Record<number, string>>({});
-  /** Personalized improved responses from briefing prep — persisted for PDF generation */
-  const [briefingPersonalizations, setBriefingPersonalizations] = useState<Record<number, string>>({});
+  /* ── Step gates ── */
+  const { gateWithVocabulary, gateWithGrammar, nextStepAfterVocabularyRef, nextStepAfterGrammarRef } = useStepGates({
+    progressionPathId, progressionLevelId, startAtContext, challengeModeRef, setStep,
+  });
 
+  /* ── Feedback generation ── */
+  const {
+    realFeedback, feedbackStatus, feedbackAnimDone,
+    sessionSummary, summaryStatus,
+    improvedScript,
+    sessionPronData,
+    fireFeedbackAnalysis, fireSummaryGeneration, fireImprovedScriptGeneration,
+    setFeedbackAnimDone, setSessionPronData, setFeedbackStatus,
+  } = useFeedbackGeneration({
+    sessionId, scenarioType, scenario,
+    initialSessionId: initialHistoryState?.sessionId,
+    initialHistoryStep: initialHistoryState?.step,
+  });
 
+  /* ── Session save ── */
+  useSessionSave({
+    step, sessionId, feedbackStatus, summaryStatus,
+    realFeedback, sessionSummary, sessionPronData, improvedScript,
+    effectiveScenario, effectiveInterlocutor, scenarioType,
+    interviewBriefing, briefingPersonalizations, startAtContext,
+    progressionPathId, progressionLevelId, sessionStartRef,
+  });
 
-  /* AI-generated preparation toolkit (power phrases, power questions, cultural tips) */
-  const [preparationToolkit, setPreparationToolkit] = useState<{
-    powerPhrases: Array<{ id: string; phrase: string; context: string; category: string }>;
-    powerQuestions: Array<{ question: string; rationale: string; timing: string }>;
-    culturalTips: Array<{ title: string; description: string; type: "do" | "avoid" }>;
-  } | null>(() => toolkitCache.get(sKey));
-
-  /* AI-generated CV Match analysis */
-  const [cvMatchData, setCvMatchData] = useState<CVMatchResult | null>(() => cvMatchCacheV2.get(sKey));
-  const [cvMatchStatus, setCvMatchStatus] = useState<"idle" | "loading" | "success" | "error">(
-    cvMatchCacheV2.get(sKey) ? "success" : "idle"
-  );
-
-  /* AI-personalized bad/good pattern examples */
-  const [personalizedPattern, setPersonalizedPattern] = useState<PersonalizedPatterns | null>(null);
-  const [patternLoading, setPatternLoading] = useState(false);
-
-  /* Ref-based AbortController to cancel previous generation when a new one starts */
-  const briefingAbortRef = useRef<AbortController | null>(null);
-  /** Where vocabulary step should navigate on continue/skip */
-  const nextStepAfterVocabularyRef = useRef<"generating" | "practice-prep">("generating");
-  /** Where grammar step should navigate on continue/skip */
-  const nextStepAfterGrammarRef = useRef<Step>("vocabulary");
-
-  /* ── Script / Briefing generation: call Edge Function ── */
-  const fireScriptGeneration = useCallback(async (extraData?: Record<string, string>) => {
-    // Abort any in-flight generation before starting a new one
-    briefingAbortRef.current?.abort("superseded");
-
-    setScriptGenStatus("loading");
-    setScriptGenError(null);
-    setGeneratedScript(null);
-    setInterviewBriefing(null);
-    setAnimationDone(false);
-    setPreparationToolkit(null);
-
-    // ── Fire personalized pattern generation in parallel (non-blocking) ──
-    if (progressionPathId && progressionLevelId) {
-      const levelDef = getLevelDefinition(progressionPathId, progressionLevelId);
-      if (levelDef?.methodology?.pattern) {
-        setPatternLoading(true);
-        const allFieldsForPattern = { ...guidedFields, ...(extraData || extraContext) };
-        personalizePatterns(
-          progressionLevelId,
-          levelDef.methodology.name,
-          levelDef.methodology.pattern.bad.label,
-          levelDef.methodology.pattern.good.label,
-          allFieldsForPattern,
-        )
-          .then((data) => {
-            setPersonalizedPattern(data);
-            setPatternLoading(false);
-          })
-          .catch((err) => {
-            console.warn("[PersonalizePatterns] ⚠️ Failed (will use static):", err.message);
-            setPatternLoading(false);
-          });
-      }
-    }
-
-    const allFields = { ...guidedFields, ...(extraData || extraContext) };
-
-    const abortController = new AbortController();
-    briefingAbortRef.current = abortController;
-
-    // ━━━ SELF-INTRO: dedicated 3-beat briefing ━━━
-    if (scenarioType === "self-intro") {
-      try {
-        const briefing = await generateSelfIntroBriefing(
-          allFields,
-          progressionLevelId ?? undefined,
-          abortController.signal,
-        );
-        setInterviewBriefing(briefing);
-        interviewBriefingCache.set(sKey, briefing);
-        setScriptGenStatus("ready");
-      } catch (err: any) {
-        if (err instanceof DOMException && err.name === "AbortError") return;
-        const msg = err instanceof Error ? err.message : String(err);
-        console.error("[SelfIntroBriefing] ❌ Failed:", msg);
-        setScriptGenError(msg);
-        setScriptGenStatus("error");
-      }
-      return;
-    }
-
-    // ━━━ INTERVIEW: card-based briefing ━━━
-    if (scenarioType === "interview") {
-      try {
-        const { briefing } = await generateInterviewBriefing(
-          effectiveScenario,
-          effectiveInterlocutor,
-          allFields,
-          _detectedLocale,
-          abortController.signal,
-          progressionPathId ?? undefined,
-          progressionLevelId ?? undefined
-        );
-        setInterviewBriefing(briefing);
-        const fp = JSON.stringify(
-          Object.entries(allFields).sort(([a], [b]) => a.localeCompare(b))
-        );
-        interviewBriefingCache.set(`${sKey}_${simpleHash(fp)}`, briefing);
-        setScriptGenStatus("ready");
-      } catch (err: any) {
-        if (err instanceof DOMException && err.name === "AbortError") {
-          console.log("[InterviewBriefing] ℹ️ Aborted (expected during navigation)");
-          return;
-        }
-        const msg = err instanceof Error ? err.message : String(err);
-        console.error("[InterviewBriefing] ❌ Failed:", msg);
-        setScriptGenError(msg);
-        setScriptGenStatus("error");
-      }
-      return;
-    }
-
-    // ━━━ SALES / DEFAULT PATH: Existing script + toolkit parallel calls ━━━
-    generateScript(effectiveScenario, effectiveInterlocutor, scenarioType, allFields, _detectedLocale, abortController.signal, progressionPathId ?? undefined, progressionLevelId ?? undefined)
-      .then(({ sections }) => {
-        setGeneratedScript(sections);
-        scriptCache.set(sKey, sections);
-        setScriptGenStatus("ready");
-      })
-      .catch((err) => {
-        if (err instanceof DOMException && err.name === "AbortError") return;
-        console.error("[GenerateScript] ❌ Failed:", err.message);
-        setScriptGenError(err.message);
-        setScriptGenStatus("error");
-      });
-
-    // ── Fire CV Match Analysis in parallel (non-blocking) ──
-    const userCv = allFields["cvSummary"] || allFields["manualExperience"] || allFields["Your key experience"];
-    const userJd = allFields["Job Description"];
-    if (userCv && userJd && !cvMatchCacheV2.get(sKey)) {
-      setCvMatchStatus("loading");
-      analyzeCvMatch(userCv, userJd)
-        .then((data) => {
-          cvMatchCacheV2.set(sKey, data);
-          setCvMatchData(data);
-          setCvMatchStatus("success");
-        })
-        .catch((err) => {
-          console.error("[CvMatchAnalysis] ❌ Failed:", err);
-          setCvMatchStatus("error");
-        });
-    }
-
-    // ── Fire preparation toolkit generation in parallel (non-blocking) ──
-    generatePreparationToolkit(effectiveScenario, effectiveInterlocutor, scenarioType, allFields, _detectedLocale)
-      .then((toolkit) => {
-        setPreparationToolkit(toolkit);
-        toolkitCache.set(sKey, toolkit);
-      })
-      .catch((err) => {
-        console.error("[PreparationToolkit] ❌ Failed:", err.message);
-      });
-  }, [effectiveScenario, effectiveInterlocutor, scenarioType, guidedFields, extraContext, sKey]);
-
-  /* ── Eager script generation: fire at intro step start for path sessions (not War Room) ── */
+  /* ── History sync ── */
   useEffect(() => {
-    if (step !== "intro") return;
-    if (startAtContext) return;         // War Room uses context screen
-    if (!progressionPathId || !progressionLevelId) return;
-    if (scriptGenStatus !== "idle") return;  // don't double-fire
-
-    const profileFields: Record<string, string> = {};
-    if (userProfile?.cvSummary) profileFields.cvSummary = userProfile.cvSummary;
-    if (userProfile?.position) profileFields.manualExperience = `${userProfile.position} in ${userProfile.industry || "tech"}, ${userProfile.seniority || "mid-level"}.`.trim();
-    if (userProfile?.keyExperience) profileFields["Your key experience"] = userProfile.keyExperience;
-    setExtraContext(profileFields);
-    fireScriptGeneration(profileFields);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step]);
-
-  /* ── Auto-transition: only when BOTH animation AND API are done ── */
-  useEffect(() => {
-    const contentReady = generatedScript || interviewBriefing;
-    if (step === "generating" && scriptGenStatus === "ready" && contentReady) {
-      if (challengeModeRef.current) {
-        // Challenge Mode: skip all briefing UI → go directly to interlocutor intro or practice
-        setStep(scenarioType === "interview" ? "interlocutor-intro" : "practice");
-      } else {
-        setStep("practice-prep");
-      }
-    }
-  }, [step, scriptGenStatus, generatedScript, interviewBriefing, scenarioType]);
-
-  /* ── Feedback analysis: call /analyze-feedback when entering "analyzing" step ──
-   * Can be called early (when conversation ends) to pre-warm while the user is
-   * still on the practice screen. Guarded by feedbackStatus to prevent double calls. */
-  const fireFeedbackAnalysis = useCallback(async () => {
-    if (!sessionId) return;
-    // Guard: don't fire a second time if already loading/ready
-    if (feedbackStatus === "loading" || feedbackStatus === "ready") return;
-    setFeedbackStatus("loading");
-    setRealFeedback(null);
-
-    try {
-      const fb = await analyzeFeedback(sessionId, scenarioType, _detectedLocale);
-      setRealFeedback(fb);
-      if (sessionId) feedbackCache.set(sessionId, fb);
-      setFeedbackStatus("ready");
-    } catch (err: any) {
-      console.error("[AnalyzeFeedback] ❌ Failed:", err.message);
-      setFeedbackStatus("error");
-      // Don't block the flow — user can still see mock feedback
-    }
-  }, [sessionId, scenarioType, feedbackStatus]);
-
-  /* ── Summary generation: call /generate-summary for session feedback ── */
-  const fireSummaryGeneration = useCallback(async () => {
-    if (!sessionId) return;
-    setSessionSummary(null);
-    setSummaryStatus("loading");
-
-    try {
-      const sum = await generateSummary(sessionId, scenarioType, _detectedLocale);
-      setSessionSummary(sum);
-      setSummaryStatus("ready");
-      if (sessionId) summaryCache.set(sessionId, sum);
-    } catch (err: any) {
-      console.error("[GenerateSummary] ❌ Failed:", err.message);
-      setSummaryStatus("error");
-      // Non-blocking — report renders without summary
-    }
-  }, [sessionId, scenarioType]);
-
-  /* ── Golden Script generation: call /generate-improved-script async ── */
-  const fireImprovedScriptGeneration = useCallback(async () => {
-    if (!sessionId) return;
-    setImprovedScript(null);
-    setImprovedScriptStatus("loading");
-
-    try {
-      const sections = await generateImprovedScript(sessionId, _detectedLocale);
-      setImprovedScript(sections);
-      improvedScriptCache.set(sessionId, sections);
-      setImprovedScriptStatus("ready");
-    } catch (err: any) {
-      console.error("[GenerateImprovedScript] ❌ Failed:", err.message);
-      setImprovedScriptStatus("error");
-    }
-  }, [sessionId]);
-
-  /* ── Persist completed session to backend (fire-and-forget) ── */
-  const sessionSavedRef = useRef(false);
-  const saveSessionToBackend = useCallback(async () => {
-    if (sessionSavedRef.current || !sessionId) return;
-    sessionSavedRef.current = true;
-
-    const duration = `${Math.max(1, Math.round((Date.now() - sessionStartRef.current) / 60000))} min`;
-    const payload = {
-      scenario: effectiveScenario,
-      interlocutor: effectiveInterlocutor,
-      scenarioType: scenarioType || "interview",
-      duration,
-      feedback: realFeedback ? {
-        strengths: realFeedback.strengths,
-        opportunities: realFeedback.opportunities,
-        beforeAfter: realFeedback.beforeAfter,
-        // Merge Azure pronunciation score into pillarScores for persistence
-        pillarScores: realFeedback.pillarScores ? {
-          ...realFeedback.pillarScores,
-          Pronunciation: sessionPronData.length > 0
-            ? Math.round(sessionPronData.reduce((s, t) => s + t.assessment.accuracyScore, 0) / sessionPronData.length)
-            : (realFeedback.pillarScores.Pronunciation ?? 0),
-        } : null,
-        professionalProficiency: realFeedback.professionalProficiency ?? null,
-      } : null,
-      summary: sessionSummary ? {
-        overallSentiment: sessionSummary.overallSentiment,
-        nextSteps: sessionSummary.nextSteps,
-        sessionHighlight: sessionSummary.sessionHighlight,
-        pillarScores: sessionSummary.pillarScores || null,
-        professionalProficiency: sessionSummary.professionalProficiency ?? null,
-        cefrApprox: sessionSummary.cefrApprox || null,
-      } : null,
-      improvedScript: improvedScript || null,
-      practiceSessionId: sessionId,
-      is_war_room: startAtContext === true,
-      // Include interview briefing data for dashboard cross-reference
-      interviewBriefing: scenarioType === "interview" && interviewBriefing ? {
-        anticipatedQuestions: interviewBriefing.anticipatedQuestions.map(q => ({
-          id: String(q.id),
-          question: q.question,
-          approach: q.approach,
-        })),
-        questionsToAsk: interviewBriefing.questionsToAsk.map(q => ({
-          question: q.question,
-        })),
-      } : null,
-      briefingPersonalizations: Object.keys(briefingPersonalizations).length > 0
-        ? Object.fromEntries(Object.entries(briefingPersonalizations).map(([k, v]) => [String(k), v]))
-        : undefined,
-    };
-
-    saveSession(payload).catch((err) => {
-      console.error("[SaveSession] ❌ Failed (non-blocking):", err.message);
-      sessionSavedRef.current = false; // Allow retry on next render
-    });
-
-    // If part of a progression path, tell backend to generate remedial lessons
-    if (progressionLevelId && progressionPathId && realFeedback) {
-      completeProgressionLevel(
-        progressionPathId,
-        progressionLevelId,
-        realFeedback.professionalProficiency ?? 0,
-        realFeedback.pillarScores || {}
-      ).catch((err) => {
-        console.error("[Progression] ❌ Failed to generate remedial content:", err.message);
-      });
-    }
-  }, [sessionId, effectiveScenario, effectiveInterlocutor, scenarioType, realFeedback, sessionSummary, sessionPronData, interviewBriefing, progressionLevelId, progressionPathId]);
-
-  /* ── Auto-save session when entering session-analysis with data ── */
-  useEffect(() => {
-    if (step === "feedback" && sessionId && !sessionSavedRef.current) {
-      if (
-        (feedbackStatus === "ready" || feedbackStatus === "error") &&
-        (summaryStatus === "ready" || summaryStatus === "error")
-      ) {
-        saveSessionToBackend();
-      }
-    }
-  }, [step, sessionId, feedbackStatus, summaryStatus, saveSessionToBackend]);
-
-  /* ── Seed "Phrases to Review" from feedback beforeAfter (first session bootstrap) ──
-     When AI feedback is ready, extract professional versions as SR phrases
-     so the Dashboard's SpacedRepetitionCard has initial content to show. */
-  const srSeededRef = useRef(false);
-  useEffect(() => {
-    if (feedbackStatus !== "ready" || !realFeedback || srSeededRef.current) return;
-    srSeededRef.current = true;
-
-    const beforeAfter = realFeedback.beforeAfter || [];
-    if (beforeAfter.length === 0) return;
-
-    const srPhrases = beforeAfter.slice(0, 5).map((ba, i) => {
-      // Extract a focus word (first word > 4 chars from the professional version)
-      const words = ba.professionalVersion.split(/\s+/);
-      const focusWord = words.find((w: string) => w.replace(/[^a-zA-Z]/g, "").length > 4) || words[0] || "";
-      return createSRPhrase(
-        `feedback-${sessionId}-${i}`,
-        ba.professionalVersion,
-        focusWord.replace(/[^a-zA-Z'-]/g, ""),
-        "", // no IPA from feedback
-        0,  // no initial score
-        0,  // no attempts yet
-        scenarioType || "interview",
-        scenario || "Practice Session"
+    if (typeof window !== "undefined") {
+      window.history.replaceState(
+        { ...window.history.state, influSession: { step, sessionId } }, ""
       );
-    });
-
-    flagPhrasesForReview(srPhrases).catch(err =>
-      console.warn("[SR Seed] Failed to seed phrases from feedback:", err)
-    );
-  }, [feedbackStatus, realFeedback, sessionId, scenarioType, scenario]);
-
-  const [levelMilestoneOpen, setLevelMilestoneOpen] = useState(false);
-
-  /* ── Pre-session lesson ── */
-  /** Navigate through vocabulary step when available, or directly to nextStep */
-  const gateWithVocabulary = useCallback((nextStep: "generating" | "practice-prep") => {
-    const levelDef = progressionPathId && progressionLevelId
-      ? getLevelDefinition(progressionPathId, progressionLevelId)
-      : null;
-    const hasVocab = !!(levelDef?.vocabularyBank?.length);
-    const showVocab = hasVocab && !challengeModeRef.current && !startAtContext;
-    if (showVocab) {
-      nextStepAfterVocabularyRef.current = nextStep;
-      setStep("vocabulary");
-    } else {
-      setStep(nextStep);
     }
-  }, [progressionPathId, progressionLevelId, startAtContext]);
+  }, [step, sessionId]);
 
-  /** Navigate through grammar step (if bank exists), then through vocabulary, then to finalStep */
-  const gateWithGrammar = useCallback((finalStep: "generating" | "practice-prep") => {
-    if (startAtContext || !progressionLevelId) {
-      gateWithVocabulary(finalStep);
-      return;
+  /* ── Navigation guard during active practice ── */
+  useEffect(() => {
+    if (step !== "practice" && step !== "analyzing") return;
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "¿Seguro que quieres salir? Tu sesión en curso se perderá.";
+      return e.returnValue;
+    };
+    const handlePopState = () => {
+      if (!window.confirm("You have an active session. If you go back, your progress will be lost. Leave anyway?")) {
+        window.history.pushState(
+          { ...window.history.state, influSession: { step, sessionId } }, "", window.location.href
+        );
+      }
+    };
+    if (typeof window !== "undefined") {
+      window.history.pushState(
+        { ...window.history.state, influSession: { step, sessionId } }, "", window.location.href
+      );
     }
-    const bank = INTERVIEW_GRAMMAR_BANK[progressionLevelId];
-    if (!bank?.length) {
-      gateWithVocabulary(finalStep);
-      return;
-    }
-    nextStepAfterGrammarRef.current = finalStep as Step;
-    setStep("grammar");
-  }, [startAtContext, isSelfIntro, progressionLevelId, gateWithVocabulary]);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [step, sessionId]);
 
-  const gateWithLesson = useCallback((nextStep: Step) => {
-    setStep(nextStep);
-  }, []);
-
-  /* ── Auto-transition for feedback: when BOTH animation AND API are done ── */
+  /* ── Auto-transition: analyzing → feedback ── */
   useEffect(() => {
     if (step !== "analyzing" || !feedbackAnimDone) return;
     if (feedbackStatus === "ready" || feedbackStatus === "error") {
-      // Unified post-session analysis step
       setStep("feedback");
-      // Fire session save + progression completion now (no longer gated behind skill drill)
       fireSummaryGeneration();
       if (progressionLevelId && progressionPathId && realFeedback) {
         const score = realFeedback.professionalProficiency ?? 0;
-        const pillarScores = realFeedback.pillarScores || {};
-        completeProgressionLevel(progressionPathId, progressionLevelId, score, pillarScores)
+        completeProgressionLevel(progressionPathId, progressionLevelId, score, realFeedback.pillarScores || {})
           .catch((err: any) => console.info("[Progression]", err));
         if (score >= 75) setLevelMilestoneOpen(true);
       }
@@ -859,134 +350,53 @@ export function PracticeSessionPage({
       console.warn("[AnalyzeFeedback] ⚠️ Skip pressed while API loading — forcing transition");
       setFeedbackStatus("error");
     }
-  }, [step, feedbackAnimDone, feedbackStatus, fireSummaryGeneration, progressionLevelId, progressionPathId, realFeedback, completeProgressionLevel]);
+  }, [step, feedbackAnimDone, feedbackStatus, fireSummaryGeneration, progressionLevelId, progressionPathId, realFeedback]);
 
-  /* ── Practice Again: repeat tracking ── */
-  const [repeatCount, setRepeatCount] = useState(0);
-  const [sessionVersion, setSessionVersion] = useState(0);
-  const plan: UserPlan = userPlan ?? "free";
-  const maxRepeats = MAX_REPEATS[plan];
-  const canRepeat = repeatCount < maxRepeats;
-  const repeatInfo: RepeatInfo = {
-    attempt: repeatCount + 1,
-    maxAttempts: maxRepeats + 1,
-    canRepeat,
-  };
-
-  /* ── Usage gating & paywall ── */
-  const usageGating = useUsageGating(plan);
-  const [paywallOpen, setPaywallOpen] = useState(false);
-  const [paywallReason, setPaywallReason] = useState<PaywallReason | null>(null);
-
-  /** v9.0: Check if user can start a fresh attempt on current level */
-  const gateResult = usageGating.canStartFreshAttempt(
-    scenarioType || "interview",
-    progressionLevelId || "default",
-    repeatInfo.maxAttempts
-  );
-
-  const handlePaywallTriggered = useCallback((reason: PaywallReason) => {
-    setPaywallReason(reason);
-    setPaywallOpen(true);
-  }, []);
-
-  const handlePurchaseComplete = useCallback((purchaseType: import("../services/types").PurchaseType) => {
-    // v9.0: Mark path as purchased
-    usageGating.addPurchasedPath(scenarioType || "interview");
-    setPaywallOpen(false);
-    setPaywallReason(null);
-
-    // After purchase, grant extra repeats
-    if (paywallReason === "attempts-exhausted") {
-      setRepeatCount(0);
-      setSessionId(null);
-      setServiceError(null);
-      setSessionVersion((v) => v + 1);
-      setStep("practice");
-    }
-  }, [paywallReason, usageGating, scenarioType]);
-
-  /** Handle "Practice Again" from Conversation Feedback */
-  const handlePracticeAgain = useCallback(() => {
-    if (!canRepeat) return;
-    setRepeatCount((c) => c + 1);
-    setSessionId(null);
-    setServiceError(null);
-    setSessionVersion((v) => v + 1);
-    // Go directly to practice — skip pre-briefing on repeat
-    setStep("practice");
-  }, [canRepeat]);
-
+  /* ── prepareSession ── */
   useEffect(() => {
-
-    // For interview scenarios, defer until briefingForSession is ready (Gap A+B)
-    // This ensures anticipated questions + user drafts are injected into the prompt.
-    // Exception: Challenge Mode bypasses the briefing entirely.
-    // On repeat (sessionVersion > 0), briefingForSession is already set so it fires immediately.
     if (scenarioType === "interview" && !briefingForSession && !challengeModeRef.current) return;
+    const progressionLevelDef = progressionLevelId && progressionPathId
+      ? getLevelDefinition(progressionPathId, progressionLevelId)
+      : null;
     let cancelled = false;
-    realConversationService
-      .prepareSession({
-        scenario: effectiveScenario,
-        interlocutor: effectiveInterlocutor,
-        scenarioType,
-        guidedFields: mergedGuidedFields,
-        // Gap A+B: pass briefing data to assembler via SessionConfig
-        interviewBriefing: briefingForSession ?? undefined,
-        // Sprint A.1 + A.2: coaching parameters from ContextScreen
-        sessionFocus: sessionFocusRef.current,
-        confidenceScore: confidenceScoreRef.current,
-        // Sprint C.1: progressive difficulty curve — level number drives interlocutor pressure
-        levelNumber: progressionLevelDef?.level,
-        // Capstone levels may require a longer conversation
-        turnLimit: progressionLevelDef?.turnLimit,
-      })
-      .then((prepared) => {
-        if (!cancelled) {
-          setSessionId(prepared.sessionId);
-        }
-      })
+    realConversationService.prepareSession({
+      scenario: effectiveScenario,
+      interlocutor: effectiveInterlocutor,
+      scenarioType,
+      guidedFields: mergedGuidedFields,
+      interviewBriefing: briefingForSession ?? undefined,
+      sessionFocus: sessionFocusRef.current,
+      confidenceScore: confidenceScoreRef.current,
+      levelNumber: progressionLevelDef?.level,
+      turnLimit: progressionLevelDef?.turnLimit,
+    })
+      .then((prepared) => { if (!cancelled) setSessionId(prepared.sessionId); })
       .catch((err) => {
         if (!cancelled) {
           const serviceErr = toServiceError(err);
-          console.error(`[PracticeSession] prepareSession failed:`, serviceErr.code, serviceErr.message, err);
+          console.error(`[PracticeSession] prepareSession failed:`, serviceErr.code, serviceErr.message);
           setServiceError(serviceErr);
         }
       });
     return () => { cancelled = true; };
   }, [effectiveScenario, effectiveInterlocutor, scenarioType, mergedGuidedFields, sessionVersion, briefingForSession]);
 
-  /* Retry handler */
-  const handleRetry = useCallback(() => {
-    setServiceError(null);
-  }, []);
-
-  const handleDismissError = useCallback(() => {
-    setServiceError(null);
-  }, []);
-
   /* ── Scroll to top on step change ── */
   const stepContainerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    // Immediate scroll on both the inner container and window
-    stepContainerRef.current?.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
-    // Deferred scroll — catches cases where AnimatePresence hasn't finished
-    // the exit/enter transition yet, or async content just rendered.
+    stepContainerRef.current?.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
     const raf = requestAnimationFrame(() => {
-      stepContainerRef.current?.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
-      window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
+      stepContainerRef.current?.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
     });
-    // Extra safety: a second pass after AnimatePresence (mode="wait") completes (~500ms)
     const timer = setTimeout(() => {
-      stepContainerRef.current?.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
+      stepContainerRef.current?.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
     }, 600);
-    return () => {
-      cancelAnimationFrame(raf);
-      clearTimeout(timer);
-    };
+    return () => { cancelAnimationFrame(raf); clearTimeout(timer); };
   }, [step]);
 
+  /* ── Progression level def (derived) ── */
   const progressionLevelDef = progressionLevelId && progressionPathId
     ? getLevelDefinition(progressionPathId, progressionLevelId)
     : null;
@@ -998,8 +408,9 @@ export function PracticeSessionPage({
     ? `${pathLabels[progressionPathId || ""] || progressionPathId} - Level ${progressionLevelDef.level}: ${progressionLevelDef.title}`
     : null;
 
+  /* ── Level switch ── */
   const handleSideNavLevelSwitch = useCallback((s: string, st: ScenarioType, lid: string, interl: string) => {
-    if (lid === progressionLevelId) return; // Already on this level
+    if (lid === progressionLevelId) return;
     setDrawerOpen(false);
     if (SAFE_STEPS.includes(step)) {
       onSwitchLevel?.(s, st, lid, interl);
@@ -1015,6 +426,45 @@ export function PracticeSessionPage({
     setPendingSwitch(null);
   }, [pendingSwitch, onSwitchLevel]);
 
+  /* ── Repeat / usage gating ── */
+  const plan: UserPlan = userPlan ?? "free";
+  const maxRepeats = MAX_REPEATS[plan];
+  const canRepeat = repeatCount < maxRepeats;
+  const usageGating = useUsageGating(plan);
+  const selfIntroPrimaryPath = isSelfIntro
+    ? recommendPath(realFeedback?.pillarScores, undefined, userProfile)?.pathId ?? undefined
+    : undefined;
+
+  const handlePaywallTriggered = useCallback((reason: PaywallReason) => {
+    setPaywallReason(reason);
+    setPaywallOpen(true);
+  }, []);
+
+  const handlePurchaseComplete = useCallback((purchaseType: import("../services/types").PurchaseType) => {
+    usageGating.addPurchasedPath(scenarioType || "interview");
+    setPaywallOpen(false);
+    setPaywallReason(null);
+    if (paywallReason === "attempts-exhausted") {
+      setRepeatCount(0);
+      setSessionId(null);
+      setServiceError(null);
+      setSessionVersion((v) => v + 1);
+      setStep("practice");
+    }
+  }, [paywallReason, usageGating, scenarioType]);
+
+  const handlePracticeAgain = useCallback(() => {
+    if (!canRepeat) return;
+    setRepeatCount((c) => c + 1);
+    setSessionId(null);
+    setServiceError(null);
+    setSessionVersion((v) => v + 1);
+    setStep("practice");
+  }, [canRepeat]);
+
+  /* ══════════════════════════════════════════════════════════
+     RENDER
+     ══════════════════════════════════════════════════════════ */
   return (
     <ProgressionProvider value={{ levelTitle: progressionLevelTitle }}>
     <div aria-label="PracticeSessionPage" className="w-full min-h-screen flex flex-col">
@@ -1033,49 +483,9 @@ export function PracticeSessionPage({
       />
       {NARRATION_STEPS.includes(step) && <NarrationToggle />}
 
-      {/* Exit confirmation dialog */}
-      {showExitConfirm && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-xl border border-[#e2e8f0]">
-            <div className="flex items-center gap-3 mb-3">
-              <AlertTriangle className="w-5 h-5 text-amber-500" />
-              <h3 className="text-lg text-[#0f172b] font-medium">Leave session?</h3>
-            </div>
-            <p className="text-sm text-[#45556c] mb-5">
-              Your current session progress will be lost. Are you sure you want to go to the Dashboard?
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowExitConfirm(false)}
-                className="flex-1 py-2.5 rounded-xl border border-[#e2e8f0] text-sm text-[#45556c] hover:bg-[#f8fafc] transition-colors font-medium"
-              >
-                Stay
-              </button>
-              <button
-                onClick={() => {
-                  setShowExitConfirm(false);
-                  onGoToDashboard?.();
-                }}
-                className="flex-1 py-2.5 rounded-xl bg-[#0f172b] text-white text-sm hover:bg-[#1d293d] transition-colors font-medium"
-              >
-                Leave
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Path Setup Modal — shown once before first session of a path */}
-      <PathSetupModal
-        open={!pathSetupDone}
-        pathId={progressionPathId ?? ""}
-        userProfile={userProfile}
-        onComplete={handlePathSetupComplete}
-      />
 
       {/* Main layout: SideNav + Content */}
       <div className="flex-1 flex min-h-0">
-        {/* SideNav */}
         {progressionPathId && (
           <PracticeSideNav
             activePathId={progressionPathId}
@@ -1088,7 +498,6 @@ export function PracticeSessionPage({
           />
         )}
 
-        {/* Step content (animated transitions) */}
         <div ref={stepContainerRef} className="flex-1 relative min-h-0 overflow-y-auto">
         <AnimatePresence mode="wait">
           <motion.div
@@ -1099,8 +508,6 @@ export function PracticeSessionPage({
             exit={{ opacity: 0, filter: "blur(4px)" }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
           >
-
-            {/* Global error banner */}
             {serviceError && (
               <div className="fixed top-16 left-0 right-0 z-[100] p-4 max-w-xl mx-auto">
                 <ServiceErrorBanner
@@ -1112,13 +519,11 @@ export function PracticeSessionPage({
               </div>
             )}
 
-
+            {/* ── intro ── */}
             {step === "intro" && (() => {
-              // Self-intro warm-up: use a generic intro headline
               if (isSelfIntro) {
                 const siLevelDef = progressionPathId && progressionLevelId
-                  ? getLevelDefinition(progressionPathId, progressionLevelId)
-                  : null;
+                  ? getLevelDefinition(progressionPathId, progressionLevelId) : null;
                 return (
                   <IntroductionScreen
                     scenarioType="self-intro"
@@ -1130,17 +535,13 @@ export function PracticeSessionPage({
                       "Identify your Anchor: a value-led sentence that works in any context",
                       "Practice the full Three-Move Introduction in a live AI simulation",
                     ]}
-                    onContinue={() => {
-                      setStep("strategy");
-                    }}
+                    onContinue={() => setStep("strategy")}
                     minimal
                   />
                 );
               }
-              // Normal path intro
               const levelDef = progressionPathId && progressionLevelId
-                ? getLevelDefinition(progressionPathId, progressionLevelId)
-                : null;
+                ? getLevelDefinition(progressionPathId, progressionLevelId) : null;
               return levelDef?.introHeadline ? (
                 <IntroductionScreen
                   scenarioType={scenarioType || "interview"}
@@ -1158,19 +559,21 @@ export function PracticeSessionPage({
               ) : null;
             })()}
 
+            {/* ── experience ── */}
             {step === "experience" && (
               <ExperienceScreen
                 scenarioType={scenarioType}
                 userProfile={userProfile}
                 onProfileUpdate={onProfileUpdate}
                 onContinue={(cvData) => {
-                  // Store CV data for later merging with extra-context
                   setExtraContext((prev) => ({ ...prev, ...cvData }));
                   setStep("context");
                 }}
                 onBack={onFinish}
               />
             )}
+
+            {/* ── context ── */}
             {step === "context" && (
               <ContextScreen
                 scenarioType={scenarioType}
@@ -1179,30 +582,16 @@ export function PracticeSessionPage({
                 warRoomMode={startAtContext}
                 narratorUrl={NARRATOR_URLS.context[scenarioType as keyof typeof NARRATOR_URLS.context] || ""}
                 onContinue={(extraData, meta?: ContextScreenMeta) => {
-                  // Capture coaching parameters synchronously before state updates fire
-                  // sessionFocus and confidenceScore already set from IntroductionScreen
                   if (meta?.sessionFocus) sessionFocusRef.current = meta.sessionFocus;
                   if (meta?.confidenceScore !== undefined) confidenceScoreRef.current = meta.confidenceScore;
                   challengeModeRef.current = meta?.challengeMode ?? false;
-                  // Inject profile data into guided fields for AI generation
                   const enriched = { ...extraData };
                   if (scenarioType === "interview") {
-                    // Inject keyExperience from profile
-                    if (userProfile?.keyExperience) {
-                      enriched["Your key experience"] = userProfile.keyExperience;
-                    }
-                    // Inject company from profile (Dashboard flow)
-                    if (userProfile?.company && !guidedFields?.company) {
-                      enriched["company"] = userProfile.company;
-                    }
-                    // Map "Role you're applying for" → "role" for AI prompt compatibility
-                    if (enriched["Role you're applying for"] && !guidedFields?.role) {
-                      enriched["role"] = enriched["Role you're applying for"];
-                    }
+                    if (userProfile?.keyExperience) enriched["Your key experience"] = userProfile.keyExperience;
+                    if (userProfile?.company && !guidedFields?.company) enriched["company"] = userProfile.company;
+                    if (enriched["Role you're applying for"] && !guidedFields?.role) enriched["role"] = enriched["Role you're applying for"];
                   }
                   setExtraContext(enriched);
-
-                  // Persist JD to profile so it pre-fills on the next session
                   const jd = extraData["Job Description"];
                   if (jd?.trim() && scenarioType === "interview") {
                     getAuthToken().then((token) => {
@@ -1214,83 +603,74 @@ export function PracticeSessionPage({
                     }).catch(() => {});
                     onProfileUpdate?.({ ...(userProfile as any), lastJobDescription: jd.trim() });
                   }
-
-                  /* ── Challenge Mode: skip all briefing steps → go directly to generating ── */
                   if (challengeModeRef.current) {
                     fireScriptGeneration(enriched);
                     setStep("generating");
                     return;
                   }
-
-                  /* ── Cache-hit fast path: skip GPT call if content is already cached ── */
                   if (scenarioType === "interview") {
-                    // Use content-aware cache key: include user's actual input so
-                    // different JD/experience combos produce different cache entries
-                    const contentFingerprint = JSON.stringify(
-                      Object.entries(enriched).sort(([a], [b]) => a.localeCompare(b))
-                    );
+                    const contentFingerprint = JSON.stringify(Object.entries(enriched).sort(([a], [b]) => a.localeCompare(b)));
                     const briefingCacheKey = `${sKey}_${simpleHash(contentFingerprint)}`;
                     const cachedBriefing = interviewBriefingCache.get(briefingCacheKey);
                     if (cachedBriefing && cachedBriefing.anticipatedQuestions?.length > 0) {
                       setInterviewBriefing(cachedBriefing);
                       setScriptGenStatus("ready");
-
-                      // Ensure CV Match fires on cache-hit if it was missing or failed previously
                       const userCv = enriched["cvSummary"] || enriched["manualExperience"] || enriched["Your key experience"];
                       const userJd = enriched["Job Description"];
                       if (userCv && userJd && !cvMatchCacheV2.get(sKey)) {
                         setCvMatchStatus("loading");
                         analyzeCvMatch(userCv, userJd)
-                          .then((data) => {
-                            cvMatchCacheV2.set(sKey, data);
-                            setCvMatchData(data);
-                            setCvMatchStatus("success");
-                          })
-                          .catch((err) => {
-                            console.error("[CvMatchAnalysis] ❌ Failed:", err);
-                            setCvMatchStatus("error");
-                          });
+                          .then((data) => { cvMatchCacheV2.set(sKey, data); setCvMatchData(data); setCvMatchStatus("success"); })
+                          .catch(() => setCvMatchStatus("error"));
                       }
-
-                      // Strategy already shown before context — go to grammar/vocabulary/practice-prep
                       gateWithGrammar("practice-prep");
                       return;
                     }
                   } else {
                     const cachedScript = scriptCache.get(sKey);
-                    const cachedToolkit = toolkitCache.get(sKey);
                     if (cachedScript && cachedScript.length > 0) {
                       setGeneratedScript(cachedScript);
                       setScriptGenStatus("ready");
-                      if (cachedToolkit) {
-                        setPreparationToolkit(cachedToolkit);
-                      }
+                      const cachedToolkit = toolkitCache.get(sKey);
+                      if (cachedToolkit) setPreparationToolkit?.(cachedToolkit);
                       gateWithGrammar("practice-prep");
                       return;
                     }
                   }
-                  // Fire script generation — runs in background during grammar/vocabulary/generating
                   fireScriptGeneration(enriched);
                   gateWithGrammar("generating");
                 }}
                 onBack={() => {
                   const hasProfileContext = userProfile?.cvSummary || (userProfile?.position && userProfile?.industry);
-                  if (hasProfileContext) {
-                    onFinish?.();
-                  } else {
-                    setStep("experience");
-                  }
+                  if (hasProfileContext) { onFinish?.(); } else { setStep("experience"); }
                 }}
               />
             )}
 
-            {/* Pre-Session Lesson — curriculum primer between context and strategy */}
-            {/* Pre-Session Brief — methodology/framework step */}
+            {/* ── strategy ── */}
             {step === "strategy" && (() => {
-              // Use methodology from level definition
               if (!progressionPathId || !progressionLevelId) return null;
               const levelDef = getLevelDefinition(progressionPathId, progressionLevelId);
               if (!levelDef?.methodology) return null;
+              const handleStrategyAdvance = () => {
+                const isPathSession = !!progressionPathId && !startAtContext;
+                if (isSelfIntro || isPathSession) {
+                  const profileFields: Record<string, string> = {};
+                  if (userProfile?.cvSummary) profileFields.cvSummary = userProfile.cvSummary;
+                  if (userProfile?.position) profileFields.manualExperience = `${userProfile.position} in ${userProfile.industry || "tech"}, ${userProfile.seniority || "mid-level"}.`.trim();
+                  if (userProfile?.keyExperience) profileFields["Your key experience"] = userProfile.keyExperience;
+                  setExtraContext(profileFields);
+                  if (scriptGenStatus !== "ready" && scriptGenStatus !== "loading") fireScriptGeneration(profileFields);
+                  if (isSelfIntro) {
+                    gateWithVocabulary("practice-prep");
+                  } else {
+                    gateWithGrammar(scriptGenStatus === "ready" ? "practice-prep" : "generating");
+                  }
+                  return;
+                }
+                const hasProfileContext = userProfile?.cvSummary || (userProfile?.position && userProfile?.industry);
+                setStep(hasProfileContext ? "context" : "experience");
+              };
               return (
                 <StrategyScreen
                   levelTitle={levelDef.title}
@@ -1301,78 +681,28 @@ export function PracticeSessionPage({
                   patternLoading={patternLoading}
                   narratorUrl={progressionLevelId ? STRATEGY_URLS[progressionLevelId] : undefined}
                   narratorScript={progressionLevelId ? NARRATOR_SCRIPTS.strategy[progressionLevelId as keyof typeof NARRATOR_SCRIPTS.strategy] : undefined}
-                  onReady={() => {
-                    // Path sessions (non-War Room): skip context, use profile data
-                    const isPathSession = !!progressionPathId && !startAtContext;
-                    if (isSelfIntro || isPathSession) {
-                      const profileFields: Record<string, string> = {};
-                      if (userProfile?.cvSummary) profileFields.cvSummary = userProfile.cvSummary;
-                      if (userProfile?.position) profileFields.manualExperience = `${userProfile.position} in ${userProfile.industry || "tech"}, ${userProfile.seniority || "mid-level"}.`.trim();
-                      if (userProfile?.keyExperience) profileFields["Your key experience"] = userProfile.keyExperience;
-                      setExtraContext(profileFields);
-                      // Eager generation may already be in flight — only fire if not started
-                      if (scriptGenStatus !== "ready" && scriptGenStatus !== "loading") {
-                        fireScriptGeneration(profileFields);
-                      }
-                      if (isSelfIntro) {
-                        // Self-intro: go through vocabulary if bank exists, then practice-prep
-                        gateWithVocabulary("practice-prep");
-                      } else {
-                        gateWithGrammar(scriptGenStatus === "ready" ? "practice-prep" : "generating");
-                      }
-                      return;
-                    }
-                    // War Room: show context screen
-                    const hasProfileContext = userProfile?.cvSummary || (userProfile?.position && userProfile?.industry);
-                    setStep(hasProfileContext ? "context" : "experience");
-                  }}
-                  onSkip={() => {
-                    const isPathSession = !!progressionPathId && !startAtContext;
-                    if (isSelfIntro || isPathSession) {
-                      const profileFields: Record<string, string> = {};
-                      if (userProfile?.cvSummary) profileFields.cvSummary = userProfile.cvSummary;
-                      if (userProfile?.position) profileFields.manualExperience = `${userProfile.position} in ${userProfile.industry || "tech"}, ${userProfile.seniority || "mid-level"}.`.trim();
-                      if (userProfile?.keyExperience) profileFields["Your key experience"] = userProfile.keyExperience;
-                      setExtraContext(profileFields);
-                      if (scriptGenStatus !== "ready" && scriptGenStatus !== "loading") {
-                        fireScriptGeneration(profileFields);
-                      }
-                      if (isSelfIntro) {
-                        // Self-intro: go through vocabulary if bank exists, then practice-prep
-                        gateWithVocabulary("practice-prep");
-                      } else {
-                        gateWithGrammar(scriptGenStatus === "ready" ? "practice-prep" : "generating");
-                      }
-                      return;
-                    }
-                    const hasProfileContext = userProfile?.cvSummary || (userProfile?.position && userProfile?.industry);
-                    setStep(hasProfileContext ? "context" : "experience");
-                  }}
+                  onReady={handleStrategyAdvance}
+                  onSkip={handleStrategyAdvance}
                 />
               );
             })()}
 
+            {/* ── grammar ── */}
             {step === "grammar" && (() => {
               if (!progressionLevelId) { setStep(nextStepAfterGrammarRef.current); return null; }
               const levelDef = progressionPathId && progressionLevelId
-                ? getLevelDefinition(progressionPathId, progressionLevelId)
-                : null;
+                ? getLevelDefinition(progressionPathId, progressionLevelId) : null;
               const rotationIndex = userProfile?.grammarRotationIndex?.[progressionLevelId] ?? 0;
               const structure = getGrammarStructure(progressionLevelId, rotationIndex);
               if (!structure) { setStep(nextStepAfterGrammarRef.current); return null; }
-
               function advanceAndGo() {
                 const nextIdx = nextGrammarIndex(progressionLevelId!, rotationIndex);
                 onProfileUpdate?.({
                   ...(userProfile ?? {} as OnboardingProfile),
-                  grammarRotationIndex: {
-                    ...(userProfile?.grammarRotationIndex ?? {}),
-                    [progressionLevelId!]: nextIdx,
-                  },
+                  grammarRotationIndex: { ...(userProfile?.grammarRotationIndex ?? {}), [progressionLevelId!]: nextIdx },
                 });
                 gateWithVocabulary(nextStepAfterGrammarRef.current as "generating" | "practice-prep");
               }
-
               return (
                 <GrammarContextScreen
                   structure={structure}
@@ -1384,14 +714,11 @@ export function PracticeSessionPage({
               );
             })()}
 
+            {/* ── vocabulary ── */}
             {step === "vocabulary" && (() => {
               const levelDef = progressionPathId && progressionLevelId
-                ? getLevelDefinition(progressionPathId, progressionLevelId)
-                : null;
-              if (!levelDef?.vocabularyBank?.length) {
-                setStep(nextStepAfterVocabularyRef.current);
-                return null;
-              }
+                ? getLevelDefinition(progressionPathId, progressionLevelId) : null;
+              if (!levelDef?.vocabularyBank?.length) { setStep(nextStepAfterVocabularyRef.current); return null; }
               return (
                 <VocabularyScreen
                   levelTitle={levelDef.title}
@@ -1404,20 +731,18 @@ export function PracticeSessionPage({
               );
             })()}
 
+            {/* ── generating ── */}
             {step === "generating" && (
               <>
-                {/* Animated loader — waits for API before transitioning */}
                 {scriptGenStatus !== "error" && (
                   <AnalyzingScreen
                     variant="generating"
                     canComplete={scriptGenStatus === "ready"}
-                    onComplete={() => setAnimationDone(true)}
+                    onComplete={() => {}}
                     narratorUrl={NARRATOR_URLS.generating}
                     narratorScript={NARRATOR_SCRIPTS.generating}
                   />
                 )}
-
-                {/* Error state with retry */}
                 {scriptGenStatus === "error" && (
                   <div className="w-full min-h-[calc(100dvh-4rem)] bg-[#0f172b] flex flex-col items-center justify-center px-6 gap-6">
                     <div className="w-16 h-16 rounded-full bg-[#1e293b] flex items-center justify-center">
@@ -1464,7 +789,7 @@ export function PracticeSessionPage({
               </>
             )}
 
-            {/* Self-intro practice-prep: show skeleton while briefing loads, cards when ready */}
+            {/* ── practice-prep (self-intro) ── */}
             {step === "practice-prep" && isSelfIntro && !interviewBriefing && (
               <div className="w-full min-h-full flex flex-col items-center justify-center bg-[#f0f4f8] gap-6 px-6 py-12">
                 <div className="w-full max-w-[640px] space-y-4">
@@ -1488,11 +813,8 @@ export function PracticeSessionPage({
                 onStartSimulation={(userDrafts, personalizedResponses) => {
                   const briefingPayload: SessionConfig["interviewBriefing"] = {
                     anticipatedQuestions: interviewBriefing.anticipatedQuestions.map((q) => ({
-                      id: q.id,
-                      question: q.question,
-                      approach: q.approach,
-                      suggestedOpener: q.suggestedOpener,
-                      framework: q.framework,
+                      id: q.id, question: q.question, approach: q.approach,
+                      suggestedOpener: q.suggestedOpener, framework: q.framework,
                       keyPhrases: q.keyPhrases.map((kp) => kp.phrase),
                     })),
                     userDrafts: Object.keys(userDrafts).length > 0 ? userDrafts : undefined,
@@ -1506,6 +828,8 @@ export function PracticeSessionPage({
                 scenario={scenario}
               />
             )}
+
+            {/* ── practice-prep (interview) ── */}
             {step === "practice-prep" && interviewBriefing && scenarioType === "interview" && (
               <PracticePrepScreen
                 interlocutor={interlocutor}
@@ -1519,22 +843,15 @@ export function PracticeSessionPage({
                 onStartSimulation={(userDrafts, personalizedResponses) => {
                   const briefingPayload: SessionConfig["interviewBriefing"] = {
                     anticipatedQuestions: interviewBriefing.anticipatedQuestions.map((q) => ({
-                      id: q.id,
-                      question: q.question,
-                      approach: q.approach,
-                      suggestedOpener: q.suggestedOpener,
-                      framework: q.framework,
+                      id: q.id, question: q.question, approach: q.approach,
+                      suggestedOpener: q.suggestedOpener, framework: q.framework,
                       keyPhrases: q.keyPhrases.map((kp) => kp.phrase),
                     })),
                     userDrafts: Object.keys(userDrafts).length > 0 ? userDrafts : undefined,
                   };
                   setBriefingForSession(briefingPayload);
-                  if (Object.keys(userDrafts).length > 0) {
-                    setUserDrafts(userDrafts);
-                  }
-                  if (Object.keys(personalizedResponses).length > 0) {
-                    setBriefingPersonalizations(personalizedResponses);
-                  }
+                  if (Object.keys(userDrafts).length > 0) setUserDrafts(userDrafts);
+                  if (Object.keys(personalizedResponses).length > 0) setBriefingPersonalizations(personalizedResponses);
                   setStep("interlocutor-intro");
                 }}
                 onBack={() => {
@@ -1545,6 +862,8 @@ export function PracticeSessionPage({
                 scenario={scenario}
               />
             )}
+
+            {/* ── interlocutor-intro ── */}
             {step === "interlocutor-intro" && (
               <InterlocutorIntroScreen
                 interlocutor={effectiveInterlocutor}
@@ -1553,6 +872,8 @@ export function PracticeSessionPage({
                 onReady={() => setStep("practice")}
               />
             )}
+
+            {/* ── practice-prep (sales/meeting/presentation) ── */}
             {step === "practice-prep" && generatedScript && scenarioType !== "interview" && (
               <PracticePrepScreen
                 interlocutor={interlocutor}
@@ -1561,26 +882,18 @@ export function PracticeSessionPage({
                 narratorScript={NARRATOR_SCRIPTS.prep[scenarioType as keyof typeof NARRATOR_SCRIPTS.prep]}
                 levelTitle={progressionPathId && progressionLevelId ? getLevelDefinition(progressionPathId, progressionLevelId)?.title : undefined}
                 onStartSimulation={(userDrafts, personalizedResponses) => {
-                  // Package sales/meeting/presentation briefing data for session
                   const genericBriefing = scriptSectionsToBriefingData(generatedScript);
                   const briefingPayload: SessionConfig["interviewBriefing"] = {
                     anticipatedQuestions: genericBriefing.anticipatedQuestions.map((q) => ({
-                      id: q.id,
-                      question: q.question,
-                      approach: q.approach,
-                      suggestedOpener: q.suggestedOpener,
-                      framework: q.framework,
+                      id: q.id, question: q.question, approach: q.approach,
+                      suggestedOpener: q.suggestedOpener, framework: q.framework,
                       keyPhrases: q.keyPhrases.map((kp) => kp.phrase),
                     })),
                     userDrafts: Object.keys(userDrafts).length > 0 ? userDrafts : undefined,
                   };
                   setBriefingForSession(briefingPayload);
-                  if (Object.keys(userDrafts).length > 0) {
-                    setUserDrafts(userDrafts);
-                  }
-                  if (Object.keys(personalizedResponses).length > 0) {
-                    setBriefingPersonalizations(personalizedResponses);
-                  }
+                  if (Object.keys(userDrafts).length > 0) setUserDrafts(userDrafts);
+                  if (Object.keys(personalizedResponses).length > 0) setBriefingPersonalizations(personalizedResponses);
                   setStep("practice");
                 }}
                 onBack={() => {
@@ -1595,6 +908,8 @@ export function PracticeSessionPage({
                 scenarioType={scenarioType}
               />
             )}
+
+            {/* ── practice ── */}
             {step === "practice" && !sessionId && !serviceError && (
               <div className="flex flex-col items-center justify-center h-[calc(100dvh-4rem)] gap-4">
                 <motion.div
@@ -1612,19 +927,16 @@ export function PracticeSessionPage({
                 scenarioType={scenarioType}
                 challengeMode={challengeModeRef.current}
                 onConversationComplete={() => {
-                  // Pre-warm: start feedback + improved script analysis while user
-                  // is still reading the last AI message — before they click "Analyze".
                   fireFeedbackAnalysis();
                   fireImprovedScriptGeneration();
                 }}
                 onViewFeedback={async (pronData) => {
                   setSessionPronData(pronData);
-                  if (sessionId && pronData.length > 0) pronDataCache.set(sessionId, pronData);
-                  // fireFeedbackAnalysis() and fireImprovedScriptGeneration() were already
-                  // called in onConversationComplete when the session ended. The guard in
-                  // fireFeedbackAnalysis prevents double calls. Just transition the step.
+                  if (sessionId && pronData.length > 0) {
+                    const { pronDataCache } = await import("@/shared/lib/sessionCache");
+                    pronDataCache.set(sessionId, pronData);
+                  }
                   setStep("analyzing");
-                  // Save pronunciation data to KV in background (non-blocking)
                   if (pronData.length > 0 && sessionId) {
                     savePronunciationData(sessionId, pronData).catch(() => {});
                   }
@@ -1632,6 +944,8 @@ export function PracticeSessionPage({
                 onEnd={onFinish}
               />
             )}
+
+            {/* ── analyzing ── */}
             {step === "analyzing" && (
               <AnalyzingScreen
                 variant="feedback"
@@ -1641,177 +955,39 @@ export function PracticeSessionPage({
                 narratorScript={NARRATOR_SCRIPTS.analyzing}
               />
             )}
-            {step === "feedback" && (() => {
-              /* Path recommendation for self-intro warm-up */
-              const recommendation = isSelfIntro
-                ? recommendPath(realFeedback?.pillarScores, undefined, userProfile)
-                : null;
 
-              const recommendationSlot = recommendation ? (
-                <PathRecommendationCard
-                  recommendation={recommendation}
-                  onStartPath={() => {
-                    setRecommendedPathOverride(recommendation.pathId as ScenarioType);
-                    handlePaywallTriggered("path-required");
-                  }}
-                  onExploreAll={onFinish}
-                />
-              ) : null;
+            {/* ── feedback ── */}
+            {step === "feedback" && (
+              <FeedbackStep
+                scenarioType={scenarioType}
+                isSelfIntro={isSelfIntro}
+                progressionPathId={progressionPathId}
+                progressionLevelId={progressionLevelId}
+                effectiveScenario={effectiveScenario}
+                effectiveInterlocutor={effectiveInterlocutor}
+                realFeedback={realFeedback}
+                sessionPronData={sessionPronData}
+                sessionSummary={sessionSummary}
+                interviewBriefing={interviewBriefing}
+                cvMatchStatus={cvMatchStatus}
+                cvMatchData={cvMatchData}
+                improvedScript={improvedScript}
+                userProfile={userProfile}
+                onProfileUpdate={onProfileUpdate}
+                userDrafts={userDrafts}
+                canRepeat={canRepeat}
+                onPracticeAgain={handlePracticeAgain}
+                sessionStartRef={sessionStartRef}
+                onFinish={onFinish}
+                onPaywallTriggered={handlePaywallTriggered}
+                setDeepDiveLessons={setDeepDiveLessons}
+                setDeepDiveLessonIndex={setDeepDiveLessonIndex}
+                setDeepDiveLessonOpen={setDeepDiveLessonOpen}
+                setRecommendedPathOverride={setRecommendedPathOverride}
+              />
+            )}
 
-              /* WhatsApp SR Coach activation card */
-              const waVerified = !!(userProfile as any)?.whatsapp_verified;
-              const waPermanentlyDismissed = !!(userProfile as any)?.wa_card_permanently_dismissed;
-              const dismissedAtCount = (userProfile as any)?.wa_dismissed_at_session_count ?? null;
-              const currentSessionCount = (userProfile as any)?.stats?.sessions_count ?? 0;
-              const sessionsSinceDismiss = dismissedAtCount !== null
-                ? currentSessionCount - dismissedAtCount
-                : null;
-              const showWaCard = !waVerified
-                && !waPermanentlyDismissed
-                && (dismissedAtCount === null || sessionsSinceDismiss !== null && sessionsSinceDismiss >= 3);
-
-              const dismissCount = dismissedAtCount !== null ? 1 : 0;
-
-              const handleWaDismiss = () => {
-                if (dismissCount >= 1) {
-                  // Second dismiss → permanent
-                  const updated = { ...(userProfile as any), wa_card_permanently_dismissed: true };
-                  onProfileUpdate?.(updated as any);
-                  getAuthToken().then((token) => {
-                    fetch(`https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/profile`, {
-                      method: "PUT",
-                      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, apikey: publicAnonKey },
-                      body: JSON.stringify({ wa_card_permanently_dismissed: true }),
-                    }).catch(() => {});
-                  }).catch(() => {});
-                } else {
-                  // First dismiss → cooldown of 3 sessions
-                  const updated = { ...(userProfile as any), wa_dismissed_at_session_count: currentSessionCount };
-                  onProfileUpdate?.(updated as any);
-                  getAuthToken().then((token) => {
-                    fetch(`https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/profile`, {
-                      method: "PUT",
-                      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, apikey: publicAnonKey },
-                      body: JSON.stringify({ wa_dismissed_at_session_count: currentSessionCount }),
-                    }).catch(() => {});
-                  }).catch(() => {});
-                }
-              };
-
-              const waCardSlot = showWaCard ? (
-                <div className="mt-6">
-                  <WhatsAppActivationCard
-                    variant="feedback"
-                    dismissCount={dismissCount}
-                    onDismiss={handleWaDismiss}
-                    strongerPhrase={realFeedback?.beforeAfter?.[0]?.professionalVersion ?? null}
-                  />
-                </div>
-              ) : null;
-
-              /* Deep Dive lesson recommendations (dual-axis: context + weakness) */
-              const pillarScores = realFeedback?.pillarScores ?? {};
-              const radarDataForLessons = Object.entries(pillarScores).map(([skill, score]) => ({
-                skill,
-                score: typeof score === "number" ? score : 0,
-                fullMark: 100,
-              }));
-              const sessionCtxForLessons = {
-                pathId: progressionPathId ?? scenarioType ?? undefined,
-                levelId: progressionLevelId ?? undefined,
-                scenarioType: scenarioType ?? undefined,
-              };
-              const deepDiveLessonsResult = !isSelfIntro
-                ? getRecommendedLessons(radarDataForLessons, sessionCtxForLessons)
-                : [];
-              const deepDiveSlot = deepDiveLessonsResult.length > 0 ? (
-                <DeepDiveCard
-                  lessons={deepDiveLessonsResult}
-                  onOpenLesson={(lesson) => {
-                    const idx = deepDiveLessonsResult.indexOf(lesson);
-                    setDeepDiveLessons(deepDiveLessonsResult);
-                    setDeepDiveLessonIndex(idx >= 0 ? idx : 0);
-                    setDeepDiveLessonOpen(true);
-                  }}
-                />
-              ) : null;
-
-              const scenarioDeltaSlot =
-                !isSelfIntro &&
-                scenarioType &&
-                realFeedback?.pillarScores &&
-                Object.keys(realFeedback.pillarScores).length >= 4 ? (
-                  <ScenarioDeltaCard
-                    scenarioType={scenarioType}
-                    currentPillarScores={realFeedback.pillarScores}
-                  />
-                ) : null;
-
-              const combinedBottomSlot = (waCardSlot || recommendationSlot || scenarioDeltaSlot || deepDiveSlot)
-                ? <>{waCardSlot}{recommendationSlot}{scenarioDeltaSlot}{deepDiveSlot}</>
-                : null;
-
-              return (
-                <FeedbackScreen
-                  scenarioType={scenarioType}
-                  realFeedback={realFeedback}
-                  pronunciationData={sessionPronData}
-                  pronunciationNotes={sessionSummary?.pronunciationNotes ?? []}
-                  narratorUrl={FEEDBACK_URLS[scenarioType ?? "interview"]}
-                  onPracticeAgain={canRepeat ? handlePracticeAgain : undefined}
-                  onDownloadPdf={() => {
-                    downloadSessionReportPdf({
-                      briefing: scenarioType === "interview" ? interviewBriefing : null,
-                      interlocutor: effectiveInterlocutor,
-                      scenario: effectiveScenario,
-                      scenarioType,
-                      feedback: realFeedback ? {
-                        strengths: realFeedback.strengths,
-                        opportunities: realFeedback.opportunities,
-                        beforeAfter: realFeedback.beforeAfter,
-                        pillarScores: realFeedback.pillarScores,
-                        professionalProficiency: realFeedback.professionalProficiency,
-                        contentScores: realFeedback.contentScores,
-                        interviewReadinessScore: realFeedback.interviewReadinessScore,
-                        preparationUtilization: realFeedback.preparationUtilization,
-                        contentInsights: realFeedback.contentInsights,
-                        languageInsights: realFeedback.languageInsights,
-                      } : null,
-                      summary: sessionSummary ? {
-                        overallSentiment: sessionSummary.overallSentiment,
-                        nextSteps: sessionSummary.nextSteps.map(s => `${s.title}: ${s.desc}`),
-                        sessionHighlight: sessionSummary.sessionHighlight,
-                      } : null,
-                      sessionDuration: `${Math.round((Date.now() - sessionStartRef.current) / 60000)} min`,
-                      userDrafts: scenarioType === "interview" && Object.keys(userDrafts).length > 0 ? userDrafts : undefined,
-                      pronunciationData: sessionPronData.length > 0 ? sessionPronData : undefined,
-                      improvedScript: improvedScript,
-                      cvMatchData: (cvMatchStatus === "success" && cvMatchData) ? cvMatchData : null,
-                    }).catch((err) => {
-                      console.error("[FeedbackScreen] PDF generation failed:", err);
-                    });
-                  }}
-                  onFinish={() => {
-                    // First completed session → mute narration for all future sessions
-                    if (!userProfile?.narrationCompleted) {
-                      const updated = { ...(userProfile as any), narrationCompleted: true };
-                      onProfileUpdate?.(updated);
-                      getAuthToken().then((token) => {
-                        fetch(`https://${projectId}.supabase.co/functions/v1/make-server-08b8658d/profile`, {
-                          method: "PUT",
-                          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, apikey: publicAnonKey },
-                          body: JSON.stringify({ narrationCompleted: true }),
-                        }).catch(() => {});
-                      }).catch(() => {});
-                      setNarrationMuted(true);
-                    }
-                    onFinish();
-                  }}
-                  canRetryFree={canRepeat}
-                  bottomSlot={combinedBottomSlot}
-                />
-              );
-            })()}
+            {/* ── upsell ── */}
             {step === "upsell" && (
               <UpsellScreen
                 scenarioType={scenarioType}
@@ -1820,86 +996,44 @@ export function PracticeSessionPage({
                 onContinue={onFinish}
               />
             )}
+
           </motion.div>
         </AnimatePresence>
         </div>
-      </div>{/* end flex row */}
+      </div>
 
-      {/* Footer — rendered once at layout level */}
       <MiniFooter />
 
-      {/* ── Deep Dive Lesson Modal ── */}
-      {deepDiveLessonOpen && deepDiveLessons.length > 0 && (
-        <LessonModal
-          lessons={deepDiveLessons}
-          currentIndex={deepDiveLessonIndex}
-          onClose={() => setDeepDiveLessonOpen(false)}
-          onNavigate={(i) => setDeepDiveLessonIndex(i)}
-          onComplete={() => {}}
-        />
-      )}
-
-      {/* ── Level Milestone Celebration ── */}
-      {progressionPathId && progressionLevelDef && (
-        <LevelMilestoneModal
-          open={levelMilestoneOpen}
-          pathId={progressionPathId}
-          levelNumber={progressionLevelDef.level}
-          levelTitle={progressionLevelDef.title}
-          score={Math.round(realFeedback?.professionalProficiency ?? 0)}
-          onClose={() => setLevelMilestoneOpen(false)}
-        />
-      )}
-
-      {/* ── Paywall Modal (v9.0 — Learning Path) ── */}
-      <PathPurchaseModal
-        open={paywallOpen}
-        onClose={() => { setPaywallOpen(false); setPaywallReason(null); }}
-        scenarioType={recommendedPathOverride || scenarioType || "interview"}
-        paywallReason={paywallReason ?? "path-required"}
+      <SessionModalLayer
+        showExitConfirm={showExitConfirm}
+        setShowExitConfirm={setShowExitConfirm}
+        onGoToDashboard={onGoToDashboard}
+        pathSetupDone={pathSetupDone}
+        progressionPathId={progressionPathId}
+        userProfile={userProfile}
+        onPathSetupComplete={handlePathSetupComplete}
+        deepDiveLessonOpen={deepDiveLessonOpen}
+        deepDiveLessons={deepDiveLessons}
+        deepDiveLessonIndex={deepDiveLessonIndex}
+        setDeepDiveLessonOpen={setDeepDiveLessonOpen}
+        setDeepDiveLessonIndex={setDeepDiveLessonIndex}
+        levelMilestoneOpen={levelMilestoneOpen}
+        setLevelMilestoneOpen={setLevelMilestoneOpen}
+        progressionLevelDef={progressionLevelDef}
+        realFeedbackProficiency={realFeedback?.professionalProficiency ?? 0}
+        paywallOpen={paywallOpen}
+        setPaywallOpen={setPaywallOpen}
+        paywallReason={paywallReason}
+        setPaywallReason={setPaywallReason}
+        scenarioType={scenarioType}
+        recommendedPathOverride={recommendedPathOverride}
         ownedPaths={ownedPaths}
         onPurchaseComplete={handlePurchaseComplete}
-        primaryPath={selfIntroPrimaryPath}
+        selfIntroPrimaryPath={selfIntroPrimaryPath}
+        pendingSwitch={pendingSwitch}
+        setPendingSwitch={setPendingSwitch}
+        onConfirmSwitch={confirmSwitch}
       />
-
-      {/* ── Level Switch Confirmation Modal ── */}
-      {pendingSwitch && (
-        <div className="fixed inset-0 z-[300] flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" onClick={() => setPendingSwitch(null)} />
-          <motion.div
-            className="relative z-10 bg-white rounded-2xl shadow-2xl p-6 mx-4 max-w-sm w-full"
-            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
-                <AlertTriangle className="w-5 h-5 text-amber-500" />
-              </div>
-              <div>
-                <h3 className="text-[15px] font-bold text-[#0f172b]">Switch level?</h3>
-                <p className="text-sm text-[#62748e] mt-0.5">
-                  You have an active session in progress. Switching will reset your current progress.
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setPendingSwitch(null)}
-                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-[#45556c] bg-[#f1f5f9] hover:bg-[#e2e8f0] transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmSwitch}
-                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-[#6366f1] hover:bg-[#4f46e5] transition-colors"
-              >
-                Continue
-              </button>
-            </div>
-          </motion.div>
-        </div>
-      )}
     </div>
     </ProgressionProvider>
   );

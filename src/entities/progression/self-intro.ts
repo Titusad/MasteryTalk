@@ -5,38 +5,16 @@ import type { ProgressionLevel } from "./path-types";
 const SI_UNIVERSAL_LEVEL: ProgressionLevel = {
   id: "si-0",
   level: 0,
-  title: "Crafting Your Professional Narrative",
+  title: "Professional Intro",
   scenario: "Professional self-introduction in a neutral context — not a job interview, not a team onboarding, not a client meeting. The user must deliver a clear, value-led introduction using the Three-Move structure: Anchor (who they are and what value they create), Relevance Bridge (one specific, quantified proof point relevant to any professional), and Invitation (a question that ends on the other person). Evaluate whether Move 1 is value-led (not title-led), Move 2 is specific and quantified, and Move 3 ends on the listener.",
-  interlocutorBehavior: "A professional peer meeting the user for the first time. Friendly and open, but evaluating quickly whether the conversation is worth continuing. Responds well to specificity and genuine curiosity. Asks natural follow-up questions when the introduction sparks interest. Politely disengages from vague or generic answers.",
-  interlocutor: "senior_stakeholder",
+  interlocutor: "interlocutor",
   unlockRequirement: "Always open",
-  introHeadline: "learn the introduction structure that adapts to any room — once",
+  introHeadline: "introduce yourself using a structure that adapts to any situation",
   introValue: "Most professionals memorize one introduction and use it everywhere. It works in some rooms and fails in others. This session teaches you the 3-move skeleton behind every great professional introduction — so the next three sessions can teach you how to adapt it to any context.",
-  measurableObjective: "Deliver a Three-Move Introduction in under 60 seconds: a value-led Anchor in one sentence, one specific and quantified Relevance Bridge point, and an Invitation question that ends on the other person.",
-  anchorPhrases: [
-    "I help [audience] [achieve outcome] — I [role] at [company].",
-    "We recently [specific, quantified result] for [team / client / metric].",
-    "What's your [relevant challenge] right now?",
-  ],
   methodology: {
     name: "The Three-Move Introduction",
     tagline: "Same structure. Different room. One principle.",
     explanation: `Most professionals think about introductions as a script to memorize. The problem: a script optimized for a networking event sounds robotic in a client meeting. One optimized for a new team falls flat at a conference.\n\nThe Three-Move Introduction gives you a skeleton that works anywhere — because only one of the three moves changes.\n\n**Move 1 — Anchor.** Who you are + what value you create. This never changes. It's your professional identity in one sentence — not your title, but the outcome you produce. Write this once, refine it until it's sharp, then stop changing it.\n\n**Move 2 — Relevance Bridge.** Why that matters to *this person, in this context.* This is the only move that adapts. In a networking event, you make it **intriguing** — you open with a problem they recognize. In a new team, you make it **human** — you show curiosity and something personal. In a client meeting, you make it **expert** — you mirror their problem before mentioning yourself. Same principle, three executions. The next three sessions will train each one.\n\n**Move 3 — Invitation.** End on them, not on you. A question, a bridge, a signal that you're interested in their world. Always. This is what transforms a monologue into a conversation — and a conversation into a relationship.`,
-    pattern: {
-      bad: {
-        label: "The Résumé Dump",
-        script: "Hi, I'm Sofia. I'm a Data Analyst at Bancolombia. I've been there for 3 years. Before that I worked at a startup. I have a degree in Statistics from Los Andes. I manage dashboards and reports for the retail division.",
-      },
-      good: {
-        label: "The Three-Move Introduction",
-        script: "I help financial teams stop guessing and start deciding — I lead data analytics at Bancolombia, where we recently cut reporting cycles from 2 weeks to 2 days. What does your data setup look like today?",
-        beats: [
-          { label: "Move 1 — Anchor",            text: "I help financial teams stop guessing and start deciding — I lead data analytics at Bancolombia." },
-          { label: "Move 2 — Relevance Bridge",  text: "We recently cut reporting cycles from 2 weeks to 2 days." },
-          { label: "Move 3 — Invitation",        text: "What does your data setup look like today?" },
-        ],
-      },
-    },
     anchorPhrases: [
       "I help [audience] [achieve outcome] — I [role] at [company].",
       "We recently [specific, quantified result] for [team / client / metric].",

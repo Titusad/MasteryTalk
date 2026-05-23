@@ -46,6 +46,8 @@ landing/
 
 DashboardPage.tsx           ← dashboard principal del usuario
 PracticeSessionPage.tsx     ← sesión de práctica completa (flujo de steps)
+                               Orquesta: useScriptGeneration · useFeedbackGeneration ·
+                               useSessionSave · useStepGates · FeedbackStep · SessionModalLayer
 PracticeHistoryPage.tsx     ← historial de sesiones
 LibraryPage.tsx             ← biblioteca de lecciones
 AccountPage.tsx             ← configuración de cuenta
@@ -75,6 +77,11 @@ model/
   scenario-presets.ts       ← 3 presets por escenario (describe la situación)
   session.constants.ts      ← constantes de sesión
 
+  useScriptGeneration.ts    ← hook: generación de briefing/script + eager fire + auto-transition
+  useFeedbackGeneration.ts  ← hook: análisis de feedback, summary, improved script, SR seed
+  useSessionSave.ts         ← hook: persistencia de sesión al backend + completeProgressionLevel
+  useStepGates.ts           ← hook: routing condicional grammar → vocabulary → next step
+
 ui/
   ExperienceScreen.tsx      ← step: selección de nivel de dificultad
   ContextScreen.tsx         ← step: selección de preset/situación
@@ -85,8 +92,11 @@ ui/
   VoicePractice.tsx         ← step: práctica de voz (STT + conversación GPT-4o)
   ConversationFeedback.tsx  ← step: feedback en tiempo real durante práctica
   FeedbackScreen.tsx        ← step: feedback final post-sesión (Gemini)
+  FeedbackStep.tsx          ← orquestador del step feedback: bottom slots + FeedbackScreen
   PronunciationTab.tsx      ← tab de pronunciación dentro de FeedbackScreen
   ShadowingModal.tsx        ← modal de shadowing integrado en feedback
+  SessionModalLayer.tsx     ← capa de modales de la sesión: exit confirm, PathSetup,
+                               LessonModal, LevelMilestone, PathPurchase, pending switch
 
   briefing/
     BriefingStepperCarousel.tsx  ← carousel de tarjetas del briefing
@@ -393,4 +403,4 @@ El evaluador Gemini (post-sesión) usa `services/prompts/analyst.ts` + el dual-a
 
 ---
 
-*v1.0 — 2026-05-23*
+*v1.1 — 2026-05-23*

@@ -48,7 +48,8 @@ export interface ProgressionLevel {
   level: number;
   title: string;
   scenario: string;
-  interlocutorBehavior: string;
+  /** Behavior description for the AI interlocutor — used by backend conversation prompt */
+  interlocutorBehavior?: string;
   interlocutor: string;
   unlockRequirement: string;
   /** Pre-Session Brief — curated methodology taught before practice */

@@ -120,7 +120,7 @@ export interface LevelMethodology {
   name: string;
   tagline: string;
   explanation: string;
-  pattern: {
+  pattern?: {
     bad: { label: string; script: string };
     good: { label: string; script: string; beats?: Array<{ label: string; text: string }> };
   };
