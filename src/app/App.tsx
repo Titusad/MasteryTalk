@@ -549,28 +549,54 @@ export default function App() {
     }
 
     if (Object.keys(kvFields).length > 0) {
-      import("../services/supabase").then(({ getAuthToken }) => {
-        getAuthToken().then((token) => {
-          fetch(
-            `${SUPABASE_URL}/functions/v1/make-server-08b8658d/profile`,
-            {
-              method: "PUT",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify(kvFields),
-            }
-          ).catch(() => { /* silent — admin data sync only */ });
-        }).catch(() => { /* no auth token — skip sync */ });
-      });
+      saveProfileToKV(kvFields).catch((err) =>
+        console.error("[App] handleProfileUpdate: KV save failed:", err)
+      );
     }
   };
 
-  /** Onboarding complete — save profile and close modal (page already navigated) */
-  const handleOnboardingComplete = (profile: OnboardingProfile) => {
-    // Mark as completed so future logins skip the form even without localStorage
-    handleProfileUpdate({ ...profile, profile_completed: true } as OnboardingProfile);
+  /** Persist profile fields to backend KV. Returns a promise so callers can await it. */
+  const saveProfileToKV = async (kvFields: Record<string, unknown>): Promise<void> => {
+    const { getAuthToken } = await import("../services/supabase");
+    const token = await getAuthToken();
+    if (!token) throw new Error("No auth token");
+    const res = await fetch(
+      `${SUPABASE_URL}/functions/v1/make-server-08b8658d/profile`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(kvFields),
+      }
+    );
+    if (!res.ok) throw new Error(`PUT /profile failed: ${res.status}`);
+  };
+
+  /** Onboarding complete — await the KV save before dismissing the modal */
+  const handleOnboardingComplete = async (profile: OnboardingProfile) => {
+    const completed = { ...profile, profile_completed: true } as OnboardingProfile;
+    setUserProfile(completed);
+    try {
+      localStorage.setItem("masterytalk_profile", JSON.stringify(completed));
+    } catch { /* ignore */ }
+
+    const kvFields: Record<string, unknown> = {
+      profile_completed: true,
+      ...(completed.position && { position: completed.position }),
+      ...(completed.industry && { industry: completed.industry }),
+      ...(completed.seniority && { seniority: completed.seniority }),
+      ...(completed.keyExperience && { keyExperience: completed.keyExperience }),
+      ...(completed.cvSummary && { cvSummary: completed.cvSummary }),
+      ...(completed.cvFileName && { cvFileName: completed.cvFileName }),
+      ...("cvConsentGiven" in completed && { cvConsentGiven: completed.cvConsentGiven }),
+      ...(completed.englishGoal && { english_goal: completed.englishGoal }),
+    };
+
+    try {
+      await saveProfileToKV(kvFields);
+      console.log("[App] Onboarding profile saved to KV");
+    } catch (err) {
+      console.error("[App] Failed to save onboarding profile to KV:", err);
+    }
     setShowOnboarding(false);
   };
 
