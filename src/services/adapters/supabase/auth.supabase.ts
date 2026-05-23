@@ -127,68 +127,13 @@ export class SupabaseAuthService implements IAuthService {
   }
 
   /**
-   * Try to fetch existing profile, or fall back to synthetic.
-   * Optimized: if profiles table doesn't exist (Figma Make env),
-   * skips cascade of retries and goes straight to synthetic profile.
+   * Return a synthetic profile from auth data only.
+   * The profiles table is not used — all subscription/profile data
+   * lives in the KV store and is fetched by App.tsx via GET /profile.
    */
   private async fetchOrCreateProfile(authUser: AuthUser): Promise<ProfileRow> {
-    const supabase = getSupabaseClient();
-
-    // Attempt 1: Direct fetch — works if profiles table exists
-    try {
-      return await this.fetchProfile(authUser.id);
-    } catch (err: any) {
-      const msg = String(err?.message || err).toLowerCase();
-      // If table doesn't exist, skip all retries → synthetic profile immediately
-      const isTableMissing =
-        msg.includes("relation") ||
-        msg.includes("does not exist") ||
-        msg.includes("undefined_table") ||
-        msg.includes("42p01");
-
-      if (isTableMissing) {
-        console.log("[MasteryTalk Auth] Profiles table not found — using synthetic profile (fast path)");
-        return this.syntheticProfile(authUser.id);
-      }
-
-      console.log("[MasteryTalk Auth] Profile not found, attempting upsert...");
-    }
-
-    // Attempt 2: Try to upsert directly (table exists but row doesn't)
-    const defaultProfile: Omit<ProfileRow, "created_at"> & { id: string } = {
-      id: authUser.id,
-      market_focus: null,
-      plan: "free",
-      free_sessions_used: [],
-      paths_purchased: [],
-      stats: {},
-      achievements: [],
-    };
-
-    try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .upsert(defaultProfile, { onConflict: "id" })
-        .select()
-        .single();
-
-      if (data && !error) {
-        console.log("[MasteryTalk Auth] Profile created via upsert");
-        return data as ProfileRow;
-      }
-    } catch (upsertErr) {
-      console.warn("[MasteryTalk Auth] Upsert failed:", upsertErr);
-    }
-
-    // Fallback: synthetic profile
-    console.log("[MasteryTalk Auth] Using synthetic profile (fallback)");
-    return this.syntheticProfile(authUser.id);
-  }
-
-  /** Generate a synthetic profile when no DB table is available */
-  private syntheticProfile(uid: string): ProfileRow {
     return {
-      id: uid,
+      id: authUser.id,
       market_focus: null,
       plan: "free",
       free_sessions_used: [],
@@ -197,25 +142,6 @@ export class SupabaseAuthService implements IAuthService {
       achievements: [],
       created_at: new Date().toISOString(),
     };
-  }
-
-  /**
-   * Fetch the profile row for a given user ID.
-   * Called after auth to compose the full User object.
-   */
-  private async fetchProfile(uid: string): Promise<ProfileRow> {
-    const supabase = getSupabaseClient();
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", uid)
-      .single();
-
-    if (error || !data) {
-      throw new Error(`Profile not found for uid: ${uid}`);
-    }
-
-    return data as ProfileRow;
   }
 
   /* ── IAuthService implementation ── */

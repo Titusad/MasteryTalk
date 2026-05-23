@@ -255,6 +255,14 @@ export default function App() {
                 if (hasContent) {
                   backendProfile = data;
                   setUserProfile(data as OnboardingProfile);
+                  // Sync subscription data from KV into authUser
+                  if (data.plan || data.paths_purchased) {
+                    setAuthUser(prev => prev ? {
+                      ...prev,
+                      plan: data.plan || prev.plan,
+                      pathsPurchased: data.paths_purchased || prev.pathsPurchased,
+                    } : prev);
+                  }
                 }
               }
             } catch { /* silent — proceed without backend profile */ }
@@ -419,6 +427,14 @@ export default function App() {
           try { localStorage.setItem("masterytalk_profile", JSON.stringify(merged)); } catch { /* ignore */ }
           return merged;
         });
+        // Sync subscription data from KV into authUser
+        if (backendProfile.plan || backendProfile.paths_purchased) {
+          setAuthUser(prev => prev ? {
+            ...prev,
+            plan: backendProfile.plan || prev.plan,
+            pathsPurchased: backendProfile.paths_purchased || prev.pathsPurchased,
+          } : prev);
+        }
       } catch { /* silent — localStorage fallback still works */ }
     })();
   }, [authUser?.uid]); // re-runs only when the logged-in user changes
