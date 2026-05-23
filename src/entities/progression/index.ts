@@ -21,6 +21,7 @@ export interface LevelState {
 export interface ProgressionState {
   activeGoal: string; // PathId — "self-intro" | "interview" | "sales" | etc.
   "self-intro": Record<string, LevelState>;
+  introductions: Record<string, LevelState>;
   interview: Record<string, LevelState>;
   sales: Record<string, LevelState>;
   meeting: Record<string, LevelState>;
@@ -151,3 +152,17 @@ export interface PathRecommendation {
   reason: string;
   focusDetail: string;
 }
+
+/* ── Path definitions ── */
+
+export * from "./path-types";
+export * from "./paths";
+export * from "./interview";
+export * from "./sales";
+export * from "./meeting";
+export * from "./presentation";
+export * from "./culture";
+export * from "./client";
+export * from "./self-intro";
+
+export { PATH_LABELS } from "@/shared/lib/paths";

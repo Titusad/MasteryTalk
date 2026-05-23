@@ -3,7 +3,7 @@
  * Presentational component (web-specific).
  */
 import { motion } from "motion/react";
-import { scoreColor } from "@/entities/session/shadowing";
+import { scoreColor } from "@/shared/lib/score-utils";
 
 interface ScoreRingProps {
   score: number;

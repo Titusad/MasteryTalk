@@ -20,7 +20,7 @@ export { BrandLogo } from "./BrandLogo";
 export { SmoothHeight } from "./SmoothHeight";
 export { RecordButton, RecordingWaveformBars, RecordingTimer } from "./RecordButton";
 export { AnalyzingScreen } from "./AnalyzingScreen";
-// SessionProgressBar lives in src/widgets/SessionProgressBar — import directly from there
+export { SessionProgressBar } from "./SessionProgressBar";
 export { ServiceErrorBanner, PaymentPendingBanner } from "./ServiceErrorBanner";
 
 // ── Layout helpers ────────────────────────────────────────────

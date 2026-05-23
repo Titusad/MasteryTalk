@@ -22,8 +22,8 @@ import { useProgressionState } from "@/features/dashboard/model/useProgressionSt
 import {
   PROGRESSION_PATHS,
   getLevelState,
-} from "@/features/dashboard/model/progression-paths";
-import type { PathId } from "@/features/dashboard/model/progression-paths";
+} from "@/entities/progression";
+import type { PathId } from "@/entities/progression";
 import type { LevelStatus, ScenarioType } from "@/services/types";
 
 const STATUS_CONFIG: Record<
@@ -40,9 +40,9 @@ const STATUS_CONFIG: Record<
   unlocked: {
     icon: Unlock,
     label: "Ready",
-    color: "#6366f1",
-    bg: "rgba(99, 102, 241, 0.08)",
-    border: "rgba(99, 102, 241, 0.3)",
+    color: "#14b8a6",
+    bg: "rgba(20, 184, 166, 0.08)",
+    border: "rgba(20, 184, 166, 0.3)",
   },
   study: {
     icon: BookOpen,
@@ -135,7 +135,7 @@ export function PracticeSideNav({
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-1">
         {loading ? (
           <div className="flex items-center justify-center py-10">
-            <div className="w-5 h-5 rounded-full border-2 border-[#6366f1] border-t-transparent animate-spin" />
+            <div className="w-5 h-5 rounded-full border-2 border-[#14b8a6] border-t-transparent animate-spin" />
           </div>
         ) : (
           activePath.levels.map((level, i) => {
@@ -167,7 +167,7 @@ export function PracticeSideNav({
                     if (!isLocked && !isActive) {
                       onLevelSwitch(
                         level.scenario,
-                        activePathId,
+                        activePath.scenarioType,
                         level.id,
                         level.interlocutor,
                       );
@@ -176,7 +176,7 @@ export function PracticeSideNav({
                   className={`
                     relative z-10 w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all duration-200
                     ${isLocked ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:bg-[#f8fafc]"}
-                    ${isActive ? "bg-[#f0f0ff] ring-1 ring-[#6366f1]/20" : ""}
+                    ${isActive ? "bg-[#f0fdfa] ring-1 ring-[#14b8a6]/20" : ""}
                   `}
                   initial={false}
                   animate={isActive ? { scale: 1 } : { scale: 1 }}
@@ -190,7 +190,7 @@ export function PracticeSideNav({
                         lvl.status === "completed"
                           ? "#22c55e"
                           : isActive
-                            ? "#6366f1"
+                            ? "#14b8a6"
                             : lvl.status === "locked"
                               ? "#f1f5f9"
                               : config.bg,
@@ -198,7 +198,7 @@ export function PracticeSideNav({
                         lvl.status === "completed"
                           ? "#22c55e"
                           : isActive
-                            ? "#6366f1"
+                            ? "#14b8a6"
                             : lvl.status === "locked"
                               ? "#e2e8f0"
                               : config.border
@@ -229,7 +229,7 @@ export function PracticeSideNav({
                     <div className="flex items-center gap-1.5">
                       <span
                         className={`text-[13px] font-semibold truncate ${
-                          isActive ? "text-[#4338ca]" : "text-[#0f172b]"
+                          isActive ? "text-[#0d9488]" : "text-[#0f172b]"
                         }`}
                       >
                         {level.title}
@@ -253,7 +253,7 @@ export function PracticeSideNav({
                   {!isLocked && (
                     <ChevronRight
                       className={`w-3.5 h-3.5 shrink-0 transition-colors ${
-                        isActive ? "text-[#6366f1]" : "text-[#cbd5e1]"
+                        isActive ? "text-[#14b8a6]" : "text-[#cbd5e1]"
                       }`}
                     />
                   )}
@@ -269,7 +269,7 @@ export function PracticeSideNav({
                           key={s.id}
                           onClick={() => clickable && onSessionStepClick(s.stepKey!)}
                           className={`flex items-center gap-2 px-2 py-1.5 rounded-lg min-w-0 transition-colors ${
-                            s.status === "active" ? "bg-[#eef2ff]"
+                            s.status === "active" ? "bg-[#f0fdfa]"
                             : clickable ? "hover:bg-[#f8fafc] cursor-pointer"
                             : ""
                           }`}
@@ -277,12 +277,12 @@ export function PracticeSideNav({
                           {s.status === "done" ? (
                             <CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" />
                           ) : s.status === "active" ? (
-                            <div className="w-2 h-2 rounded-full bg-[#6366f1] shrink-0" />
+                            <div className="w-2 h-2 rounded-full bg-[#14b8a6] shrink-0" />
                           ) : (
                             <div className="w-2 h-2 rounded-full border border-[#cbd5e1] shrink-0" />
                           )}
                           <span className={`text-[11px] truncate ${
-                            s.status === "active" ? "text-[#4338ca] font-medium"
+                            s.status === "active" ? "text-[#0d9488] font-medium"
                             : s.status === "done" ? "text-[#62748e]"
                             : "text-[#94a3b8]"
                           }`}>

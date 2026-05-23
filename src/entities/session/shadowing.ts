@@ -7,6 +7,7 @@
 import type { ShadowingPhrase } from "@/entities/feedback";
 import type { TurnPronunciationData, BeforeAfterComparison } from "@/services/types";
 import type { AzureWordAssessment } from "@/services/types";
+export { scoreColor, splitStress } from "@/shared/lib/score-utils";
 
 export type { ShadowingPhrase };
 
@@ -117,30 +118,6 @@ export function buildPhraseIpa(azureWords: AzureWordAssessment[]): string {
   return `/${wordIpas.join(" ")}/`;
 }
 
-/* ── Stress syllable detection ── */
-
-export function splitStress(word: string): [string, string, string] {
-  if (word.length <= 3) return ["", word, ""];
-  const lower = word.toLowerCase();
-  const vowels = "aeiouy";
-
-  let vStart = -1;
-  for (let i = 0; i < lower.length; i++) {
-    if (vowels.includes(lower[i])) {
-      vStart = i;
-      break;
-    }
-  }
-  if (vStart === -1) return ["", word, ""];
-
-  let vEnd = vStart;
-  while (vEnd < lower.length && vowels.includes(lower[vEnd])) vEnd++;
-  if (vEnd < lower.length) vEnd++;
-
-  const stressEnd = Math.min(vEnd, word.length);
-  return ["", word.slice(0, stressEnd), word.slice(stressEnd)];
-}
-
 /* ── Clean transcription ── */
 
 export function cleanTranscription(text: string): string {
@@ -168,7 +145,8 @@ export function extractShadowingPhrases(
     if (!recognizedText || recognizedText.trim().length < 10) continue;
 
     const problemWords = words
-      .filter((w) => w.errorType !== "None" || w.accuracyScore < 75)
+      .filter((w) => w.errorType !== "Omission" && w.errorType !== "Insertion" &&
+                     (w.errorType !== "None" || w.accuracyScore < 75))
       .map((w) => ({
         word: w.word,
         score: w.accuracyScore,
@@ -264,8 +242,3 @@ export function scoreLabel(score: number): string {
   return "Let's try again";
 }
 
-export function scoreColor(score: number): string {
-  if (score >= 90) return "#22c55e";
-  if (score >= 60) return "#f59e0b";
-  return "#ef4444";
-}

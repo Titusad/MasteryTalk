@@ -1,0 +1,478 @@
+import type { ProgressionLevel } from "./path-types";
+
+export const CLIENT_LEVELS: ProgressionLevel[] = [
+  {
+    id: "cli-1",
+    level: 1,
+    title: "First Client Call",
+    introHeadline: "earn trust in the first 15 minutes with a new client",
+    scenarioContext: "The first call with a new client sets the tone for everything that follows. Clients form lasting impressions in the first 15 minutes — on your competence, your listening ability, and whether they can trust you with their business.",
+    introValue: "Learn the Trust Deposit — listen first, commit only to what you can deliver, and close with a specific next step.",
+    scenario: "The first call with a new client after the deal is closed — the candidate must demonstrate active listening, define what success looks like for the client, set realistic expectations, and close with clear next steps.",
+    interlocutorBehavior: "Cautiously optimistic. Watching for signs of whether this will be a genuine partnership or a cookie-cutter service. Responds warmly when asked about their goals. Grows skeptical when the service provider talks more about themselves than about the client's situation.",
+    interlocutor: "senior_stakeholder",
+    unlockRequirement: "First level — unlocked by default",
+    measurableObjective: "The user asks about the client's definition of success before explaining their own process, sets at least one realistic expectation about the first phase, and closes with a specific next step with owner and date.",
+    anchorPhrases: [
+      "Before I walk you through how we work, I want to understand your situation first...",
+      "What does a successful outcome look like for you specifically?",
+      "Here's what the first phase will look like — including one thing that might feel slow initially...",
+    ],
+    methodology: {
+      name: "The Trust Deposit",
+      tagline: "The first call with a new client is not a kickoff — it's an audition.",
+      explanation: `The first call with a new client is not a kickoff — it's an audition. The client has signed the contract, but they haven't yet decided whether they trust you. Trust at this stage is not earned by enthusiasm or by explaining everything your product or service can do. It's earned by demonstrating that you listen carefully, commit only to what you can deliver, and treat their time as more valuable than your agenda.\n\nThe most common mistake in a first client call is over-pitching. The deal is closed — but many professionals keep selling. They walk through capabilities, share success stories, and project optimism. The client, who was hoping to feel understood and set up for success, instead feels like they're still in the sales process.\n\nThe core skill of this level is the **Trust Deposit**: the discipline of earning trust through specific actions, not through general enthusiasm. The first call should end with the client feeling three things: that you understood what success means to them, that you were honest about what to expect, and that there is a clear next step with a date.`,
+      pattern: {
+        bad: {
+          label: "What it sounds like when it doesn't work",
+          script: "We're really excited to be working with you. I think this is going to be a great partnership. We've done this with a lot of companies similar to yours and the results have been fantastic. We're going to get started right away and I'm sure you're going to love how this all comes together.",
+        },
+        good: {
+          label: "What it sounds like when it works",
+          script: "Before I walk you through how we typically work, I want to understand your situation first. What does a successful outcome look like for you specifically — not the general goal, but the thing that would make you say six months from now that this was worth it?",
+        },
+      },
+      anchorPhrases: [
+        "Discovery before pitch — Do you ask about the client's definition of success before explaining your process or capabilities?",
+        "Expectation honesty — Do you set realistic expectations about what the first phase will look like, including potential friction points?",
+        "Concrete close — Does the call end with a specific next step, deliverable, owner, and date?",
+      ],
+      coachTip: "Open the call with this question — before anything else: 'Before I walk you through [our process / next steps / how this works], I want to make sure I understand what success looks like for you specifically. What's the outcome that would make this worth it — in your words?'",
+    },
+  },
+  {
+    id: "cli-2",
+    level: 2,
+    title: "Setting Expectations",
+    introHeadline: "protect your scope without damaging the relationship",
+    scenarioContext: "Scope creep and missed expectations are the leading causes of damaged client relationships. This level focuses on setting clear, specific expectations early — on deliverables, timelines, and communication — before the project creates friction.",
+    introValue: "Master Scope Integrity — be warm and firm at the same time. Every boundary should feel like a path forward, not a wall.",
+    scenario: "The client requests something that is outside the agreed scope. The candidate must protect the boundary without damaging the relationship, reference the original agreement, and offer a constructive path forward.",
+    interlocutorBehavior: "Assumes everything is included. Not intentionally pushing — genuinely believes the request is reasonable. Becomes frustrated if told 'that's out of scope' without a solution. Responds well to partners who protect boundaries while offering alternatives.",
+    interlocutor: "senior_stakeholder",
+    unlockRequirement: "Complete Level 1",
+    measurableObjective: "The user references the specific agreed scope, reframes the gap as a shared problem, and offers at least one concrete path forward that protects the boundary while giving the client a way to get what they need.",
+    anchorPhrases: [
+      "I want to make sure we're aligned on what we agreed...",
+      "What you're describing sits outside that — and here's how we can make it happen...",
+      "Which direction makes more sense for you?",
+    ],
+    methodology: {
+      name: "Scope Integrity",
+      tagline: "Scope creep doesn't usually happen because clients are trying to take advantage of you. It happens because expectations were never precisely defined.",
+      explanation: `Scope creep doesn't usually happen because clients are trying to take advantage of you. It happens because expectations were never precisely defined — and in the absence of precision, both parties fill the gap with their own assumptions. The client assumes more is included. The service provider assumes less. The conflict is inevitable.\n\nThe professional who handles scope conversations well doesn't fight the client — they clarify the agreement. There's a critical difference between 'that's out of scope' (which sounds like a wall) and 'what you're describing would sit outside what we agreed, and here's how we can make it happen' (which sounds like a partner).\n\nThe core skill of this level is **Scope Integrity**: protecting agreed boundaries without damaging the relationship. This requires separating two things that often get confused — the warmth of the relationship (which should remain high) and the firmness of the agreement (which should also remain high). You can be both warm and firm. In fact, the best client relationships require it.`,
+      pattern: {
+        bad: {
+          label: "What it sounds like when it doesn't work",
+          script: "Oh, yeah, of course — we can add that. It shouldn't be a big deal. Let me just check with the team and we'll figure it out. I don't want this to be an issue.",
+        },
+        good: {
+          label: "What it sounds like when it works",
+          script: "I want to make sure we're aligned on what we agreed, because I think there may be a gap. What we scoped covers X and Y — and what you're describing sounds like Z, which sits outside that. I want to find a way to get you what you need, so let me propose two options: we can address Z in phase two, or if you need it now, we can put together a quick change order. Which direction makes more sense for you?",
+        },
+      },
+      anchorPhrases: [
+        "Agreement reference — Do you reference the specific scope agreed, with enough detail to make the gap clear?",
+        "Non-defensive framing — Do you address the misalignment as a clarification to make together, not as a client error to correct?",
+        "Path forward — Do you offer at least one concrete alternative that gives the client what they need without giving scope away for free?",
+      ],
+      coachTip: "Use this structure every time the client asks for something out of scope: Align: 'I want to make sure we're working from the same agreement — what we scoped was [specific scope].' → Gap: 'What you're describing is [request], which sits outside that.' → Path: 'Here's how we can make it happen: [option 1] or [option 2]. Which works better for you?'",
+    },
+  },
+  {
+    id: "cli-3",
+    level: 3,
+    title: "Delivering Bad News",
+    introHeadline: "deliver bad news early, directly, and with a recovery plan",
+    scenarioContext: "Bad news in a client relationship is inevitable. The professionals who keep clients long-term are the ones who deliver difficult updates early, directly, and always paired with a recovery plan. Delay makes everything worse.",
+    introValue: "Practice Proactive Transparency — tell the client before they find out. The window for delivering bad news closes fast.",
+    scenario: "Something has gone wrong — a deadline will be missed, a deliverable will be late, or a commitment can't be met. The candidate must proactively inform the client before they discover it, be specific about the impact, and present a recovery plan.",
+    interlocutorBehavior: "Tests whether the professional discloses proactively or waits to be asked. Responds with measured frustration when bad news is delivered — but with respect if it's delivered early, honestly, and with a plan. Loses trust completely if the news is minimized or hidden.",
+    interlocutor: "senior_stakeholder",
+    unlockRequirement: "Complete Level 2",
+    measurableObjective: "The user proactively discloses the problem in the first exchange, follows the What → Impact → Recovery → Ask sequence, and provides specific numbers for the impact and the recovery timeline.",
+    anchorPhrases: [
+      "I'm calling because I want to get ahead of something before it affects your timeline...",
+      "Here's what we've done, and here's the honest recovery estimate...",
+      "What would be most helpful from me right now?",
+    ],
+    methodology: {
+      name: "Proactive Transparency",
+      tagline: "There is a window for delivering bad news — and it closes fast.",
+      explanation: `There is a window for delivering bad news — and it closes fast. The professional who tells the client about a problem before the client discovers it is in a completely different conversation than the one who waits until it's unavoidable. In the first conversation, the professional is a trustworthy partner who is managing the situation. In the second, they're someone who hid something — and no amount of explanation will fully undo that impression.\n\nThe instinct to delay is understandable. No one wants to make this call. But every hour you wait, the problem grows and the trust cost of disclosure increases. The only thing that gets easier by waiting is the short-term discomfort of the call — everything else gets harder.\n\nThe core skill of this level is **Proactive Transparency**: the practice of delivering difficult information early, directly, and with a recovery plan already in hand. The sequence that works every time: What happened → Impact → What we're doing about it → What we need from you. In that order. No exceptions.`,
+      pattern: {
+        bad: {
+          label: "What it sounds like when it doesn't work",
+          script: "So, um, I wanted to touch base because there have been some developments on our end. Things are still moving forward but there have been some... complications. I don't want you to worry because we're working on it and I'm sure it will all work out, but I wanted to keep you in the loop just in case.",
+        },
+        good: {
+          label: "What it sounds like when it works",
+          script: "I'm calling because I want to get ahead of something before it affects your timeline. The vendor we depend on for the data integration has pushed their delivery from Friday to Wednesday next week. That puts our go-live date at risk by approximately 5 days. Here's what we've done: we've already sourced a backup vendor and we're running parallel tracks. My current estimate is that we recover 3 of those 5 days. I want to be honest with you about the other 2 — that's the realistic buffer we're working with right now. What would be most helpful from me in the next 24 hours?",
+        },
+      },
+      anchorPhrases: [
+        "Proactivity — Do you disclose the problem before the client discovers it, or do you wait until asked?",
+        "Sequence discipline — Do you follow What happened → Impact → Recovery plan → Client ask, in that order?",
+        "Honest quantification — Do you give specific numbers for the impact and the recovery, even when the numbers are uncomfortable?",
+      ],
+      coachTip: "Deliver bad news using this exact sequence — don't rearrange it: What: 'I'm calling because [specific thing that happened].' → Impact: 'This affects [specific thing] by [specific amount].' → Recovery: 'Here's what we've already done: [actions taken]. Our current estimate is [honest projection].' → Ask: 'What would be most helpful from me right now?'",
+    },
+  },
+  {
+    id: "cli-4",
+    level: 4,
+    title: "Defending Your Work",
+    introHeadline: "defend your professional reasoning without getting defensive",
+    scenarioContext: "When a client challenges your work, the instinct is to defend or capitulate. The professional response is neither — it's to listen, understand the real concern, and respond with evidence and composure. This level teaches you to hold your position while remaining genuinely open.",
+    introValue: "Learn Confident Humility — the combination of conviction in your thinking with genuine openness to the client's perspective.",
+    scenario: "The client challenges a deliverable — they're dissatisfied with something the team produced. The candidate must understand the gap between what was expected and what was delivered, explain the reasoning without being defensive, and arrive at a resolution.",
+    interlocutorBehavior: "Disappointed but not hostile. Gives specifics if asked. Loses respect for immediate capitulation. Gains respect for professionals who ask questions, explain their reasoning, and then find a path forward collaboratively.",
+    interlocutor: "senior_stakeholder",
+    unlockRequirement: "Complete Level 3",
+    measurableObjective: "The user asks what the client expected before defending the work, explains the specific reasoning behind the approach, and proposes a concrete resolution that addresses both the client's concern and the professional rationale.",
+    anchorPhrases: [
+      "Before I respond, can you tell me specifically what you were expecting?",
+      "Let me explain the reasoning behind our approach...",
+      "Given what you've described, here's the version I'd propose...",
+    ],
+    methodology: {
+      name: "Confident Humility",
+      tagline: "When a client challenges your work, there are two wrong responses: immediate defense and immediate capitulation.",
+      explanation: `When a client challenges your work, there are two wrong responses: immediate defense and immediate capitulation. Defense makes the conversation adversarial — you're now arguing, not solving a problem. Capitulation destroys your credibility — if you agree the work is wrong the moment it's challenged, the client loses faith in your judgment entirely.\n\nThe right response is neither. It's a genuine inquiry into what the client was expecting, followed by an honest explanation of your reasoning, followed by a collaborative search for a resolution that serves the underlying goal. This is not a compromise — it's a professional conversation between two people who both want a good outcome.\n\nThe core skill of this level is **Confident Humility**: the combination of defending your professional reasoning (which requires conviction) with genuine openness to the client's perspective (which requires curiosity). You never defend your ego — you defend your thinking. And you do it while remaining sincerely interested in understanding theirs.`,
+      pattern: {
+        bad: {
+          label: "What it sounds like when it doesn't work",
+          script: "I'm sorry you feel that way. I can see why you might think that. You're right that we could have done it differently. Let me just redo it the way you're describing and we'll get that over to you.",
+        },
+        good: {
+          label: "What it sounds like when it works",
+          script: "I want to understand your concern fully before I respond. Can you tell me what you were expecting to see — specifically? I want to make sure I understand the gap. [After listening] — Thank you for that. Let me explain the reasoning behind what we did, and then I want us to find the version that actually works. We approached it this way because [specific reasoning]. Given what you've described, I think there's a version that serves both intentions. Here's what I'd propose...",
+        },
+      },
+      anchorPhrases: [
+        "Inquiry before defense — Do you ask what the client expected before explaining what you did?",
+        "Reasoning transparency — Do you explain the specific reasoning behind your approach, not just assert that it was right?",
+        "Collaborative resolution — Do you arrive at a specific path forward that addresses both the client's concern and the underlying professional rationale?",
+      ],
+      coachTip: "When your work is challenged, use this four-step sequence: Inquire: 'Before I respond, can you tell me specifically what you were expecting?' → Listen fully — don't interrupt. → Explain: 'Here's the reasoning behind our approach: [specific rationale].' → Resolve: 'Given what you've described, here's the version I'd propose: [specific adjustment or confirmation].'",
+    },
+  },
+  {
+    id: "cli-5",
+    level: 5,
+    title: "Managing a Difficult Client",
+    introHeadline: "reset boundaries with demanding clients while keeping the relationship",
+    scenarioContext: "Difficult clients rarely start difficult — they become difficult when the relationship lacks structure. This level focuses on reestablishing clear ways of working without making the client wrong, using language that frames limits as serving their interests, not yours.",
+    introValue: "Practice Professional Boundary Setting — frame every limit as serving the client's interest, not your convenience.",
+    scenario: "The client has become consistently demanding — requesting things outside of scope, sending urgent messages outside of hours, and pushing boundaries that were never firmly established. The candidate must reset expectations without losing the relationship.",
+    interlocutorBehavior: "Pushes aggressively but responds to professionals who hold firm respectfully. Tests whether the professional will cave or hold. Respects boundaries when they are framed as serving the client's interest, not the service provider's convenience.",
+    interlocutor: "senior_stakeholder",
+    unlockRequirement: "Complete Level 4",
+    measurableObjective: "The user holds at least one boundary by framing it as serving the client's interest, maintains composure throughout, and offers a specific path within the process that addresses the client's underlying need.",
+    anchorPhrases: [
+      "I hear the urgency — and I want to get you what you need as fast as possible...",
+      "The fastest path is actually through the standard process, not around it...",
+      "Here's specifically what I can do within [timeframe]...",
+    ],
+    methodology: {
+      name: "Professional Boundary Setting",
+      tagline: "Difficult clients don't usually start difficult. They become difficult when the relationship lacks structure.",
+      explanation: `Difficult clients don't usually start difficult. They become difficult when the relationship lacks structure — when the process is unclear, when boundaries were never established, or when early concessions taught them that pushing gets results. By the time you're dealing with a consistently difficult client, some of what you're managing is a pattern you helped create.\n\nThis doesn't mean the client is right — it means the solution requires more than just holding firm in one conversation. It requires reestablishing the structure that should have been there from the beginning, without making the client wrong for taking advantage of an opening you left.\n\nThe core skill of this level is **Professional Boundary Setting**: the practice of protecting agreed ways of working by framing limits as serving the client's interests, not the service provider's convenience. 'I can't do that' closes a door. 'The way we get you the best result is by going through this process' opens a path. Same boundary — completely different dynamic.`,
+      pattern: {
+        bad: {
+          label: "What it sounds like when it doesn't work",
+          script: "I understand you need this urgently, and I really want to help, but the thing is our process requires... I mean, I know it might seem bureaucratic, but it's just how we work, and I can't really make exceptions even though I know that's frustrating...",
+        },
+        good: {
+          label: "What it sounds like when it works",
+          script: "I hear the urgency — and I want to get you what you need as fast as possible. The fastest path is actually through the standard process, not around it. When we skip steps, we typically create problems downstream that take longer to fix than the time we saved. Here's what I can do: I'll personally prioritize this the moment it comes through the right channel. If you can send the request through [specific channel] in the next hour, I'll have a response to you by end of day.",
+        },
+      },
+      anchorPhrases: [
+        "Boundary framing — Do you frame limits as serving the client's interests, or as rules you're obligated to enforce?",
+        "Composure — Do you maintain a calm, professional tone throughout even when the client is frustrated or dismissive?",
+        "Concrete alternative — Do you offer a specific path within the process, or do you just say no without a forward path?",
+      ],
+      coachTip: "Every time you need to hold a boundary, use this structure: Acknowledge: 'I hear [the urgency / the frustration / the need].' → Reframe: 'The way we get you the best result here is actually [process], because [reason it serves them].' → Offer: 'Here's specifically what I can do: [concrete action within the boundary].'",
+    },
+  },
+  {
+    id: "cli-6",
+    level: 6,
+    title: "Growing the Relationship",
+    introHeadline: "open expansion conversations that feel like insights, not pitches",
+    scenarioContext: "Growing a client relationship requires a different conversation than winning it. This level focuses on the moment where you transition from delivery to strategy — sharing an observation about the client's business that naturally opens the door to what's next.",
+    introValue: "Master Insight-Led Expansion — bring a perspective on their business they can't see from the inside. The sale follows naturally.",
+    scenario: "The engagement has been successful. The candidate must use an insight about the client's business to open a natural expansion conversation — without it feeling like a sales pitch. The goal is to bring a perspective the client hasn't seen, not to push an additional service.",
+    interlocutorBehavior: "Satisfied with the current work. Not looking for additional services. Responds positively to genuine insights about their business. Shuts down immediately if the conversation feels like a pitch. Opens up if the professional demonstrates understanding of their business beyond the current engagement.",
+    interlocutor: "senior_stakeholder",
+    unlockRequirement: "Complete Level 5",
+    measurableObjective: "The user opens the conversation with a specific observation about the client's business, frames the expansion as a natural next step from the observation, and gets the client to express genuine interest before mentioning any additional service.",
+    anchorPhrases: [
+      "Something we've noticed in the work that I want to share with you...",
+      "This tends to be invisible from the inside because...",
+      "Would it be useful to look at what this could mean for next year?",
+    ],
+    methodology: {
+      name: "Insight-Led Expansion",
+      tagline: "The expansion conversation is the one most service professionals handle worst.",
+      explanation: `The expansion conversation is the one most service professionals handle worst — either because they're afraid it will feel like a sales pitch, or because they pitch so eagerly it actually does feel like one. Both outcomes leave money on the table and damage the relationship that made expansion possible in the first place.\n\nThe distinction that matters is this: vendors pitch products. Advisors bring insights. If you've done your work well, you know things about your client's business that they don't fully see themselves — patterns in the data, gaps in their approach, opportunities they're not positioned to recognize from the inside. That knowledge is the foundation of an expansion conversation that doesn't feel like selling.\n\nThe core skill of this level is **Insight-Led Expansion**: bringing the client a perspective on their own business that creates the expansion conversation naturally. You're not introducing a new service — you're sharing an observation that makes the client want to know what to do about it. The expansion is the answer to a question they now have, not a pitch for something you want to sell.`,
+      pattern: {
+        bad: {
+          label: "What it sounds like when it doesn't work",
+          script: "So we've had a really great year together and I wanted to talk about potentially expanding our engagement. We have some other services that I think could be really valuable for you. We do X, Y, and Z and a lot of our clients at your stage have found them really useful. I'd love to set up a separate call to walk you through what we offer.",
+        },
+        good: {
+          label: "What it sounds like when it works",
+          script: "Something we've noticed in the work this year that I want to share with you — we've seen that your highest-performing segments are responding well to X, but you're not set up to scale that systematically. Most companies don't notice this from the inside because the signal is in the aggregate data, not in day-to-day operations. I think there's a significant opportunity here that's being left on the table. Would it be useful to spend 20 minutes looking at what that could mean for next year?",
+        },
+      },
+      anchorPhrases: [
+        "Insight specificity — Is your observation specific to this client's situation, or is it generic enough to apply to any client?",
+        "Non-pitch framing — Does the expansion feel like a natural response to a problem you've identified, or like a sales agenda you've prepared?",
+        "Client curiosity — Does the client signal genuine interest in exploring further, or do they feel like they're being sold to?",
+      ],
+      coachTip: "Open the expansion conversation with an observation, not a proposal: Observation: 'Something we've noticed in the work that I want to share...' → Specificity: '[Specific pattern or gap unique to this client].' → Why they haven't seen it: 'This tends to be invisible from the inside because...' → Invitation: 'Would it be useful to look at what this could mean for [next quarter / next year]?' — Only after they say yes do you mention a service.",
+    },
+  },
+];
+
+/* ── C-Suite Communication Path (6 Levels) ── */
+/* Note: CSUITE_LEVELS is defined but not yet assembled into PROGRESSION_PATHS — future path */
+
+export const CSUITE_LEVELS: ProgressionLevel[] = [
+  {
+    id: "cs-1",
+    level: 1,
+    title: "Speaking Up in the Room",
+    introHeadline: "contribute powerfully in executive meetings without waiting to be invited",
+    scenarioContext: "Getting your voice heard in a room with senior leaders is one of the most intimidating professional challenges. This level focuses on the specific techniques that help you contribute clearly, at the right moment, without over-explaining or shrinking.",
+    introValue: "Learn the One Powerful Point — one sharp, well-timed observation earns more credibility than five safe ones.",
+    scenario: "An executive meeting where the candidate is the most junior person present. Multiple senior leaders are discussing a strategic decision. The candidate must contribute at least one substantive point without waiting to be invited.",
+    interlocutorBehavior: "Does not invite junior voices. Moves the conversation quickly between senior participants. Stops and pays attention when someone junior says something sharp and specific. Ignores vague or hedged contributions.",
+    interlocutor: "senior_stakeholder",
+    unlockRequirement: "First level — unlocked by default",
+    measurableObjective: "The user speaks up at least twice without being invited, each contribution is a specific, actionable observation delivered in under 45 seconds, and at least one point changes the direction of the conversation.",
+    anchorPhrases: [
+      "I want to push back on one assumption here...",
+      "The constraint we're treating as fixed might actually be negotiable...",
+      "One data point that's relevant to this decision...",
+    ],
+    methodology: {
+      name: "The One Powerful Point",
+      tagline: "Being in the room with senior leadership is not the same as being heard in it.",
+      explanation: `Being in the room with senior leadership is not the same as being heard in it. Many professionals get access to executive meetings and then disappear — either because they're waiting to be invited to speak, or because they're trying to say something perfect and the moment passes. Both are costly mistakes.\n\nIn executive rooms, the quantity of contributions matters far less than the quality. One sharp, well-timed observation earns more credibility than five safe ones. The discipline is not having more to say — it's being ruthlessly selective about what you say and saying it with full conviction when you say it.\n\nThe core skill of this level is the **One Powerful Point**: the practice of identifying the single most valuable contribution you can make in a given moment and delivering it in under 45 seconds. Not a summary of your thinking. Not a hedged observation. One point, clearly stated, with a direct connection to what's being discussed.`,
+      pattern: {
+        bad: {
+          label: "What it sounds like when it doesn't work",
+          script: "Yeah, I mean, I think there are a few different ways to look at this. On one hand you could say X, but then again there's also Y to consider, and I think it really depends on the context and what the priorities are. I don't know, I think both perspectives have merit.",
+        },
+        good: {
+          label: "What it sounds like when it works",
+          script: "I want to push back on one assumption here. We're treating the Q4 timeline as fixed, but the constraint that's actually driving it — the board presentation date — was set before we knew the integration would take 6 weeks longer. If we surface that to the board now, we have a real conversation. If we don't, we're optimizing around a constraint that might not exist.",
+        },
+      },
+      anchorPhrases: [
+        "Self-initiated contributions — Do you speak without being explicitly invited to, at least twice during the conversation?",
+        "Point specificity — Is each contribution a specific, actionable observation — or a general comment that could apply to any situation?",
+        "Delivery confidence — Do you deliver your point without hedging, qualifying, or trailing off before you've finished?",
+      ],
+      coachTip: "Before speaking, run this internal filter: Is this the most valuable thing I can add right now? — Can I say it in under 45 seconds? — Am I stating a position, not just making an observation? — If yes to all three: speak. If not: wait for a better moment instead of filling space.",
+    },
+  },
+  {
+    id: "cs-2",
+    level: 2,
+    title: "Presenting to Leadership",
+    introHeadline: "present to executives with your conclusion first and your confidence intact",
+    scenarioContext: "Presenting to leadership requires a different approach than presenting to peers. Executives have less time, higher stakes, and zero patience for preamble. This level focuses on the compressed, claim-first communication style that senior leaders expect.",
+    introValue: "Master Executive Altitude — recommendation first, rationale second, detail on request. Stay at the level of decisions, not activities.",
+    scenario: "A 10-minute presentation to a VP or C-level executive. The candidate must lead with their recommendation, support it concisely, and handle an interruption from the executive who wants to 'get to the bottom line.'",
+    interlocutorBehavior: "Impatient with context. Will interrupt within 90 seconds if the recommendation hasn't been stated. Respects brevity and conviction. Challenges assumptions to test confidence. Loses respect for presenters who start with process or background.",
+    interlocutor: "senior_stakeholder",
+    unlockRequirement: "Complete Level 1",
+    measurableObjective: "The user states their recommendation within the first 45 seconds, handles at least one interruption by answering directly and returning to structure, and stays at the strategic level throughout without descending into operational detail.",
+    anchorPhrases: [
+      "My recommendation is [specific action]...",
+      "Here are [two / three] reasons...",
+      "That's the case — I want your pushback.",
+    ],
+    methodology: {
+      name: "Executive Altitude",
+      tagline: "Most professionals present to executives the same way they present to peers — and it fails every time.",
+      explanation: `Most professionals present to executives the same way they present to peers — with context first, analysis second, and recommendation last. This structure works well when your audience has time and patience. Executives have neither. By the time you arrive at your recommendation, they've already formed an opinion based on incomplete information — or they've tuned out entirely.\n\nExecutive communication requires inverting the structure completely. Recommendation first. Supporting rationale second. Detail available on request, but not offered proactively. This feels counterintuitive because it means stating your conclusion before you've built the case for it. The discomfort is real — and so is the effectiveness.\n\nThe core skill of this level is **Executive Altitude**: the discipline of staying at the level of decisions, not activities. Every sentence should answer 'so what?' before the executive has to ask. If a piece of information doesn't change what the executive should do or think, it doesn't belong in the presentation.`,
+      pattern: {
+        bad: {
+          label: "What it sounds like when it doesn't work",
+          script: "So we started this project in January and the initial scope was to look at three areas. We pulled data from five different sources and ran the analysis over about six weeks. What we found was interesting — there were some patterns that emerged that we hadn't anticipated, and after looking at those patterns we started to think about what they might mean for the strategy, and ultimately we landed on a recommendation which I'll get to in a few slides...",
+        },
+        good: {
+          label: "What it sounds like when it works",
+          script: "My recommendation is that we exit the enterprise segment and focus entirely on mid-market. I'll give you three reasons and I want your pushback. First: our win rate in enterprise is 12% versus 34% in mid-market. Second: the sales cycle in enterprise is 9 months versus 3. Third: our product is 18 months away from being competitive at the enterprise level. The math is clear. Here's what execution looks like.",
+        },
+      },
+      anchorPhrases: [
+        "Recommendation timing — Does your recommendation appear in the first 45 seconds, before any context or background?",
+        "Altitude maintenance — Do you stay at the level of decisions and implications, or do you descend into process and methodology when nervous?",
+        "Interruption recovery — When the executive interrupts, do you answer directly and return to your structure, or do you lose the thread?",
+      ],
+      coachTip: "Your first sentence must be your recommendation. No exceptions. Use this structure: Recommendation: 'My recommendation is [specific action].' → Structure: 'Here are [two / three] reasons.' → Deliver the reasons concisely. → Invite reaction: 'That's the case — I want your pushback.' — Context is available if they ask. It's never offered first.",
+    },
+  },
+  {
+    id: "cs-3",
+    level: 3,
+    title: "Asking for Resources",
+    introHeadline: "request budget, headcount, or time as an investment decision with projected returns",
+    scenarioContext: "Asking for resources is a business case — not a request. This level focuses on how to frame the ask in terms of ROI, risk, and strategic alignment so that saying yes becomes the obvious decision for a senior leader.",
+    introValue: "Practice the Business Case Frame — stop thinking about what you need and start thinking about what the organization gets in return.",
+    scenario: "The candidate must request additional headcount, budget, or timeline from a senior leader. The candidate must frame the request as an investment decision with projected returns, not as a resource problem with a human cost.",
+    interlocutorBehavior: "Making portfolio decisions across competing priorities. Evaluates requests purely on ROI and strategic alignment. Rejects emotional appeals. Responds to precise numbers and projected returns. Challenges assumptions on both the cost and the return side.",
+    interlocutor: "senior_stakeholder",
+    unlockRequirement: "Complete Level 2",
+    measurableObjective: "The user presents the business case before making the ask, uses specific numbers for the problem, the investment, and the expected return, and makes a concrete ask — not a general request for 'more support.'",
+    anchorPhrases: [
+      "Here's what's at stake if we don't act: [specific consequence with number]...",
+      "The investment is [specific resource] at [specific cost]...",
+      "The return is [specific outcome] — a [X:1] ratio...",
+    ],
+    methodology: {
+      name: "The Business Case Frame",
+      tagline: "Stop thinking about what you need and start thinking about what the organization gets in return.",
+      explanation: `Asking for resources from a senior leader is one of the highest-stakes conversations a professional can have — and one of the most poorly prepared for. Most people walk in with a request and a justification. Senior leaders walk out unconvinced, not because the request was wrong, but because it was framed as a need rather than an investment.\n\nThe shift that changes everything: stop thinking about what you need and start thinking about what the organization gets in return. A senior leader with constrained resources is making portfolio decisions. They're allocating limited capital across competing priorities. Your job is not to explain why you need more — it's to make the case that investing in your request produces a better return than the alternatives they're weighing it against.\n\nThe core skill of this level is the **Business Case Frame**: structuring your request as an investment decision with a projected return, not as a resource problem with a human cost. The ask is the last thing you say — never the first.`,
+      pattern: {
+        bad: {
+          label: "What it sounds like when it doesn't work",
+          script: "We really need another person on the team. We're completely overwhelmed and the current workload is unsustainable. Everyone is burning out and we're starting to miss deadlines. I know headcount is tight but I think if we don't get support soon things are going to get worse.",
+        },
+        good: {
+          label: "What it sounds like when it works",
+          script: "I want to make a specific ask and walk you through the business case first. We currently have three projects at risk of missing their Q4 deadline — projects that collectively represent $1.2M in committed revenue. The root cause is a capacity gap: the team is at 140% utilization. One additional hire at $85K fully-loaded cost would bring us to 110% utilization and de-risk all three projects. The return on that investment is protecting $1.2M in revenue. That's a 14:1 ratio. Here's what I need from you.",
+        },
+      },
+      anchorPhrases: [
+        "Business case first — Do you present the return on investment before making the ask?",
+        "Quantification — Do you use specific numbers for the problem, the investment, and the expected return?",
+        "Ask specificity — Is your ask concrete — a specific headcount, budget amount, or timeline — rather than a general request for 'more support'?",
+      ],
+      coachTip: "Structure your request in this order — the ask always comes last: Business risk: 'Here's what's at stake if we don't act: [specific consequence with number].' → Root cause: 'The reason is [specific constraint].' → Investment: 'What I'm proposing is [specific resource] at [specific cost].' → Return: 'The return is [specific outcome] — a [X:1] ratio.' → Ask: 'What I need from you is [specific decision].'",
+    },
+  },
+  {
+    id: "cs-4",
+    level: 4,
+    title: "Navigating Political Conversations",
+    introHeadline: "surface uncomfortable data without making powerful people defensive",
+    scenarioContext: "Organizational politics are real, and navigating them professionally is a leadership skill. This level focuses on how to have high-stakes conversations across functions and levels — sharing difficult information without triggering defensiveness in the people who can act on it.",
+    introValue: "Learn Strategic Honesty — address interests, not positions. Put the right information on the table in a way it can be heard.",
+    scenario: "A senior leader with a strong position proposes an approach the candidate disagrees with. The political dynamics make direct contradiction risky. The candidate must surface data and alternative perspectives without creating defensiveness.",
+    interlocutorBehavior: "Has invested significant political capital in their current position. Highly attuned to whether pushback is an attack or genuine problem-solving. Responds to data and framing that serves their stated goals. Immediately defensive when they feel their judgment is being questioned publicly.",
+    interlocutor: "senior_stakeholder",
+    unlockRequirement: "Complete Level 3",
+    measurableObjective: "The user addresses the leader's underlying interest (not just their stated position), presents data rather than judgment, and offers the leader a path to a different position without requiring them to admit they were wrong.",
+    anchorPhrases: [
+      "I think we both want [shared objective] — I want to make sure we get there...",
+      "What I'm observing is [specific information]...",
+      "Where do you see the flaw in that thinking?",
+    ],
+    methodology: {
+      name: "Strategic Honesty",
+      tagline: "Every organization has politics. The effective professional navigates them.",
+      explanation: `Every organization has politics. The naive professional pretends they don't and gets run over by them. The cynical professional plays them and eventually loses their integrity. The effective professional navigates them — which means understanding the political dynamics clearly enough to work within them without being captured by them.\n\nNavigating a political conversation with a senior leader requires one critical skill: distinguishing between their stated position and their underlying interest. A position is what someone says they want. An interest is why they want it. Positions conflict. Interests often don't. The professional who addresses the interest instead of fighting the position can find paths forward that the person arguing about positions will never see.\n\nThe core skill of this level is **Strategic Honesty**: the practice of being truthful without being politically self-destructive. This means putting the right information on the table in a way that can be heard, not in a way that makes you feel righteous while the other person gets defensive. Timing, framing, and sequencing matter as much as the content of what you say.`,
+      pattern: {
+        bad: {
+          label: "What it sounds like when it doesn't work",
+          script: "I think we need to be honest about what's really happening here. The data clearly shows that this approach isn't working and I think we all know why. I've been saying this for months and I think it's time we had a real conversation about it instead of just going along with what's been decided.",
+        },
+        good: {
+          label: "What it sounds like when it works",
+          script: "I want to make sure I understand what you're trying to achieve here, because I think we're aligned on the goal but I'm seeing it differently on the approach. Can I share what I'm observing in the data? [After listening] — What I'm seeing is [specific data]. I raise this because I want us to get to [stated goal] — and I think this information changes the path. Here's what I'd suggest instead, and I want to know where you see the flaw in my thinking.",
+        },
+      },
+      anchorPhrases: [
+        "Interest identification — Do you address what the senior leader is trying to achieve, not just what they're saying?",
+        "Data over judgment — Do you present observations and data, or do you make claims about people's motives or decisions?",
+        "Exit ramp — Do you offer the senior leader a path to a different position that doesn't require them to admit they were wrong?",
+      ],
+      coachTip: "Navigate the conversation using this sequence: Align on goal: 'I think we both want [shared objective] — I want to make sure we get there.' → Surface the data: 'What I'm observing is [specific information].' → Reframe: 'The way I'd look at this is [alternative framing that serves their interest].' → Invite: 'Where do you see the flaw in that thinking?'",
+    },
+  },
+  {
+    id: "cs-5",
+    level: 5,
+    title: "Delivering Uncomfortable Truths",
+    introHeadline: "tell senior leadership what no one else will — clearly and with data",
+    scenarioContext: "Telling a senior leader something they don't want to hear — a project is off track, a decision was wrong, a real risk exists — is where most professionals go silent. This level focuses on how to deliver difficult truths with clarity, evidence, and constructive framing.",
+    introValue: "Practice Courageous Candor — say the hard thing in a way that makes the leader experience it as loyalty, not betrayal.",
+    scenario: "A strategy isn't working and no one has told senior leadership. The candidate must deliver the difficult truth clearly, back it with specific data, and pivot to a recommendation — without hedging the message into invisibility or creating unnecessary defensiveness.",
+    interlocutorBehavior: "Has invested in the current strategy. Will be uncomfortable hearing it's not working. Tests the messenger's conviction — do they hold firm when pushed back on, or do they soften? Respects direct, data-backed candor. Dismisses vague or overly softened concerns.",
+    interlocutor: "senior_stakeholder",
+    unlockRequirement: "Complete Level 4",
+    measurableObjective: "The user states the uncomfortable truth directly with specific evidence, maintains their position when challenged, and pivots to a forward-looking recommendation within the same conversation.",
+    anchorPhrases: [
+      "I want to share something important — I'm sharing it because I want us to succeed...",
+      "Specifically: [data point 1] and [data point 2]...",
+      "I'm not here to look backward — here's what I'd recommend we do from here...",
+    ],
+    methodology: {
+      name: "Courageous Candor",
+      tagline: "Organizations fail not because people don't know the truth, but because no one with access to leadership has the courage to say it clearly.",
+      explanation: `Telling a senior leader something they don't want to hear is one of the most important — and most avoided — professional skills. Organizations fail not because people don't know the truth, but because no one with access to leadership has the courage to say it clearly. The professional who develops this skill becomes indispensable. The one who avoids it becomes complicit.\n\nBut courage alone is not enough. Uncomfortable truths delivered poorly create defensiveness, damage relationships, and get dismissed — which means the truth never lands where it needs to. The messenger gets shot and the organization stays on the wrong path. Delivery is not a soft skill here — it's the difference between the truth mattering and the truth being buried.\n\nThe core skill of this level is **Courageous Candor**: the combination of saying the hard thing clearly and framing it in a way that makes the leader experience it as loyalty, not betrayal. The invisible first sentence of every uncomfortable truth is: 'I'm telling you this because I'm on your side and I want us to succeed.' Everything that follows has to be consistent with that framing.`,
+      pattern: {
+        bad: {
+          label: "What it sounds like when it doesn't work",
+          script: "I mean, I hate to say this, and I know it might not be what you want to hear, and I could be wrong about this, but I just feel like maybe the strategy isn't quite working as well as we'd hoped, and I'm not sure if it's just me but I think some people on the team might be feeling a bit uncertain about the direction...",
+        },
+        good: {
+          label: "What it sounds like when it works",
+          script: "I want to share something that I think is important, and I'm sharing it because I want us to get this right. The current go-to-market strategy is not working — and I can be specific about why. We've run it for 90 days across three segments and the win rate is 8% in all three. The market is telling us something. I know this is not easy to hear given how much has been invested in this direction. I'm not here to relitigate the past — I want to talk about what we do from here, and I have a specific recommendation.",
+        },
+      },
+      anchorPhrases: [
+        "Directness — Do you state the uncomfortable truth clearly, without hedging it into invisibility?",
+        "Evidence — Do you back the truth with specific data or observations, not general impressions?",
+        "Forward framing — Do you pivot quickly from the problem to a specific recommendation, rather than dwelling on what went wrong?",
+      ],
+      coachTip: "Deliver the uncomfortable truth using this four-part structure: Intent: 'I want to share something important — I'm sharing it because I want us to succeed.' → Truth: '[The uncomfortable fact, stated directly and without hedging].' → Evidence: 'Specifically: [data point 1] and [data point 2].' → Forward: 'I'm not here to look backward — here's what I'd recommend we do from here.'",
+    },
+  },
+  {
+    id: "cs-6",
+    level: 6,
+    title: "Influencing Without Authority",
+    introHeadline: "move people and decisions without relying on a title to do it",
+    scenarioContext: "The most important organizational conversations happen across functions, where you have no authority. This level focuses on how to shape decisions, build coalitions, and move people to action through credibility and strategic communication — not hierarchy.",
+    introValue: "Master Influence Architecture — build alignment before the formal conversation, co-create solutions, and let commitment emerge voluntarily.",
+    scenario: "The candidate needs a senior leader to support an initiative that the leader has no obligation to support. The candidate must build alignment by understanding the leader's priorities, framing their idea in terms of those priorities, and creating shared ownership of the solution.",
+    interlocutorBehavior: "Not opposed, but not invested. Has their own priorities and sees no reason to take on additional ones. Opens up when someone demonstrates genuine understanding of their constraints. Resists when they feel managed or pitched to. Engages when they feel consulted.",
+    interlocutor: "senior_stakeholder",
+    unlockRequirement: "Complete Level 5",
+    measurableObjective: "The user consults the leader's perspective before presenting their own solution, explicitly connects their goal to the leader's existing priorities, and ends the conversation with the leader making a voluntary commitment — not a pressured one.",
+    anchorPhrases: [
+      "Before I develop this further, I want your read on [specific question]...",
+      "What you're describing aligns with [your goal] — here's how I see them connecting...",
+      "How do you want to move forward?",
+    ],
+    methodology: {
+      name: "Influence Architecture",
+      tagline: "Authority is the least interesting way to get things done — and the least available one for most of your career.",
+      explanation: `Authority is the least interesting way to get things done — and the least available one for most of your career. The professionals who advance fastest are the ones who learn to move people and decisions without relying on a title to do it. This is not manipulation — it's the recognition that people act on their own interests, and alignment happens when you understand those interests well enough to connect your goal to theirs.\n\nInfluencing a senior leader without authority requires a different approach than managing up or presenting to them. You're not asking for a decision — you're creating the conditions in which they arrive at a decision themselves. The most effective influence doesn't feel like influence. It feels like a natural conclusion.\n\nThe core skill of this level is **Influence Architecture**: the practice of building alignment before the formal conversation happens, framing your ideas in terms of the other person's priorities, and co-creating the solution so that the senior leader feels ownership over it — not pressure from you. People support what they help build. People resist what is done to them.`,
+      pattern: {
+        bad: {
+          label: "What it sounds like when it doesn't work",
+          script: "I really think we should move forward with this. I've put a lot of thought into it and I'm confident it's the right direction. I just need you to sign off on it so we can get started. I can send you the full analysis if you want to review it.",
+        },
+        good: {
+          label: "What it sounds like when it works",
+          script: "I wanted to get your perspective on something before I went further — I think your view on this is critical because it sits squarely in the territory you know best. I've been looking at [specific problem] and I'm seeing [specific observation]. I have some initial thinking, but I want to understand how you see the constraints before I develop it further. What's your read on what's actually driving this?",
+        },
+      },
+      anchorPhrases: [
+        "Co-creation — Do you invite the senior leader's perspective before presenting your solution, or do you present and then ask for approval?",
+        "Priority alignment — Do you explicitly connect your goal to something the senior leader already cares about?",
+        "Voluntary commitment — Does the conversation end with the leader making a commitment they feel they chose — not one they were maneuvered into?",
+      ],
+      coachTip: "Use this sequence to build influence instead of asking permission: Consult first: 'Before I develop this further, I want your read on [specific question].' → Listen fully — let them shape the framing. → Connect: 'What you're describing aligns with [your goal] — here's how I see them connecting.' → Co-create: 'What would make this work from your side? I want to build around your constraints.' → Let them close: 'How do you want to move forward?'",
+    },
+  },
+];

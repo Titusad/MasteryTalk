@@ -7,8 +7,8 @@
  * No side effects, no React, portable to React Native.
  */
 
-import type { PathId } from "./progression-paths";
-import { PROGRESSION_PATHS } from "./progression-paths";
+import type { PathId } from "@/entities/progression";
+import { PROGRESSION_PATHS } from "@/entities/progression";
 import type { OnboardingProfile } from "@/services/types";
 
 // Re-export from entities (canonical location)
@@ -61,6 +61,14 @@ const REASON_TEMPLATES: Record<PathId, {
       networking: "A confident elevator pitch is the foundation. Master this and every other path becomes easier.",
       team: "How you introduce yourself to a new team sets the tone for every interaction that follows.",
       client: "Client relationships start at the first impression. This is where to begin.",
+    },
+  },
+  introductions: {
+    primary: "You have the foundation — now master how to adapt your introduction to any room, from networking events to executive encounters.",
+    withContext: {
+      networking: "Networking introductions require a different energy than interviews. This path teaches you to spark genuine interest in under 60 seconds.",
+      team: "Joining a new team calls for a human, credibility-building intro. This path trains that specific context.",
+      client: "Client meetings demand a polished, expert opening. This path focuses on building credibility from the first sentence.",
     },
   },
   interview: {
@@ -125,6 +133,7 @@ const REASON_TEMPLATES: Record<PathId, {
 
 const FOCUS_DETAILS: Record<PathId, string> = {
   "self-intro": "3 contexts: Networking Event, Team Introduction, and Client Meeting.",
+  introductions: "6 levels: Networking Event, Team Intro, Client Meeting, Executive Encounter, Panel Introduction, and The Cold Open.",
   interview: "Levels 1-2 focus on articulating your experience with precision and confidence.",
   sales: "Levels 1-2 focus on value framing and objection handling frameworks.",
   meeting: "Levels 1-2 focus on real-time response clarity and turn management.",

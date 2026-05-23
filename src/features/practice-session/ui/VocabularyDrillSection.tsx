@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Volume2, Mic, Square, RotateCcw, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { useMediaRecorder } from "@/shared/hooks/useMediaRecorder";
 import { realSpeechService } from "@/services";
-import type { VocabularyTerm } from "@/features/dashboard/model/progression-paths";
+import type { VocabularyTerm } from "@/entities/progression";
 
 interface TermScore {
   score: number;

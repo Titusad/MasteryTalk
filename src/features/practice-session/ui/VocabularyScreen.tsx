@@ -9,8 +9,8 @@
 import { motion } from "motion/react";
 import { ArrowRight, BookOpen, SkipForward } from "lucide-react";
 import { VocabularyDrillSection } from "./VocabularyDrillSection";
-import { getVocabularyForProfile } from "@/features/dashboard/model/progression-paths";
-import type { VocabularyTerm } from "@/features/dashboard/model/progression-paths";
+import { getVocabularyForProfile } from "@/entities/progression";
+import type { VocabularyTerm } from "@/entities/progression";
 import type { ScenarioType } from "@/entities/session";
 
 const SCENARIO_LABELS: Partial<Record<ScenarioType, string>> = {

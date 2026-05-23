@@ -16,17 +16,17 @@ import { PathPurchaseModal } from "@/widgets/PathPurchaseModal";
 import type { PurchaseType, OnboardingProfile } from "@/services/types";
 
 
-import { useDashboardData } from "../model";
-import { useProgressionState } from "../model/useProgressionState";
-import { DashboardSkeleton } from "./DashboardSkeleton";
-import { HeroCard } from "./HeroCard";
-import { PlatformNewsCard } from "./PlatformNewsCard";
-import { SRDashboardCard } from "./SRDashboardCard";
-import { PracticePathsModule } from "./PracticePathsModule";
-import { CrossPathCard } from "./CrossPathCard";
-import { RecommendedLessonsCard } from "./RecommendedLessonsCard";
-import { ProgressChartCard } from "./ProgressChartCard";
-import { SinceYouStartedCard } from "./SinceYouStartedCard";
+import { useDashboardData } from "@/features/dashboard/model";
+import { useProgressionState } from "@/features/dashboard/model/useProgressionState";
+import { DashboardSkeleton } from "@/features/dashboard/ui/DashboardSkeleton";
+import { HeroCard } from "@/features/dashboard/ui/HeroCard";
+import { PlatformNewsCard } from "@/features/dashboard/ui/PlatformNewsCard";
+import { SRDashboardCard } from "@/features/dashboard/ui/SRDashboardCard";
+import { PracticePathsModule } from "@/features/dashboard/ui/PracticePathsModule";
+import { CrossPathCard } from "@/features/dashboard/ui/CrossPathCard";
+import { RecommendedLessonsCard } from "@/features/dashboard/ui/RecommendedLessonsCard";
+import { ProgressChartCard } from "@/features/dashboard/ui/ProgressChartCard";
+import { SinceYouStartedCard } from "@/features/dashboard/ui/SinceYouStartedCard";
 import { LessonModal } from "@/widgets/LessonModal";
 import type { MicroLesson } from "@/services/microLessons";
 

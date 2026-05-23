@@ -4,7 +4,7 @@ import { ArrowRight, Trophy, Linkedin } from "lucide-react";
 import { AppModal } from "@/shared/ui/AppModal";
 import { SUPABASE_URL } from "@/services/supabase";
 import { getAuthToken } from "@/services/supabase";
-import { PATH_LABELS } from "@/features/dashboard/model/progression-paths";
+import { PATH_LABELS } from "@/entities/progression";
 
 interface ChooseNextPathModalProps {
   open: boolean;

@@ -24,7 +24,7 @@ const Landing2Page = lazyRetry(() => import("@/pages/landing/Landing2Page").then
 const Landing3Page = lazyRetry(() => import("@/pages/landing/Landing3Page").then(m => ({ default: m.Landing3Page })));
 const DesignSystemPage = lazyRetry(() => import("../pages/DesignSystemPage").then(m => ({ default: m.DesignSystemPage })));
 const PracticeSessionPage = lazyRetry(() => import("../pages/PracticeSessionPage").then(m => ({ default: m.PracticeSessionPage })));
-const DashboardPage = lazyRetry(() => import("@/features/dashboard/ui/DashboardPage").then(m => ({ default: m.DashboardPage })));
+const DashboardPage = lazyRetry(() => import("@/pages/DashboardPage").then(m => ({ default: m.DashboardPage })));
 const PracticeHistoryPage = lazyRetry(() => import("@/pages/PracticeHistoryPage").then(m => ({ default: m.PracticeHistoryPage })));
 const AccountPage = lazyRetry(() => import("../pages/AccountPage").then(m => ({ default: m.AccountPage })));
 const LibraryPage = lazyRetry(() => import("../pages/LibraryPage").then(m => ({ default: m.LibraryPage })));
@@ -39,7 +39,7 @@ import { LoadingScreen } from "./components/LoadingScreen";
 import { AuthLoadingScreen } from "./components/AuthLoadingScreen";
 import { LanguageTransitionModal } from "./components/LanguageTransitionModal";
 import type { User, OnboardingProfile, ScenarioType, SessionSummary, TurnPronunciationData, ScriptSection, InterviewBriefingData } from "@/services/types";
-import type { PathId } from "@/features/dashboard/model/progression-paths";
+import type { PathId } from "@/entities/progression";
 import type { SetupModalResult } from "@/pages/landing/PracticeWidget";
 // AnimatePresence removed — was causing modal to linger during exit animation
 // when auth re-renders interrupted the exit. Direct unmount is bulletproof.

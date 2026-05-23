@@ -67,6 +67,11 @@ export interface SessionConfig {
    * If absent, no difficulty block is injected (backward-compatible).
    */
   levelNumber?: number;
+  /**
+   * Maximum user turns before the session wraps up.
+   * Overrides the default of 8. Used for capstone levels that require a longer session.
+   */
+  turnLimit?: number;
   /** Interview briefing data for coherence: anticipated questions + user drafts → injected into interviewer prompt (Gap A+B) */
   interviewBriefing?: {
     anticipatedQuestions: Array<{
@@ -117,7 +122,7 @@ export interface LevelMethodology {
   explanation: string;
   pattern: {
     bad: { label: string; script: string };
-    good: { label: string; script: string };
+    good: { label: string; script: string; beats?: Array<{ label: string; text: string }> };
   };
   anchorPhrases: string[];
   coachTip: string;

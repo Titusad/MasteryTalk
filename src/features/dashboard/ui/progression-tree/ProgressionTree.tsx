@@ -18,8 +18,8 @@ import {
   PROGRESSION_PATHS,
   VISIBLE_PATHS,
   getLevelState,
-} from "@/features/dashboard/model/progression-paths";
-import type { PathId, ProgressionLevel } from "@/features/dashboard/model/progression-paths";
+} from "@/entities/progression";
+import type { PathId, ProgressionLevel } from "@/entities/progression";
 import { useProgressionState } from "@/features/dashboard/model/useProgressionState";
 import type { LevelStatus, ScenarioType } from "@/services/types";
 import { projectId } from "@/../utils/supabase/info";
@@ -128,7 +128,7 @@ export function ProgressionTree({ onStartLevel, onDrillComplete, onLockedClick, 
       onLockedClick?.();
       return;
     }
-    onStartLevel(level.scenario, activeTab, level.id, level.interlocutor);
+    onStartLevel(level.scenario, activePath.scenarioType, level.id, level.interlocutor);
   };
 
   const handleDrillCompletion = async (levelId: string, score: number) => {

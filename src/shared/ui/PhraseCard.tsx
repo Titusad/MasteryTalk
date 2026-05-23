@@ -8,7 +8,7 @@
  * Linking pairs are shown with a ‿ connector between the words.
  */
 import { useMemo } from "react";
-import { splitStress } from "@/entities/session/shadowing";
+import { splitStress } from "@/shared/lib/score-utils";
 
 interface PhraseCardProps {
   sentence: string;

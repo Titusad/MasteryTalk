@@ -29,7 +29,7 @@ import {
 } from "recharts";
 import { PageTitleBlock, FeedbackAccordion } from "@/shared/ui";
 import { ProficiencyGauge } from "@/shared/ui";
-import { SessionProgressBar } from "@/widgets/SessionProgressBar";
+import { SessionProgressBar } from "@/shared/ui";
 import {
   getBeforeAfterForScenario,
   getStrengthsForScenario,
@@ -45,9 +45,6 @@ import { PronunciationTab } from "./PronunciationTab";
 
 import type { PaywallReason } from "@/shared/hooks/useUsageGating";
 import { type RealFeedbackData } from "@/entities/feedback";
-
-/* Re-export for backward compat — Sprint 3 will update all consumers */
-export type { RealFeedbackData };
 
 export interface RepeatInfo {
   attempt: number;

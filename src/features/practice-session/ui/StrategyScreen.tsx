@@ -18,7 +18,6 @@ import {
   SkipForward,
   Copy,
   Check,
-  X,
   CheckCircle2,
   Globe,
   Sparkles,
@@ -26,13 +25,10 @@ import {
 import { FeedbackThumbs, NarrationCaption } from "@/shared/ui";
 import { useState, useCallback, useMemo } from "react";
 import DOMPurify from "dompurify";
-import { VocabularyDrillSection } from "./VocabularyDrillSection";
 import type {
   LevelMethodology,
   BriefLocale,
 } from "@/entities/session";
-import { getVocabularyForProfile } from "@/features/dashboard/model/progression-paths";
-import type { VocabularyTerm } from "@/features/dashboard/model/progression-paths";
 import { useBriefLocale } from "../hooks/useBriefLocale";
 import { useNarration } from "@/shared/lib/useNarration";
 
@@ -51,9 +47,9 @@ interface StrategyScreenProps {
   levelTitle: string;
   methodology: LevelMethodology;
   anchorPhrases?: string[];
-  vocabularyBank?: VocabularyTerm[];
+  vocabularyBank?: Array<{ term: string; ipa: string; definition: string; example?: string }>;
   userProfile?: { industry?: string; position?: string } | null;
-  personalizedPattern?: { bad: { label: string; script: string }; good: { label: string; script: string } } | null;
+  personalizedPattern?: { bad: { label: string; script: string }; good: { label: string; script: string; beats?: Array<{ label: string; text: string }> } } | null;
   patternLoading?: boolean;
   onReady: () => void;
   onSkip: () => void;
@@ -107,10 +103,6 @@ export function StrategyScreen({
 
   const displayTagline = translation?.tagline ?? methodology.tagline;
   const displayExplanation = translation?.explanation ?? methodology.explanation;
-  const displayBadLabel =
-    translation?.patternLabels?.bad ?? methodology.pattern.bad.label;
-  const displayGoodLabel =
-    translation?.patternLabels?.good ?? methodology.pattern.good.label;
   const displayCoachTip = translation?.coachTip ?? methodology.coachTip;
 
   /* Scripts & power phrases always in English */
@@ -210,127 +202,97 @@ export function StrategyScreen({
             </span>
           </div>
           <div className="px-6 py-6 md:px-8">
-            {displayExplanation.split("\n\n").map((paragraph, i) => (
-              <p
-                key={i}
-                className="text-sm text-[#334155] leading-relaxed mb-3 last:mb-0"
-                dangerouslySetInnerHTML={{
-                  __html: DOMPurify.sanitize(
-                    paragraph
-                      .replace(/\n(\*\*)/g, "<br/><br/>$1")
-                      .replace(/\*\*(.*?)\*\*/g, '<strong class="text-[#0f172b]">$1</strong>')
-                      .replace(/\\n/g, ""),
-                    { ALLOWED_TAGS: ["br", "strong"], ALLOWED_ATTR: ["class"] }
-                  ),
-                }}
-              />
-            ))}
+            {displayExplanation.split("\n\n").map((paragraph, i) => {
+              const moveMatch = paragraph.match(/^\*\*Move (\d)/);
+              const moveIndex = moveMatch ? parseInt(moveMatch[1]) - 1 : -1;
+              const beat = moveIndex >= 0 ? personalizedPattern?.good?.beats?.[moveIndex] : null;
+              const showBeatSkeleton = moveIndex >= 0 && patternLoading && !personalizedPattern?.good?.beats;
+
+              return (
+                <div key={i} className="mb-3 last:mb-0">
+                  <p
+                    className="text-sm text-[#334155] leading-relaxed"
+                    dangerouslySetInnerHTML={{
+                      __html: DOMPurify.sanitize(
+                        paragraph
+                          .replace(/\n(\*\*)/g, "<br/><br/>$1")
+                          .replace(/\*\*(.*?)\*\*/g, '<strong class="text-[#0f172b]">$1</strong>')
+                          .replace(/\\n/g, ""),
+                        { ALLOWED_TAGS: ["br", "strong"], ALLOWED_ATTR: ["class"] }
+                      ),
+                    }}
+                  />
+                  {beat && (
+                    <div className="mt-2 flex items-start gap-2 px-3 py-2 rounded-lg bg-emerald-50/70 border border-emerald-100">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                      <p className="text-xs text-[#334155] italic leading-relaxed">"{beat.text}"</p>
+                    </div>
+                  )}
+                  {showBeatSkeleton && (
+                    <div className="mt-2 h-6 bg-emerald-50 rounded-lg animate-pulse" />
+                  )}
+                </div>
+              );
+            })}
           </div>
         </motion.div>
 
-        {/* Side-by-side comparison */}
-        <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6"
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.35 }}
-        >
-          {/* Bad example */}
-          <div className="bg-white rounded-2xl border border-red-100 shadow-sm overflow-hidden">
-            <div className="px-6 py-2.5 bg-red-50/60 border-b border-red-100 flex items-center gap-2">
-              <X className="w-3.5 h-3.5 text-red-400" />
-              <span className="text-xs text-red-600 font-semibold">
-                {personalizedPattern?.bad?.label || displayBadLabel}
-              </span>
-            </div>
-            <div className="px-6 py-4 relative">
-              {patternLoading && !personalizedPattern ? (
-                <div className="space-y-2 animate-pulse">
-                  <div className="h-3 bg-red-50 rounded w-full" />
-                  <div className="h-3 bg-red-50 rounded w-11/12" />
-                  <div className="h-3 bg-red-50 rounded w-4/5" />
-                  <div className="h-3 bg-red-50 rounded w-3/4" />
-                </div>
-              ) : (
-                <p className="text-sm text-[#64748b] leading-relaxed italic">
-                  "{personalizedPattern?.bad?.script || methodology.pattern.bad.script}"
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Good example */}
-          <div className="bg-white rounded-2xl border border-emerald-100 shadow-sm overflow-hidden">
-            <div className="px-6 py-2.5 bg-emerald-50/60 border-b border-emerald-100 flex items-center gap-2 justify-between">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                <span className="text-xs text-emerald-700 font-semibold">
-                  {personalizedPattern?.good?.label || displayGoodLabel}
-                </span>
-              </div>
-              {personalizedPattern && (
-                <span className="text-[10px] text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full font-semibold">
-                  Personalized for you
-                </span>
-              )}
-            </div>
-            <div className="px-6 py-4">
-              {patternLoading && !personalizedPattern ? (
-                <div className="space-y-2 animate-pulse">
-                  <div className="h-3 bg-emerald-50 rounded w-full" />
-                  <div className="h-3 bg-emerald-50 rounded w-11/12" />
-                  <div className="h-3 bg-emerald-50 rounded w-4/5" />
-                  <div className="h-3 bg-emerald-50 rounded w-3/4" />
-                  <div className="h-3 bg-emerald-50 rounded w-2/3" />
-                </div>
-              ) : (
-                <p className="text-sm text-[#334155] leading-relaxed italic">
-                  "{personalizedPattern?.good?.script || methodology.pattern.good.script}"
-                </p>
-              )}
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Vocabulary drill (when available) OR power phrases fallback */}
+        {/* Power phrases */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.35 }}
           className="mb-6"
         >
-          {vocabularyBank?.length ? (
-            <VocabularyDrillSection
-              terms={getVocabularyForProfile(vocabularyBank, userProfile)}
-            />
-          ) : (
-            <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden">
-              <div className="px-6 py-3 bg-[#f8fafc] border-b border-[#f1f5f9] flex items-center gap-2">
-                <span className="text-xs text-[#62748e] font-semibold">
-                  Power Phrases — use these during your session
-                </span>
-              </div>
-              <div className="px-6 py-4 space-y-2">
-                {displayPhrases.map((phrase, i) => (
-                  <button
-                    key={i}
-                    onClick={() => handleCopy(phrase, i)}
-                    className="w-full flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-[#f8fafc] border border-[#e2e8f0] hover:border-[#6366f1] hover:bg-indigo-50/30 transition-all group text-left"
-                  >
-                    <span className="text-sm text-[#334155] group-hover:text-[#0f172b] transition-colors font-medium">
-                      {phrase}
-                    </span>
-                    {copiedIdx === i ? (
-                      <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                    ) : (
-                      <Copy className="w-3.5 h-3.5 text-[#94a3b8] group-hover:text-[#6366f1] flex-shrink-0 transition-colors" />
-                    )}
-                  </button>
-                ))}
-              </div>
+          <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden">
+            <div className="px-6 py-3 bg-[#f8fafc] border-b border-[#f1f5f9] flex items-center gap-2">
+              <span className="text-xs text-[#62748e] font-semibold">
+                Power Phrases — use these during your session
+              </span>
             </div>
-          )}
+            <div className="px-6 py-4 space-y-2">
+              {displayPhrases.map((phrase, i) => (
+                <button
+                  key={i}
+                  onClick={() => handleCopy(phrase, i)}
+                  className="w-full flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-[#f8fafc] border border-[#e2e8f0] hover:border-[#6366f1] hover:bg-indigo-50/30 transition-all group text-left"
+                >
+                  <span className="text-sm text-[#334155] group-hover:text-[#0f172b] transition-colors font-medium">
+                    {phrase}
+                  </span>
+                  {copiedIdx === i ? (
+                    <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                  ) : (
+                    <Copy className="w-3.5 h-3.5 text-[#94a3b8] group-hover:text-[#6366f1] flex-shrink-0 transition-colors" />
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
         </motion.div>
+
+        {/* Vocabulary bank */}
+        {vocabularyBank && vocabularyBank.length > 0 && (
+          <motion.div
+            className="mb-6"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.35 }}
+          >
+            <p className="text-xs font-medium text-[#62748e] uppercase tracking-wide mb-3">Key Vocabulary</p>
+            <div className="flex flex-col gap-2">
+              {vocabularyBank.map((item) => (
+                <div key={item.term} className="flex items-start gap-3 px-4 py-3 rounded-xl border border-[#e2e8f0] bg-white">
+                  <div className="min-w-0 flex-1">
+                    <span className="font-medium text-[#0f172b] text-sm">{item.term}</span>
+                    <span className="ml-2 text-xs text-[#94a3b8] font-mono">{item.ipa}</span>
+                    <p className="text-xs text-[#62748e] mt-0.5 leading-relaxed">{item.definition}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
 
         {/* Coach tip */}
         <motion.div

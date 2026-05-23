@@ -14,7 +14,7 @@ import { authService } from "@/services";
 import type { User } from "@/services/types";
 import type { Page } from "./useHashRouter";
 import type { ScenarioType } from "@/services/types";
-import type { PathId } from "@/features/dashboard/model/progression-paths";
+import type { PathId } from "@/entities/progression";
 
 /* Session storage keys for OAuth redirect recovery */
 const OAUTH_PENDING_KEY = "masterytalk_oauth_pending";

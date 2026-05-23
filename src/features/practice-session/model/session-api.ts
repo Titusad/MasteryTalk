@@ -16,7 +16,7 @@ import type {
   TurnPronunciationData,
   SessionConfig,
 } from "@/services/types";
-import type { RealFeedbackData } from "@/features/practice-session/ui/ConversationFeedback";
+import type { RealFeedbackData } from "@/entities/feedback";
 
 const BASE_URL = `${SUPABASE_URL}/functions/v1/make-server-08b8658d`;
 const TIMEOUT_MS = 40_000;
@@ -60,11 +60,13 @@ export async function generateInterviewBriefing(
   interlocutor: string,
   guidedFields: Record<string, string>,
   locale: string,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  pathId?: string,
+  levelId?: string
 ): Promise<GenerateBriefingResult> {
   const res = await authFetch(
     "/generate-interview-briefing",
-    { scenario, interlocutor, guidedFields, locale },
+    { scenario, interlocutor, guidedFields, locale, ...(pathId ? { pathId } : {}), ...(levelId ? { levelId } : {}) },
     signal
   );
   const data = await res.json();
@@ -93,7 +95,9 @@ export async function generateScript(
   scenarioType: ScenarioType | undefined,
   guidedFields: Record<string, string>,
   locale: string,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  pathId?: string,
+  levelId?: string
 ): Promise<GenerateScriptResult> {
   const token = await getAuthToken();
   const controller = signal ? undefined : new AbortController();
@@ -113,6 +117,8 @@ export async function generateScript(
       scenarioType,
       guidedFields,
       locale,
+      ...(pathId ? { pathId } : {}),
+      ...(levelId ? { levelId } : {}),
     }),
     signal: signal || controller?.signal,
   });
@@ -403,11 +409,38 @@ export async function completeRemedial(
 }
 
 /* ═══════════════════════════════════════════════════════════
+   Self-Intro Briefing — 3 beat cards for Three-Move Introduction
+   ═══════════════════════════════════════════════════════════ */
+export async function generateSelfIntroBriefing(
+  guidedFields: Record<string, string>,
+  levelId?: string,
+  signal?: AbortSignal,
+): Promise<InterviewBriefingData> {
+  const res = await authFetch(
+    "/generate-self-intro-briefing",
+    { guidedFields, levelId },
+    signal,
+  );
+  const data = await res.json();
+  const questions = data.anticipatedQuestions || [];
+  if (questions.length === 0) throw new Error("No self-intro beat cards generated");
+  for (const q of questions) {
+    if (!Array.isArray(q.keyPhrases)) q.keyPhrases = [];
+  }
+  return {
+    anticipatedQuestions: questions,
+    questionsToAsk: [],
+    culturalTips: [],
+  };
+}
+
+/* ═══════════════════════════════════════════════════════════
    Personalize Strategy Patterns (bad/good examples)
    ═══════════════════════════════════════════════════════════ */
 export interface PersonalizedPattern {
   label: string;
   script: string;
+  beats?: Array<{ label: string; text: string }>;
 }
 
 export interface PersonalizedPatterns {

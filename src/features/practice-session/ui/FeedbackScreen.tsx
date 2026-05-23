@@ -38,7 +38,7 @@ import {
     PageTitleBlock,
     ProficiencyGauge,
 } from "@/shared/ui";
-import { SessionProgressBar } from "@/widgets/SessionProgressBar";
+import { SessionProgressBar } from "@/shared/ui";
 import type {
     ScenarioType,
     TurnPronunciationData,
@@ -47,7 +47,7 @@ import type {
     Opportunity,
     PronunciationNote,
 } from "@/services/types";
-import type { RealFeedbackData } from "./ConversationFeedback";
+import type { RealFeedbackData } from "@/entities/feedback";
 import { ShadowingModal } from "@/features/practice-session/ui/ShadowingModal";
 import type { ShadowingPhrase } from "@/entities/feedback";
 import {

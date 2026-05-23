@@ -9,7 +9,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { SUPABASE_URL } from "@/services/supabase";
 import { getAuthToken } from "@/services/supabase";
-import { getDefaultProgressionState } from "./progression-paths";
+import { getDefaultProgressionState } from "@/entities/progression";
 import type { ProgressionState } from "@/services/types";
 import { projectId } from "@/../utils/supabase/info";
 

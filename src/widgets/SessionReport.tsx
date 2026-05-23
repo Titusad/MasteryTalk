@@ -36,7 +36,7 @@ import {
   MiniFooter,
   PageTitleBlock,
 } from "@/shared/ui";
-import { SessionProgressBar } from "@/widgets/SessionProgressBar";
+import { SessionProgressBar } from "@/shared/ui";
 import {
   getScriptSectionsForScenario,
 } from "@/services/scenario-data";

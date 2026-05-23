@@ -10,8 +10,8 @@ import { toServiceError } from "@/services/errors";
 import type { ServiceError } from "@/services/errors";
 import type { RemedialContent } from "@/services/types";
 
-import { getLevelDefinition } from "@/features/dashboard/model/progression-paths";
-import type { PathId } from "@/features/dashboard/model/progression-paths";
+import { getLevelDefinition } from "@/entities/progression";
+import type { PathId } from "@/entities/progression";
 import { ProgressionProvider } from "@/shared/lib/ProgressionContext";
 import { ServiceErrorBanner } from "@/shared/ui";
 import { getBeforeAfterForScenario, getStrengthsForScenario } from "@/services/scenario-data";
@@ -27,11 +27,12 @@ import type {
   TurnPronunciationData,
   SessionConfig,
 } from "@/services/types";
-import { SessionProgressBar } from "@/widgets/SessionProgressBar";
+import { SessionProgressBar } from "@/shared/ui";
 import { PracticePrepScreen } from "@/widgets/PracticePrepScreen";
 import type { Step } from "@/entities/session";
 import { VoicePractice } from "@/features/practice-session/ui/VoicePractice";
-import { type RealFeedbackData, type RepeatInfo } from "@/features/practice-session/ui/ConversationFeedback";
+import type { RealFeedbackData } from "@/entities/feedback";
+import type { RepeatInfo } from "@/features/practice-session/ui/ConversationFeedback";
 import { FeedbackScreen } from "@/features/practice-session/ui/FeedbackScreen";
 import { UpsellScreen } from "@/features/skill-drill/ui/UpsellScreen";
 import { PathPurchaseModal } from "@/widgets/PathPurchaseModal";
@@ -115,6 +116,7 @@ interface PracticeSessionPageProps {
 import { MAX_REPEATS, SCENARIO_LABELS_MAP } from "@/features/practice-session/model/session.constants";
 import {
   generateInterviewBriefing,
+  generateSelfIntroBriefing,
   generateScript,
   generatePreparationToolkit,
   analyzeFeedback,
@@ -135,6 +137,9 @@ import type { PersonalizedPatterns } from "@/features/practice-session/model/ses
    ═══════════════════════════════════════════════════════════ */
 /** Steps where switching level is safe (no AI-generated data to lose) */
 const SAFE_STEPS: Step[] = ["intro", "experience", "context", "interlocutor-intro"];
+
+/** Steps that have AI narrator audio — NarrationToggle only shows here */
+const NARRATION_STEPS: Step[] = ["intro", "context", "strategy", "generating", "practice-prep", "interlocutor-intro", "analyzing"];
 
 export function PracticeSessionPage({
   scenario,
@@ -278,7 +283,7 @@ export function PracticeSessionPage({
   });
   // Derived after realFeedback — needed by PathPurchaseModal regardless of current step
   const selfIntroPrimaryPath = isSelfIntro
-    ? recommendPath(realFeedback?.pillarScores, null, userProfile)?.pathId ?? undefined
+    ? recommendPath(realFeedback?.pillarScores, undefined, userProfile)?.pathId ?? undefined
     : undefined;
   const [feedbackStatus, setFeedbackStatus] = useState<"idle" | "loading" | "ready" | "error">(() => {
     if (initialHistoryState?.step === "feedback") return "ready";
@@ -390,8 +395,20 @@ export function PracticeSessionPage({
   /* Side nav session steps — all flow steps + Q&A from briefing */
   const [sessionSteps, setSessionSteps] = useState<SessionStepItem[]>([]);
   const [qaProgress, setQaProgress] = useState<{ activeIdx: number; completedSet: Set<number> } | null>(null);
+  const handleQaProgressChange = useCallback((activeIdx: number, completedSet: Set<number>) => {
+    setQaProgress({ activeIdx, completedSet });
+  }, []);
 
   /* Compute all session steps for side nav whenever step or briefing changes */
+  const STEP2_LABEL: Record<string, string> = {
+    interview: "Master Your Answers",
+    sales: "Master Your Sales Pitch",
+    meeting: "Master Your Talking Points",
+    presentation: "Master Your Presentation",
+    culture: "Master Your Approach",
+    "self-intro": "Master Your Introduction",
+  };
+
   useEffect(() => {
     if (!progressionPathId || !progressionLevelId) return;
 
@@ -406,16 +423,12 @@ export function PracticeSessionPage({
       return "pending";
     };
 
-    const hasProfile = !!(userProfile?.cvSummary || (userProfile?.position && userProfile?.industry));
-
     setSessionSteps([
-      { id: "s-intro",     label: "Introduction",   status: status(["intro"]),                                   stepKey: "intro" },
-      { id: "s-strategy",  label: "Strategy",       status: status(["strategy"]),                                stepKey: "strategy" },
-      { id: "s-context",   label: "Your Situation", status: status(["experience", "context", "generating"]),     stepKey: hasProfile ? "context" : "experience" },
-      { id: "s-prep",      label: "Q&A Preparation",status: status(["practice-prep"]),                           stepKey: "practice-prep" },
-      { id: "s-practice",  label: "Live Practice",  status: status(["interlocutor-intro", "practice"]),          stepKey: "practice" },
+      { id: "s-intro",    label: "Learn the Strategy",                                                          status: status(["intro", "strategy"]),                              stepKey: "intro" },
+      { id: "s-prep",     label: STEP2_LABEL[scenarioType ?? ""] ?? "Master Your Preparation",                  status: status(["practice-prep", "generating", "vocabulary"]),      stepKey: "practice-prep" },
+      { id: "s-practice", label: "Practice Live",                                                               status: status(["interlocutor-intro", "practice"]),                 stepKey: "practice" },
     ]);
-  }, [step, progressionPathId, progressionLevelId, interviewBriefing, qaProgress]);
+  }, [step, progressionPathId, progressionLevelId, scenarioType, interviewBriefing, qaProgress]);
 
   /**
    * Briefing data packaged for the interviewer prompt (Gap A+B).
@@ -496,6 +509,28 @@ export function PracticeSessionPage({
     const abortController = new AbortController();
     briefingAbortRef.current = abortController;
 
+    // ━━━ SELF-INTRO: dedicated 3-beat briefing ━━━
+    if (scenarioType === "self-intro") {
+      try {
+        const briefing = await generateSelfIntroBriefing(
+          allFields,
+          progressionLevelId ?? undefined,
+          abortController.signal,
+        );
+        setInterviewBriefing(briefing);
+        interviewBriefingCache.set(sKey, briefing);
+        setScriptGenStatus("ready");
+      } catch (err: any) {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error("[SelfIntroBriefing] ❌ Failed:", msg);
+        setScriptGenError(msg);
+        setScriptGenStatus("error");
+      }
+      return;
+    }
+
+    // ━━━ INTERVIEW: card-based briefing ━━━
     if (scenarioType === "interview") {
       try {
         const { briefing } = await generateInterviewBriefing(
@@ -503,10 +538,11 @@ export function PracticeSessionPage({
           effectiveInterlocutor,
           allFields,
           _detectedLocale,
-          abortController.signal
+          abortController.signal,
+          progressionPathId ?? undefined,
+          progressionLevelId ?? undefined
         );
         setInterviewBriefing(briefing);
-        // Content-aware cache key: same logic as the read path
         const fp = JSON.stringify(
           Object.entries(allFields).sort(([a], [b]) => a.localeCompare(b))
         );
@@ -522,11 +558,11 @@ export function PracticeSessionPage({
         setScriptGenError(msg);
         setScriptGenStatus("error");
       }
-      return; 
+      return;
     }
 
     // ━━━ SALES / DEFAULT PATH: Existing script + toolkit parallel calls ━━━
-    generateScript(effectiveScenario, effectiveInterlocutor, scenarioType, allFields, _detectedLocale, abortController.signal)
+    generateScript(effectiveScenario, effectiveInterlocutor, scenarioType, allFields, _detectedLocale, abortController.signal, progressionPathId ?? undefined, progressionLevelId ?? undefined)
       .then(({ sections }) => {
         setGeneratedScript(sections);
         scriptCache.set(sKey, sections);
@@ -566,6 +602,22 @@ export function PracticeSessionPage({
         console.error("[PreparationToolkit] ❌ Failed:", err.message);
       });
   }, [effectiveScenario, effectiveInterlocutor, scenarioType, guidedFields, extraContext, sKey]);
+
+  /* ── Eager script generation: fire at intro step start for path sessions (not War Room) ── */
+  useEffect(() => {
+    if (step !== "intro") return;
+    if (startAtContext) return;         // War Room uses context screen
+    if (!progressionPathId || !progressionLevelId) return;
+    if (scriptGenStatus !== "idle") return;  // don't double-fire
+
+    const profileFields: Record<string, string> = {};
+    if (userProfile?.cvSummary) profileFields.cvSummary = userProfile.cvSummary;
+    if (userProfile?.position) profileFields.manualExperience = `${userProfile.position} in ${userProfile.industry || "tech"}, ${userProfile.seniority || "mid-level"}.`.trim();
+    if (userProfile?.keyExperience) profileFields["Your key experience"] = userProfile.keyExperience;
+    setExtraContext(profileFields);
+    fireScriptGeneration(profileFields);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step]);
 
   /* ── Auto-transition: only when BOTH animation AND API are done ── */
   useEffect(() => {
@@ -886,6 +938,8 @@ export function PracticeSessionPage({
         confidenceScore: confidenceScoreRef.current,
         // Sprint C.1: progressive difficulty curve — level number drives interlocutor pressure
         levelNumber: progressionLevelDef?.level,
+        // Capstone levels may require a longer conversation
+        turnLimit: progressionLevelDef?.turnLimit,
       })
       .then((prepared) => {
         if (!cancelled) {
@@ -977,7 +1031,7 @@ export function PracticeSessionPage({
         }
         onGoToDashboard={() => setShowExitConfirm(true)}
       />
-      <NarrationToggle />
+      {NARRATION_STEPS.includes(step) && <NarrationToggle />}
 
       {/* Exit confirmation dialog */}
       {showExitConfirm && (
@@ -1069,20 +1123,15 @@ export function PracticeSessionPage({
                   <IntroductionScreen
                     scenarioType="self-intro"
                     levelTitle={siLevelDef?.title ?? "Crafting Your Professional Narrative"}
-                    introHeadline={siLevelDef?.introHeadline ?? "craft a professional narrative that lands in any context"}
+                    introHeadline={siLevelDef?.introHeadline ?? "learn the introduction structure that adapts to any room — once"}
                     practiceObjectives={[
-                      "Understand the 4-beat Narrative Arc and why it outperforms a resume summary",
-                      "Identify your strongest proof point and how to deliver it with confidence",
-                      "Practice your introduction in a live AI simulation with real-time feedback",
-                      "Walk away with a personal narrative you can use in any professional context",
+                      "Learn the 3-move skeleton behind every great professional introduction",
+                      "Understand why only Move 2 changes — and how each room demands a different version",
+                      "Identify your Anchor: a value-led sentence that works in any context",
+                      "Practice the full Three-Move Introduction in a live AI simulation",
                     ]}
                     onContinue={() => {
-                      if (siLevelDef?.methodology) {
-                        setStep("strategy");
-                      } else {
-                        const hasProfileContext = userProfile?.cvSummary || (userProfile?.position && userProfile?.industry);
-                        setStep(hasProfileContext ? "context" : "experience");
-                      }
+                      setStep("strategy");
                     }}
                     minimal
                   />
@@ -1103,15 +1152,7 @@ export function PracticeSessionPage({
                   onContinue={(meta) => {
                     sessionFocusRef.current = meta.sessionFocus;
                     confidenceScoreRef.current = meta.confidenceScore;
-                    const levelDef = progressionPathId && progressionLevelId
-                      ? getLevelDefinition(progressionPathId, progressionLevelId)
-                      : null;
-                    if (levelDef?.methodology) {
-                      setStep("strategy");
-                    } else {
-                      const hasProfileContext = userProfile?.cvSummary || (userProfile?.position && userProfile?.industry);
-                      setStep(hasProfileContext ? "context" : "experience");
-                    }
+                    setStep("strategy");
                   }}
                 />
               ) : null;
@@ -1262,26 +1303,45 @@ export function PracticeSessionPage({
                   narratorUrl={progressionLevelId ? STRATEGY_URLS[progressionLevelId] : undefined}
                   narratorScript={progressionLevelId ? NARRATOR_SCRIPTS.strategy[progressionLevelId as keyof typeof NARRATOR_SCRIPTS.strategy] : undefined}
                   onReady={() => {
-                    if (isSelfIntro) {
+                    // Path sessions (non-War Room): skip context, use profile data
+                    const isPathSession = !!progressionPathId && !startAtContext;
+                    if (isSelfIntro || isPathSession) {
                       const profileFields: Record<string, string> = {};
                       if (userProfile?.cvSummary) profileFields.cvSummary = userProfile.cvSummary;
                       if (userProfile?.position) profileFields.manualExperience = `${userProfile.position} in ${userProfile.industry || "tech"}, ${userProfile.seniority || "mid-level"}.`.trim();
+                      if (userProfile?.keyExperience) profileFields["Your key experience"] = userProfile.keyExperience;
                       setExtraContext(profileFields);
-                      fireScriptGeneration(profileFields);
-                      setStep(scriptGenStatus === "ready" ? "practice-prep" : "generating");
+                      // Eager generation may already be in flight — only fire if not started
+                      if (scriptGenStatus !== "ready" && scriptGenStatus !== "loading") {
+                        fireScriptGeneration(profileFields);
+                      }
+                      if (isSelfIntro) {
+                        setStep(scriptGenStatus === "ready" ? "practice-prep" : "generating");
+                      } else {
+                        gateWithGrammar(scriptGenStatus === "ready" ? "practice-prep" : "generating");
+                      }
                       return;
                     }
+                    // War Room: show context screen
                     const hasProfileContext = userProfile?.cvSummary || (userProfile?.position && userProfile?.industry);
                     setStep(hasProfileContext ? "context" : "experience");
                   }}
                   onSkip={() => {
-                    if (isSelfIntro) {
+                    const isPathSession = !!progressionPathId && !startAtContext;
+                    if (isSelfIntro || isPathSession) {
                       const profileFields: Record<string, string> = {};
                       if (userProfile?.cvSummary) profileFields.cvSummary = userProfile.cvSummary;
                       if (userProfile?.position) profileFields.manualExperience = `${userProfile.position} in ${userProfile.industry || "tech"}, ${userProfile.seniority || "mid-level"}.`.trim();
+                      if (userProfile?.keyExperience) profileFields["Your key experience"] = userProfile.keyExperience;
                       setExtraContext(profileFields);
-                      fireScriptGeneration(profileFields);
-                      setStep(scriptGenStatus === "ready" ? "practice-prep" : "generating");
+                      if (scriptGenStatus !== "ready" && scriptGenStatus !== "loading") {
+                        fireScriptGeneration(profileFields);
+                      }
+                      if (isSelfIntro) {
+                        setStep(scriptGenStatus === "ready" ? "practice-prep" : "generating");
+                      } else {
+                        gateWithGrammar(scriptGenStatus === "ready" ? "practice-prep" : "generating");
+                      }
                       return;
                     }
                     const hasProfileContext = userProfile?.cvSummary || (userProfile?.position && userProfile?.industry);
@@ -1382,8 +1442,10 @@ export function PracticeSessionPage({
                     <div className="flex gap-3 mt-2">
                       <button
                         onClick={() => {
-                          setStep("context");
                           setScriptGenStatus("idle");
+                          if (startAtContext) { setStep("context"); return; }
+                          const levelDef = progressionPathId && progressionLevelId ? getLevelDefinition(progressionPathId, progressionLevelId) : null;
+                          setStep(levelDef?.methodology ? "strategy" : "intro");
                         }}
                         className="px-5 py-2.5 rounded-lg text-sm font-medium text-[#94a3b8] bg-[#1e293b] hover:bg-[#334155] transition-colors"
                       >
@@ -1408,9 +1470,9 @@ export function PracticeSessionPage({
                 narratorUrl={PREP_URLS["interview"]}
                 narratorScript={NARRATOR_SCRIPTS.prep.interview}
                 levelTitle={progressionPathId && progressionLevelId ? getLevelDefinition(progressionPathId, progressionLevelId)?.title : undefined}
-                onProgressChange={(activeIdx, completedSet) => {
-                  setQaProgress({ activeIdx, completedSet });
-                }}
+                onProgressChange={handleQaProgressChange}
+                initialActiveIdx={qaProgress?.activeIdx}
+                initialCompletedSet={qaProgress?.completedSet}
                 onStartSimulation={(userDrafts, personalizedResponses) => {
                   const briefingPayload: SessionConfig["interviewBriefing"] = {
                     anticipatedQuestions: interviewBriefing.anticipatedQuestions.map((q) => ({
@@ -1432,7 +1494,11 @@ export function PracticeSessionPage({
                   }
                   setStep("interlocutor-intro");
                 }}
-                onBack={() => setStep("context")}
+                onBack={() => {
+                  if (startAtContext) { setStep("context"); return; }
+                  const levelDef = progressionPathId && progressionLevelId ? getLevelDefinition(progressionPathId, progressionLevelId) : null;
+                  setStep(levelDef?.methodology ? "strategy" : "intro");
+                }}
                 scenario={scenario}
               />
             )}
@@ -1474,7 +1540,14 @@ export function PracticeSessionPage({
                   }
                   setStep("practice");
                 }}
-                onBack={() => setStep("context")}
+                onBack={() => {
+                  if (startAtContext) { setStep("context"); return; }
+                  const levelDef = progressionPathId && progressionLevelId ? getLevelDefinition(progressionPathId, progressionLevelId) : null;
+                  setStep(levelDef?.methodology ? "strategy" : "intro");
+                }}
+                onProgressChange={handleQaProgressChange}
+                initialActiveIdx={qaProgress?.activeIdx}
+                initialCompletedSet={qaProgress?.completedSet}
                 scenario={scenario}
                 scenarioType={scenarioType}
               />
@@ -1528,7 +1601,7 @@ export function PracticeSessionPage({
             {step === "feedback" && (() => {
               /* Path recommendation for self-intro warm-up */
               const recommendation = isSelfIntro
-                ? recommendPath(realFeedback?.pillarScores, null, userProfile)
+                ? recommendPath(realFeedback?.pillarScores, undefined, userProfile)
                 : null;
 
               const recommendationSlot = recommendation ? (

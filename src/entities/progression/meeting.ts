@@ -1,0 +1,238 @@
+import type { ProgressionLevel } from "./path-types";
+
+export const MEETING_LEVELS: ProgressionLevel[] = [
+  {
+    id: "meet-1",
+    level: 1,
+    title: "Standup & Daily Sync",
+    introHeadline: "deliver clear, concise updates that respect everyone's time",
+    scenarioContext: "A standup or daily sync is a 15-minute structured update — done badly, it's status theater. Done well, it's the mechanism that keeps teams aligned, surfaces blockers early, and respects everyone's time.",
+    introValue: "Learn the 3-Part Update — Yesterday, Today, Blockers. Say everything that matters in under 45 seconds.",
+    scenario: "Daily team standup with a cross-functional remote team — the candidate must give a clear, concise update on their work, flag a blocker professionally, and engage with a teammate's update without overexplaining or going off-topic.",
+    interlocutorBehavior: "Keeps the meeting on track, cuts people off politely when they ramble, and expects updates in a predictable format. Asks 'can you be more specific?' when answers are vague.",
+    interlocutor: "meeting_facilitator",
+    unlockRequirement: "First level — unlocked by default",
+    measurableObjective: "The user completes a standup update in under 45 seconds using Yesterday → Today → Blockers, flags one specific blocker with enough context for the team to act, and responds to a teammate's update with a relevant, concise contribution.",
+    anchorPhrases: [
+      "Yesterday I completed [X], today I'm focused on [Y], and I'm blocked on [Z] because...",
+      "I might need 15 minutes with [person] to unblock this — can we sync after the standup?",
+      "Quick add to what [name] said — I ran into the same issue on my side. Happy to compare notes.",
+    ],
+    methodology: {
+      name: "The 3-Part Update",
+      tagline: "How you show up in a 15-minute standup is how your colleagues experience you every single day.",
+      explanation: `The daily standup is the meeting most professionals underestimate — and most damage their reputation in without realizing it. In a remote team, how you show up in a 15-minute standup is how your colleagues experience you every single day. It's where you're seen as someone who is clear, reliable, and aware of the team — or as someone who rambles, loses the thread, and doesn't respect everyone else's time.\n\nThe standup is not a progress report. It's a coordination mechanism. The goal is not to explain everything you did — it's to give the team exactly the information they need to do their work without follow-up questions.\n\nThe core skill of this level is the **3-Part Update**: Yesterday → Today → Blockers. Three components, in that order, in under 45 seconds. Everything outside of those three things belongs in a separate conversation.`,
+      pattern: {
+        bad: {
+          label: "What it sounds like when it doesn't work",
+          script: "Yeah so yesterday I was working on the project and I had a bunch of meetings and then I tried to finish the document but I couldn't really get to it because of the meetings and some other stuff came up, and today I'm going to try to finish it if I can, and I don't think I have any blockers but there might be something with the API but I'm not sure yet...",
+        },
+        good: {
+          label: "What it sounds like when it works",
+          script: "Yesterday I completed the first draft of the API documentation — it's in the shared folder. Today I'm focused on the integration test for the payment module. I have one blocker: I need access to the staging environment credentials. Sarah, are you the right person for that or should I go to DevOps?",
+        },
+      },
+      anchorPhrases: [
+        "Yesterday I [specific completed task — one sentence].",
+        "Today I'm focused on [specific next task — one sentence].",
+        "I [have / don't have] a blocker: [what it is, who can help, what you've already tried].",
+      ],
+      coachTip: "Before speaking, run this three-part structure in your head: Yesterday I completed [specific task]. Today I'm focused on [next specific task]. I have / don't have a blocker: [what it is, who can help]. Make it fit in 30 seconds.",
+    },
+  },
+  {
+    id: "meet-2",
+    level: 2,
+    title: "Taking the Floor",
+    introHeadline: "speak up confidently in meetings without waiting to be invited",
+    scenarioContext: "Taking the floor in a meeting — especially as a non-native speaker — is one of the most uncomfortable professional moments. This level focuses on the confidence and language to contribute clearly, at the right moment, without waiting to be called on.",
+    introValue: "Practice Bridge & Signal — a technique that creates space for your voice without interrupting or losing relevance.",
+    scenario: "Mid-meeting group discussion where the candidate must interject professionally to share a relevant insight or question. The facilitator opens the floor with 'Anyone have something to add?' and the candidate must take the opportunity confidently — not wait to be called on.",
+    interlocutorBehavior: "Runs the meeting briskly, occasionally invites input, but doesn't wait long for volunteers. If the user speaks up, the facilitator engages. If the user stays silent, the facilitator moves on.",
+    interlocutor: "meeting_facilitator",
+    unlockRequirement: "Complete Level 1",
+    measurableObjective: "The user voluntarily takes the floor at least once without being directly called on, presents a point in under 60 seconds with clear structure, and connects it to what was previously discussed.",
+    anchorPhrases: [
+      "I'd like to add something to what [name] mentioned...",
+      "Before we move on — I think there's a dependency here we should flag...",
+      "Can I share a quick data point that's relevant to this?",
+    ],
+    methodology: {
+      name: "Bridge & Signal",
+      tagline: "In remote meetings, silence is invisible — the professional who doesn't take the floor effectively doesn't exist.",
+      explanation: `In remote meetings, silence is invisible. When you don't speak, no one notices you're there — unlike in-person meetings where your physical presence communicates engagement even without words. This means the professional who doesn't actively take the floor in remote meetings effectively doesn't exist in those meetings. Over time, that invisibility has real career consequences.\n\nBut taking the floor poorly is worse than not taking it at all. Interrupting abruptly, talking over people, or jumping in with a half-formed thought creates friction and makes others less likely to create space for you next time.\n\nThe core skill of this level is the **Bridge & Signal** technique: you signal your intent to speak before you speak, which creates a natural pause without requiring you to interrupt. Then you bridge your point to what was just said, so your contribution feels additive rather than disruptive.`,
+      pattern: {
+        bad: {
+          label: "What it sounds like when it doesn't work",
+          script: "Sorry, can I— sorry, I just wanted to— yeah, sorry for interrupting but I think— actually never mind, I'll wait.",
+        },
+        good: {
+          label: "What it sounds like when it works",
+          script: "I want to build on that point for a second — before we move on. The risk you're describing connects to something we saw in Q3. If we implement this without addressing the dependency first, we're likely to hit the same bottleneck. I'd suggest we add a checkpoint at week two specifically for that.",
+        },
+      },
+      anchorPhrases: [
+        "Signal: 'I want to [add to / build on / push back on] that for a second...'",
+        "Bridge: 'What [name] said connects to [your point] because...'",
+        "The signal creates the space. The bridge makes your contribution feel relevant.",
+      ],
+      coachTip: "Every time you want to speak, use this two-part entry: Signal: 'I want to [add to / build on / push back on] that for a second...' → Bridge: 'What [name] said connects to [your point] because...' The signal creates space. The bridge makes your contribution feel relevant, not random.",
+    },
+  },
+  {
+    id: "meet-3",
+    level: 3,
+    title: "Disagreeing Professionally",
+    introHeadline: "push back on senior stakeholders with data and diplomacy",
+    scenarioContext: "Disagreeing with a senior stakeholder in a meeting is high-stakes communication. The goal is not to win the argument — it's to surface the better option while protecting the relationship and maintaining your credibility.",
+    introValue: "Master Disagree & Commit — separate your opposition from your commitment. Disagree on the what, never on the who.",
+    scenario: "A senior stakeholder proposes an approach that the candidate disagrees with. The candidate must push back respectfully using data and logic, not just feelings — while maintaining the relationship and not derailing the meeting.",
+    interlocutorBehavior: "Has strong opinions and expresses them confidently. Goes on tangents. Responds well to data-driven pushback, loses respect for vague disagreement. Tests whether you can manage up.",
+    interlocutor: "senior_stakeholder",
+    unlockRequirement: "Complete Level 2",
+    measurableObjective: "The user disagrees with the stakeholder's proposal using a specific data point or logical argument, reframes the disagreement as an alternative rather than a rejection, and maintains a collaborative tone throughout.",
+    anchorPhrases: [
+      "I see the logic there, and I'd like to suggest an alternative based on what we've seen...",
+      "I think we're aligned on the goal — where I'd push back is [specific aspect]...",
+      "The data from our last sprint suggests a different approach might reduce risk here...",
+    ],
+    methodology: {
+      name: "Disagree & Commit",
+      tagline: "Staying silent when you see a problem makes you complicit in bad decisions. Pushing back poorly makes you difficult to work with.",
+      explanation: `Most professionals do one of two things when they disagree in a meeting: they say nothing to avoid conflict, or they push back in a way that makes it personal. Both are career-limiting moves. Staying silent when you see a problem makes you complicit in bad decisions. Pushing back poorly makes you difficult to work with. Neither serves you, your team, or the outcome.\n\nThe professionals who advance are the ones who have developed a third option: disagreeing in a way that is direct, specific, and framed as being in service of the team's goals — not as opposition to the person proposing the idea. The goal is never to win the argument. It's to make sure the best information is on the table before the decision is made.\n\nThe core skill of this level is the **Disagree & Commit Framework**: you separate the act of disagreeing clearly and specifically from your commitment to execute once a decision is made. You disagree on the what, never on the who.`,
+      pattern: {
+        bad: {
+          label: "What it sounds like when it doesn't work",
+          script: "I mean... I guess that could work. I'm just not totally sure about the timeline. But you probably know better than I do. I'll just... yeah, we can try it.",
+        },
+        good: {
+          label: "What it sounds like when it works",
+          script: "I want to flag a concern before we commit to this — and I'll be direct. The 6-week timeline assumes the API integration is straightforward, but based on what we saw in the last two projects, that assumption has failed both times. My recommendation is to add a two-week buffer in week three specifically for integration issues. I'll fully support whatever the team decides — I just want this on the table before we lock it in.",
+        },
+      },
+      anchorPhrases: [
+        "Flag: 'I want to raise a concern before we move forward.'",
+        "Position + Evidence: 'I see it differently — specifically... The reason I say that is...'",
+        "Commit: 'I'll support whatever we decide — I just want this perspective on the table.'",
+      ],
+      coachTip: "Use this four-part structure every time you disagree: Flag: 'I want to flag a concern before we move on.' → Position: 'I see this differently — specifically...' → Evidence: 'The reason I say this is...' → Commit: 'I'll support whatever we decide — I just want this perspective on the table.'",
+    },
+  },
+  {
+    id: "meet-4",
+    level: 4,
+    title: "Leading a Meeting",
+    introHeadline: "run meetings that end with decisions, not just conversations",
+    scenarioContext: "Leading a meeting well means more than having an agenda. It means opening with clarity, keeping the conversation on track when it drifts, and closing with decisions — not just discussion. Most people facilitate. Few people lead.",
+    introValue: "Learn the Meeting Arc — Open with purpose, navigate tangents with grace, close with owners and deadlines.",
+    scenario: "The candidate is the meeting host — responsible for opening with context, managing the agenda, keeping a tangent-prone senior stakeholder on track, and closing with clear next steps, owners, and deadlines.",
+    interlocutorBehavior: "Goes on tangents with relevant-adjacent stories. Has strong opinions. Responds well to being redirected with grace and specificity. Loses respect if you let them run the meeting for you.",
+    interlocutor: "senior_stakeholder",
+    unlockRequirement: "Complete Level 3",
+    measurableObjective: "The user opens the meeting with purpose and agenda in under 30 seconds, successfully redirects the stakeholder's tangent at least once without being rude, and closes with at least 2 specific next steps with named owners and deadlines.",
+    anchorPhrases: [
+      "The purpose of this meeting is [X], and we have [Y] minutes. Here's the agenda...",
+      "That's a great point — and I want to make sure we give it proper time. Can we add it to next week's agenda?",
+      "Before we wrap: let me confirm the next steps — [Name] will [action] by [date]...",
+    ],
+    methodology: {
+      name: "The Meeting Arc",
+      tagline: "How you run a meeting is a direct signal of how you'd run a team.",
+      explanation: `How you run a meeting is a direct signal of how you'd run a team. Executives and senior leaders watch meeting facilitation closely — not because they care about meeting efficiency, but because it reveals whether someone can manage competing priorities, hold structure under social pressure, and drive toward a decision when it would be easier to keep talking.\n\nThe most common failure mode is letting the meeting drift. Someone raises an interesting tangent, the room follows, and 40 minutes later you've had a fascinating conversation but made no decisions. The facilitator who lets this happen has failed — regardless of how good the conversation was.\n\nThe core skill of this level is the **Meeting Arc**: Open (context + objective + time contract) → Navigate (agenda discipline + tangent management) → Close (decisions + owners + deadlines). A well-run meeting ends with no ambiguity. Everyone knows what was decided, who owns what, and by when.`,
+      pattern: {
+        bad: {
+          label: "What it sounds like when it doesn't work",
+          script: "OK so... I think everyone's here? Great. So yeah, we're here to talk about the Q3 roadmap. Does anyone want to start? Or I can start if you want. Actually, before we get into that — did everyone see the update from the stakeholder call? Because that might be relevant...",
+        },
+        good: {
+          label: "What it sounds like when it works",
+          script: "Let's get started — we have 45 minutes. The goal today is to align on the three priorities for Q3 so that by the end of this call, each workstream has a clear owner and a deadline. I'll keep us on track. If something important comes up that's outside scope, I'll put it in the parking lot and we'll address it separately. Let's start with the first item.",
+        },
+      },
+      anchorPhrases: [
+        "Time: 'We have [X] minutes.'",
+        "Objective: 'The goal today is to [specific outcome].'",
+        "Output: 'By the end of this, we need [decision / alignment / plan].'",
+      ],
+      coachTip: "Open every meeting with this exact structure, in this order: Time: 'We have [X] minutes.' → Objective: 'Today's goal is [specific outcome].' → Output: 'By the end of this, we need [decision / alignment / plan].' Then start — don't ask if everyone's ready.",
+    },
+  },
+  {
+    id: "meet-5",
+    level: 5,
+    title: "Presenting in a Call",
+    introHeadline: "deliver structured presentations that hold attention on a video call",
+    scenarioContext: "Presenting in a video call adds constraints that in-person meetings don't: no physical presence, attention competing with distractions, and less feedback from the audience. This level teaches you to compensate with structure, pace, and deliberate language.",
+    introValue: "Practice the Pyramid Principle — lead with your conclusion, back it with evidence, and never lose the room.",
+    scenario: "The candidate delivers a 3-minute structured presentation to a senior stakeholder during a video call — sharing results, a recommendation, and a clear ask. The stakeholder is multitasking and may interrupt with questions or challenges.",
+    interlocutorBehavior: "Multitasks during presentations. Interrupts with 'get to the bottom line' if not engaged quickly. Challenges weak data. Respects confident, structured delivery.",
+    interlocutor: "senior_stakeholder",
+    unlockRequirement: "Complete Level 4",
+    measurableObjective: "The user delivers a structured presentation in under 3 minutes using the What → So What → Now What framework, handles at least one interruption without losing their place, and ends with a specific ask.",
+    anchorPhrases: [
+      "Here's what happened, why it matters, and what I'm recommending...",
+      "To answer that directly — [answer]. And here's why that matters for [their priority]...",
+      "My ask today is [specific action] by [specific date]. Does that work for everyone?",
+    ],
+    methodology: {
+      name: "The Pyramid Principle",
+      tagline: "Presenting in a remote call is a fundamentally different skill from presenting in person.",
+      explanation: `Presenting in a remote call is a fundamentally different skill from presenting in person. In person, your physical presence, eye contact, and body language do a significant amount of work before you say a single word. On a call, you have a thumbnail-sized box and a voice. If the first 30 seconds don't earn attention, you've lost the room — and you can't tell, because everyone looks the same on a grid view regardless of whether they're listening or checking email.\n\nThe professionals who present well on calls have learned one critical adaptation: they lead with the conclusion. In person, building up to a point can create dramatic tension. On a call, it creates confusion and dropout. Your audience needs to know where you're going before they'll commit to following you there.\n\nThe core skill of this level is the **Pyramid Principle**: conclusion first, then supporting evidence. You state your recommendation or key finding in the first sentence, then spend the rest of your time proving it. This is the opposite of how most people naturally want to tell a story — and it's exactly why most remote presentations lose their audience.`,
+      pattern: {
+        bad: {
+          label: "What it sounds like when it doesn't work",
+          script: "So, to give you some context — we started this analysis back in January when we noticed some trends in the data. And we looked at a lot of different factors, and we ran the numbers a few different ways, and after all of that analysis, what we found was that... the current approach is probably not the most efficient one.",
+        },
+        good: {
+          label: "What it sounds like when it works",
+          script: "My recommendation is that we shift budget from channel A to channel B — I'll give you three reasons why. First, channel A's cost per acquisition has increased 40% since Q1 while conversion rates are flat. Second, channel B is showing the opposite trend. Third, three comparable companies made this shift in the last six months and saw an average 25% improvement in CAC. That's the case. Questions?",
+        },
+      },
+      anchorPhrases: [
+        "My [recommendation / finding / conclusion] is [X].",
+        "Here are [two / three] reasons why: [reason 1], [reason 2], [reason 3].",
+        "Everything else is supporting detail. The point comes first.",
+      ],
+      coachTip: "Start every presentation with this sentence structure — no exceptions: 'My [recommendation / finding / conclusion] is [X]. Here are [two / three] reasons why: [reason 1], [reason 2], [reason 3].' Everything else is supporting detail. The point goes first.",
+    },
+  },
+  {
+    id: "meet-6",
+    level: 6,
+    title: "Following Up & Closing the Loop",
+    introHeadline: "turn meeting decisions into real action through accountable follow-up",
+    scenarioContext: "Following up after a meeting is where decisions either get executed or disappear. A clear, specific follow-up — sent within 24 hours — converts conversation into action and positions you as someone who drives things to completion.",
+    introValue: "Master Accountable Follow-Through — close loops without nagging. Reference, ask, and hold the line.",
+    scenario: "The meeting ended 24 hours ago. The candidate must write a follow-up message summarizing decisions, next steps, and owners — then handle a reply from the stakeholder who misremembers what was agreed and pushes back on a deadline.",
+    interlocutorBehavior: "Replies to the follow-up challenging a deadline. Tests whether the user can hold their ground diplomatically with evidence from the meeting, or caves under pressure.",
+    interlocutor: "senior_stakeholder",
+    unlockRequirement: "Complete Level 5",
+    measurableObjective: "The user sends a follow-up within the first exchange that includes decisions, owners, and deadlines. When the stakeholder pushes back, the user references the original meeting agreement, proposes a compromise if needed, and maintains the accountability structure.",
+    anchorPhrases: [
+      "Following up on yesterday's sync — here's what we aligned on: [decisions], [owners], [deadlines]...",
+      "I appreciate the pushback — based on what we discussed yesterday, the agreement was [X]. Happy to revisit if priorities have shifted...",
+      "To make sure we don't lose momentum, here's a compromise that preserves the timeline...",
+    ],
+    methodology: {
+      name: "Accountable Follow-Through",
+      tagline: "The meeting was great. Everyone aligned. Decisions were made. And then nothing happened.",
+      explanation: `The meeting was great. Everyone aligned. Decisions were made. And then nothing happened. This is the most common failure mode in professional environments — not bad decisions, but good decisions that never get executed because no one closed the loop.\n\nFollowing up is where professional reputations are actually built. Anyone can perform well in a meeting. The people who advance are the ones who make sure the meeting mattered — by tracking commitments, holding themselves and others accountable, and escalating when something is at risk before it becomes a crisis.\n\nThe core skill of this level is **Accountable Follow-Through**: the professional discipline of closing loops without nagging. The difference between effective follow-up and annoying follow-up is specificity. You reference exactly what was agreed, you make a precise ask, and you frame it as being in the interest of the project — not as surveillance of the other person.`,
+      pattern: {
+        bad: {
+          label: "What it sounds like when it doesn't work",
+          script: "Hey, just wanted to check in and see how things are going with that thing we discussed. Let me know if you have any updates whenever you get a chance. No rush!",
+        },
+        good: {
+          label: "What it sounds like when it works",
+          script: "Following up on Tuesday's call — we agreed you'd have the vendor contracts reviewed by Thursday EOD so we can finalize the budget before the Friday board meeting. It's Wednesday morning and I want to flag that we're at risk if that slips. Is Thursday still realistic, or do we need to adjust the timeline? I can help remove any blockers if something has come up.",
+        },
+      },
+      anchorPhrases: [
+        "What specifically was agreed? ('On [date] we aligned on [specific deliverable] by [specific deadline].')",
+        "Why does it matter now? ('This affects [downstream consequence].')",
+        "What exactly do I need? ('Can you confirm [yes/no question] by [specific time]?')",
+      ],
+      coachTip: "Every follow-up must answer three questions: What was specifically agreed? ('On [date] we aligned on [specific deliverable] for [specific deadline].') → Why does it matter now? ('This affects [downstream consequence].') → What do I need exactly? ('Can you confirm [yes/no question] by [specific time]?')",
+    },
+  },
+];
