@@ -250,6 +250,8 @@ export default function App() {
               if (res.ok) {
                 const data = await res.json();
                 // Only use if backend has actual profile content
+                // Normalize KV snake_case → camelCase
+                if (data.english_goal && !data.englishGoal) data.englishGoal = data.english_goal;
                 const hasContent = data.profile_completed || data.position ||
                   data.industry || data.keyExperience || data.cvSummary;
                 if (hasContent) {
@@ -422,6 +424,8 @@ export default function App() {
           if (isProtected) setShowOnboarding(true);
           return;
         }
+        // Normalize KV snake_case → camelCase
+        if (backendProfile.english_goal && !backendProfile.englishGoal) backendProfile.englishGoal = backendProfile.english_goal;
         setUserProfile(prev => {
           const merged = { ...(prev ?? {}), ...backendProfile } as OnboardingProfile;
           try { localStorage.setItem("masterytalk_profile", JSON.stringify(merged)); } catch { /* ignore */ }
