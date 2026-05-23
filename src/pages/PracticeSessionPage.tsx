@@ -1316,7 +1316,8 @@ export function PracticeSessionPage({
                         fireScriptGeneration(profileFields);
                       }
                       if (isSelfIntro) {
-                        setStep(scriptGenStatus === "ready" ? "practice-prep" : "generating");
+                        // Self-intro: always go to practice-prep — skeleton shows while briefing loads
+                        setStep("practice-prep");
                       } else {
                         gateWithGrammar(scriptGenStatus === "ready" ? "practice-prep" : "generating");
                       }
@@ -1338,7 +1339,8 @@ export function PracticeSessionPage({
                         fireScriptGeneration(profileFields);
                       }
                       if (isSelfIntro) {
-                        setStep(scriptGenStatus === "ready" ? "practice-prep" : "generating");
+                        // Self-intro: always go to practice-prep — skeleton shows while briefing loads
+                        setStep("practice-prep");
                       } else {
                         gateWithGrammar(scriptGenStatus === "ready" ? "practice-prep" : "generating");
                       }
@@ -1463,6 +1465,48 @@ export function PracticeSessionPage({
               </>
             )}
 
+            {/* Self-intro practice-prep: show skeleton while briefing loads, cards when ready */}
+            {step === "practice-prep" && isSelfIntro && !interviewBriefing && (
+              <div className="w-full min-h-full flex flex-col items-center justify-center bg-[#f0f4f8] gap-6 px-6 py-12">
+                <div className="w-full max-w-[640px] space-y-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="bg-white rounded-2xl border border-[#e2e8f0] p-6 animate-pulse space-y-3">
+                      <div className="h-4 bg-[#e2e8f0] rounded w-1/3" />
+                      <div className="h-3 bg-[#f1f5f9] rounded w-full" />
+                      <div className="h-3 bg-[#f1f5f9] rounded w-4/5" />
+                      <div className="h-3 bg-[#f1f5f9] rounded w-2/3" />
+                    </div>
+                  ))}
+                </div>
+                <p className="text-sm text-[#62748e]">Personalizing your introduction cards…</p>
+              </div>
+            )}
+            {step === "practice-prep" && isSelfIntro && interviewBriefing && (
+              <PracticePrepScreen
+                interlocutor={interlocutor}
+                briefingData={interviewBriefing}
+                levelTitle={progressionPathId && progressionLevelId ? getLevelDefinition(progressionPathId, progressionLevelId)?.title : undefined}
+                onStartSimulation={(userDrafts, personalizedResponses) => {
+                  const briefingPayload: SessionConfig["interviewBriefing"] = {
+                    anticipatedQuestions: interviewBriefing.anticipatedQuestions.map((q) => ({
+                      id: q.id,
+                      question: q.question,
+                      approach: q.approach,
+                      suggestedOpener: q.suggestedOpener,
+                      framework: q.framework,
+                      keyPhrases: q.keyPhrases.map((kp) => kp.phrase),
+                    })),
+                    userDrafts: Object.keys(userDrafts).length > 0 ? userDrafts : undefined,
+                  };
+                  setBriefingForSession(briefingPayload);
+                  if (Object.keys(userDrafts).length > 0) setUserDrafts(userDrafts);
+                  if (Object.keys(personalizedResponses).length > 0) setBriefingPersonalizations(personalizedResponses);
+                  setStep("interlocutor-intro");
+                }}
+                onBack={() => setStep("strategy")}
+                scenario={scenario}
+              />
+            )}
             {step === "practice-prep" && interviewBriefing && scenarioType === "interview" && (
               <PracticePrepScreen
                 interlocutor={interlocutor}
