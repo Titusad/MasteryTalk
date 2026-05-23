@@ -37,7 +37,6 @@ const OnboardingProfileScreen = lazyRetry(() => import("@/features/onboarding/ui
 
 import { LoadingScreen } from "./components/LoadingScreen";
 import { AuthLoadingScreen } from "./components/AuthLoadingScreen";
-import { LanguageTransitionModal } from "./components/LanguageTransitionModal";
 import type { User, OnboardingProfile, ScenarioType, SessionSummary, TurnPronunciationData, ScriptSection, InterviewBriefingData } from "@/services/types";
 import type { PathId } from "@/entities/progression";
 import type { SetupModalResult } from "@/pages/landing/PracticeWidget";
@@ -156,11 +155,6 @@ export default function App() {
   const usageGating = useUsageGating(authUser?.plan ?? "free");
   const [showNewSessionPaywall, setShowNewSessionPaywall] = useState(false);
   const pendingNewSessionRef = useRef<(() => void) | null>(null);
-
-  /* ─── Language transition modal ─── */
-  const [showLangModal, setShowLangModal] = useState(false);
-  const pendingNavigationRef = useRef<(() => void) | null>(null);
-  const langModalDismissedRef = useRef(false); // Guard: prevent double-fire of onContinue
 
   /* ─── Onboarding gate ─── */
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -286,20 +280,10 @@ export default function App() {
                   progressionLevelId: setup.progressionLevelId || (sType === "self-intro" ? "si-0" : sType === "interview" ? "int-1" : "sal-1"),
                 });
 
-                const savedLang = localStorage.getItem("masterytalk_lang") || "es";
-                pendingNavigationRef.current = () => {
+                navigateWithOnboardingCheck(() => {
                   setPage("practice-session");
                   window.location.hash = "#practice-session";
-                };
-                if (savedLang === "en") {
-                  navigateWithOnboardingCheck(() => {
-                    pendingNavigationRef.current?.();
-                    pendingNavigationRef.current = null;
-                  }, backendProfile);
-                } else {
-                  langModalDismissedRef.current = false;
-                  setShowLangModal(true);
-                }
+                }, backendProfile);
               } catch (err) {
                 console.warn("[MasteryTalk] Failed to parse pending setup:", err);
                 setPage("dashboard");
@@ -313,21 +297,10 @@ export default function App() {
               sessionStorage.removeItem(OAUTH_PENDING_KEY);
               setFlowState({ scenario: "", interlocutor: "" });
 
-              const savedLang = localStorage.getItem("masterytalk_lang") || "es";
-              pendingNavigationRef.current = () => {
+              navigateWithOnboardingCheck(() => {
                 setPage("dashboard");
                 window.location.hash = "#dashboard";
-              };
-
-              if (savedLang === "en") {
-                navigateWithOnboardingCheck(() => {
-                  pendingNavigationRef.current?.();
-                  pendingNavigationRef.current = null;
-                }, backendProfile);
-              } else {
-                langModalDismissedRef.current = false;
-                setShowLangModal(true);
-              }
+              }, backendProfile);
               return;
             }
 
@@ -346,20 +319,10 @@ export default function App() {
                   guidedFields: setup.guidedFields,
                 });
 
-                const savedLang = localStorage.getItem("masterytalk_lang") || "es";
-                pendingNavigationRef.current = () => {
+                navigateWithOnboardingCheck(() => {
                   setPage("practice-session");
                   window.location.hash = "#practice-session";
-                };
-                if (savedLang === "en") {
-                  navigateWithOnboardingCheck(() => {
-                    pendingNavigationRef.current?.();
-                    pendingNavigationRef.current = null;
-                  }, backendProfile);
-                } else {
-                  langModalDismissedRef.current = false;
-                  setShowLangModal(true);
-                }
+                }, backendProfile);
               } catch {
                 setPage("dashboard");
                 window.location.hash = "#dashboard";
@@ -518,16 +481,8 @@ export default function App() {
             scenarioType: "sales" as ScenarioType,
           }
       );
-      pendingNavigationRef.current = () => {
-        setPage("dashboard");
-        window.location.hash = "#dashboard";
-      };
-      console.log("[DEBUG] Navigation SET at handleAuthComplete login (line ~398). Bypassing Lang modal for returning users.");
-      
-      // For returning users (login), always skip the language transition modal
-      pendingNavigationRef.current();
-      pendingNavigationRef.current = null;
-      
+      setPage("dashboard");
+      window.location.hash = "#dashboard";
       return;
     }
 
@@ -547,22 +502,10 @@ export default function App() {
 
     pendingSetupRef.current = data;
 
-    pendingNavigationRef.current = () => {
+    navigateWithOnboardingCheck(() => {
       setPage("practice-session");
       window.location.hash = "#practice-session";
-    };
-    console.log("[DEBUG] pendingNavigationRef SET at handleAuthComplete registro (line ~421)");
-    // Skip language transition modal for EN users (already in English)
-    if (landingLang === "en") {
-      navigateWithOnboardingCheck(() => {
-        pendingNavigationRef.current?.();
-        pendingNavigationRef.current = null;
-      });
-    } else {
-      langModalDismissedRef.current = false; // Reset guard before showing modal
-      setShowLangModal(true);
-      console.log("[DEBUG] setShowLangModal(true) at handleAuthComplete registro");
-    }
+    });
   };
 
   const handleProfileUpdate = (profile: OnboardingProfile) => {
@@ -874,36 +817,6 @@ export default function App() {
           {page === "privacy" && <PrivacyPage />}
           {page === "cookies" && <CookiesPage />}
           {page === "transparency" && <TransparencyPage />}
-
-          {showLangModal && (
-            <LanguageTransitionModal
-              fromLang={landingLang}
-              onContinue={() => {
-                // Guard: prevent double-fire (AnimatePresence exit re-render race)
-                if (langModalDismissedRef.current) {
-                  console.log("[DEBUG LanguageModal] onContinue BLOCKED (already dismissed)");
-                  return;
-                }
-                langModalDismissedRef.current = true;
-
-                console.log("[DEBUG LanguageModal] onContinue fired. pendingNav is:", pendingNavigationRef.current ? "SET" : "NULL");
-                setShowLangModal(false);
-
-                const doNavigate = () => {
-                  if (pendingNavigationRef.current) {
-                    pendingNavigationRef.current();
-                    pendingNavigationRef.current = null;
-                  } else {
-                    console.warn("[MasteryTalk] pendingNavigationRef was null — fallback to dashboard");
-                    setPage("dashboard");
-                    window.location.hash = "#dashboard";
-                  }
-                };
-
-                navigateWithOnboardingCheck(doNavigate);
-              }}
-            />
-          )}
 
           {/* PathPurchaseModal — Monthly/Quarterly subscription with auto launch pricing */}
           <PathPurchaseModal
