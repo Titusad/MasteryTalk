@@ -1315,8 +1315,8 @@ export function PracticeSessionPage({
                         fireScriptGeneration(profileFields);
                       }
                       if (isSelfIntro) {
-                        // Self-intro: always go to practice-prep — skeleton shows while briefing loads
-                        setStep("practice-prep");
+                        // Self-intro: go through vocabulary if bank exists, then practice-prep
+                        gateWithVocabulary("practice-prep");
                       } else {
                         gateWithGrammar(scriptGenStatus === "ready" ? "practice-prep" : "generating");
                       }
@@ -1338,8 +1338,8 @@ export function PracticeSessionPage({
                         fireScriptGeneration(profileFields);
                       }
                       if (isSelfIntro) {
-                        // Self-intro: always go to practice-prep — skeleton shows while briefing loads
-                        setStep("practice-prep");
+                        // Self-intro: go through vocabulary if bank exists, then practice-prep
+                        gateWithVocabulary("practice-prep");
                       } else {
                         gateWithGrammar(scriptGenStatus === "ready" ? "practice-prep" : "generating");
                       }
