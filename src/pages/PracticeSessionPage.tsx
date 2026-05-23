@@ -1296,7 +1296,6 @@ export function PracticeSessionPage({
                   levelTitle={levelDef.title}
                   methodology={levelDef.methodology}
                   anchorPhrases={levelDef.anchorPhrases}
-                  vocabularyBank={levelDef.vocabularyBank}
                   userProfile={userProfile}
                   personalizedPattern={personalizedPattern}
                   patternLoading={patternLoading}
