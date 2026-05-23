@@ -67,9 +67,12 @@ export function AnswerCard({ question, scenarioType, preparedResponse, onNext, o
             await recorder.start();
         } catch (err) {
             console.error("[AnswerCard] Mic access failed:", err);
-            setError("Couldn't access microphone. Try the text option.");
+            setError(preparedResponse
+                ? "Couldn't access microphone. Please check your browser permissions."
+                : "Couldn't access microphone. Try the text option."
+            );
             setStatus("idle");
-            setMode("text");
+            if (!preparedResponse) setMode("text");
         }
     }, [recorder]);
 
@@ -163,31 +166,33 @@ export function AnswerCard({ question, scenarioType, preparedResponse, onNext, o
                     </>
                 )}
 
-                {/* Mode toggle */}
-                <div className="flex items-center gap-2 mb-5">
-                    <button
-                        onClick={() => setMode("voice")}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-all ${
-                            mode === "voice"
-                                ? "bg-[#6366f1] text-white"
-                                : "bg-[#f1f5f9] text-[#45556c] hover:bg-[#e2e8f0]"
-                        }`}
-                    >
-                        <Mic className="w-3 h-3" />
-                        Voice
-                    </button>
-                    <button
-                        onClick={() => setMode("text")}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-all ${
-                            mode === "text"
-                                ? "bg-[#6366f1] text-white"
-                                : "bg-[#f1f5f9] text-[#45556c] hover:bg-[#e2e8f0]"
-                        }`}
-                    >
-                        <Type className="w-3 h-3" />
-                        Text
-                    </button>
-                </div>
+                {/* Mode toggle — hidden when preparedResponse exists (pronunciation drill: Voice only) */}
+                {!preparedResponse && (
+                    <div className="flex items-center gap-2 mb-5">
+                        <button
+                            onClick={() => setMode("voice")}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-all ${
+                                mode === "voice"
+                                    ? "bg-[#6366f1] text-white"
+                                    : "bg-[#f1f5f9] text-[#45556c] hover:bg-[#e2e8f0]"
+                            }`}
+                        >
+                            <Mic className="w-3 h-3" />
+                            Voice
+                        </button>
+                        <button
+                            onClick={() => setMode("text")}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-all ${
+                                mode === "text"
+                                    ? "bg-[#6366f1] text-white"
+                                    : "bg-[#f1f5f9] text-[#45556c] hover:bg-[#e2e8f0]"
+                            }`}
+                        >
+                            <Type className="w-3 h-3" />
+                            Text
+                        </button>
+                    </div>
+                )}
 
                 {/* Voice mode */}
                 {mode === "voice" && (

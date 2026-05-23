@@ -79,6 +79,11 @@ const VOICE_PROFILES: Record<InterlocutorType, VoiceProfile> = {
     label: "Warm, empathetic",
     description: "People & Culture: reflective, open, emotionally intelligent",
   },
+  interview_panel: {
+    voiceId: resolveVoiceId("VITE_ELEVENLABS_VOICE_HIRING_MANAGER"),
+    label: "Direct, measured",
+    description: "Full interview: senior hiring manager tone — authoritative, unhurried, genuinely evaluating",
+  },
 
   /* ── Sales Voices ── */
   gatekeeper: {

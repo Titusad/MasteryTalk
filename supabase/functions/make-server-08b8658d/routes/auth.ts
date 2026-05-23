@@ -225,6 +225,17 @@ app.put("/make-server-08b8658d/profile", async (c: any) => {
       };
 
     const merged = { ...current, ...safeUpdates, id: user.id };
+
+    // Invalidate script cache if content-affecting fields changed
+    const SCRIPT_CACHE_FIELDS = ["position", "industry", "seniority", "cvSummary", "keyExperience", "lastJobDescription"];
+    const contentChanged = SCRIPT_CACHE_FIELDS.some(
+      (f) => f in safeUpdates && safeUpdates[f] !== (current as Record<string, unknown>)[f]
+    );
+    if (contentChanged) {
+      merged.scriptCacheVersion = ((current as Record<string, unknown>).scriptCacheVersion as number ?? 0) + 1;
+      console.log(`[Profile] Content fields changed — scriptCacheVersion bumped to ${merged.scriptCacheVersion}`);
+    }
+
     await kv.set(`profile:${user.id}`, merged);
 
     // Enrich Loops contact when onboarding fields arrive (fire-and-forget)

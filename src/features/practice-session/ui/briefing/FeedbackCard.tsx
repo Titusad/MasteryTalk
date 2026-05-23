@@ -230,9 +230,12 @@ export function FeedbackCard({
         const accuracyScore = Math.round(pronAssessment.accuracyScore);
         const fluencyScore = Math.round(pronAssessment.fluencyScore);
 
-        // Words with errors or accuracy < 70 are flagged for practice
+        // Words with errors or accuracy < 70 are flagged for practice.
+        // Exclude Omission (word not spoken) and Insertion (extra word Azure hallucinated) —
+        // these are alignment artefacts, not pronunciation problems.
         const weakWords = pronAssessment.words.filter(
-            w => w.errorType !== "None" || w.accuracyScore < 70
+            w => w.errorType !== "Omission" && w.errorType !== "Insertion" &&
+                 (w.errorType !== "None" || w.accuracyScore < 70)
         );
 
         // Build shadowing phrases from the prepared response sentences

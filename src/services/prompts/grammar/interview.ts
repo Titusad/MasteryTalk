@@ -486,10 +486,92 @@ const INT_6: GrammarStructure[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────
+// SI-0 — Crafting Your Professional Narrative
+// Focus: Narrative Arc beats — Anchor, Proof, Direction, Bridge
+// CEFR: B1 → B2
+// ─────────────────────────────────────────────────────────────
+
+const SI_0: GrammarStructure[] = [
+  {
+    id: "si-0-anchor",
+    levelId: "si-0",
+    title: "Present Simple + Infinitive of Purpose: The Anchor Beat",
+    pattern: "I [verb] [audience] + to + [outcome]  /  I [role] at [company]",
+    professionalUses: [
+      "Open your introduction with what you do for others — not your job title",
+      "Replace 'I am a [job title]' with a value-first statement that hooks the listener immediately",
+      "Make the first sentence answer 'why should I care?' before they even ask",
+    ],
+    staticExamples: [
+      "I help engineering teams ship faster without sacrificing code quality — I lead platform architecture at Rappi.",
+      "I work with finance leaders to turn raw data into decisions — I run analytics for the retail division at Bancolombia.",
+      "I help startups build legal infrastructure they can actually use — I'm a corporate lawyer specializing in early-stage tech companies.",
+    ],
+    warningNote:
+      "'I am a product manager at X.' vs. 'I help product teams at X reduce time-to-market.' — The first describes a label. The second describes value. Lead with the outcome, anchor with the role.",
+  },
+  {
+    id: "si-0-proof",
+    levelId: "si-0",
+    title: "Present Perfect: The Proof Beat",
+    pattern: "We've / I've + past participle + quantified result",
+    professionalUses: [
+      "Back up your Anchor with one specific, measurable achievement",
+      "Signal that your past experience is still active and relevant — not just history",
+      "Make your credibility concrete: numbers, timeframes, or named outcomes beat vague claims every time",
+    ],
+    staticExamples: [
+      "We've cut onboarding time from three weeks to five days for enterprise clients.",
+      "I've led two platform migrations that saved the company over $400K in annual infrastructure costs.",
+      "Our team has shipped four major product updates this quarter without a single P1 incident.",
+    ],
+    warningNote:
+      "'I did a project that reduced costs.' (Simple Past — closed, forgotten) vs. 'I've led cost reduction initiatives that still drive our margin.' (Present Perfect — ongoing relevance). In a self-introduction, Present Perfect sounds like your track record still matters.",
+  },
+  {
+    id: "si-0-direction",
+    levelId: "si-0",
+    title: "Future Forms for Direction: The Direction Beat",
+    pattern: "I'm focused on...  /  I'm looking to...  /  Right now I'm [verb-ing]...",
+    professionalUses: [
+      "Signal intentionality — you're moving toward something, not just away from something",
+      "Show ambition without making promises: 'I'm looking to' is grounded, 'I will' sounds like a contract",
+      "Open a natural door for the other person to connect — direction invites conversation",
+    ],
+    staticExamples: [
+      "Right now I'm focused on moving into a data strategy role at a more product-driven company.",
+      "I'm looking to apply what I've built in B2B SaaS to a team that's still designing its foundation.",
+      "I'm currently exploring opportunities where I can grow into a regional leadership position within two or three years.",
+    ],
+    warningNote:
+      "Avoid 'I want a new job' or 'I'm leaving because...' — Direction is about where you're going, not what you're escaping. 'I'm looking to...' frames you as purposeful. 'I need to find...' frames you as desperate.",
+  },
+  {
+    id: "si-0-bridge",
+    levelId: "si-0",
+    title: "Indirect Questions: The Bridge Beat",
+    pattern: "What's your [X]?  /  How are you [verb-ing]...?  /  I'd love to hear how...",
+    professionalUses: [
+      "Close your introduction with a question that puts the spotlight on the other person",
+      "Transform a monologue into a two-way conversation — the best introductions end on curiosity, not information",
+      "Use indirect questions to sound engaged and professional, not interrogative",
+    ],
+    staticExamples: [
+      "What's your biggest challenge with digital transformation right now?",
+      "I'd love to hear how your team is approaching AI integration in the design process.",
+      "How are you thinking about scaling the data function as the company grows?",
+    ],
+    warningNote:
+      "'Do you have any questions for me?' sounds like a presenter wrapping up. 'What does your data setup look like today?' sounds like someone genuinely curious. One closes the conversation. The other opens it.",
+  },
+];
+
+// ─────────────────────────────────────────────────────────────
 // Export
 // ─────────────────────────────────────────────────────────────
 
 export const INTERVIEW_GRAMMAR_BANK: Record<string, GrammarStructure[]> = {
+  "si-0": SI_0,
   "int-1": INT_1,
   "int-2": INT_2,
   "int-3": INT_3,

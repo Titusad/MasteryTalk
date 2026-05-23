@@ -88,8 +88,8 @@ const SCENARIO_PREP_CONFIG: Record<string, {
         cardLabel: "Beat",
         completedLabel: "mastered",
         subtitle: (_n, _il, level) => level
-            ? `Let's build your ${level} — 3 beats of the Narrative Arc. Master each one.`
-            : `3 beats of the Narrative Arc — master each one before you practice.`,
+            ? `Let's build your ${level} — 3 moves of the Three-Move Introduction. Master each one.`
+            : `3 moves of the Three-Move Introduction — master each one before you practice.`,
     },
 };
 
@@ -105,6 +105,8 @@ interface PracticePrepScreenProps {
     narratorScript?: string;
     narratorUrl?: string;
     onProgressChange?: (activeIdx: number, completedSet: Set<number>) => void;
+    initialActiveIdx?: number;
+    initialCompletedSet?: Set<number>;
 }
 
 /* ── Main Screen ── */
@@ -119,6 +121,8 @@ export function PracticePrepScreen({
     narratorUrl,
     narratorScript,
     onProgressChange,
+    initialActiveIdx,
+    initialCompletedSet,
 }: PracticePrepScreenProps) {
     const { isScriptVisible, dismissCaption } = useNarration(narratorUrl || null, narratorScript);
     const [allDone, setAllDone] = useState(false);
@@ -189,6 +193,8 @@ export function PracticePrepScreen({
                         cardLabel={(SCENARIO_PREP_CONFIG[scenarioType ?? "interview"] ?? SCENARIO_PREP_CONFIG.interview).cardLabel}
                         completedLabel={(SCENARIO_PREP_CONFIG[scenarioType ?? "interview"] ?? SCENARIO_PREP_CONFIG.interview).completedLabel}
                         interlocutor={interlocutor}
+                        initialActiveIdx={initialActiveIdx}
+                        initialCompletedSet={initialCompletedSet}
                     />
                 )}
 

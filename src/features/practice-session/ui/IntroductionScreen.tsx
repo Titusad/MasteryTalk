@@ -121,7 +121,7 @@ export function IntroductionScreen({
       >
         Hey {firstName}, <br />
         in this practice you'll master how to{" "}
-        <span style={{ color: "#6366f1" }}>{introHeadline}</span>.
+        <span style={{ color: "#14b8a6" }}>{introHeadline}</span>.
       </h1>
 
       {/* Scenario context callout */}
@@ -158,7 +158,7 @@ export function IntroductionScreen({
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.15 + i * 0.08, duration: 0.3 }}
               >
-                <div className="w-1.5 h-1.5 rounded-full bg-[#6366f1] mt-1.5 shrink-0" />
+                <div className="w-1.5 h-1.5 rounded-full bg-[#14b8a6] mt-1.5 shrink-0" />
                 <p className="text-sm text-[#0f172b] leading-relaxed">{obj}</p>
               </motion.div>
             ))}

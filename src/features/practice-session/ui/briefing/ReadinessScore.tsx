@@ -25,7 +25,8 @@ export function ReadinessScore({
 }: ReadinessScoreProps) {
     useNarration(narratorUrl || null);
     const confettiFired = useRef(false);
-    const score = totalCards > 0 ? Math.round((completedCards / totalCards) * 100) : 0;
+    const clampedCompleted = Math.min(completedCards, totalCards);
+    const score = totalCards > 0 ? Math.min(100, Math.round((clampedCompleted / totalCards) * 100)) : 0;
 
     /* Fire confetti on mount */
     useEffect(() => {
@@ -63,7 +64,7 @@ export function ReadinessScore({
                     Preparation Complete!
                 </h3>
                 <p className="text-sm text-[#45556c]">
-                    You've prepared {completedCards} of {totalCards} questions
+                    You've prepared {clampedCompleted} of {totalCards} questions
                 </p>
             </div>
 
@@ -104,7 +105,7 @@ export function ReadinessScore({
             >
                 <div className="bg-gradient-to-br from-[#f0f9ff] to-[#eef2ff] rounded-3xl border border-[#bfdbfe]/50 p-6 text-center">
                     <p className="text-sm text-[#45556c] mb-4">
-                        Put this briefing into action — simulate the interview with AI.
+                        Put this briefing into action — practice your conversation with AI.
                     </p>
                     <button
                         onClick={onStartPractice}

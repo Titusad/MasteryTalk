@@ -56,7 +56,14 @@ Handle these situations IN CHARACTER — never break the simulation:
 
 /* ── Block 6: Output Format + isComplete Rules ── */
 
-export const OUTPUT_FORMAT_BLOCK = `=== OUTPUT FORMAT (MANDATORY) ===
+/**
+ * Builds the output format block with configurable turn limits.
+ * @param minTurns - Minimum user turns before isComplete can be set (default 4)
+ * @param maxTurns - Maximum user turns before the session must wrap up (default 8)
+ */
+export function buildOutputFormatBlock(minTurns = 4, maxTurns = 8): string {
+  const closingTurn = maxTurns - 1;
+  return `=== OUTPUT FORMAT (MANDATORY) ===
 You MUST respond with a JSON object. No markdown, no code blocks, no extra text. Just pure JSON:
 
 {
@@ -98,16 +105,20 @@ You MUST respond with a JSON object. No markdown, no code blocks, no extra text.
   * Track overall arc: Is the user getting stronger or weaker as the conversation progresses?
 
 === CLOSURE RULES ===
-- DEFAULT: NEVER set isComplete = true before the conversation has had at least 4 user turns.
+- DEFAULT: NEVER set isComplete = true before the conversation has had at least ${minTurns} user turns.
 - After the minimum turns, you MAY set isComplete = true if the scenario reaches a logical end point.
-- If the conversation reaches 8 user turns, you MUST wrap up on your next response.
-- ON YOUR 8TH RESPONSE (after the user's 7th turn), you MUST end your message with a CLOSING QUESTION directed at the user. This gives them one final opportunity to practice a substantive answer. Examples:
+- If the conversation reaches ${maxTurns} user turns, you MUST wrap up on your next response.
+- ON YOUR ${maxTurns}TH RESPONSE (after the user's ${closingTurn}th turn), you MUST end your message with a CLOSING QUESTION directed at the user. This gives them one final opportunity to practice a substantive answer. Examples:
   Good (interview): "Before we wrap up — is there anything you'd like to ask me about the role or the team?"
   Good (sales): "Before I go, what's the single biggest concern I'd need to address for your team to move forward?"
-- After the user answers the closing question (their 8th turn), you MUST set isComplete = true and provide a brief, natural farewell.
+- After the user answers the closing question (their ${maxTurns}th turn), you MUST set isComplete = true and provide a brief, natural farewell.
   Good: "Great insights. I'll review this with my team and circle back Friday. Thanks for your time."
   Bad: "This conversation is now over."
 - Do NOT set isComplete = true on the same turn as the closing question — the user must have a chance to answer it first.`;
+}
+
+/** Default output format block (min 4 turns, max 8 turns). */
+export const OUTPUT_FORMAT_BLOCK = buildOutputFormatBlock();
 
 /* ── Block 6.5: Arena Phase Directive (injected dynamically by assembler) ── */
 

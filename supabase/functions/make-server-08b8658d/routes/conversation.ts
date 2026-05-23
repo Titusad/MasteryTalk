@@ -332,7 +332,7 @@ app.post("/make-server-08b8658d/process-turn-stream", async (c: any) => {
             }
           }
 
-          // Update KV and emit final metadata event
+          // Compute completion metadata
           const perfSignal = computeSignal(userMessage);
           const isComplete = detectComplete(fullText, session.turnCount);
           const perfHistory = [...(session.performanceHistory || []), perfSignal];
@@ -349,13 +349,30 @@ app.post("/make-server-08b8658d/process-turn-stream", async (c: any) => {
           session.performanceHistory = perfHistory;
           session.messages.push({ role: "assistant", content: fullText });
           session.isComplete = isComplete;
-          await kv.set(`practice:${sessionId}`, session);
+
+          // KV save is best-effort — client MUST receive the end event regardless
+          try {
+            await kv.set(`practice:${sessionId}`, session);
+          } catch (kvErr) {
+            console.error("[ProcessTurnStream] KV save failed (non-fatal):", kvErr);
+          }
 
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({ t: "end", text: fullText, isComplete, arenaPhase: nextPhase })}\n\n`));
           controller.close();
         } catch (err) {
           console.error("[ProcessTurnStream] Stream error:", err);
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ t: "error" })}\n\n`));
+          // If GPT produced text before the error, send a graceful end event so the
+          // client is never left without a completion signal (avoids missing "Finish" button).
+          if (fullText.length > 0) {
+            const gracefulComplete = session.turnCount >= maxTurns;
+            try {
+              session.isComplete = gracefulComplete;
+              await kv.set(`practice:${sessionId}`, session);
+            } catch { /* best-effort */ }
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ t: "end", text: fullText, isComplete: gracefulComplete, arenaPhase: currentPhase })}\n\n`));
+          } else {
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ t: "error" })}\n\n`));
+          }
           controller.close();
         }
       },

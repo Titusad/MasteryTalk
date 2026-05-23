@@ -39,6 +39,9 @@ interface BriefingStepperCarouselProps {
     interlocutor?: string;
     cardLabel?: string;
     completedLabel?: string;
+    /** Restore carousel position when user navigates back to this step */
+    initialActiveIdx?: number;
+    initialCompletedSet?: Set<number>;
 }
 
 export function BriefingStepperCarousel({
@@ -51,6 +54,8 @@ export function BriefingStepperCarousel({
     interlocutor,
     cardLabel = "Question",
     completedLabel = "mastered",
+    initialActiveIdx,
+    initialCompletedSet,
 }: BriefingStepperCarouselProps) {
     const STEPS: BriefingStep[] = ["question", "strategy", "answer", "feedback"];
 
@@ -93,10 +98,10 @@ export function BriefingStepperCarousel({
     }, []);
 
     /* ── State ── */
-    const [activeQuestionIdx, setActiveQuestionIdx] = useState(0);
+    const [activeQuestionIdx, setActiveQuestionIdx] = useState(initialActiveIdx ?? 0);
     const [activeStep, setActiveStep] = useState<BriefingStep>("question");
     const [flipDirection, setFlipDirection] = useState(1);
-    const [completedQuestions, setCompletedQuestions] = useState<Set<number>>(new Set());
+    const [completedQuestions, setCompletedQuestions] = useState<Set<number>>(initialCompletedSet ?? new Set());
     const [showCelebration, setShowCelebration] = useState(false);
 
     /* Store user drafts per question for the AI feedback call */
@@ -190,8 +195,8 @@ export function BriefingStepperCarousel({
                 setActiveStep("question");
                 window.scrollTo({ top: 0, behavior: "smooth" });
             } else {
-                /* All visible questions done */
-                onAllComplete(completedQuestions.size + 1); // +1 for current
+                /* All visible questions done — cap at totalQuestions (guards against restored state double-count) */
+                onAllComplete(Math.min(completedQuestions.size + 1, totalQuestions));
             }
         }, 1500);
     }, [activeQuestionIdx, totalQuestions, onAllComplete]);

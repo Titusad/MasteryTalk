@@ -269,7 +269,7 @@ app.post("/make-server-08b8658d/save-pronunciation", async (c) => {
     for (const turn of turns) {
       const words = turn.assessment?.words || [];
       for (const w of words) {
-        if (w.accuracyScore < 70 && w.errorType !== "Insertion") {
+        if (w.accuracyScore < 70 && w.errorType !== "Insertion" && w.errorType !== "Omission") {
           allProblemWords.push({ word: w.word.toLowerCase(), score: w.accuracyScore });
         }
       }

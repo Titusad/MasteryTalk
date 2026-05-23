@@ -940,11 +940,16 @@ function VoicePractice({
             // always display their text — this prevents "ghost" typing bars when a
             // typewriter effect is cleaned up before it completes and the message
             // is never added to revealedMsgsRef.
+            // Typing bars show when: no text yet (stream start / initial load)
+            // OR text exists but TTS hasn't started (initial message waiting for audio).
+            // When streaming with text already arriving (isAiTyping=true, text.length>0),
+            // aiWaiting=false so tokens are visible live — no "all at once" reveal at stream end.
             const aiWaiting =
               msg.role === "ai" &&
               i === messages.length - 1 &&
               !hasBeenRevealed &&
-              !isRevealing;
+              !isRevealing &&
+              (msg.text.length === 0 || !isAiTyping);
 
             const aiFullyRevealed =
               msg.role === "ai" &&
@@ -1350,11 +1355,7 @@ function VoicePractice({
               <motion.div
                 animate={isUserTurn ? { scale: 1.04 } : { scale: 1 }}
                 transition={{ duration: 0.25, ease: "easeOut" }}
-                className={`rounded-full transition-shadow duration-300 ${
-                  isUserTurn
-                    ? "shadow-[0_0_0_6px_rgba(99,102,241,0.15),0_0_0_12px_rgba(99,102,241,0.06)]"
-                    : ""
-                }`}
+                className="rounded-full"
               >
                 <RecordButton
                   isRecording={recorder.isRecording}

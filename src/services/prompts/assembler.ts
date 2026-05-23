@@ -31,6 +31,7 @@
 
 import {
   MASTER_SYSTEM_PROMPT,
+  buildOutputFormatBlock,
   OUTPUT_FORMAT_BLOCK,
   FIRST_MESSAGE_BLOCK,
   ARENA_PHASE_DIRECTIVES,
@@ -293,6 +294,11 @@ export interface AssemblyConfig {
    * If absent, no difficulty block is injected.
    */
   levelNumber?: number | null;
+  /**
+   * Maximum number of user turns before the session wraps up.
+   * Overrides the default of 8. Used for capstone levels that require a longer session.
+   */
+  turnLimit?: number | null;
 }
 
 export interface AssemblyResult {
@@ -325,6 +331,7 @@ export function assembleSystemPrompt(config: AssemblyConfig): AssemblyResult {
     sessionFocus,
     confidenceScore,
     levelNumber,
+    turnLimit,
   } = config;
 
   // Detect sub-profile from scenario keywords
@@ -379,7 +386,7 @@ export function assembleSystemPrompt(config: AssemblyConfig): AssemblyResult {
   blocks.push(TTS_TEXT_OPTIMIZATION_BLOCK);
 
   // Block 6: Output Format + isComplete Rules (includes pattern tracking)
-  blocks.push(OUTPUT_FORMAT_BLOCK);
+  blocks.push(turnLimit != null ? buildOutputFormatBlock(4, turnLimit) : OUTPUT_FORMAT_BLOCK);
 
   // Block 6.5: Arena Phase Directive (progressive scaffolding)
   if (arenaPhase && ARENA_PHASE_DIRECTIVES[arenaPhase]) {

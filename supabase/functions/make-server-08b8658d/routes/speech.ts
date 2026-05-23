@@ -1,8 +1,10 @@
 import { Hono } from "npm:hono";
 import { logApiUsage, getAuthUser } from "../_shared.ts";
+import * as kv from "../kv_store.ts";
 import { buildPreBriefingPrompt } from "../prebriefing-prompts.ts";
 import { buildPreparationToolkitPrompt } from "../preparation-toolkit-prompt.ts";
 import { buildInterviewBriefingPrompt } from "../interview-briefing-prompt.ts";
+import { buildSelfIntroBriefingPrompt } from "../self-intro-briefing-prompt.ts";
 
 const app = new Hono();
 
@@ -127,6 +129,22 @@ app.post("/make-server-08b8658d/generate-script", async (c) => {
     const body = await c.req.json();
     const { scenario, interlocutor, scenarioType, guidedFields } = body;
     const locale = body.locale || null;
+    const pathId: string | null = body.pathId || null;
+    const levelId: string | null = body.levelId || null;
+
+    // ── Script cache: check KV before calling GPT-4o ──
+    if (pathId && levelId) {
+      const profileRaw = await kv.get(`profile:${user.id}`);
+      const profileData = profileRaw ? (typeof profileRaw === "string" ? JSON.parse(profileRaw) : profileRaw) : null;
+      const cacheVersion = profileData?.scriptCacheVersion ?? 0;
+      const cacheKey = `script:${user.id}:${pathId}:${levelId}:${cacheVersion}`;
+      const cached = await kv.get(cacheKey);
+      if (cached?.sections) {
+        console.log(`[Generate Script] Cache HIT — ${cacheKey}`);
+        return c.json({ sections: cached.sections, _debug: { cached: true } });
+      }
+      console.log(`[Generate Script] Cache MISS — ${cacheKey}, generating...`);
+    }
 
     if (!scenario && !interlocutor) {
       return c.json({ error: "Missing required fields: scenario or interlocutor" }, 400);
@@ -301,6 +319,18 @@ Return ONLY the rewritten JSON. No markdown, no explanation.`;
 
     const finalWordCount = countWords(sections);
     console.log(`[Generate Script v3] Final output — ${sections.length} sections, ${finalWordCount} words`);
+
+    // ── Script cache: store in KV for future sessions ──
+    if (pathId && levelId) {
+      const profileRaw2 = await kv.get(`profile:${user.id}`);
+      const profileData2 = profileRaw2 ? (typeof profileRaw2 === "string" ? JSON.parse(profileRaw2) : profileRaw2) : null;
+      const cacheVersion2 = profileData2?.scriptCacheVersion ?? 0;
+      const cacheKey2 = `script:${user.id}:${pathId}:${levelId}:${cacheVersion2}`;
+      const TTL_30_DAYS = 30 * 24 * 3600;
+      kv.setWithTTL(cacheKey2, { sections }, TTL_30_DAYS).catch(() => {});
+      console.log(`[Generate Script] Cached at ${cacheKey2}`);
+    }
+
     return c.json({ sections, _debug: { version: "v3-validate-rewrite", wordCount: finalWordCount, wasRewritten: needsRewrite } });
   } catch (err) {
     console.log("[Generate Script Error]", err);
@@ -403,6 +433,27 @@ app.post("/make-server-08b8658d/generate-interview-briefing", async (c) => {
     const body = await c.req.json();
     const { scenario, interlocutor, guidedFields } = body;
     const briefingLocale = body.locale || null;
+    const ibPathId: string | null = body.pathId || null;
+    const ibLevelId: string | null = body.levelId || null;
+
+    // ── Script cache: check KV before calling GPT-4o ──
+    if (ibPathId && ibLevelId) {
+      const ibProfileRaw = await kv.get(`profile:${user.id}`);
+      const ibProfileData = ibProfileRaw ? (typeof ibProfileRaw === "string" ? JSON.parse(ibProfileRaw) : ibProfileRaw) : null;
+      const ibCacheVersion = ibProfileData?.scriptCacheVersion ?? 0;
+      const ibCacheKey = `script:${user.id}:${ibPathId}:${ibLevelId}:${ibCacheVersion}`;
+      const ibCached = await kv.get(ibCacheKey);
+      if (ibCached?.anticipatedQuestions) {
+        console.log(`[Interview Briefing] Cache HIT — ${ibCacheKey}`);
+        return c.json({
+          anticipatedQuestions: ibCached.anticipatedQuestions,
+          questionsToAsk: ibCached.questionsToAsk ?? [],
+          culturalTips: ibCached.culturalTips ?? [],
+          _debug: { cached: true },
+        });
+      }
+      console.log(`[Interview Briefing] Cache MISS — ${ibCacheKey}, generating...`);
+    }
 
     const openaiKey = (globalThis as any).Deno.env.get("OPENAI_API_KEY");
     if (!openaiKey) {
@@ -474,10 +525,111 @@ app.post("/make-server-08b8658d/generate-interview-briefing", async (c) => {
 
     console.log(`[Interview Briefing] Generated ${anticipatedQuestions.length} questions, ${questionsToAsk.length} to-ask, ${culturalTips.length} tips`);
 
+    // Cache store — 30-day TTL
+    if (ibPathId && ibLevelId) {
+      const ibProfileRaw2 = await kv.get(`profile:${user.id}`);
+      const ibProfileData2 = ibProfileRaw2 ? (typeof ibProfileRaw2 === "string" ? JSON.parse(ibProfileRaw2) : ibProfileRaw2) : null;
+      const ibCacheVersion2 = ibProfileData2?.scriptCacheVersion ?? 0;
+      const ibCacheKey2 = `script:${user.id}:${ibPathId}:${ibLevelId}:${ibCacheVersion2}`;
+      const TTL_30_DAYS = 30 * 24 * 60 * 60 * 1000;
+      await kv.setWithTTL(ibCacheKey2, { anticipatedQuestions, questionsToAsk, culturalTips }, TTL_30_DAYS);
+      console.log(`[Interview Briefing] Cached — ${ibCacheKey2}`);
+    }
+
     return c.json({ anticipatedQuestions, questionsToAsk, culturalTips });
   } catch (err) {
     console.log("[Interview Briefing Error]", err);
     return c.json({ error: `Interview briefing generation failed: ${err}` }, 500);
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// POST /generate-self-intro-briefing
+// Generates 3 beat cards for the Three-Move Introduction.
+// Each card: Anchor | Relevance Bridge | Invitation
+// Output: InterviewBriefingData (3 anticipatedQuestions)
+// ═══════════════════════════════════════════════════════════════
+app.post("/make-server-08b8658d/generate-self-intro-briefing", async (c) => {
+  try {
+    const user = await getAuthUser(c.req.header("Authorization"));
+    if (!user) return c.json({ error: "Unauthorized" }, 401);
+
+    const body = await c.req.json();
+    const { guidedFields, levelId } = body;
+
+    // Cache key includes a hash of the user's profile fields
+    const contextStr = JSON.stringify(guidedFields || {});
+    const contextHash = contextStr.split("").reduce((a: number, ch: string) => ((a << 5) - a + ch.charCodeAt(0)) | 0, 0).toString(36);
+    const cacheKey = `self-intro-briefing:${user.id}:${levelId || "si-0"}:${contextHash}`;
+
+    const cached = await kv.get(cacheKey);
+    if (cached?.anticipatedQuestions) {
+      console.log(`[SelfIntroBriefing] Cache HIT — ${cacheKey}`);
+      return c.json(cached);
+    }
+
+    const openaiKey = (globalThis as any).Deno.env.get("OPENAI_API_KEY");
+    if (!openaiKey) return c.json({ error: "OpenAI API key not configured" }, 500);
+
+    const { systemPrompt, userMessage } = buildSelfIntroBriefingPrompt({ guidedFields });
+
+    console.log(`[SelfIntroBriefing] Generating for user ${user.id}`);
+
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${openaiKey}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userMessage },
+        ],
+        temperature: 0.7,
+        max_tokens: 2500,
+        response_format: { type: "json_object" },
+      }),
+    });
+
+    if (!res.ok) {
+      const errBody = await res.text();
+      console.log(`[SelfIntroBriefing] OpenAI error ${res.status}: ${errBody.slice(0, 300)}`);
+      return c.json({ error: `OpenAI ${res.status}` }, 502);
+    }
+
+    const data = await res.json();
+    const usage = data.usage || {};
+    logApiUsage("openai-chat", "/self-intro-briefing", {
+      prompt: usage.prompt_tokens || 0, completion: usage.completion_tokens || 0, total: usage.total_tokens || 0,
+    }, "gpt-4o-mini").catch(() => {});
+
+    let parsed;
+    try {
+      parsed = JSON.parse(data.choices?.[0]?.message?.content || "{}");
+    } catch {
+      return c.json({ error: "Invalid JSON from OpenAI" }, 502);
+    }
+
+    const anticipatedQuestions = Array.isArray(parsed.anticipatedQuestions) ? parsed.anticipatedQuestions : [];
+    if (anticipatedQuestions.length !== 3) {
+      console.log(`[SelfIntroBriefing] Warning: expected 3 cards, got ${anticipatedQuestions.length}`);
+    }
+    for (const q of anticipatedQuestions) {
+      if (!Array.isArray(q.keyPhrases)) q.keyPhrases = [];
+    }
+
+    const response = { anticipatedQuestions, questionsToAsk: [], culturalTips: [] };
+
+    const TTL_7_DAYS = 7 * 24 * 60 * 60 * 1000;
+    await kv.setWithTTL(cacheKey, response, TTL_7_DAYS);
+    console.log(`[SelfIntroBriefing] ✅ Generated and cached — ${cacheKey}`);
+
+    return c.json(response);
+  } catch (err) {
+    console.log("[SelfIntroBriefing Error]", err);
+    return c.json({ error: `Self-intro briefing generation failed: ${err}` }, 500);
   }
 });
 

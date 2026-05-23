@@ -155,6 +155,8 @@ export class SupabaseConversationService implements IConversationService {
                     confidenceScore: config.confidenceScore,
                     // Sprint C.1: progressive difficulty curve
                     levelNumber: config.levelNumber,
+                    // Capstone levels may require a longer conversation
+                    turnLimit: config.turnLimit,
                 });
 
             console.log(

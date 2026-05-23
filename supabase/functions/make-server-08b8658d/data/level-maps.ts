@@ -74,7 +74,7 @@ function makePath(prefix: string, count: number) {
 export function getDefaultProgressionState() {
   return {
     activeGoal: null as string | null,
-    "self-intro": makePath("si", 3),
+    "self-intro": { "si-0": { status: "unlocked" } },
     interview: makePath("int", 6),
     sales: makePath("sal", 6),
     meeting: makePath("meet", 6),

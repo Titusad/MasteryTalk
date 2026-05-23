@@ -768,10 +768,11 @@ app.post("/make-server-08b8658d/progression/personalize-patterns", async (c) => 
       return c.json({ error: "Missing levelId or methodologyName" }, 400);
     }
 
-    // Build a content fingerprint for cache invalidation when user context changes
-    const contextStr = JSON.stringify(userContext || {});
+    // Build a content fingerprint for cache invalidation when user context or prompt changes
+    // v2 suffix forces invalidation of cached responses that predate the beats field
+    const contextStr = JSON.stringify(userContext || {}) + methodologyName;
     const contextHash = contextStr.split("").reduce((a, c) => ((a << 5) - a + c.charCodeAt(0)) | 0, 0).toString(36);
-    const cacheKey = `patterns:${user.id}:${levelId}:${contextHash}`;
+    const cacheKey = `patterns_v2:${user.id}:${levelId}:${contextHash}`;
 
     // Check cache
     const cached = await kv.get(cacheKey);
@@ -787,24 +788,33 @@ app.post("/make-server-08b8658d/progression/personalize-patterns", async (c) => 
     const cv = userContext?.cvSummary || userContext?.manualExperience || userContext?.["Your key experience"] || "";
     const jd = userContext?.["Job Description"] || "";
 
-    const systemPrompt = `You are a communication coach creating realistic interview examples. Generate two contrasting responses personalized to this candidate's background.
+    const isThreeMoveMethodology = methodologyName === "The Three-Move Introduction";
+
+    const systemPrompt = `You are a communication coach creating realistic professional introduction examples personalized to this candidate's background.
 
 CANDIDATE PROFILE:
-- Role: ${role}${company ? `\n- Target Company: ${company}` : ""}${cv ? `\n- Experience: ${cv.slice(0, 500)}` : ""}${jd ? `\n- Job Description: ${jd.slice(0, 300)}` : ""}
+- Role: ${role}${company ? `\n- Company: ${company}` : ""}${cv ? `\n- Experience: ${cv.slice(0, 500)}` : ""}${jd ? `\n- Job Description: ${jd.slice(0, 300)}` : ""}
 
 METHODOLOGY: ${methodologyName}
 
 Generate a JSON object with exactly two fields:
-1. "bad" — A realistic example of how THIS specific candidate might poorly answer using common mistakes (vague, unfocused, too long, no structure). Make it sound authentically like a nervous candidate rambling. Use their actual background details but badly. 2-4 sentences.
-2. "good" — A polished example of how THIS candidate should answer using the ${methodologyName} methodology. Reference their ACTUAL role, companies, and achievements from the profile. Make it specific, structured, and impactful. 3-5 sentences.
+1. "bad" — A realistic example of how THIS specific candidate might introduce themselves using common mistakes (vague, title-led, no proof point, no question at the end). Make it sound authentically like someone who hasn't prepared. Use their actual background details but badly. 2-4 sentences.
+2. "good" — A polished example using the ${methodologyName} methodology. Reference their ACTUAL role, company, and a specific achievement. Make it specific, structured, and impactful. 2-3 sentences maximum.${isThreeMoveMethodology ? `
+
+For the "good" field, ALSO include a "beats" array with exactly 3 objects, each with "label" and "text":
+- { "label": "Move 1 — Anchor", "text": "<one sentence: value they create + role + company>" }
+- { "label": "Move 2 — Relevance Bridge", "text": "<one sentence: a specific quantified achievement>" }
+- { "label": "Move 3 — Invitation", "text": "<one sentence: a genuine question directed at the listener>" }
+
+The "beats" must be the same content as "good" — just split into the 3 moves.` : ""}
 
 Rules:
 - Both examples must use the candidate's REAL background (role, company, experience)
 - The bad example should feel relatable — a common mistake, not absurdly bad
-- The good example should feel achievable — aspirational but realistic
+- The good example must be value-led (not title-led), include one quantified proof point, and end with a question
 - Write in first person as if the candidate is speaking
-- Keep each example under 120 words
-- Return ONLY valid JSON: { "bad": "...", "good": "..." }`;
+- Keep each example under 100 words
+- Return ONLY valid JSON: { "bad": "...", "good": "..."${isThreeMoveMethodology ? `, "beats": [...]` : ""} }`;
 
     const result = await callOpenAIChat(
       [{ role: "system", content: systemPrompt }],
@@ -823,7 +833,11 @@ Rules:
 
     const response = {
       bad: { label: badLabel || "How most people answer", script: parsed.bad },
-      good: { label: goodLabel || `${methodologyName} in action`, script: parsed.good },
+      good: {
+        label: goodLabel || `${methodologyName} in action`,
+        script: parsed.good,
+        ...(Array.isArray(parsed.beats) && parsed.beats.length > 0 ? { beats: parsed.beats } : {}),
+      },
     };
 
     // Cache for 7 days
