@@ -68,6 +68,19 @@ app.post("/make-server-08b8658d/auth/ensure-profile", async (c: any) => {
 
     if (insertError) {
       console.log("[Ensure Profile] Insert error:", insertError);
+
+      // Guard: never overwrite an existing KV profile that already has user data.
+      // Without this check, every login destroys profile_completed, position, industry, etc.
+      const existingKv = await kv.get(`profile:${user.id}`);
+      const hasExistingData = existingKv &&
+        (existingKv.profile_completed || existingKv.position || existingKv.industry ||
+          existingKv.cvSummary || existingKv.keyExperience || existingKv.subscription_active);
+
+      if (hasExistingData) {
+        console.log("[Ensure Profile] KV profile already exists with user data — skipping overwrite");
+        return c.json({ status: "exists_kv", userId: user.id });
+      }
+
       await kv.set(`profile:${user.id}`, {
         id: user.id,
         plan: "free",
