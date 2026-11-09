@@ -13,6 +13,7 @@ import { useState, useEffect, useCallback } from "react";
 
 export type Page =
   | "landing"
+  | "landing-ventas"
   | "landing2"
   | "landing3"
   | "loading"
@@ -48,6 +49,7 @@ function resolveInitialPage(): Page {
   if (hashPath === "#terms") return "terms";
   if (hashPath === "#privacy") return "privacy";
   if (hashPath === "#cookies") return "cookies";
+  if (hashPath === "#landing-ventas") return "landing-ventas";
   if (hashPath === "#landing2") return "landing2";
   if (hashPath === "#landing3") return "landing3";
 
