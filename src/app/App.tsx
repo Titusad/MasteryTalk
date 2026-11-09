@@ -20,6 +20,11 @@ function lazyRetry(factory: () => Promise<any>) {
 }
 
 const LandingPage = lazyRetry(() => import("@/pages/landing/LandingPage").then(m => ({ default: m.LandingPage })));
+// Etapa 1 (VIDEO_PLAN.md): no se vende ni se muestra la app todavía.
+// Esta es la ruta por defecto mientras dure la Etapa 1; LandingPage/Landing2Page/
+// Landing3Page (las landings de venta) quedan intactas, alcanzables por hash,
+// para cuando llegue la Etapa 2.
+const WaitlistLandingPage = lazyRetry(() => import("@/pages/landing/WaitlistLandingPage").then(m => ({ default: m.WaitlistLandingPage })));
 const Landing2Page = lazyRetry(() => import("@/pages/landing/Landing2Page").then(m => ({ default: m.Landing2Page })));
 const Landing3Page = lazyRetry(() => import("@/pages/landing/Landing3Page").then(m => ({ default: m.Landing3Page })));
 const DesignSystemPage = lazyRetry(() => import("../pages/DesignSystemPage").then(m => ({ default: m.DesignSystemPage })));
@@ -84,6 +89,7 @@ export default function App() {
     if (hashPath === "#terms") return "terms";
     if (hashPath === "#privacy") return "privacy";
     if (hashPath === "#transparency") return "transparency";
+    if (hashPath === "#landing-ventas") return "landing-ventas";
     if (hashPath === "#landing2") return "landing2";
     if (hashPath === "#landing3") return "landing3";
 
@@ -479,6 +485,7 @@ export default function App() {
       else if (hash === "#privacy") setPage("privacy");
       else if (hash === "#cookies") setPage("cookies");
       else if (hash === "#transparency") setPage("transparency");
+      else if (hash === "#landing-ventas") setPage("landing-ventas");
       else if (hash === "#landing2") setPage("landing2");
       else if (hash === "#landing3") setPage("landing3");
       else if (hash.startsWith("#study-phase")) setPage("study-phase");
@@ -728,7 +735,8 @@ export default function App() {
               onPricingPurchase={() => { setPage("dashboard"); }}
             />
           )}
-          {page === "landing" && (
+          {page === "landing" && <WaitlistLandingPage />}
+          {page === "landing-ventas" && (
             <LandingPage
               onAuthComplete={handleAuthComplete}
               landingLang={landingLang}
