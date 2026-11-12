@@ -4,7 +4,7 @@
 > Any code change MUST be consistent with this spec.
 > If the spec needs to change, update THIS FILE FIRST → get approval → then code.
 >
-> Last updated: 2026-05-13 (v3.7 — D.4 Vocabulary step, D.5 Grammar Building Block, D.6 Path Setup Modal + path-mode context. §7.1, §4.1, §7.12, §7.13, §10.1, §10.1.1 updated.)
+> Last updated: 2026-11-12 (v3.8 — Stage 1 waitlist landing: §6.3 language exception, §6.4, §9.2, §10.1 `POST /waitlist`.)
 
 ---
 
@@ -348,6 +348,26 @@ All copy via `landing-i18n.ts` (ES / PT / EN).
 | Marketing emails (Loops) | English only | The email itself is a sample of the English professional communication we sell |
 
 > The `language` field in the user's contact profile (Loops) is kept as analytics data — it identifies which market the user came from, but does not determine the email language.
+
+> **Exception — Stage 1 waitlist (§6.4, §9.2):** the emails sent to people who join the waitlist from the YouTube series are written in **Spanish**. These contacts have not entered the product yet; the series, the workbook and the e-book are Spanish-language content. Every email sent to a *product user* stays English-only.
+
+### §6.4 Stage 1 Waitlist Landing
+
+During Stage 1 (YouTube series, no product shown) the default route (`#`, no hash) renders `WaitlistLandingPage` instead of the sales landings. The sales landings (`#landing-ventas`, `#landing2`, `#landing3`) stay intact and reachable by hash for Stage 2.
+
+The page does not sell, shows no price and does not show the app. It does three things:
+
+1. Delivers the workbook of the video that brought the visitor (`?v=<video number>`, default `1`).
+2. Offers the complete e-book in exchange for joining the waitlist.
+3. Captures the waitlist.
+
+**Lead capture:** both forms (`wb` = workbook, `eb` = e-book + waitlist) call `POST /waitlist` (§10.1). The workbook download never depends on the backend: it starts on submit even if the request fails. The page only confirms "check your email" when the request succeeded; on failure it says so.
+
+**Attribution:** the page forwards the video number (`v`) and the `utm_*` query parameters with the lead. Links in YouTube descriptions follow `?v=<n>&utm_source=youtube&utm_medium=video&utm_campaign=<topic>&utm_content=video-<nn>`.
+
+**Workbook files:** `public/workbooks/video-<nn>-workbook.pdf` (free, printable, no e-book content). The complete e-book is NOT stored in this repository (it is public): it will be served from private storage with signed links.
+
+> Moving the landing to its own project (`masterytalk.pro`) and the app to `app.masterytalk.pro` is a later infrastructure step (not part of this change).
 
 ---
 
@@ -873,6 +893,27 @@ Separate subdomains protect deliverability — a spam issue in marketing does no
 The D+0 welcome is handled by Resend. Loops starts at D+2.
 Legal basis: `terms_accepted_at` (ToS acceptance at signup). Loops adds unsubscribe link automatically.
 
+### §9.2 Waitlist emails — Loops.so (Stage 1, Spanish)
+
+Same provider and sending domain as §9.1 (`mail.go.masterytalk.pro`). Language: **Spanish** (exception documented in §6.3).
+
+**Segmentation (critical):** every contact created from the waitlist carries `source = "youtube-waitlist"` and `userGroup = "waitlist-es"`. The English lifecycle sequences of §9.1 trigger on `contact_created`; **when they are built, they must exclude `userGroup = waitlist-es`.**
+
+**No custom contact properties:** only built-in fields (`firstName`, `source`, `userGroup`) are written, so nothing has to be created in Loops beforehand. E-book interest = the contact has received the `waitlist_joined` event; the video is an event property.
+
+**Events fired by `POST /waitlist`:**
+
+| Event                | When                              | Event properties                                  | Loop (Spanish)                                         |
+| -------------------- | --------------------------------- | ------------------------------------------------- | ------------------------------------------------------ |
+| `workbook_requested` | Workbook form                     | `video`, `workbookUrl`, `utm*`                    | Delivery of the workbook link                          |
+| `waitlist_joined`    | E-book + waitlist form            | `video`, `workbookUrl`, `utm*`                    | Waitlist confirmation + workbook link; e-book promised |
+
+`workbookUrl` is resolved **server-side** from an allow-list keyed by video number (never taken from the request), so the endpoint cannot be used to send arbitrary links.
+
+**Backup:** each lead is also stored in the KV store under `waitlist:<email>` so no lead is lost if Loops is unavailable.
+
+**Legal basis:** explicit submission of the form; the page links the data-processing notice (`#privacy`); Loops adds the unsubscribe link automatically.
+
 ---
 
 ## §10 — Service Contracts
@@ -898,6 +939,7 @@ Legal basis: `terms_accepted_at` (ToS acceptance at signup). Loops adds unsubscr
 | GET    | `/progression`              | ✅ JWT          | User progression state (auto-unlocks if subscribed)   |
 | POST   | `/marketing/track`          | ✅ JWT          | Proxy evento de negocio a Loops (planned — 3.1.3)     |
 | POST   | `/marketing/contact/update` | ✅ JWT          | Enriquecer propiedades de contacto en Loops (planned) |
+| POST   | `/waitlist`                 | ❌ Public (rate-limited, honeypot) | Stage 1 lead capture → Loops contact + event + KV backup (§9.2) |
 | POST   | `/grammar-examples`         | ✅ JWT          | Generate 3 AI-personalized grammar examples (GPT-4o-mini, 5s timeout, static fallback) |
 | GET    | `/admin/users`              | ✅ Admin        | List all users                                        |
 | GET    | `/admin/kpis`               | ✅ Admin        | Platform KPIs                                         |
@@ -1064,3 +1106,4 @@ A user sees the `MasteryAuditCard` in FeedbackScreen when ALL of:
 | v3.5    | 2026-05-06 | §3.1: Founding Member price raised $49→$59/3mo ($19.67/mo effective; eliminates same-number confusion with Monthly $49/mo); gross margin updated 77%→81%. §3.5: pricing rationale updated. §3 prices canonical. pronunciationNotes now rendered in FeedbackScreen (PronunciationCategory/PronunciationNote/ImprovementArea moved to entities/feedback). SR Coach sends weakPoint follow-up after template. Session summary email includes strongerPhrase from beforeAfter[0]. |
 | v3.6    | 2026-05-13 | §8.4 new — C.1 Progressive Difficulty Curve: 6 tiers (Foundation → Mastery) injected as Block 4.8 in GPT-4o system prompt; modulates assertiveness, topic specificity, stakes framing, and formality per level. Implementation: `DIFFICULTY_TIERS` in progression-paths.ts, `buildDifficultyBlock()` in assembler.ts, `levelNumber` added to SessionConfig + AssemblyConfig. C.2 Interaction Management: `interactionManagementScore` + `interactionObservations` added to Gemini analyst output + FeedbackScreen "Conversation Flow" accordion; documented in CEFR_CALIBRATION §7. |
 | v3.7    | 2026-05-13 | §7.1: `"grammar"` + `"vocabulary"` steps added to Step type; full path session step chain documented. §4.1: path-specific lazy context fields added to KV profile (targetRole/targetCompanyType/jobDescription for interview; meeting/presentation/sales fields pending); `grammarRotationIndex: Record<string,number>` added. §7.12 new — Vocabulary + Pronunciation Module (D.4): VocabularyTerm shape, skip rules, TTS caching. §7.13 new — Grammar Building Block (D.5): 24-structure Interview Mastery bank (6 levels × 4), GrammarStructure interface, AI-personalized examples via GPT-4o-mini (5s timeout + static fallback), rotation tracking, collapsed L3+ default. §7.14 new — Path Setup Modal (D.6): lazy one-time context capture before first path session, cannot be dismissed, interview fields (targetRole required, targetCompanyType+JD optional), ContextScreen path mode (read-only preview) vs war-room mode (manual input). §10.1: `POST /grammar-examples` added. §10.1.1: whitelist updated (targetRole, targetCompanyType, jobDescription, currentCompanyName, teamSize, typicalMeetingTypes, typicalAudience, presentationContext, productOrService, targetBuyer, grammarRotationIndex). |
+| v3.8    | 2026-11-12 | §6.3: Spanish exception for Stage 1 waitlist emails. §6.4 new — Stage 1 waitlist landing (default route, lead capture, attribution, workbook files). §9.2 new — waitlist emails in Loops (segmentation `userGroup=waitlist-es`, events `workbook_requested` / `waitlist_joined`, server-side workbook allow-list, KV backup). §10.1: `POST /waitlist` added. |

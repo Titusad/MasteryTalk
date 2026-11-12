@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Download, Mail, CheckCircle2 } from "lucide-react";
 import { BrandLogo, DotPattern, MiniFooter } from "@/shared/ui";
 import { COLORS } from "@/shared/ui/design-tokens";
+import { SUPABASE_URL } from "@/services/supabase";
 
 /**
  * Landing de la Etapa 1 (lista de espera) — VIDEO_PLAN.md "Landing de la Etapa 1".
@@ -15,12 +16,11 @@ import { COLORS } from "@/shared/ui/design-tokens";
  * mientras dure la Etapa 1 (ver App.tsx). Esas tres landings de venta
  * quedan intactas y alcanzables por hash para la Etapa 2.
  *
- * TODO (pendiente, decisión del usuario 2026-11-09): ambos formularios son
- * "best-effort" — no llaman a ningún backend todavía. Cuando se decida si
- * el contacto se registra vía una Edge Function de Supabase o vía el
- * LoopsService ya existente en masterytalk_api (Laravel), conectar
- * `submitLead()` de abajo a ese endpoint. Hasta entonces, el workbook se
- * descarga igual — el lead magnet nunca depende de que el backend exista.
+ * Captura de leads: ambos formularios llaman a `POST /waitlist` (PRODUCT_SPEC
+ * §6.4 y §9.2), que guarda el contacto en Loops y dispara el correo en español.
+ * El workbook se descarga igual aunque el backend falle — el lead magnet nunca
+ * depende de él — pero la página solo dice "revisa tu correo" si la petición
+ * funcionó.
  */
 
 type VideoId = "1";
@@ -53,11 +53,13 @@ const VIDEOS: Record<VideoId, VideoContent> = {
 };
 const DEFAULT_VIDEO: VideoId = "1";
 
+function currentVideoId(): VideoId {
+  const v = new URLSearchParams(window.location.search).get("v");
+  return (v as VideoId) in VIDEOS ? (v as VideoId) : DEFAULT_VIDEO;
+}
+
 function useCurrentVideo(): VideoContent {
-  return useMemo(() => {
-    const v = new URLSearchParams(window.location.search).get("v");
-    return VIDEOS[(v as VideoId) in VIDEOS ? (v as VideoId) : DEFAULT_VIDEO];
-  }, []);
+  return useMemo(() => VIDEOS[currentVideoId()], []);
 }
 
 /** Carga Newsreader (frases en inglés) y Kalam (notas a mano) solo en esta página. */
@@ -73,10 +75,36 @@ function useRedlineFonts() {
   }, []);
 }
 
-/** Best-effort: nunca bloquea la entrega del material si falla o si el endpoint no existe todavía. */
-function submitLead(payload: { name: string; email: string; wantsEbook: boolean }) {
-  console.info("[WaitlistLandingPage] lead capturado (backend pendiente de conectar):", payload);
-  // TODO: POST a la Edge Function o al LoopsService una vez se decida cuál.
+const WAITLIST_URL = `${SUPABASE_URL}/functions/v1/make-server-08b8658d/waitlist`;
+const UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_content"] as const;
+
+/** Envía el lead al backend. Devuelve true solo si el servidor lo aceptó y el correo quedó en cola. */
+async function submitLead(payload: {
+  name: string;
+  email: string;
+  wantsEbook: boolean;
+  website: string;
+}): Promise<boolean> {
+  const params = new URLSearchParams(window.location.search);
+  const utm: Record<string, string> = {};
+  for (const key of UTM_KEYS) {
+    const value = params.get(key);
+    if (value) utm[key] = value;
+  }
+  try {
+    const res = await fetch(WAITLIST_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...payload, video: currentVideoId(), utm }),
+    });
+    if (!res.ok) {
+      console.error("[WaitlistLandingPage] Failed to submit lead: HTTP", res.status);
+    }
+    return res.ok;
+  } catch (err) {
+    console.error("[WaitlistLandingPage] Failed to submit lead:", err);
+    return false;
+  }
 }
 
 function LeadForm({
@@ -96,17 +124,21 @@ function LeadForm({
 }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "error" | "done">("idle");
+  const [website, setWebsite] = useState(""); // honeypot: las personas no lo ven ni lo llenan
+  const [status, setStatus] = useState<"idle" | "error" | "sending" | "done" | "failed">("idle");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (status === "sending") return;
     if (!email.includes("@")) {
       setStatus("error");
       return;
     }
-    submitLead({ name: name.trim(), email: email.trim(), wantsEbook });
+    setStatus("sending");
+    // La descarga empieza ya: no depende de que el backend responda.
     onSubmitted?.();
-    setStatus("done");
+    const ok = await submitLead({ name: name.trim(), email: email.trim(), wantsEbook, website });
+    setStatus(ok ? "done" : "failed");
   };
 
   return (
@@ -124,6 +156,16 @@ function LeadForm({
         className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm placeholder:text-[#94a3b8] focus:outline-none focus:border-[#2d2d2d]"
       />
       <input
+        type="text"
+        name="website"
+        value={website}
+        onChange={(e) => setWebsite(e.target.value)}
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        className="absolute -left-[9999px] w-px h-px opacity-0"
+      />
+      <input
         type="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
@@ -134,7 +176,8 @@ function LeadForm({
       />
       <button
         type="submit"
-        className="inline-flex items-center justify-center gap-2 bg-[#2d2d2d] text-white px-6 py-3.5 rounded-full text-sm font-medium hover:bg-[#1a1a1a] transition-colors shadow-lg"
+        disabled={status === "sending"}
+        className="inline-flex items-center justify-center gap-2 bg-[#2d2d2d] text-white px-6 py-3.5 rounded-full text-sm font-medium hover:bg-[#1a1a1a] transition-colors shadow-lg disabled:opacity-60"
       >
         {status === "done" ? <CheckCircle2 className="w-4 h-4" /> : <Mail className="w-4 h-4" />}
         {ctaLabel}
@@ -144,6 +187,13 @@ function LeadForm({
       )}
       {status === "done" && (
         <p className="text-xs text-[#1f8f55]">Listo. Revisa tu correo (y el spam, por si acaso).</p>
+      )}
+      {status === "failed" && (
+        <p className="text-xs text-[#b45309]">
+          {wantsEbook
+            ? "No pudimos guardar tu correo. Inténtalo de nuevo en unos minutos."
+            : "Tu descarga ya empezó, pero no pudimos enviarte el correo. Inténtalo de nuevo en unos minutos."}
+        </p>
       )}
       <p className="text-xs text-[#94a3b8] leading-relaxed">
         Usamos tu correo solo para esto y, si quieres, novedades de la serie. Nada de spam. Ver el{" "}
