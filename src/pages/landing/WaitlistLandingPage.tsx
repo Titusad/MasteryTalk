@@ -45,7 +45,7 @@ const VIDEOS: Record<VideoId, VideoContent> = {
     before: "“Hi, I’m David. I’m a UX designer from Colombia. I have 17 years of experience…”",
     afterPrefix: "I’m David. I design platforms that ",
     afterMark1: "make complex decisions simple",
-    afterMid: ". On my last fintech project, I cut the client’s feedback cycle from X to Y. ",
+    afterMid: ". On my last fintech project, I cut the client’s feedback cycle from weeks to days. ",
     afterMark2: "What’s slowing your team’s decisions down the most right now?",
     workbookUrl: "/workbooks/video-01-workbook.pdf",
     bg: COLORS.peach,
