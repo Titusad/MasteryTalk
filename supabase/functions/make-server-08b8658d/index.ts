@@ -25,6 +25,7 @@ import cronDailySr from "./routes/cron-daily-sr.ts";
 import whatsappVerify from "./routes/whatsapp-verify.ts";
 import waPractice from "./routes/wa-practice.ts";
 import marketing from "./routes/marketing.ts";
+import waitlist from "./routes/waitlist.ts";
 import grammar from "./routes/grammar.ts";
 import { createRateLimiter } from "./kv_store.ts";
 import { getAuthUser } from "./_shared.ts";
@@ -38,6 +39,7 @@ setInterval(() => apiLimiter.prune(), 5 * 60 * 1000);
 const ALLOWED_ORIGINS = [
   "https://masterytalk.pro",
   "https://www.masterytalk.pro",
+  "https://app.masterytalk.pro",
   "http://localhost:5173",   // Vite dev
   "http://localhost:4173",   // Vite preview
   "http://localhost:3000",
@@ -90,6 +92,7 @@ const RATE_LIMITED_PREFIXES = [
   "/make-server-08b8658d/whatsapp/send-otp",
   "/make-server-08b8658d/whatsapp/verify-otp",
   "/make-server-08b8658d/pricing",
+  "/make-server-08b8658d/waitlist",
 ];
 
 app.use("/*", async (c: any, next: any) => {
@@ -151,6 +154,7 @@ app.route("", cronDailySr);
 app.route("", whatsappVerify);
 app.route("", waPractice);
 app.route("", marketing);
+app.route("", waitlist);
 app.route("", grammar);
 
 // ── Start server — intercept OPTIONS before Hono ──
