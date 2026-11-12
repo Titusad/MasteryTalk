@@ -15,6 +15,11 @@ import { getAuthUser } from "../_shared.ts";
 const app = new Hono();
 const LOOPS_BASE = "https://app.loops.so/api/v1";
 
+/** Loops upserts contacts with PUT; every other endpoint used here is POST. */
+function loopsMethod(path: string): "PUT" | "POST" {
+  return path === "/contacts/update" ? "PUT" : "POST";
+}
+
 async function loopsFetch(path: string, body: unknown): Promise<void> {
   const key = Deno.env.get("LOOPS_API_KEY");
   if (!key) {
@@ -23,7 +28,7 @@ async function loopsFetch(path: string, body: unknown): Promise<void> {
   }
   try {
     const res = await fetch(`${LOOPS_BASE}${path}`, {
-      method: "POST",
+      method: loopsMethod(path),
       headers: {
         Authorization: `Bearer ${key}`,
         "Content-Type": "application/json",
