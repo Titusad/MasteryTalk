@@ -4,7 +4,7 @@
 > Any code change MUST be consistent with this spec.
 > If the spec needs to change, update THIS FILE FIRST → get approval → then code.
 >
-> Last updated: 2026-11-12 (v3.8 — Stage 1 waitlist landing: §6.3 language exception, §6.4, §9.2, §10.1 `POST /waitlist`.)
+> Last updated: 2026-11-12 (v3.9 — Stage 1 workbooks, library and accounts: §4.1 `origin` + `tool_interest_at`, §6.3, §6.4 note, §6.5 new, §9.0, §9.2 note, §10.1 library endpoints. PROPOSED — pending approval, no code written.)
 
 ---
 
@@ -193,6 +193,9 @@ interface KVProfile {
     targetBuyer?: string;              // sales — ICP / target buyer profile
     // Grammar building block
     grammarRotationIndex?: Record<string, number>; // levelId → current rotation index (sequential per level)
+    // Stage 1 accounts (§6.5) — server-only, NOT in the PUT /profile whitelist
+    origin?: "waitlist-es" | null;     // set ONCE at profile creation (ensure-profile); never changed afterwards
+    tool_interest_at?: string | null;  // ISO timestamp of the explicit "tell me when I can practice" action
 }
 ```
 
@@ -346,12 +349,15 @@ All copy via `landing-i18n.ts` (ES / PT / EN).
 | Practice sessions | English only | AI personas, feedback, all in-session copy |
 | Transactional emails (Resend) | English only | Reinforces the product's identity |
 | Marketing emails (Loops) | English only | The email itself is a sample of the English professional communication we sell |
+| Stage 1 library (`#biblioteca`) and its access email (§6.5) | Spanish | Audience of the YouTube series; the content (workbooks, e-book) is Spanish |
 
 > The `language` field in the user's contact profile (Loops) is kept as analytics data — it identifies which market the user came from, but does not determine the email language.
 
-> **Exception — Stage 1 waitlist (§6.4, §9.2):** the emails sent to people who join the waitlist from the YouTube series are written in **Spanish**. These contacts have not entered the product yet; the series, the workbook and the e-book are Spanish-language content. Every email sent to a *product user* stays English-only.
+> **Exception — Stage 1 waitlist (§6.4, §9.2) and library (§6.5):** the emails sent to people who join the waitlist or create a library account from the YouTube series are written in **Spanish**, and so is the library page. These contacts have not entered the product yet; the series, the workbook and the e-book are Spanish-language content. Every email sent to a *product user* stays English-only.
 
 ### §6.4 Stage 1 Waitlist Landing
+
+> **Partly superseded by §6.5 (v3.9).** The workbook is no longer delivered in exchange for an email: it is a free direct download. The `wb` form, the `workbook_requested` event and the "e-book in exchange for joining the waitlist" rule described below stay in force only until §6.5 ships; after that, `POST /waitlist` is deprecated (§9.2).
 
 During Stage 1 (YouTube series, no product shown) the default route (`#`, no hash) renders `WaitlistLandingPage` instead of the sales landings. The sales landings (`#landing-ventas`, `#landing2`, `#landing3`) stay intact and reachable by hash for Stage 2.
 
@@ -368,6 +374,72 @@ The page does not sell, shows no price and does not show the app. It does three 
 **Workbook files:** `public/workbooks/video-<nn>-workbook.pdf` (free, printable, no e-book content). The complete e-book is NOT stored in this repository (it is public): it will be served from private storage with signed links.
 
 > Moving the landing to its own project (`masterytalk.pro`) and the app to `app.masterytalk.pro` is a later infrastructure step (not part of this change).
+
+### §6.5 Stage 1 Workbooks, Library and Accounts
+
+> v3.9 (2026-11-12). Supersedes the "workbook in exchange for the email" delivery of §6.4. Practice, free sessions and paywall are Stage 2 and are NOT part of this change (§6.5.8).
+
+**Goal.** A viewer coming from a video gets the workbook immediately, with no registration. Whoever wants more (the e-book, the library of all workbooks, extra resources) creates a free account. That account is a real product account, so in Stage 2 the person is already inside and only has to start practicing.
+
+#### §6.5.1 Access model
+
+| Resource | Access | Notes |
+| -------- | ------ | ----- |
+| Workbook of a video | Public, direct download | Static file `public/workbooks/video-<nn>-workbook.pdf`. No email asked |
+| Post-download panel | Public | Short and non-blocking. Invites to create the account |
+| Library (all published workbooks) | Free account | Page `#biblioteca` (§6.5.6) |
+| E-book | Free account | Private storage, signed link (§6.5.7). Assembled after Video 2 |
+| Extra resources | Free account | Section reserved in the library; content defined per release |
+| Tool waitlist | Free account + explicit action | Separate button; the Stage 1 demand signal for the product |
+
+Creating an account does NOT put the person on the tool waitlist. The waitlist is the explicit button "Avísame cuando pueda practicar esto con inteligencia artificial" inside the library. This keeps interest in the content apart from interest in the tool, which is the signal that decides whether to keep investing in the app.
+
+#### §6.5.2 Workbook delivery
+
+Video descriptions link to `https://www.masterytalk.pro/?v=<n>&dl=1&utm_source=youtube&utm_medium=video&utm_campaign=video-<nn>`. With `dl=1`, `WaitlistLandingPage` starts the download of the workbook for video `<n>` on load and shows the post-download panel, which always carries a visible "Descargar de nuevo" button (browsers may block automatic downloads). The download never depends on the backend: the page calls `POST /workbook-download` fire-and-forget to count it.
+
+Workbook PDFs are committed to `public/workbooks/` when their video is published, not before. They contain no e-book content. Each PDF closes with a link to `https://www.masterytalk.pro/?utm_source=workbook&utm_medium=pdf&utm_campaign=video-<nn>` inviting to create the account.
+
+#### §6.5.3 Catalog
+
+A closed list `LIBRARY` in `routes/library.ts` replaces `WORKBOOKS` of `routes/waitlist.ts`. Entry: `{ id, kind: "workbook" | "ebook", video?, title, framework?, file, youtubeUrl, published }`. Only `published` entries are listed or served. Adding a video = one entry + its PDF + a deploy of the function (VIDEO_PLAN rule 12 is updated accordingly).
+
+#### §6.5.4 Accounts
+
+Supabase Auth, passwordless. Two ways in:
+
+- **Email link.** `POST /library/access-link` validates the email, upserts the Loops contact with the same segmentation as §9.2 (`source = youtube-waitlist`, `userGroup = waitlist-es`), updates `waitlist:<email>`, generates a magic link with `auth.admin.generateLink({ type: "magiclink" })` (it creates the auth user if it does not exist) with `redirectTo = https://masterytalk.pro/#biblioteca`, and sends it in Spanish through Resend (§9.0). The response is identical whether or not the email already had an account (no enumeration). Rate-limited, with the honeypot field `website` as in §9.2.
+- **Google.** The existing OAuth flow. Before redirecting, the client stores `sessionStorage.masterytalk_origin = "waitlist-es"`.
+
+The `redirectTo` URL must be in the Supabase Auth redirect allow-list (dashboard setting, not code).
+
+#### §6.5.5 Stage 1 accounts inside the app
+
+Library accounts live in the same Supabase project and KV (`profile:{userId}`) as product users. To keep Stage 1 from exposing the product:
+
+- `POST /auth/ensure-profile` creates the profile with `origin = "waitlist-es"` when (a) `waitlist:<email>` exists, or (b) the request carries `origin = "waitlist-es"` (closed set). `origin` is written ONLY when the profile is created. Existing profiles (beta users, admin) are never modified.
+- The English welcome email (§9.0) is not sent when `origin = "waitlist-es"`.
+- Routing, while `STAGE === 1`: users with `origin = "waitlist-es"` land on `#biblioteca`, skip the onboarding modal, and `#dashboard`, `#practice-session` and `#practice-history` redirect to `#biblioteca`. Every other user is unchanged. `STAGE` is a single constant (`shared/config/stage.ts`); setting it to `2` removes the redirect.
+- The English lifecycle sequences of §9.1 keep excluding `userGroup = waitlist-es`. Library endpoints never change `userGroup`, and the implementation must verify that `/marketing/*` calls cannot overwrite it.
+
+#### §6.5.6 Library page
+
+Route `#biblioteca`, page `WorkbookLibraryPage` (distinct from the micro-lesson `LibraryPage` at `#library`). `vercel.json` redirects `/biblioteca` to `/#biblioteca`; routing stays hash-based. `#biblioteca` is added to `AUTH_PAGES`; visitors without a session see the access form (email link and Google). Spanish copy.
+
+Content: one card per published workbook (number, title, framework, link to the video, download); the e-book card (download when published, otherwise "Disponible después del Video 2"); the tool waitlist button; a reserved section for extra resources. No prices, no subscription and no practice entry point. The Dashboard and the micro-lesson library stay hidden from Stage 1 accounts.
+
+#### §6.5.7 Data, counters and privacy
+
+- **Workbook downloads:** `POST /workbook-download` `{ video, utm? }` increments `stats:workbook:<video>:<yyyy-mm>` (`total`, `byCampaign`). Approximate: KV has no atomic increment.
+- **E-book:** private Supabase Storage bucket `ebook` (not public, not in the repo). `GET /library/ebook` returns a signed URL (TTL 10 min) and counts the download.
+- **Tool interest:** `POST /library/tool-interest` sets `profile.tool_interest_at`, sends the Loops event `tool_interest` and sets `toolInterest: true` in `waitlist:<email>`.
+- **Metrics** (VIDEO_PLAN "Qué medir"): downloads per video and campaign; accounts created; tool-interest over downloads.
+- **Privacy:** the `#privacy` notice must cover account creation, access emails, Loops and the counters before this ships.
+
+#### §6.5.8 Out of scope (Stage 2)
+
+- "Practicar conversación" in the Dashboard, free sessions and paywall. Notes for that spec: the free tier today is self-intro, max 3 sessions (§4.3), while §7.4 says "always free, no paywall" — to reconcile; the intended number is 1 or 2 sessions that tune the user's profile, granted on first entry to practice (not at registration); `useUsageGating` keeps demos in `localStorage`, so free sessions need server-side enforcement before any paywall.
+- Moving the app to `app.masterytalk.pro`. Sessions are per origin, so the library moves with the app and `masterytalk.pro/biblioteca` becomes a redirect to it.
 
 ---
 
@@ -848,6 +920,9 @@ Language: **English only** (see §6.3)
 | Session summary        | Post-session feedback                                           | `sessionSummaryEmailHtml()`                                                                             |
 | Renewal confirmed      | `invoice.payment_succeeded` (billing_reason=subscription_cycle) | `renewalConfirmationEmailHtml()` — two branches: ROI format (sessions > 0) or Reactivation (0 sessions) |
 | Inactivity nudge       | Cron: 7+ days without session, max 1 per 14 days                | `inactivityNudgeEmailHtml()`                                                                            |
+| Library access link    | `POST /library/access-link` (§6.5.4)                            | `libraryAccessEmailHtml()` — **Spanish** (exception in §6.3)                                            |
+
+The Welcome email is **not** sent when the profile is created with `origin = "waitlist-es"` (§6.5.5).
 
 ### §9.1 Marketing Automation — Loops.so (ROADMAP 3.1.3)
 
@@ -912,6 +987,8 @@ Same provider and sending domain as §9.1 (`mail.go.masterytalk.pro`). Language:
 
 **Backup:** each lead is also stored in the KV store under `waitlist:<email>` so no lead is lost if Loops is unavailable.
 
+> **v3.9 transition (§6.5):** once the library ships, the landing stops firing `workbook_requested` and `waitlist_joined`, and `POST /waitlist` is deprecated. The tool waitlist becomes the `tool_interest` event of `POST /library/tool-interest`; the Loops workflows "Etapa 1 — Workbook solicitado (ES)" and "Etapa 1 — Lista de espera e-book (ES)" are replaced by one "Etapa 1 — Aviso de herramienta (ES)" (workflow changes are tracked in the implementation plan, not here).
+
 **Legal basis:** explicit submission of the form; the page links the data-processing notice (`#privacy`); Loops adds the unsubscribe link automatically.
 
 ---
@@ -939,7 +1016,12 @@ Same provider and sending domain as §9.1 (`mail.go.masterytalk.pro`). Language:
 | GET    | `/progression`              | ✅ JWT          | User progression state (auto-unlocks if subscribed)   |
 | POST   | `/marketing/track`          | ✅ JWT          | Proxy evento de negocio a Loops (planned — 3.1.3)     |
 | POST   | `/marketing/contact/update` | ✅ JWT          | Enriquecer propiedades de contacto en Loops (planned) |
-| POST   | `/waitlist`                 | ❌ Public (rate-limited, honeypot) | Stage 1 lead capture → Loops contact + event + KV backup (§9.2) |
+| POST   | `/waitlist`                 | ❌ Public (rate-limited, honeypot) | Stage 1 lead capture → Loops contact + event + KV backup (§9.2). Deprecated by §6.5 once the library ships |
+| POST   | `/workbook-download`        | ❌ Public (rate-limited) | Count a workbook download `{ video, utm? }`; `video` must be a published catalog entry (§6.5.7) |
+| POST   | `/library/access-link`      | ❌ Public (rate-limited, honeypot) | Create/find the account and email the Spanish magic link; identical response for new and existing emails (§6.5.4) |
+| GET    | `/library`                  | ✅ JWT          | Published catalog + user flags (`ebookAvailable`, `toolInterest`) (§6.5.6) |
+| GET    | `/library/ebook`            | ✅ JWT          | Signed URL (10 min) of the e-book in private storage; counts the download (§6.5.7) |
+| POST   | `/library/tool-interest`    | ✅ JWT          | Explicit tool-waitlist action → `profile.tool_interest_at` + Loops event `tool_interest` (§6.5.7) |
 | POST   | `/grammar-examples`         | ✅ JWT          | Generate 3 AI-personalized grammar examples (GPT-4o-mini, 5s timeout, static fallback) |
 | GET    | `/admin/users`              | ✅ Admin        | List all users                                        |
 | GET    | `/admin/kpis`               | ✅ Admin        | Platform KPIs                                         |
@@ -979,6 +1061,8 @@ Non-whitelisted fields (plan, tier, subscription_active, etc.) can only be writt
 | `/webhook/stripe`        | Stripe HMAC signature (`constructEventAsync`) |
 | `/cron/daily-sr`         | `x-cron-secret` header                        |
 | `/pricing`, `/health`    | Public (no auth)                              |
+| `/workbook-download`, `/library/access-link` | Public, rate-limited; the access link is also honeypot-protected and answers identically for any email |
+| `/library`, `/library/ebook`, `/library/tool-interest` | Supabase JWT; `/library/ebook` returns a short-lived signed URL, the bucket is never public |
 
 ### §10.3 Environment Variables
 
@@ -1107,3 +1191,4 @@ A user sees the `MasteryAuditCard` in FeedbackScreen when ALL of:
 | v3.6    | 2026-05-13 | §8.4 new — C.1 Progressive Difficulty Curve: 6 tiers (Foundation → Mastery) injected as Block 4.8 in GPT-4o system prompt; modulates assertiveness, topic specificity, stakes framing, and formality per level. Implementation: `DIFFICULTY_TIERS` in progression-paths.ts, `buildDifficultyBlock()` in assembler.ts, `levelNumber` added to SessionConfig + AssemblyConfig. C.2 Interaction Management: `interactionManagementScore` + `interactionObservations` added to Gemini analyst output + FeedbackScreen "Conversation Flow" accordion; documented in CEFR_CALIBRATION §7. |
 | v3.7    | 2026-05-13 | §7.1: `"grammar"` + `"vocabulary"` steps added to Step type; full path session step chain documented. §4.1: path-specific lazy context fields added to KV profile (targetRole/targetCompanyType/jobDescription for interview; meeting/presentation/sales fields pending); `grammarRotationIndex: Record<string,number>` added. §7.12 new — Vocabulary + Pronunciation Module (D.4): VocabularyTerm shape, skip rules, TTS caching. §7.13 new — Grammar Building Block (D.5): 24-structure Interview Mastery bank (6 levels × 4), GrammarStructure interface, AI-personalized examples via GPT-4o-mini (5s timeout + static fallback), rotation tracking, collapsed L3+ default. §7.14 new — Path Setup Modal (D.6): lazy one-time context capture before first path session, cannot be dismissed, interview fields (targetRole required, targetCompanyType+JD optional), ContextScreen path mode (read-only preview) vs war-room mode (manual input). §10.1: `POST /grammar-examples` added. §10.1.1: whitelist updated (targetRole, targetCompanyType, jobDescription, currentCompanyName, teamSize, typicalMeetingTypes, typicalAudience, presentationContext, productOrService, targetBuyer, grammarRotationIndex). |
 | v3.8    | 2026-11-12 | §6.3: Spanish exception for Stage 1 waitlist emails. §6.4 new — Stage 1 waitlist landing (default route, lead capture, attribution, workbook files). §9.2 new — waitlist emails in Loops (segmentation `userGroup=waitlist-es`, events `workbook_requested` / `waitlist_joined`, server-side workbook allow-list, KV backup). §10.1: `POST /waitlist` added. |
+| v3.9    | 2026-11-12 | PROPOSED. §6.5 new — Stage 1 workbooks, library and accounts: workbook becomes a free direct download (no email); library, e-book and extra resources behind a free passwordless Supabase account (email magic link sent in Spanish via Resend, or Google); tool waitlist is a separate explicit action; Stage 1 accounts marked `origin = "waitlist-es"` (no English welcome email, land on `#biblioteca`, product routes hidden while `STAGE === 1`); e-book in a private bucket with signed URLs; catalog `LIBRARY` replaces `WORKBOOKS`. §4.1: `origin`, `tool_interest_at`. §6.3: Spanish exception extended to the library. §6.4: partly superseded. §9.0: access-link email row. §9.2: `POST /waitlist` deprecated after the library ships. §10.1/§10.2: `/workbook-download`, `/library/*`. §6.5.8 records the Stage 2 open points (free sessions 1–2 vs 3, server-side enforcement). |
