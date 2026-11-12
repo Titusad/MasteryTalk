@@ -141,15 +141,14 @@ app.post("/make-server-08b8658d/waitlist", async (c: any) => {
       console.error("[Waitlist] KV backup failed:", err);
     }
 
-    // 2) Loops contact (upsert). `wantsEbook` is only ever sent as true so a
-    //    later workbook-only request cannot reset it.
+    // 2) Loops contact (upsert). Only built-in fields (no custom properties,
+    //    which would have to exist in Loops first): e-book interest and the
+    //    video are carried by the event below, and filterable there.
     const contact = await loopsRequest("PUT", "/contacts/update", {
       email,
       ...(name ? { firstName: name } : {}),
       source: LOOPS_SOURCE,
       userGroup: LOOPS_USER_GROUP,
-      waitlistVideo: video,
-      ...(wantsEbook ? { wantsEbook: true } : {}),
     });
 
     // 3) Event → triggers the Spanish delivery loop. Idempotency-Key makes a

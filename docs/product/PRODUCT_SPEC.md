@@ -899,7 +899,7 @@ Same provider and sending domain as §9.1 (`mail.go.masterytalk.pro`). Language:
 
 **Segmentation (critical):** every contact created from the waitlist carries `source = "youtube-waitlist"` and `userGroup = "waitlist-es"`. The English lifecycle sequences of §9.1 trigger on `contact_created`; **when they are built, they must exclude `userGroup = waitlist-es`.**
 
-**Contact properties** (must exist in Loops before the API uses them): `wantsEbook` (boolean, only ever set to `true` by the server), `waitlistVideo` (string, last video requested).
+**No custom contact properties:** only built-in fields (`firstName`, `source`, `userGroup`) are written, so nothing has to be created in Loops beforehand. E-book interest = the contact has received the `waitlist_joined` event; the video is an event property.
 
 **Events fired by `POST /waitlist`:**
 
