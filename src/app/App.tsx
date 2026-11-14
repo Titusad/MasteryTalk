@@ -33,6 +33,8 @@ const DashboardPage = lazyRetry(() => import("@/pages/DashboardPage").then(m => 
 const PracticeHistoryPage = lazyRetry(() => import("@/pages/PracticeHistoryPage").then(m => ({ default: m.PracticeHistoryPage })));
 const AccountPage = lazyRetry(() => import("../pages/AccountPage").then(m => ({ default: m.AccountPage })));
 const LibraryPage = lazyRetry(() => import("../pages/LibraryPage").then(m => ({ default: m.LibraryPage })));
+// Etapa 1 (PRODUCT_SPEC §6.5): biblioteca de workbooks, distinta de LibraryPage (microlecciones).
+const WorkbookLibraryPage = lazyRetry(() => import("../pages/WorkbookLibraryPage").then(m => ({ default: m.WorkbookLibraryPage })));
 const AdminDashboardPage = lazyRetry(() => import("../pages/AdminDashboardPage").then(m => ({ default: m.AdminDashboardPage })));
 const TermsPage = lazyRetry(() => import("../pages/legal/TermsPage").then(m => ({ default: m.TermsPage })));
 const PrivacyPage = lazyRetry(() => import("../pages/legal/PrivacyPage").then(m => ({ default: m.PrivacyPage })));
@@ -65,6 +67,7 @@ import { useAuthFlow } from "./hooks/useAuthFlow";
 import type { FlowState } from "./hooks/useAuthFlow";
 import { authService } from "../services";
 import { runStorageMigration } from "@/shared/lib/storageMigration";
+import { STAGE, WAITLIST_ORIGIN, LIBRARY_ORIGIN_FLAG_KEY, STAGE_ONE_BLOCKED_HASHES } from "@/shared/config/stage";
 
 /* Run once on load — migrates old influentia_* keys */
 runStorageMigration();
@@ -92,6 +95,8 @@ export default function App() {
     if (hashPath === "#landing-ventas") return "landing-ventas";
     if (hashPath === "#landing2") return "landing2";
     if (hashPath === "#landing3") return "landing3";
+    // Biblioteca Etapa 1: se muestra siempre; sin sesión la página ofrece el acceso (§6.5.6).
+    if (hashPath === "#biblioteca") return "biblioteca";
 
     // For authenticated app pages, check if there's a Supabase session
     // in localStorage. If so, respect the hash so users stay on their
@@ -164,6 +169,8 @@ export default function App() {
 
   /* ─── Onboarding gate ─── */
   const [showOnboarding, setShowOnboarding] = useState(false);
+  /** Stage 1 library account (§6.5.5): product routes redirect to #biblioteca. */
+  const libraryAccountRef = useRef(false);
 
   /**
    * Navigate first, then check backend to decide if onboarding modal is needed.
@@ -246,6 +253,7 @@ export default function App() {
           (async () => {
             // ── Step 1: Fetch profile from backend (source of truth) ──
             let backendProfile: Record<string, unknown> | null = null;
+            let backendOrigin: typeof WAITLIST_ORIGIN | null = null;
             try {
               const { getAuthToken } = await import("../services/supabase");
               const token = await getAuthToken();
@@ -255,6 +263,7 @@ export default function App() {
               );
               if (res.ok) {
                 const data = await res.json();
+                if (data.origin === WAITLIST_ORIGIN) backendOrigin = WAITLIST_ORIGIN;
                 // Only use if backend has actual profile content
                 // Normalize KV snake_case → camelCase
                 if (data.english_goal && !data.englishGoal) data.englishGoal = data.english_goal;
@@ -274,6 +283,24 @@ export default function App() {
                 }
               }
             } catch { /* silent — proceed without backend profile */ }
+
+            // ── Stage 1 library accounts (§6.5.5): land on #biblioteca, no onboarding ──
+            // A beta/admin user who signs in through the library's Google button also
+            // returns there; the flag is consumed here (auth service only reads it).
+            const cameFromLibrary = sessionStorage.getItem(LIBRARY_ORIGIN_FLAG_KEY) === WAITLIST_ORIGIN;
+            sessionStorage.removeItem(LIBRARY_ORIGIN_FLAG_KEY);
+            if (backendOrigin) {
+              libraryAccountRef.current = STAGE === 1;
+              setAuthUser(prev => prev ? { ...prev, origin: backendOrigin } : prev);
+            }
+            const legalHashes = ["#terms", "#privacy", "#cookies", "#transparency"];
+            if (STAGE === 1 && (backendOrigin || cameFromLibrary) && !legalHashes.includes(window.location.hash)) {
+              sessionStorage.removeItem(OAUTH_PENDING_KEY);
+              sessionStorage.removeItem(PENDING_SETUP_KEY);
+              setPage("biblioteca");
+              window.location.hash = "#biblioteca";
+              return;
+            }
 
             // ── Step 2: Navigate, passing fetched profile to onboarding gate ──
             const pendingRaw = sessionStorage.getItem(PENDING_SETUP_KEY);
@@ -416,6 +443,12 @@ export default function App() {
         );
         if (!res.ok) return;
         const backendProfile = await res.json();
+        // Stage 1 library accounts never see the product onboarding (§6.5.5).
+        if (STAGE === 1 && backendProfile.origin === WAITLIST_ORIGIN) {
+          libraryAccountRef.current = true;
+          setShowOnboarding(false);
+          return;
+        }
         // Check if backend has any meaningful profile data
         const hasData = backendProfile.profile_completed ||
           backendProfile.position || backendProfile.industry ||
@@ -464,6 +497,12 @@ export default function App() {
   useEffect(() => {
     const handleHash = () => {
       const hash = window.location.hash;
+      // Stage 1 library accounts cannot reach the product (§6.5.5).
+      if (libraryAccountRef.current && STAGE === 1 &&
+          (STAGE_ONE_BLOCKED_HASHES as readonly string[]).includes(hash)) {
+        window.location.hash = "#biblioteca";
+        return;
+      }
       if (hash === "#design-system") setPage("design-system");
       else if (hash === "#dashboard") {
         setFlowState((prev) =>
@@ -480,6 +519,7 @@ export default function App() {
       else if (hash === "#practice-history") setPage("practice-history");
       else if (hash === "#account") setPage("account");
       else if (hash === "#library") setPage("library");
+      else if (hash === "#biblioteca") setPage("biblioteca");
       else if (hash === "#admin") setPage("admin");
       else if (hash === "#terms") setPage("terms");
       else if (hash === "#privacy") setPage("privacy");
@@ -866,6 +906,17 @@ export default function App() {
                 )}
               </div>
             )
+          )}
+          {page === "biblioteca" && (
+            <WorkbookLibraryPage
+              authUser={authUser}
+              onLogout={() => {
+                authService.signOut().catch(() => {});
+                libraryAccountRef.current = false;
+                setPage("landing");
+                window.location.hash = "";
+              }}
+            />
           )}
           {page === "terms" && <TermsPage />}
           {page === "privacy" && <PrivacyPage />}
