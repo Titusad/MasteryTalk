@@ -42,7 +42,7 @@ const VIDEOS: Record<VideoId, VideoContent> = {
     frameworkTitle: "El workbook de “The Three-Move Introduction” está listo",
     heroSub:
       "El framework del Video 1 para presentarte en tres movimientos, con espacio para escribir tu propia versión.",
-    before: "“Hi, I’m David. I’m a UX designer from Colombia. I have 17 years of experience…”",
+    before: "“Hi, I’m David. I’m a designer from Colombia. I have 17 years of experience…”",
     afterPrefix: "I’m David. I design fintech and industrial platforms that ",
     afterMark1: "make complex decisions simple for the people using them",
     afterMid: ". On my last fintech project, I designed a review workflow that cut the client’s feedback cycle from weeks to days. ",
