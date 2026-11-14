@@ -1,26 +1,26 @@
-import { useEffect, useMemo, useState } from "react";
-import { Download, Mail, CheckCircle2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Download } from "lucide-react";
 import { BrandLogo, DotPattern, MiniFooter } from "@/shared/ui";
 import { COLORS } from "@/shared/ui/design-tokens";
 import { SUPABASE_URL } from "@/services/supabase";
+import { LibraryAccessForm } from "@/widgets/LibraryAccessForm";
 
 /**
- * Landing de la Etapa 1 (lista de espera) — VIDEO_PLAN.md "Landing de la Etapa 1".
+ * Landing de la Etapa 1 — VIDEO_PLAN.md "Landing de la Etapa 1", PRODUCT_SPEC §6.5.
  *
- * No vende, no muestra la app, no tiene precio. Hace tres cosas:
- *   1. Entrega el workbook del video que trajo a la persona (correo).
- *   2. Ofrece el e-book completo a cambio de unirse a la lista de espera.
- *   3. Recoge esa lista de espera.
+ * No vende, no muestra la app, no tiene precio. Hace dos cosas:
+ *   1. Entrega el workbook del video que trajo a la persona: descarga directa,
+ *      sin registro (con `dl=1` en el enlace, empieza al cargar). Después, un panel
+ *      corto y no bloqueante invita a crear la cuenta gratis.
+ *   2. Ofrece la biblioteca (todos los workbooks + e-book + extras) a cambio de
+ *      una cuenta gratis sin contraseña (LibraryAccessForm).
  *
- * Reemplaza a LandingPage/Landing2Page/Landing3Page como ruta por defecto
- * mientras dure la Etapa 1 (ver App.tsx). Esas tres landings de venta
- * quedan intactas y alcanzables por hash para la Etapa 2.
+ * El aviso de la herramienta NO vive aquí: es un botón aparte dentro de la
+ * biblioteca (#biblioteca), para no mezclar interés en el contenido con interés
+ * en la herramienta.
  *
- * Captura de leads: ambos formularios llaman a `POST /waitlist` (PRODUCT_SPEC
- * §6.4 y §9.2), que guarda el contacto en Loops y dispara el correo en español.
- * El workbook se descarga igual aunque el backend falle — el lead magnet nunca
- * depende de él — pero la página solo dice "revisa tu correo" si la petición
- * funcionó.
+ * La descarga nunca depende del backend; el conteo (`POST /workbook-download`)
+ * es fire-and-forget.
  */
 
 type VideoId = "1";
@@ -75,140 +75,31 @@ function useRedlineFonts() {
   }, []);
 }
 
-const WAITLIST_URL = `${SUPABASE_URL}/functions/v1/make-server-08b8658d/waitlist`;
+const WORKBOOK_DOWNLOAD_URL = `${SUPABASE_URL}/functions/v1/make-server-08b8658d/workbook-download`;
 const UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_content"] as const;
 
-/** Envía el lead al backend. Devuelve true solo si el servidor lo aceptó y el correo quedó en cola. */
-async function submitLead(payload: {
-  name: string;
-  email: string;
-  wantsEbook: boolean;
-  website: string;
-}): Promise<boolean> {
+/** Cuenta la descarga (aproximado, §6.5.7). Fire-and-forget: nunca bloquea ni avisa a la persona. */
+function countDownload(): void {
   const params = new URLSearchParams(window.location.search);
   const utm: Record<string, string> = {};
   for (const key of UTM_KEYS) {
     const value = params.get(key);
     if (value) utm[key] = value;
   }
-  try {
-    const res = await fetch(WAITLIST_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...payload, video: currentVideoId(), utm }),
-    });
-    if (!res.ok) {
-      console.error("[WaitlistLandingPage] Failed to submit lead: HTTP", res.status);
-    }
-    return res.ok;
-  } catch (err) {
-    console.error("[WaitlistLandingPage] Failed to submit lead:", err);
-    return false;
-  }
-}
-
-function LeadForm({
-  idPrefix,
-  placeholder,
-  ctaLabel,
-  wantsEbook,
-  accentBg,
-  onSubmitted,
-}: {
-  idPrefix: string;
-  placeholder: string;
-  ctaLabel: string;
-  wantsEbook: boolean;
-  accentBg?: string;
-  onSubmitted?: () => void;
-}) {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [website, setWebsite] = useState(""); // honeypot: las personas no lo ven ni lo llenan
-  const [status, setStatus] = useState<"idle" | "error" | "sending" | "done" | "failed">("idle");
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (status === "sending") return;
-    if (!email.includes("@")) {
-      setStatus("error");
-      return;
-    }
-    setStatus("sending");
-    // La descarga empieza ya: no depende de que el backend responda.
-    onSubmitted?.();
-    const ok = await submitLead({ name: name.trim(), email: email.trim(), wantsEbook, website });
-    setStatus(ok ? "done" : "failed");
-  };
-
-  return (
-    <form
-      onSubmit={handleSubmit}
-      className="bg-white rounded-3xl border border-gray-200 shadow-sm p-6 flex flex-col gap-3"
-      style={accentBg ? { background: accentBg } : undefined}
-    >
-      <input
-        type="text"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        placeholder="Tu nombre"
-        autoComplete="name"
-        className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm placeholder:text-[#94a3b8] focus:outline-none focus:border-[#2d2d2d]"
-      />
-      <input
-        type="text"
-        name="website"
-        value={website}
-        onChange={(e) => setWebsite(e.target.value)}
-        tabIndex={-1}
-        autoComplete="off"
-        aria-hidden="true"
-        className="absolute -left-[9999px] w-px h-px opacity-0"
-      />
-      <input
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder={placeholder}
-        autoComplete="email"
-        required
-        className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm placeholder:text-[#94a3b8] focus:outline-none focus:border-[#2d2d2d]"
-      />
-      <button
-        type="submit"
-        disabled={status === "sending"}
-        className="inline-flex items-center justify-center gap-2 bg-[#2d2d2d] text-white px-6 py-3.5 rounded-full text-sm font-medium hover:bg-[#1a1a1a] transition-colors shadow-lg disabled:opacity-60"
-      >
-        {status === "done" ? <CheckCircle2 className="w-4 h-4" /> : <Mail className="w-4 h-4" />}
-        {ctaLabel}
-      </button>
-      {status === "error" && (
-        <p className="text-xs text-[#b45309]">Escribe un correo válido.</p>
-      )}
-      {status === "done" && (
-        <p className="text-xs text-[#1f8f55]">Listo. Revisa tu correo (y el spam, por si acaso).</p>
-      )}
-      {status === "failed" && (
-        <p className="text-xs text-[#b45309]">
-          {wantsEbook
-            ? "No pudimos guardar tu correo. Inténtalo de nuevo en unos minutos."
-            : "Tu descarga ya empezó, pero no pudimos enviarte el correo. Inténtalo de nuevo en unos minutos."}
-        </p>
-      )}
-      <p className="text-xs text-[#94a3b8] leading-relaxed">
-        Usamos tu correo solo para esto y, si quieres, novedades de la serie. Nada de spam. Ver el{" "}
-        <a href="#privacy" className="underline hover:text-[#62748e]">aviso de tratamiento de datos</a>.
-      </p>
-    </form>
-  );
+  fetch(WORKBOOK_DOWNLOAD_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ video: currentVideoId(), utm }),
+  }).catch((err) => console.error("[WaitlistLandingPage] Failed to count download:", err));
 }
 
 export function WaitlistLandingPage() {
   useRedlineFonts();
   const video = useCurrentVideo();
   const [downloaded, setDownloaded] = useState(false);
+  const autoStarted = useRef(false);
 
-  const downloadWorkbook = () => {
+  const downloadWorkbook = useCallback((count: boolean) => {
     const a = document.createElement("a");
     a.href = video.workbookUrl;
     a.download = "";
@@ -216,7 +107,17 @@ export function WaitlistLandingPage() {
     a.click();
     a.remove();
     setDownloaded(true);
-  };
+    if (count) countDownload();
+  }, [video.workbookUrl]);
+
+  // Enlace de la descripción del video (?dl=1): la descarga empieza sola. El navegador
+  // puede bloquearla, por eso el panel siempre trae "Descargar de nuevo" (§6.5.2).
+  useEffect(() => {
+    if (autoStarted.current) return;
+    if (new URLSearchParams(window.location.search).get("dl") !== "1") return;
+    autoStarted.current = true;
+    downloadWorkbook(true);
+  }, [downloadWorkbook]);
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -315,16 +216,26 @@ export function WaitlistLandingPage() {
             </h2>
             <p className="mt-2 text-sm text-[#45556c] max-w-sm">
               Dos páginas en blanco y negro: el framework del video y un espacio para escribir tu propia
-              versión. Déjanos tu correo y te lo mandamos directo.
+              versión. Sin registro, directo.
             </p>
           </div>
-          <LeadForm
-            idPrefix="wb"
-            placeholder="Tu correo"
-            ctaLabel="Enviarme el workbook"
-            wantsEbook={false}
-            onSubmitted={downloadWorkbook}
-          />
+          <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-6 flex flex-col gap-3">
+            <button
+              type="button"
+              onClick={() => downloadWorkbook(true)}
+              className="inline-flex items-center justify-center gap-2 bg-[#2d2d2d] text-white px-6 py-3.5 rounded-full text-sm font-medium hover:bg-[#1a1a1a] transition-colors shadow-lg"
+            >
+              <Download className="w-4 h-4" />
+              {downloaded ? "Descargar de nuevo" : "Descargar el workbook"}
+            </button>
+            {downloaded && (
+              <p className="text-xs text-[#1f8f55]">
+                Tu workbook se está descargando. Si no empezó, pulsa de nuevo el botón.{" "}
+                <a href="#biblioteca" className="underline">Crea tu cuenta gratis</a> para entrar a la
+                biblioteca con todos los workbooks y el e-book.
+              </p>
+            )}
+          </div>
         </div>
       </section>
 
@@ -354,7 +265,7 @@ export function WaitlistLandingPage() {
         </div>
       </section>
 
-      {/* E-book + lista de espera */}
+      {/* Biblioteca (cuenta gratis) */}
       <section className="px-6 py-16">
         <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-10 items-center">
           <div>
@@ -362,32 +273,19 @@ export function WaitlistLandingPage() {
               Gratis durante esta etapa
             </span>
             <h2 className="mt-2 text-2xl font-semibold text-[#0f172b]">
-              El e-book completo + avisarte cuando esté lista
+              La biblioteca completa: workbooks, e-book y más
             </h2>
             <p className="mt-2 text-sm text-[#45556c] max-w-sm">
-              Todos los workbooks, todos los slides en PDF a color y los enlaces a todos los videos
-              de la serie, en un solo archivo. Y cuando la herramienta de práctica esté lista, te
-              escribimos primero.
+              Todos los workbooks de la serie, el e-book con los slides en PDF a color y los enlaces a
+              todos los videos. Crea tu cuenta gratis, sin contraseña, y entra cuando quieras.
             </p>
           </div>
-          <LeadForm
-            idPrefix="eb"
-            placeholder="Tu correo"
-            ctaLabel="Quiero el e-book y la lista de espera"
-            wantsEbook={true}
-            accentBg="#f8fafc"
-          />
+          <LibraryAccessForm idPrefix="landing" />
         </div>
       </section>
 
       <MiniFooter />
 
-      {downloaded && (
-        <div className="fixed bottom-6 right-6 bg-[#0f172b] text-white rounded-2xl px-5 py-3 flex items-center gap-2 text-sm shadow-lg">
-          <Download className="w-4 h-4" />
-          Tu workbook se está descargando
-        </div>
-      )}
     </div>
   );
 }

@@ -2,6 +2,11 @@
  * ══════════════════════════════════════════════════════════════
  *  waitlist.ts — Stage 1 lead capture (PRODUCT_SPEC §6.4, §9.2)
  *
+ *  DEPRECATED by §6.5 (v3.9): the landing no longer calls this endpoint.
+ *  Workbooks are a free direct download and the library/accounts live in
+ *  routes/library.ts. Kept only so old clients and in-flight emails keep
+ *  working; remove once no traffic is seen.
+ *
  *  POST /waitlist   (public, rate-limited, honeypot)
  *
  *  Body: { email, name?, wantsEbook?, video?, utm?, website? }
@@ -23,6 +28,7 @@
  */
 import { Hono } from "npm:hono";
 import * as kv from "../kv_store.ts";
+import { workbookEntry } from "./library.ts";
 
 const app = new Hono();
 const LOOPS_BASE = "https://app.loops.so/api/v1";
@@ -31,10 +37,6 @@ const SITE_URL = "https://masterytalk.pro";
 const LOOPS_SOURCE = "youtube-waitlist";
 const LOOPS_USER_GROUP = "waitlist-es";
 
-/** Video number → public workbook path. Add one entry per published video. */
-const WORKBOOKS: Record<string, string> = {
-  "1": "/workbooks/video-01-workbook.pdf",
-};
 const DEFAULT_VIDEO = "1";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -109,8 +111,10 @@ app.post("/make-server-08b8658d/waitlist", async (c: any) => {
     const name = cleanString(body.name, 100);
     const wantsEbook = body.wantsEbook === true;
     const requestedVideo = cleanString(body.video, 3);
-    const video = requestedVideo in WORKBOOKS ? requestedVideo : DEFAULT_VIDEO;
-    const workbookUrl = `${SITE_URL}${WORKBOOKS[video]}`;
+    const entry = workbookEntry(requestedVideo) ?? workbookEntry(DEFAULT_VIDEO);
+    if (!entry) return c.json({ error: "No workbook available" }, 404);
+    const video = String(entry.video);
+    const workbookUrl = `${SITE_URL}${entry.file}`;
 
     const utm: Record<string, string> = {};
     const rawUtm = body.utm && typeof body.utm === "object" ? body.utm : {};

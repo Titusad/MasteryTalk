@@ -38,9 +38,18 @@ const B = {
   danger: "#ef4444",
 };
 
-function baseLayout(content: string, preheader: string): string {
+interface LayoutOptions {
+  /** HTML lang attribute. Default "en" (product emails). */
+  lang?: string;
+  /** Footer copyright line. Default: English product footer. */
+  footerLine?: string;
+}
+
+function baseLayout(content: string, preheader: string, opts: LayoutOptions = {}): string {
+  const lang = opts.lang ?? "en";
+  const footerLine = opts.footerLine ?? `&copy; ${new Date().getFullYear()} ${B.name}. All rights reserved.`;
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="${lang}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -96,7 +105,7 @@ function baseLayout(content: string, preheader: string): string {
       </div>
       ${content}
       <div class="footer">
-        <p>&copy; ${new Date().getFullYear()} ${B.name}. All rights reserved.</p>
+        <p>${footerLine}</p>
         <p><a href="${B.url}">masterytalk.pro</a></p>
       </div>
     </div>
@@ -549,4 +558,31 @@ export function inactivityNudgeEmailHtml(userName: string): string {
     </div>`;
 
   return baseLayout(content, "Your English isn't going to practice itself — come back!");
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   LIBRARY ACCESS EMAIL — Stage 1 (PRODUCT_SPEC §6.5.4, §9.0)
+   Spanish: exception to the English-only rule (§6.3).
+   ═══════════════════════════════════════════════════════════════ */
+
+export function libraryAccessEmailHtml(accessUrl: string): string {
+  const content = `
+    <div class="body-content">
+      <h1>Tu acceso a la biblioteca de MasteryTalk</h1>
+      <p class="strong-text">
+        Pulsa el botón para entrar a la biblioteca con todos los workbooks y el e-book.
+      </p>
+      <div class="cta-wrapper">
+        <a href="${accessUrl}" class="cta">Entrar a la biblioteca</a>
+      </div>
+      <p style="margin-top: 20px;">
+        El enlace es personal y caduca en una hora. Si no lo pediste tú, ignora este correo:
+        no se crea ningún acceso sin pulsar el botón.
+      </p>
+    </div>`;
+  return baseLayout(content, "Tu enlace de acceso a la biblioteca de MasteryTalk", {
+    lang: "es",
+    footerLine: `MasteryTalk - Spiral Tech Brands LLC`,
+  });
 }

@@ -20,6 +20,8 @@ export interface User {
   pathsPurchased: string[];
   createdAt: string;
   marketFocus?: string;
+  /** Stage 1 library accounts (PRODUCT_SPEC §6.5.5). Server-managed. */
+  origin?: "waitlist-es" | null;
 }
 
 export type AuthProvider = "google";

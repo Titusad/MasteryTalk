@@ -72,13 +72,21 @@ app.post("/make-server-08b8658d/marketing/contact/update", async (c: any) => {
     const user = await getAuthUser(c.req.header("Authorization"));
     if (!user) return c.json({ error: "Unauthorized" }, 401);
 
-    const props = await c.req.json();
+    const body = await c.req.json();
+
+    // Identity and segmentation are server-owned (PRODUCT_SPEC §6.5.5): a client
+    // must not retarget another contact or move itself out of `waitlist-es`.
+    const PROTECTED_KEYS = new Set(["email", "userId", "userGroup", "source"]);
+    const props: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(body && typeof body === "object" ? body : {})) {
+      if (!PROTECTED_KEYS.has(key)) props[key] = value;
+    }
 
     loopsFetch("/contacts/update", {
+      ...props,
       email: user.email,
       userId: user.id,
-      ...props,
-    }).catch(() => {});
+    }).catch((err: unknown) => console.error("[marketing/contact/update] Loops failed:", err));
 
     return c.json({ status: "queued" });
   } catch (err) {

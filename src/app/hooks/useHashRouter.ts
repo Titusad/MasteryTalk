@@ -24,6 +24,7 @@ export type Page =
   | "account"
   | "admin"
   | "library"
+  | "biblioteca"
   | "study-phase"
   | "terms"
   | "privacy"

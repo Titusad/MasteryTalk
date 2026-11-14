@@ -417,10 +417,10 @@ The `redirectTo` URL must be in the Supabase Auth redirect allow-list (dashboard
 
 Library accounts live in the same Supabase project and KV (`profile:{userId}`) as product users. To keep Stage 1 from exposing the product:
 
-- `POST /auth/ensure-profile` creates the profile with `origin = "waitlist-es"` when (a) `waitlist:<email>` exists, or (b) the request carries `origin = "waitlist-es"` (closed set). `origin` is written ONLY when the profile is created. Existing profiles (beta users, admin) are never modified.
+- A DB trigger (`handle_new_user`) already creates the `profiles` row when the auth user is created, so `origin` is a column of `profiles` (migration `20261113000000_profiles_origin.sql`, also `tool_interest_at`). It is set once, only on accounts created in the last 10 minutes: by `POST /library/access-link` right after generating the link (email path), or by `POST /auth/ensure-profile` when `waitlist:<email>` exists or the request carries `origin = "waitlist-es"` (closed set; Google path). Existing profiles (beta users, admin) are never modified. `GET /profile` returns `origin` (read from the table) so the client can route on every load; the auth service awaits `ensure-profile` on `SIGNED_IN` (5 s timeout) before the app decides where to land.
 - The English welcome email (§9.0) is not sent when `origin = "waitlist-es"`.
 - Routing, while `STAGE === 1`: users with `origin = "waitlist-es"` land on `#biblioteca`, skip the onboarding modal, and `#dashboard`, `#practice-session` and `#practice-history` redirect to `#biblioteca`. Every other user is unchanged. `STAGE` is a single constant (`shared/config/stage.ts`); setting it to `2` removes the redirect.
-- The English lifecycle sequences of §9.1 keep excluding `userGroup = waitlist-es`. Library endpoints never change `userGroup`, and the implementation must verify that `/marketing/*` calls cannot overwrite it.
+- The English lifecycle sequences of §9.1 keep excluding `userGroup = waitlist-es`. Library endpoints never change `userGroup`. `/marketing/contact/update` strips `email`, `userId`, `userGroup` and `source` from client-supplied properties (verified in v3.9 implementation: before this, a client could overwrite them).
 
 #### §6.5.6 Library page
 

@@ -28,6 +28,7 @@ import { AuthError } from "../../errors";
 import { getSupabaseClient, getAuthToken, type ProfileRow } from "../../supabase";
 import type { AuthUser } from "@supabase/supabase-js";
 import { projectId, publicAnonKey } from "../../../../utils/supabase/info";
+import { LIBRARY_ORIGIN_FLAG_KEY, WAITLIST_ORIGIN } from "../../../shared/config/stage";
 
 /* ── Map Supabase auth.users + profiles row → our User type ── */
 
@@ -93,11 +94,17 @@ export class SupabaseAuthService implements IAuthService {
           this.currentUser = mapToUser(session.user, profile);
           console.log(`[MasteryTalk Auth] User loaded: ${this.currentUser.displayName} (${this.currentUser.plan})`);
 
-          // Fire-and-forget: ensure server-side profile exists too
+          // Ensure the server-side profile exists. Awaited (with a timeout) so the
+          // Stage 1 `origin` is settled before listeners decide where to route.
           if (event === "SIGNED_IN") {
-            this.ensureServerProfile().catch((err) =>
-              console.warn("[MasteryTalk Auth] ensure-profile server call failed (non-blocking):", err)
-            );
+            try {
+              await Promise.race([
+                this.ensureServerProfile(),
+                new Promise<void>((resolve) => setTimeout(resolve, 5000)),
+              ]);
+            } catch (err) {
+              console.warn("[MasteryTalk Auth] ensure-profile server call failed (non-blocking):", err);
+            }
           }
         } catch (err) {
           // All profile fetching/creation failed — use auth data only
@@ -290,6 +297,12 @@ export class SupabaseAuthService implements IAuthService {
         Authorization: `Bearer ${token}`,
         apikey: publicAnonKey,
       },
+      // Closed-set hint from the Stage 1 library's Google button (§6.5.4).
+      body: JSON.stringify(
+        sessionStorage.getItem(LIBRARY_ORIGIN_FLAG_KEY) === WAITLIST_ORIGIN
+          ? { origin: WAITLIST_ORIGIN }
+          : {},
+      ),
     });
 
     if (!response.ok) {

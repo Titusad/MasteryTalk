@@ -5,6 +5,11 @@ import { sendEmail } from "../email.ts";
 import { welcomeEmailHtml } from "../email-templates.ts";
 import { loopsFetch } from "./marketing.ts";
 
+/** Stage 1 library accounts (PRODUCT_SPEC §6.5.5). Closed set. */
+const WAITLIST_ORIGIN = "waitlist-es";
+/** A profile counts as "just created" for origin tagging within this window. */
+const NEW_ACCOUNT_WINDOW_MS = 10 * 60 * 1000;
+
 const app = new Hono();
 
 // Health check
@@ -43,16 +48,53 @@ app.post("/make-server-08b8658d/auth/ensure-profile", async (c: any) => {
     }
 
     const supabase = getAdminClient();
+    const body = await c.req.json().catch(() => ({}));
 
+    // select("*") on purpose: keeps working even if the `origin` column
+    // migration has not been applied yet (field is then simply undefined).
     const { data: existing } = await supabase
       .from("profiles")
-      .select("id")
+      .select("*")
       .eq("id", user.id)
       .single();
 
-    if (existing) {
-      return c.json({ status: "exists", userId: user.id, termsAcceptedAt: existing.terms_accepted_at || null });
+    // ── Stage 1 origin (§6.5.5) ──
+    // Tag ONLY accounts created in the last minutes and only when they come
+    // from the library (waitlist KV entry, or the client's closed-set flag for
+    // Google). Anyone else — beta users, admin, returning users — is untouched.
+    const createdMs = user.created_at ? Date.parse(user.created_at) : NaN;
+    const isNewAccount = Number.isFinite(createdMs) && Date.now() - createdMs < NEW_ACCOUNT_WINDOW_MS;
+    let comesFromLibrary = body?.origin === WAITLIST_ORIGIN;
+    if (!comesFromLibrary && isNewAccount && user.email) {
+      try {
+        comesFromLibrary = !!(await kv.get(`waitlist:${user.email.toLowerCase()}`));
+      } catch (err) {
+        console.error("[Ensure Profile] waitlist lookup failed:", err);
+      }
     }
+
+    if (existing) {
+      let origin: string | null = existing.origin ?? null;
+      if (!origin && isNewAccount && comesFromLibrary) {
+        const { error: originError } = await supabase
+          .from("profiles")
+          .update({ origin: WAITLIST_ORIGIN })
+          .eq("id", user.id);
+        if (originError) {
+          console.error("[Ensure Profile] Failed to set origin:", originError);
+        } else {
+          origin = WAITLIST_ORIGIN;
+        }
+      }
+      return c.json({
+        status: "exists",
+        userId: user.id,
+        origin,
+        termsAcceptedAt: existing.terms_accepted_at || null,
+      });
+    }
+
+    const origin: string | null = isNewAccount && comesFromLibrary ? WAITLIST_ORIGIN : null;
 
     const now = new Date().toISOString();
     const { error: insertError } = await supabase.from("profiles").insert({
@@ -64,6 +106,7 @@ app.post("/make-server-08b8658d/auth/ensure-profile", async (c: any) => {
       stats: {},
       achievements: [],
       terms_accepted_at: now,
+      ...(origin ? { origin } : {}),
     });
 
     if (insertError) {
@@ -91,28 +134,35 @@ app.post("/make-server-08b8658d/auth/ensure-profile", async (c: any) => {
         achievements: [],
         terms_accepted_at: now,
         created_at: now,
+        ...(origin ? { origin } : {}),
       });
 
-      // Welcome email (fire-and-forget) — even if DB insert failed, user was created
+      // Welcome email (fire-and-forget) — even if DB insert failed, user was created.
+      // Stage 1 library accounts never get the English welcome (§6.5.5).
+      if (!origin) {
+        const userName = user.user_metadata?.full_name || user.email?.split("@")[0] || "there";
+        sendEmail({
+          to: user.email!,
+          subject: "Welcome to MasteryTalk! 🎯",
+          html: welcomeEmailHtml(userName),
+        }).catch((err) => console.error("[Ensure Profile] Welcome email failed:", err));
+      }
+
+      return c.json({ status: "created_kv", userId: user.id, origin, note: "Stored in KV (profiles table not available)" });
+    }
+
+    // Welcome email (fire-and-forget) — new user profile created successfully.
+    // Stage 1 library accounts never get the English welcome (§6.5.5).
+    if (!origin) {
       const userName = user.user_metadata?.full_name || user.email?.split("@")[0] || "there";
       sendEmail({
         to: user.email!,
         subject: "Welcome to MasteryTalk! 🎯",
         html: welcomeEmailHtml(userName),
-      }).catch(() => {});
-
-      return c.json({ status: "created_kv", userId: user.id, note: "Stored in KV (profiles table not available)" });
+      }).catch((err) => console.error("[Ensure Profile] Welcome email failed:", err));
     }
 
-    // Welcome email (fire-and-forget) — new user profile created successfully
-    const userName = user.user_metadata?.full_name || user.email?.split("@")[0] || "there";
-    sendEmail({
-      to: user.email!,
-      subject: "Welcome to MasteryTalk! 🎯",
-      html: welcomeEmailHtml(userName),
-    }).catch(() => {});
-
-    return c.json({ status: "created", userId: user.id });
+    return c.json({ status: "created", userId: user.id, origin });
   } catch (err) {
     console.log("[Ensure Profile Error]", err);
     return c.json({ error: `Failed to ensure profile: ${err}` }, 500);
@@ -173,10 +223,20 @@ app.get("/make-server-08b8658d/profile", async (c: any) => {
       return c.json({ error: "Unauthorized — no valid session for profile fetch" }, 401);
     }
 
+    // `origin` lives in the profiles table (§6.5.5), not in KV: the client needs it
+    // on every load to route Stage 1 library accounts.
+    const { data: row } = await getAdminClient()
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+    const origin: string | null = row?.origin ?? null;
+
     const raw = await kv.get(`profile:${user.id}`);
     if (!raw) {
       return c.json({
         id: user.id,
+        origin,
         plan: "free",
         plan_status: "active",
         free_sessions_used: [],
@@ -189,7 +249,7 @@ app.get("/make-server-08b8658d/profile", async (c: any) => {
 
     const profile = raw as Record<string, unknown>;
 
-    return c.json(profile);
+    return c.json({ ...profile, origin });
   } catch (err) {
     console.log("[Get Profile Error]", err);
     return c.json({ error: `Failed to get profile: ${err}` }, 500);

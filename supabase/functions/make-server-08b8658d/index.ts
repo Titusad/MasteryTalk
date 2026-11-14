@@ -26,6 +26,7 @@ import whatsappVerify from "./routes/whatsapp-verify.ts";
 import waPractice from "./routes/wa-practice.ts";
 import marketing from "./routes/marketing.ts";
 import waitlist from "./routes/waitlist.ts";
+import library from "./routes/library.ts";
 import grammar from "./routes/grammar.ts";
 import { createRateLimiter } from "./kv_store.ts";
 import { getAuthUser } from "./_shared.ts";
@@ -93,6 +94,8 @@ const RATE_LIMITED_PREFIXES = [
   "/make-server-08b8658d/whatsapp/verify-otp",
   "/make-server-08b8658d/pricing",
   "/make-server-08b8658d/waitlist",
+  "/make-server-08b8658d/workbook-download",
+  "/make-server-08b8658d/library/access-link",
 ];
 
 app.use("/*", async (c: any, next: any) => {
@@ -155,6 +158,7 @@ app.route("", whatsappVerify);
 app.route("", waPractice);
 app.route("", marketing);
 app.route("", waitlist);
+app.route("", library);
 app.route("", grammar);
 
 // ── Start server — intercept OPTIONS before Hono ──

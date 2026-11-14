@@ -9,7 +9,7 @@
  */
 import { AppHeader } from "@/shared/ui/AppHeader";
 
-const LAST_UPDATED = "April 2025";
+const LAST_UPDATED = "November 2026";
 const CONTACT_EMAIL = "legal@masterytalk.pro";
 
 export function PrivacyPage() {
@@ -104,6 +104,15 @@ export function PrivacyPage() {
               <li>Government-issued identification documents</li>
               <li>Sensitive personal data (racial, ethnic, health, biometric data for identification purposes)</li>
             </ul>
+
+            <h3>2.5 Free library accounts (YouTube series)</h3>
+            <p>
+              If you create a free account in the workbook library at masterytalk.pro (by email link or with Google), we
+              collect your <strong>email address</strong> (and your name if you sign in with Google) and the campaign tags
+              of the link you came from (UTM parameters). We store whether you pressed the button asking to be notified
+              about the practice tool, and the date. Downloading a workbook without an account does not collect personal
+              data: we only count downloads per video and campaign. The library and its emails are in Spanish.
+            </p>
           </Section>
 
           <Section id="p-use" num="3" title="How We Use Your Information">
@@ -111,7 +120,7 @@ export function PrivacyPage() {
             <ul>
               <li><strong>Service delivery:</strong> To provide, maintain, and improve the AI-powered practice sessions and coaching features.</li>
               <li><strong>Personalization:</strong> To tailor practice scenarios, feedback, and recommendations based on your performance history.</li>
-              <li><strong>Communication:</strong> To send transactional emails (welcome, session summaries, subscription confirmations) and important service updates.</li>
+              <li><strong>Communication:</strong> To send transactional emails (welcome, session summaries, subscription confirmations, library access links) and important service updates. If you create a library account, we may also send you news about the YouTube series; you can unsubscribe at any time.</li>
               <li><strong>Analytics:</strong> To understand usage patterns and improve the platform (aggregated, anonymized data).</li>
               <li><strong>Legal compliance:</strong> To comply with applicable laws and respond to legal requests.</li>
             </ul>
@@ -159,6 +168,11 @@ export function PrivacyPage() {
                     <td className="px-4 py-2.5" style={{ fontWeight: 500 }}>Resend</td>
                     <td className="px-4 py-2.5">Transactional email delivery</td>
                     <td className="px-4 py-2.5">Email address, name</td>
+                  </tr>
+                  <tr className="border-b border-[#e2e8f0]">
+                    <td className="px-4 py-2.5 font-medium">Loops</td>
+                    <td className="px-4 py-2.5">Email lists and series updates</td>
+                    <td className="px-4 py-2.5">Email address, name, campaign source</td>
                   </tr>
                   <tr>
                     <td className="px-4 py-2.5" style={{ fontWeight: 500 }}>dLocal Go</td>
