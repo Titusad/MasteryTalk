@@ -4,7 +4,7 @@
 > Any code change MUST be consistent with this spec.
 > If the spec needs to change, update THIS FILE FIRST → get approval → then code.
 >
-> Last updated: 2026-11-12 (v3.9 — Stage 1 workbooks, library and accounts: §4.1 `origin` + `tool_interest_at`, §6.3, §6.4 note, §6.5 new, §9.0, §9.2 note, §10.1 library endpoints. APPROVED 2026-11-12 (PR #6) — code not written yet.)
+> Last updated: 2026-11-13 (v3.10 — creating the free account includes the tool waitlist; PENDING approval. Previous: 2026-11-12 v3.9 — Stage 1 workbooks, library and accounts: §4.1 `origin` + `tool_interest_at`, §6.3, §6.4 note, §6.5 new, §9.0, §9.2 note, §10.1 library endpoints. APPROVED 2026-11-12 (PR #6) — code not written yet.)
 
 ---
 
@@ -195,7 +195,7 @@ interface KVProfile {
     grammarRotationIndex?: Record<string, number>; // levelId → current rotation index (sequential per level)
     // Stage 1 accounts (§6.5) — server-only, NOT in the PUT /profile whitelist
     origin?: "waitlist-es" | null;     // set ONCE at profile creation (ensure-profile); never changed afterwards
-    tool_interest_at?: string | null;  // ISO timestamp of the explicit "tell me when I can practice" action
+    tool_interest_at?: string | null;  // ISO timestamp set once, when the Stage 1 account is created (v3.10)
 }
 ```
 
@@ -390,9 +390,9 @@ The page does not sell, shows no price and does not show the app. It does three 
 | Library (all published workbooks) | Free account | Page `#biblioteca` (§6.5.6) |
 | E-book | Free account | Private storage, signed link (§6.5.7). Assembled after Video 2 |
 | Extra resources | Free account | Section reserved in the library; content defined per release |
-| Tool waitlist | Free account + explicit action | Separate button; the Stage 1 demand signal for the product |
+| Tool waitlist | Included when the free account is created | The access form states it ("Al registrarte te avisaremos cuando la herramienta esté lista"); the Stage 1 demand signal for the product |
 
-Creating an account does NOT put the person on the tool waitlist. The waitlist is the explicit button "Avísame cuando pueda practicar esto con inteligencia artificial" inside the library. This keeps interest in the content apart from interest in the tool, which is the signal that decides whether to keep investing in the app.
+Creating an account DOES put the person on the tool waitlist (v3.10, decided by the author on 2026-11-13, because the Video 1 audio says "Al registrarte te avisaré cuando esté lista"). The access form (email link and Google) shows the notice text above the button, so the consent is explicit. There is no separate waitlist button. Consequence: interest in the content and interest in the tool are no longer separated; the Stage 1 signal is accounts created over workbook downloads (VIDEO_PLAN "Qué medir").
 
 #### §6.5.2 Workbook delivery
 
@@ -426,14 +426,14 @@ Library accounts live in the same Supabase project and KV (`profile:{userId}`) a
 
 Route `#biblioteca`, page `WorkbookLibraryPage` (distinct from the micro-lesson `LibraryPage` at `#library`). `vercel.json` redirects `/biblioteca` to `/#biblioteca`; routing stays hash-based. `#biblioteca` is added to `AUTH_PAGES`; visitors without a session see the access form (email link and Google). Spanish copy.
 
-Content: one card per published workbook (number, title, framework, link to the video, download); the e-book card (download when published, otherwise "Disponible después del Video 2"); the tool waitlist button; a reserved section for extra resources. No prices, no subscription and no practice entry point. The Dashboard and the micro-lesson library stay hidden from Stage 1 accounts.
+Content: one card per published workbook (number, title, framework, link to the video, download); the e-book card (download when published, otherwise "Disponible después del Video 2"); the notice that the person will be told when the tool is ready; a reserved section for extra resources. No prices, no subscription and no practice entry point. The Dashboard and the micro-lesson library stay hidden from Stage 1 accounts.
 
 #### §6.5.7 Data, counters and privacy
 
 - **Workbook downloads:** `POST /workbook-download` `{ video, utm? }` increments `stats:workbook:<video>:<yyyy-mm>` (`total`, `byCampaign`). Approximate: KV has no atomic increment.
 - **E-book:** private Supabase Storage bucket `ebook` (not public, not in the repo). `GET /library/ebook` returns a signed URL (TTL 10 min) and counts the download.
-- **Tool interest:** `POST /library/tool-interest` sets `profile.tool_interest_at`, sends the Loops event `tool_interest` and sets `toolInterest: true` in `waitlist:<email>`.
-- **Metrics** (VIDEO_PLAN "Qué medir"): downloads per video and campaign; accounts created; tool-interest over downloads.
+- **Tool interest:** when the account is created (`POST /library/access-link` for the email link, `POST /auth/ensure-profile` with `origin = "waitlist-es"` for Google), the server sets `profile.tool_interest_at` once, sends the Loops event `tool_interest` and sets `toolInterest: true` in `waitlist:<email>`. Existing profiles are not modified. `POST /library/tool-interest` is no longer needed.
+- **Metrics** (VIDEO_PLAN "Qué medir"): downloads per video and campaign; accounts created (each includes the tool notice); accounts over downloads.
 - **Privacy:** the `#privacy` notice must cover account creation, access emails, Loops and the counters before this ships.
 
 #### §6.5.8 Out of scope (Stage 2)
@@ -1021,7 +1021,6 @@ Same provider and sending domain as §9.1 (`mail.go.masterytalk.pro`). Language:
 | POST   | `/library/access-link`      | ❌ Public (rate-limited, honeypot) | Create/find the account and email the Spanish magic link; identical response for new and existing emails (§6.5.4) |
 | GET    | `/library`                  | ✅ JWT          | Published catalog + user flags (`ebookAvailable`, `toolInterest`) (§6.5.6) |
 | GET    | `/library/ebook`            | ✅ JWT          | Signed URL (10 min) of the e-book in private storage; counts the download (§6.5.7) |
-| POST   | `/library/tool-interest`    | ✅ JWT          | Explicit tool-waitlist action → `profile.tool_interest_at` + Loops event `tool_interest` (§6.5.7) |
 | POST   | `/grammar-examples`         | ✅ JWT          | Generate 3 AI-personalized grammar examples (GPT-4o-mini, 5s timeout, static fallback) |
 | GET    | `/admin/users`              | ✅ Admin        | List all users                                        |
 | GET    | `/admin/kpis`               | ✅ Admin        | Platform KPIs                                         |
@@ -1062,7 +1061,7 @@ Non-whitelisted fields (plan, tier, subscription_active, etc.) can only be writt
 | `/cron/daily-sr`         | `x-cron-secret` header                        |
 | `/pricing`, `/health`    | Public (no auth)                              |
 | `/workbook-download`, `/library/access-link` | Public, rate-limited; the access link is also honeypot-protected and answers identically for any email |
-| `/library`, `/library/ebook`, `/library/tool-interest` | Supabase JWT; `/library/ebook` returns a short-lived signed URL, the bucket is never public |
+| `/library`, `/library/ebook` | Supabase JWT; `/library/ebook` returns a short-lived signed URL, the bucket is never public |
 
 ### §10.3 Environment Variables
 
@@ -1192,3 +1191,4 @@ A user sees the `MasteryAuditCard` in FeedbackScreen when ALL of:
 | v3.7    | 2026-05-13 | §7.1: `"grammar"` + `"vocabulary"` steps added to Step type; full path session step chain documented. §4.1: path-specific lazy context fields added to KV profile (targetRole/targetCompanyType/jobDescription for interview; meeting/presentation/sales fields pending); `grammarRotationIndex: Record<string,number>` added. §7.12 new — Vocabulary + Pronunciation Module (D.4): VocabularyTerm shape, skip rules, TTS caching. §7.13 new — Grammar Building Block (D.5): 24-structure Interview Mastery bank (6 levels × 4), GrammarStructure interface, AI-personalized examples via GPT-4o-mini (5s timeout + static fallback), rotation tracking, collapsed L3+ default. §7.14 new — Path Setup Modal (D.6): lazy one-time context capture before first path session, cannot be dismissed, interview fields (targetRole required, targetCompanyType+JD optional), ContextScreen path mode (read-only preview) vs war-room mode (manual input). §10.1: `POST /grammar-examples` added. §10.1.1: whitelist updated (targetRole, targetCompanyType, jobDescription, currentCompanyName, teamSize, typicalMeetingTypes, typicalAudience, presentationContext, productOrService, targetBuyer, grammarRotationIndex). |
 | v3.8    | 2026-11-12 | §6.3: Spanish exception for Stage 1 waitlist emails. §6.4 new — Stage 1 waitlist landing (default route, lead capture, attribution, workbook files). §9.2 new — waitlist emails in Loops (segmentation `userGroup=waitlist-es`, events `workbook_requested` / `waitlist_joined`, server-side workbook allow-list, KV backup). §10.1: `POST /waitlist` added. |
 | v3.9    | 2026-11-12 | APPROVED by the author (PR #6); code pending. §6.5 new — Stage 1 workbooks, library and accounts: workbook becomes a free direct download (no email); library, e-book and extra resources behind a free passwordless Supabase account (email magic link sent in Spanish via Resend, or Google); tool waitlist is a separate explicit action; Stage 1 accounts marked `origin = "waitlist-es"` (no English welcome email, land on `#biblioteca`, product routes hidden while `STAGE === 1`); e-book in a private bucket with signed URLs; catalog `LIBRARY` replaces `WORKBOOKS`. §4.1: `origin`, `tool_interest_at`. §6.3: Spanish exception extended to the library. §6.4: partly superseded. §9.0: access-link email row. §9.2: `POST /waitlist` deprecated after the library ships. §10.1/§10.2: `/workbook-download`, `/library/*`. §6.5.8 records the Stage 2 open points (free sessions 1–2 vs 3, server-side enforcement). |
+| v3.10   | 2026-11-13 | Pending approval. §6.5.1, §6.5.6, §6.5.7, §4.1, §10.1/§10.2: creating the free account includes the tool waitlist (notice shown in the access form); the separate button and `POST /library/tool-interest` are removed; `tool_interest_at` is set once at account creation. Reason: the Video 1 audio says "Al registrarte te avisaré cuando esté lista". Code still pending (as in v3.9). |
